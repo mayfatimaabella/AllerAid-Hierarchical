@@ -1,0 +1,48 @@
+<ion-content [fullscreen]="true" class="onboarding-bg">
+  <div class="onboarding-welcome">
+    <p>To ensure your safety, please indicate any allergies you may have before signing in.</p>
+  </div>
+
+  <ion-card class="onboarding-card">
+    <!-- Loading spinner -->
+    <div *ngIf="isLoading" class="ion-text-center ion-padding">
+      <ion-spinner></ion-spinner>
+      <p>Loading allergy options...</p>
+    </div>
+    
+    <!-- Empty state when no options in Firebase -->
+    <div *ngIf="!isLoading && allergyOptions.length === 0" class="ion-text-center ion-padding">
+      <ion-icon name="alert-circle-outline" size="large" color="medium"></ion-icon>
+      <h3>No Allergy Options Found</h3>
+      <p>The allergy options collection is empty in Firebase.</p>
+      <p>Please add allergy options to the Firebase database or use the refresh button to try again.</p>
+    </div>
+    
+    <!-- Allergy form -->
+    <form *ngIf="!isLoading && allergyOptions.length > 0">
+      <ion-list lines="none">
+        <ion-item *ngFor="let allergy of allergyOptions">
+          <ion-checkbox
+            slot="start"
+            [(ngModel)]="allergy.checked"
+            [name]="allergy.name">
+          </ion-checkbox>
+          <ion-label>{{ allergy.label }}</ion-label>
+          <ion-input
+            *ngIf="allergy.hasInput"
+            placeholder="please specify"
+            [(ngModel)]="allergy.value"
+            [name]="allergy.name + 'Value'"
+            style="margin-left: 8px;">
+          </ion-input>
+        </ion-item>
+      </ion-list>
+    </form>
+  </ion-card>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="!isLoading && allergyOptions.length > 0">
+    <ion-fab-button class="nextBtn" (click)="submitAllergies()">
+      <ion-icon name="arrow-forward-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

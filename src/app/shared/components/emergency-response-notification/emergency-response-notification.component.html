@@ -1,0 +1,35 @@
+<div class="notification-container">
+  <div class="notification-content">
+    <div class="notification-header">
+      <ion-icon name="medkit"></ion-icon>
+      <h2>Help is on the way!</h2>
+      <ion-button fill="clear" (click)="onDismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </div>
+    
+    <div class="notification-body">
+      <p class="responder-text"><strong>{{ responderName }}</strong> is on the way to help you!</p>
+      
+      <div class="eta-info" *ngIf="estimatedMinutes > 0">
+        <div class="eta-item">
+          <ion-icon name="time-outline"></ion-icon>
+          <span>{{ estimatedMinutes }} min ETA</span>
+        </div>
+        <div class="eta-item" *ngIf="distance > 0">
+          <ion-icon name="location-outline"></ion-icon>
+          <span>{{ distance }}km away</span>
+        </div>
+      </div>
+      
+      <p class="fallback-time" *ngIf="estimatedTime && estimatedMinutes === 0">
+        {{ estimatedTime }}
+      </p>
+      
+      <ion-button expand="block" (click)="openMap()" class="map-button">
+        <ion-icon name="map" slot="start"></ion-icon>
+        Track Responder Location
+      </ion-button>
+    </div>
+  </div>
+</div>

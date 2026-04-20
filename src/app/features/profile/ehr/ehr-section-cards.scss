@@ -1,0 +1,530 @@
+/* Doctor Visits styling aligned with health section */
+.doctor-visit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.doctor-visit-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Shared section title style (mirrors health-section component) */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f4a42;
+  margin: 12px 0 8px;
+  justify-content: space-between;
+}
+.section-title .title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title ion-icon {
+  font-size: 18px;
+}
+.section-title .add-visit-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-size: 13px;
+}
+/* EHR Section Cards styles. Add your styles here. */
+
+.ehr-section-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin: 18px 0;
+  padding: 18px 20px;
+  border-left: 4px solid #036a5d;
+  border: 1px solid #ececec;
+  position: relative;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #222;
+}
+
+.card-header .header-icon {
+  margin-right: 8px;
+  color: #036a5d;
+  font-size: 20px;
+}
+
+.card-header .header-action {
+  color: #036a5d;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.card-header .header-action:hover {
+  color: #065a4c;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #036a5d;
+}
+
+.card-content {
+  margin-top: 8px;
+}
+
+.ehr-card-item {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid #ececec;
+}
+
+/* Enhanced Doctor Visit summary card (aligned with medical history styling) */
+.visit-summary-card {
+  margin-bottom: 1.2rem;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(3,106,93,0.08);
+  padding: 0.85rem 1rem 0.75rem;
+  border: 1px solid #d1e7e0;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  outline: none;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba(3,106,93,0.18);
+    border-color: #036a5d;
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(3,106,93,0.25);
+    border-color: #036a5d;
+  }
+}
+
+.visit-summary-header { display: flex; align-items: flex-start; justify-content: space-between; }
+.visit-summary-info { flex: 1; }
+.visit-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.visit-doctor-name { color: #013a32; font-weight: 600; font-size: 1rem; margin: 0; letter-spacing: 0.3px; }
+.visit-date { color: #365852; font-size: 0.8rem; margin: 3px 0 0 0; display: flex; align-items: center; gap: 4px; }
+.visit-date-icon { font-size: 16px; color: #036a5d; }
+
+.visit-status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  padding: 4px 10px 3px;
+  border-radius: 16px;
+  text-transform: uppercase;
+  background: #eef3f2;
+  color: #365852;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.visit-status-routine { background: #e6f8ee; color: #047857; }
+.visit-status-urgent { background: #fff4e6; color: #b45309; }
+.visit-status-emergency { background: #fde2e2; color: #dc2626; }
+.visit-status-followup { background: #fdf2f8; color: #be185d; }
+.visit-status-specialist { background: #e6f3ff; color: #1d4ed8; }
+.visit-status-specialty { background: #e6f3ff; color: #1d4ed8; }
+.visit-status-other { background: #eef3f2; color: #365852; }
+
+.visit-header-actions ion-button { --padding-start: 4px; --padding-end: 4px; }
+.visit-action-icon { font-size: 18px; }
+
+.visit-click-hint { margin-top: 6px; display: flex; align-items: center; font-size: 12px; color: #036a5d; }
+.visit-eye-icon { font-size: 16px; color: #036a5d; }
+.visit-details-inline { margin-left: 6px; font-weight: 500; letter-spacing: 0.4px; }
+
+.ehr-card-name {
+  font-weight: 600;
+  color: #222;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.ehr-card-date {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.ehr-card-label {
+  display: inline-block;
+  background: #eaf2ff;
+  color: #3a6eea;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 16px;
+  padding: 3px 14px;
+  margin-left: 8px;
+  letter-spacing: 0.2px;
+}
+
+.ehr-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ehr-section-card.medical-history {
+  margin-top: 24px;
+}
+
+.medical-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.medical-history-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #065a4c;
+}
+
+.medical-history-action {
+  color: #3a6eea;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.medical-history-action:hover {
+  color: #065a4c;
+}
+
+.medical-history-card-item {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  border: 1px solid #ececec;
+}
+
+.medical-history-condition {
+  font-weight: 600;
+  color: #222;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.medical-history-date {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.medical-history-status {
+  display: inline-block;
+  background: #eafbe7;
+  color: #2db67c;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 16px;
+  padding: 3px 14px;
+  margin-left: 8px;
+  letter-spacing: 0.2px;
+}
+
+.medical-history-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.medical-history-details-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #3a6eea;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 10px;
+  margin-bottom: 2px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.medical-history-details-link:hover {
+  text-decoration: underline;
+}
+
+.medical-history-divider {
+  border: none;
+  border-top: 1px solid #ececec;
+  margin: 10px 0 0 0;
+}
+
+.provider-access-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin: 18px 0;
+  padding: 18px 20px;
+  border-left: 4px solid #7c3aed;
+  border: 1px solid #ececec;
+  position: relative;
+}
+
+.provider-access-header {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin-bottom: 10px;
+}
+
+.provider-access-description {
+  color: #444;
+  font-size: 15px;
+  margin-bottom: 18px;
+}
+
+.provider-access-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.provider-access-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.provider-access-input {
+  background: #f7f7fa;
+  border-radius: 8px;
+  border: 1px solid #ececec;
+  padding: 8px 12px;
+  font-size: 15px;
+  color: #222;
+  margin-bottom: 2px;
+}
+
+.provider-access-btn {
+  background: #b4c7fa;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 10px 0;
+  margin-top: 18px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+.provider-access-btn:disabled {
+  background: #e3e8f7;
+  color: #b4c7fa;
+  cursor: not-allowed;
+}
+
+.provider-access-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #7c3aed;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.history-summary-card {
+  margin-bottom: 1.2rem;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(3,106,93,0.08);
+  padding: 0.9rem 1rem 0.85rem;
+  border: 1px solid #d1e7e0;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  outline: none;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba(3,106,93,0.18);
+    border-color: #036a5d;
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(3,106,93,0.25);
+    border-color: #036a5d;
+  }
+}
+
+.history-summary-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.history-summary-info {
+  flex: 1;
+}
+
+.history-condition {
+  color: #013a32;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.history-date {
+  color: #365852;
+  font-size: 0.8rem;
+  margin: 3px 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-date-icon { font-size: 16px; color: #036a5d; }
+
+.history-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.history-status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  padding: 4px 10px 3px;
+  border-radius: 16px;
+  text-transform: uppercase;
+  background: #eef3f2;
+  color: #365852;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.history-status-active { background: #e6f8ee; color: #047857; }
+.history-status-resolved { background: #e6f3ff; color: #1d4ed8; }
+.history-status-not-cured { background: #fff4e6; color: #b45309; }
+.history-status-chronic { background: #fdf2f8; color: #be185d; }
+.history-status-other { background: #eef3f2; color: #365852; }
+
+
+.history-menu-icon {
+  color: #3a6eea;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.history-notes {
+  color: #222;
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+.history-click-hint {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #036a5d;
+}
+
+.history-eye-icon {
+  color: #3a6eea;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+.history-details-inline {
+  margin-left: 6px;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: #036a5d;
+}
+
+.history-notes-more { color: #5a6c69; }
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f4a42;
+  margin: 0 0 8px 0;
+}
+
+.empty-subtitle {
+  font-size: 14px;
+  color: #8ba19c;
+  margin: 0;
+}
+
+.loading-state ion-skeleton-text {
+  display: block;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+
+.skeleton-60 {
+  width: 100%;
+  height: 60px;
+}
+
+.skeleton-40 {
+  width: 80%;
+  height: 40px;
+}
+
+.skeleton-30 {
+  width: 60%;
+  height: 30px;
+  margin-bottom: 0;
+}

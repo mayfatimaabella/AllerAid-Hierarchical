@@ -1,0 +1,164 @@
+.voice-settings-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+  border: 1px solid var(--ion-color-light-shade);
+}
+
+.voice-recording-controls {
+  margin-bottom: 24px;
+
+  h4 {
+    margin: 0 0 8px 0;
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 16px 0;
+    color: var(--ion-color-medium);
+    font-size: 14px;
+  }
+}
+
+.recording-zone {
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+  background: white;
+  border: 2px dashed var(--ion-color-light-shade);
+  transition: all 0.3s ease;
+
+  &.recording {
+    background: linear-gradient(135deg, #0aa38e, #036a5d);
+    color: white;
+    border-color: #ff5722;
+    animation: pulse 2s infinite;
+  }
+
+  .recording-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-weight: 500;
+
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+  }
+}
+
+.voice-recordings-list {
+  margin-bottom: 24px;
+
+  h4 {
+    margin: 0 0 16px 0;
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+
+  .recording-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid var(--ion-color-light-shade);
+
+    .recording-info {
+      flex: 1;
+
+      .recording-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        margin-bottom: 4px;
+
+        ion-icon {
+          font-size: 16px;
+        }
+      }
+
+      .recording-details {
+        display: flex;
+        gap: 12px;
+        font-size: 12px;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    .recording-actions {
+      display: flex;
+      gap: 4px;
+    }
+  }
+}
+
+.voice-audio-settings {
+  h4 {
+    margin: 0 0 16px 0;
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+
+  .setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 16px;
+    }
+
+    .setting-info {
+      flex: 1;
+      margin-right: 16px;
+
+      label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 4px;
+        color: var(--ion-color-dark);
+      }
+
+      p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    ion-toggle {
+      --track-background-checked: var(--ion-color-primary);
+    }
+
+    ion-select {
+      min-width: 100px;
+    }
+
+    ion-range {
+      min-width: 120px;
+    }
+  }
+}

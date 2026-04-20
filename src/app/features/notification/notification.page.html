@@ -1,0 +1,39 @@
+<ion-toolbar class="notification-header">
+  <ion-buttons slot="start">
+    <ion-menu-button></ion-menu-button>
+  </ion-buttons>
+  <ion-title>Reminders</ion-title>
+  <ion-buttons slot="end">
+    <ion-button (click)="clearAll()" color="danger" *ngIf="pendingReminders.length > 0">
+      Clear
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>
+
+<ion-content [fullscreen]="true" class="notification-bg">
+  <div class="notification-container">
+    
+    <div *ngIf="isLoading" class="ion-text-center ion-padding">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+      <div *ngFor="let reminder of pendingReminders" class="reminder-card">
+        <div class="reminder-header">
+          <h3>{{ reminder.title }}</h3>
+          <span class="reminder-time">Now</span>
+        </div>
+        <p class="reminder-text">{{ reminder.body }}</p>
+      </div>
+
+      <div *ngIf="pendingReminders.length === 0" class="no-reminders">
+        <ion-icon name="notifications-off-outline"></ion-icon>
+        <p>No pending reminders at the moment.</p>
+        <ion-button fill="outline" size="small" (click)="goHome()">
+          Back to Home
+        </ion-button>
+      </div>
+    </ng-container>
+
+  </div>
+</ion-content>

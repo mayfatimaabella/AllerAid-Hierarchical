@@ -1,0 +1,15 @@
+<ng-container>
+  <div class="buddy-modal-backdrop" (click)="cancel()">
+    <div class="buddy-modal-content" (click)="$event.stopPropagation()">
+      <ion-content class="ion-padding" [style.background]="'#fff'">
+        <div style="text-align:center; margin: 24px 0;">
+          <ion-icon name="alert-circle-outline" color="danger" style="font-size: 48px;"></ion-icon>
+          <h2>Delete Buddy?</h2>
+          <p>Are you sure you want to delete <b style="color: #036a5d; font-weight: bold">{{ buddy?.firstName }} {{ buddy?.lastName }}</b>?</p>
+        </div>
+        <ion-button expand="block" class="deleteBtn" (click)="confirmDelete()">Delete</ion-button>
+        <ion-button expand="block" class="cancelBtn" fill="clear" (click)="cancel()">Cancel</ion-button>
+      </ion-content>
+    </div>
+  </div>
+</ng-container>

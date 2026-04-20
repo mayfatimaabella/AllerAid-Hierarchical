@@ -1,0 +1,87 @@
+<div class="ehr-section-card">
+  <div class="section-title">
+    <div class="title-left">
+      <ion-icon name="people-outline"></ion-icon>
+      <span>Provider Access</span>
+    </div>
+    <ion-button class="add-visit-btn" size="small" (click)="sendAccessRequestHandler()" [disabled]="!newProviderEmail || !newProviderName">
+      <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
+      Send Request
+    </ion-button>
+  </div>
+
+  <div class="card-content">
+    <p class="access-description">Send access requests to verified healthcare providers for coordinated care.</p>
+    <div class="add-provider-section">
+      <ion-item lines="none" class="provider-input">
+        <ion-label position="stacked">Provider Email</ion-label>
+        <ion-input 
+          [(ngModel)]="newProviderEmail" 
+          placeholder="doctor@example.com"
+          type="email">
+        </ion-input>
+      </ion-item>
+      <ion-item lines="none" class="provider-input">
+        <ion-label position="stacked">Provider Name</ion-label>
+        <ion-input 
+          [(ngModel)]="newProviderName" 
+          placeholder="Dr. Sarah Johnson">
+        </ion-input>
+      </ion-item>
+      <ion-item lines="none" class="provider-input">
+        <ion-label position="stacked">Provider Role</ion-label>
+        <ion-select [(ngModel)]="newProviderRole" interface="popover">
+          <ion-select-option value="doctor">Doctor</ion-select-option>
+          <ion-select-option value="nurse">Nurse</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item lines="none" class="provider-input">
+        <ion-label position="stacked">License Number <span class="optional-label">(Optional)</span></ion-label>
+        <ion-input 
+          [(ngModel)]="newProviderLicense" 
+          placeholder="e.g., MD12345">
+        </ion-input>
+      </ion-item>
+      <ion-item lines="none" class="provider-input">
+        <ion-label position="stacked">Specialty <span class="optional-label">(Optional)</span></ion-label>
+        <ion-input 
+          [(ngModel)]="newProviderSpecialty" 
+          placeholder="e.g., Cardiology, Family Medicine">
+        </ion-input>
+      </ion-item>
+      <ion-item lines="none" class="provider-input">
+        <ion-label position="stacked">Hospital/Clinic <span class="optional-label">(Optional)</span></ion-label>
+        <ion-input 
+          [(ngModel)]="newProviderHospital" 
+          placeholder="e.g., City General Hospital">
+        </ion-input>
+      </ion-item>
+      <!-- Moved action into header as add-visit-btn -->
+      <p class="help-text">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        The provider must be registered in the system and will need to accept your request.
+      </p>
+    </div>
+    <div class="current-access" *ngIf="ehrAccessList.length > 0">
+      <h4 class="current-access-title">Current Provider Access</h4>
+      <div class="access-list">
+        <div *ngFor="let provider of ehrAccessList" class="access-item">
+          <div class="provider-info">
+            <ion-icon name="person-outline"></ion-icon>
+            <span>{{ provider }}</span>
+          </div>
+          <ion-button 
+            fill="clear" 
+            color="danger" 
+            size="small"
+            (click)="revokeEHRAccessHandler(provider)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="ehrAccessList.length === 0" class="no-access">
+      <p class="empty-subtitle">No providers have access to your EHR</p>
+    </div>
+  </div>
+</div>

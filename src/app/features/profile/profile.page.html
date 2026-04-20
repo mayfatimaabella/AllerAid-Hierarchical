@@ -1,0 +1,327 @@
+<ion-header [translucent]="true">
+
+  <ion-toolbar class="toolbar--teal">
+    
+    <ion-buttons slot="start">
+      
+      <!-- hamburger menu -->
+       <!-- accessed in app.component -->
+      <ion-menu-button></ion-menu-button>
+
+    </ion-buttons>
+
+    <ion-title>Profile</ion-title>
+    
+  </ion-toolbar>
+</ion-header>
+<!-- if vm$ is available then i sud ani ang vm (i load profile, allergies ug emergency message)-->
+<ng-container *ngIf="vm$ | async as vm">
+
+<ion-content class="ion-padding profile-page-bg">
+
+  <ion-refresher
+    *ngIf="vm.profile?.role === 'user' && profileNavigation.selectedTab === 'health'"
+    slot="fixed"
+    (ionRefresh)="handleHealthRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh medications"
+      refreshingSpinner="crescent"
+      refreshingText="Refreshing medications...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <section class="profile-header">
+
+    <div class="profile-header-card">
+
+      <div class="profile-header-content">
+
+        <ion-avatar class="profile-avatar">
+          <!-- kuha avatar sa firebase or default avatar -->
+          <img alt="person-avatar"
+               [src]="vm.profile?.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
+        </ion-avatar>
+        
+        <!-- if naa profile kay i name siya as profile para di na sige ug vm.profile -->
+        <ng-container *ngIf="vm.profile as profile">
+
+          <div class="profile-info">
+            <!-- kuha name sa emergency message, profile or default -->
+            <div class="profile-name">
+              {{ (vm.emergencyMessage?.name || profile.fullName || 'User') }}
+            </div>
+          </div>
+
+        </ng-container>
+
+      </div>
+      <!-- ellipsis menu -->
+      <button class="profile-menu-btn" id="profileMenuBtn" aria-label="Menu">
+        <ion-icon name="ellipsis-vertical"></ion-icon>
+      </button>
+    </div>
+  </section>
+
+<!-- pislit ellipsis trigger profileMenuBtn -->
+  <!-- Profile Menu Popover -->
+  <ion-popover trigger="profileMenuBtn" [dismissOnSelect]="true">
+    <ng-template>
+
+      <ion-content>
+
+        <ion-list>
+          
+          <ion-item button (click)="openEditProfileModal()">
+            <ion-icon name="pencil-outline" slot="start"></ion-icon>
+            <ion-label>Edit Profile</ion-label>
+          </ion-item>
+
+          <ion-item button (click)="openChangePasswordModal()">
+            <ion-icon name="key" slot="start"></ion-icon>
+            <ion-label>Change Password</ion-label>
+          </ion-item>
+
+        </ion-list>
+
+      </ion-content>
+      
+    </ng-template>
+  </ion-popover>
+
+  <section class="profile-card">
+
+    <!-- USER STATS -->
+    <section class="profile-stats"
+          *ngIf="vm.profile?.role === 'user'">
+
+      <div class="stat">
+        <div class="stat-label">Allergies</div>
+        <div class="stat-value">{{ vm.allergies.length }}</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Medications</div>
+        <div class="stat-value">{{ profileMedicationManager.medicationsCount }}</div>
+      </div>
+    </section>
+
+    <!-- USER TABS -->
+        <nav class="profile-tabs"
+          *ngIf="vm.profile?.role === 'user'">
+            <button class="tab"
+              [class.active]="profileNavigation.selectedTab === 'overview'"
+              (click)="profileNavigation.selectTab('overview')">Overview</button>
+
+            <button class="tab"
+              [class.active]="profileNavigation.selectedTab === 'health'"
+              (click)="profileNavigation.selectTab('health')">Health</button>
+
+            <button class="tab"
+              [class.active]="profileNavigation.selectedTab === 'ehr'"
+              (click)="profileNavigation.selectTab('ehr')">EHR</button>
+
+            <button class="tab"
+              [class.active]="profileNavigation.selectedTab === 'emergency'"
+              (click)="profileNavigation.selectTab('emergency')">Emergency</button>
+    </nav>
+
+    <!-- USER PROFILE CONTENT -->
+    <section *ngIf="vm.profile?.role === 'user'">
+        
+        <ng-container *ngIf="profileNavigation.selectedTab === 'overview'">
+          <app-profile-overview-section
+
+          [userAllergies]="vm.allergies || []"
+          [emergencyMessage]="vm.emergencyMessage"
+          [userProfile]="vm.profile"
+          [emergencyInstructions]="emergencyInstructionsManager.emergencyInstructions"
+          [emergencyMessageName]="(vm.emergencyMessage?.name || vm.profile?.fullName || 'User')"
+          [emergencyInstructionsCombined]="(vm.emergencyMessage?.instructions || '')"
+          [emergencyLocation]="(vm.emergencyMessage?.location || 'Map Location')"
+          [openEditEmergencyMessageModal]="openEditProfileModal"
+
+          (openEditAllergies)="openEditAllergiesModal()"
+          (openEmergencyInfo)="activeModal = 'emergencyInfo'"
+          ></app-profile-overview-section>
+          
+        </ng-container>
+        
+        
+        <!-- Detailed Emergency Info Modal -->
+         <ion-modal [isOpen]="activeModal === 'emergencyInfo'" (didDismiss)="activeModal = null" [initialBreakpoint]="1" [breakpoints]="[0, 1]" [handle]="false">
+          <ng-template>
+            <app-emergency-details-modal
+            [emergencyMessageName]="(vm.emergencyMessage?.name || vm.profile?.fullName || 'User')"
+            [userAllergies]="vm.allergies || []"
+            [instructionEntries]="getEmergencyInstructionEntries()"
+            [emergencyLocation]="(vm.emergencyMessage?.location || 'Map Location')"
+            [emergencyContactName]="vm.profile?.emergencyContactName || ''"
+            [emergencyContactPhone]="vm.profile?.emergencyContactPhone || ''"
+            [dateOfBirth]="vm.profile?.dateOfBirth || ''"
+            [bloodType]="vm.profile?.bloodType || ''"
+            [openEditEmergencyMessageModal]="openEditProfileModal"
+            [openManageInstructionsModal]="openAddInstructionModal"
+            (close)="activeModal = null"
+            (testAudio)="testAudioInstructions()"
+            (addInstruction)="openAddInstructionModal()"
+            (editInstruction)="openEditProfileModal()"
+            (openEditAllergies)="openEditAllergiesModal()"
+            >
+          </app-emergency-details-modal>
+          </ng-template>
+        </ion-modal>
+
+      <ng-container *ngIf="profileNavigation.selectedTab === 'health'">
+        <app-profile-health-section
+
+          [userMedications]="(profileMedicationManager.userMedications$ | async) ?? []"
+          [filteredMedications]="(profileMedicationManager.filteredMedications$ | async) ?? []"
+          [medicationFilter]="profileMedicationManager.medicationFilter"
+          [medicationSearchTerm]="profileMedicationManager.medicationSearchTerm"
+          [isLoading]="(profileMedicationManager.isLoadingMedications$ | async) ?? false"
+
+          [isEmergencyMedicationFn]="isEmergencyMedicationBind"
+          [isExpiringSoonFn]="isExpiringSoonBind"
+        
+          (add)="openAddMedicationModal()"
+          (search)="profileMedicationManager.searchMedications($event)"
+          (clearSearch)="profileMedicationManager.clearMedicationSearch()"
+          (medicationFilterChange)="profileMedicationManager.medicationFilter = $event; profileMedicationManager.filterMedications()"
+          (toggleStatus)="toggleMedicationStatus($event)"
+
+          (edit)="editMedication($event)"
+          (delete)="deleteMedication($event)"
+          (viewImage)="profileMedicationManager.viewMedicationImage($event.url, $event.title)"
+          (viewDetails)="openMedicationDetails($event)"
+          ></app-profile-health-section>
+        </ng-container>
+
+      <!-- Medication Details Modal -->
+       <ion-modal
+      [isOpen]="profileMedicationManager.showMedicationDetailsModal"
+      (didDismiss)="profileMedicationManager.closeMedicationDetails()"
+       cssClass="force-white-modal"
+       [initialBreakpoint]="1"
+      [breakpoints]="[0,1]"
+      [handle]="false">
+       
+       <ng-template>
+        <app-medication-details-modal
+        [medication]="profileMedicationManager.selectedMedication"
+        [isEmergencyMedicationFn]="isEmergencyMedicationBind"
+        [isExpiringSoonFn]="isExpiringSoonBind"
+          (close)="profileMedicationManager.closeMedicationDetails()"
+          (edit)="editMedication($event)"
+          (delete)="deleteMedication($event)">
+        </app-medication-details-modal>
+       </ng-template>
+      </ion-modal>
+
+      <ng-container *ngIf="profileNavigation.selectedTab === 'ehr'">
+        <app-ehr-section-cards
+          [doctorVisits]="profileEHRManager.doctorVisits"
+          [medicalHistory]="profileEHRManager.medicalHistory"
+          [ehrAccessList]="profileEHRManager.ehrAccessList"
+
+          [isLoadingDoctorVisits]="profileEHRManager.isLoadingDoctorVisits"
+          [isLoadingMedicalHistory]="profileEHRManager.isLoadingMedicalHistory"
+          [isDoctorVisitsExpanded]="profileEHRManager.isDoctorVisitsExpanded"
+          [isMedicalHistoryExpanded]="profileEHRManager.isMedicalHistoryExpanded"
+          
+          (addDoctorVisit)="profileEHRManager.openAddDoctorVisitModal(loadMedicalDataFn)"
+          (addMedicalHistory)="profileEHRManager.openAddMedicalHistoryModal(loadMedicalDataFn)"
+
+          (sendAccessRequest)="profileEHRManager.sendAccessRequest(presentToastFn)"
+           (revokeEHRAccess)="profileEHRManager.revokeEHRAccess($event, loadMedicalDataFn, presentToastFn)"
+
+            (openVisitDetails)="profileEHRManager.openVisitDetails($event)"
+            (editDoctorVisit)="profileEHRManager.openEditDoctorVisitModal($event)"
+           (deleteDoctorVisit)="profileEHRManager.deleteDoctorVisit($event.id ?? '', loadMedicalDataFn)"
+            (openMedicalHistoryDetails)="profileEHRManager.openMedicalHistoryDetails($event)"
+            (presentVisitActionsPopover)="profileEHRManager.presentVisitActionsPopover($event)"
+           (presentHistoryActionsPopover)="profileEHRManager.presentHistoryActionsPopover($event, loadMedicalDataFn)"
+        ></app-ehr-section-cards>
+      </ng-container>
+      
+        <!-- EMERGENCY!-->
+
+      <ng-container *ngIf="profileNavigation.selectedTab === 'emergency'">
+
+        <app-emergency-settings-card
+          [emergencySettings]="profileEmergencySettings.emergencySettings"
+          [showVoiceSettings]="profileEmergencySettings.showVoiceSettings"
+          [getAudioSourceClass]="profileVoiceFacade.getAudioSourceClass.bind(profileVoiceFacade)"
+          [getAudioSourceText]="profileVoiceFacade.getAudioSourceText.bind(profileVoiceFacade)"
+          [openVoiceRecordingModal]="profileEmergencySettings.toggleVoiceRecordingModal.bind(profileEmergencySettings)"
+          [saveEmergencySettings]="profileEmergencySettings.saveEmergencySettings.bind(profileEmergencySettings)"
+        >
+
+        </app-emergency-settings-card>
+
+        <!-- Emergency Examples Modal -->
+        <app-emergency-examples-modal
+          [isOpen]="activeModal === 'examples'"
+          (closeModal)="activeModal = null">
+        </app-emergency-examples-modal>
+
+        <app-profile-settings
+          [audioInstructionsEnabled]="profileEmergencySettings.emergencySettings.audioInstructions"
+          [showVoiceSettings]="profileEmergencySettings.showVoiceSettings"
+          [profileVoiceFacade]="profileVoiceFacade"
+          [testAudioSettings]="testAudioInstructions"
+        ></app-profile-settings>
+
+      </ng-container>
+    </section>
+
+    <!-- DOCTOR PROFILE -->
+    <section *ngIf="vm.profile?.role === 'doctor'">
+      <app-doctor-profile
+        [userProfile]="vm.profile"
+        [doctorStats]="doctorStats"
+        [pendingRequests]="profileAccessRequest.pendingRequests"
+        [professionalSettings]="professionalSettings"
+        [recentActivity]="recentActivity"
+        [professionalCredentials]="professionalCredentials"
+        (navigateToDashboard)="profileNavigation.navigateToDoctorDashboard(profileDataLoader.userProfileValue)"
+        (acceptRequest)="profileAccessRequest.acceptAccessRequest($event, refreshAccessRequests)"
+        (declineRequest)="profileAccessRequest.declineAccessRequest($event, refreshAccessRequests)"
+        (settingsChanged)="presentToast('Professional settings saved')"
+        (logoutRequested)="profileNavigation.logout()">
+      </app-doctor-profile>
+    </section>
+
+  </section>
+</ion-content>
+
+<!-- Add Emergency Message Modal -->
+<ion-modal [isOpen]="activeModal === 'emergencyMessage'" (didDismiss)="activeModal = null">
+  <app-edit-emergency-profile-modal
+    [emergencyMessage]="{ name: '', allergies: '', instructions: '', location: '' }"
+    [userProfile]="vm.profile"
+    [mode]="'add'"
+    (saveModal)="saveNewEmergencyMessage($event)"
+    (closeModal)="activeModal = null">
+  </app-edit-emergency-profile-modal>
+</ion-modal>
+
+<!-- Edit Emergency Message Modal (if present) -->
+<ion-modal [isOpen]="profileEmergencySettings.showEditEmergencyMessageModal" (didDismiss)="profileEmergencySettings.showEditEmergencyMessageModal = false">
+  <app-edit-emergency-profile-modal
+    [emergencyMessage]="vm.emergencyMessage"
+    [userProfile]="vm.profile"
+    [mode]="'edit'"
+    (saveModal)="saveEditedEmergencyMessage($event)"
+    (closeModal)="profileEmergencySettings.showEditEmergencyMessageModal = false">
+  </app-edit-emergency-profile-modal>
+</ion-modal>
+
+<!-- Emergency Specific Instructions Modal - Available on all tabs -->
+<ion-modal [isOpen]="emergencyInstructionsManager.showManageInstructionsModal" (didDismiss)="emergencyInstructionsManager.onManageInstructionsDismiss()">
+  <ng-template>
+    <app-emergency-specific-instructions-modal></app-emergency-specific-instructions-modal>
+  </ng-template>
+</ion-modal>
+
+</ng-container>

@@ -1,0 +1,261 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ userRole === 'nurse' ? 'Nurse' : 'Doctor' }} Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <!-- Role Chip - Hide on mobile -->
+      <ion-chip 
+        [color]="userRole === 'nurse' ? 'secondary' : 'primary'"
+        class="role-chip">
+        <ion-icon name="medical-outline"></ion-icon>
+        <ion-label>{{ userRole === 'nurse' ? 'Nurse' : 'Doctor' }}</ion-label>
+      </ion-chip>
+      
+      <!-- Notification Badge Button -->
+      <ion-button 
+        fill="clear" 
+        (click)="showAccessRequests()"
+        [disabled]="pendingRequests.length === 0"
+        size="small">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <ion-badge 
+          *ngIf="pendingRequests.length > 0" 
+          color="danger"
+          class="request-badge">
+          {{ pendingRequests.length }}
+        </ion-badge>
+      </ion-button>
+      
+      <!-- Refresh Button -->
+      <ion-button 
+        fill="clear" 
+        (click)="refreshData()"
+        size="small">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+      
+      <!-- User Menu -->
+      <ion-button 
+        fill="clear" 
+        (click)="openUserMenu($event)"
+        size="small">
+        <ion-icon name="person-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Welcome Section -->
+  <div class="welcome-section">
+    <h2>Welcome, {{ userRole === 'nurse' ? 'Nurse' : 'Dr.' }} {{ doctorName }}</h2>
+    <p>Professional Dashboard - {{ patients.length }} Active Patients</p>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <ion-card class="stat-card">
+      <ion-card-content>
+        <div class="stat-number">{{ stats.totalPatients }}</div>
+        <div class="stat-label">Total Patients</div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="stat-card critical">
+      <ion-card-content>
+        <div class="stat-number">{{ stats.criticalPatients }}</div>
+        <div class="stat-label">Critical Risk</div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="stat-card high-risk">
+      <ion-card-content>
+        <div class="stat-number">{{ stats.highRiskPatients }}</div>
+        <div class="stat-label">High Risk</div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="stat-card pending">
+      <ion-card-content>
+        <!-- Pending follow-ups removed with nextAppointment simplification -->
+        <div class="stat-number">0</div>
+        <div class="stat-label">Follow-ups</div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Access Requests Section -->
+  <div *ngIf="pendingRequests.length > 0" class="access-requests-section">
+    <h3>
+      <ion-icon name="mail-outline"></ion-icon>
+      Pending Access Requests ({{ pendingRequests.length }})
+    </h3>
+    
+    <ion-card *ngFor="let request of pendingRequests" class="access-request-card">
+      <ion-card-header>
+        <div class="request-header">
+          <div class="patient-info">
+            <ion-card-title>{{ request.patientName }}</ion-card-title>
+            <ion-card-subtitle>{{ request.patientEmail }}</ion-card-subtitle>
+          </div>
+          <div class="request-date">
+            <ion-chip color="warning" size="small">
+              <ion-icon name="time-outline"></ion-icon>
+              <ion-label>{{ getRequestAge(request.requestDate) }}</ion-label>
+            </ion-chip>
+          </div>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="request-details">
+          <p class="request-message">{{ request.message }}</p>
+          
+          <div class="visit-info">
+            <ion-chip color="tertiary" size="small">
+              <ion-icon name="medical-outline"></ion-icon>
+              <ion-label>{{ request.specialty }}</ion-label>
+            </ion-chip>
+            <span class="original-name">Added as: "{{ request.originalVisitName }}"</span>
+          </div>
+
+          <div class="expiry-info">
+            <ion-text color="medium">
+              <small>Expires: {{ getExpiryDate(request.expiryDate) }}</small>
+            </ion-text>
+          </div>
+        </div>
+
+        <div class="request-actions">
+          <ion-button 
+            fill="solid" 
+            color="success" 
+            size="small"
+            (click)="acceptAccessRequest(request)">
+            <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+            Accept Request
+          </ion-button>
+          
+          <ion-button 
+            fill="outline" 
+            color="danger" 
+            size="small"
+            (click)="declineAccessRequest(request)">
+            <ion-icon name="close-outline" slot="start"></ion-icon>
+            Decline
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="filters-section">
+    <ion-searchbar 
+      [(ngModel)]="searchTerm"
+      (ionInput)="onSearchChange($event)"
+      placeholder="Search patients...">
+    </ion-searchbar>
+
+    <div class="filter-controls">
+      <ion-select 
+        [(ngModel)]="riskFilter" 
+        (ionChange)="onRiskFilterChange($event)"
+        placeholder="Risk Level">
+        <ion-select-option value="all">All Risk Levels</ion-select-option>
+        <ion-select-option value="critical">Critical</ion-select-option>
+        <ion-select-option value="high">High Risk</ion-select-option>
+        <ion-select-option value="medium">Medium Risk</ion-select-option>
+        <ion-select-option value="low">Low Risk</ion-select-option>
+      </ion-select>
+
+      <ion-select 
+        [(ngModel)]="sortBy" 
+        (ionChange)="onSortChange($event)"
+        placeholder="Sort by">
+        <ion-select-option value="risk">Risk Level</ion-select-option>
+        <ion-select-option value="name">Patient Name</ion-select-option>
+        <ion-select-option value="lastVisit">Last Visit</ion-select-option>
+      </ion-select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-section">
+    <ion-spinner></ion-spinner>
+    <p>Loading patient data...</p>
+  </div>
+
+  <!-- Patient List -->
+  <div *ngIf="!loading && filteredPatients.length > 0" class="patients-list">
+    <ion-card *ngFor="let patient of filteredPatients" class="patient-card">
+      <ion-card-header>
+        <div class="patient-header">
+          <div class="patient-info">
+            <ion-card-title>{{ patient.patientName }}</ion-card-title>
+            <ion-card-subtitle>{{ patient.patientEmail }}</ion-card-subtitle>
+          </div>
+          <div class="risk-badge">
+            <ion-chip [color]="getRiskColor(patient.riskLevel)">
+              <ion-icon [name]="getRiskIcon(patient.riskLevel)"></ion-icon>
+              <ion-label>{{ patient.riskLevel | titlecase }}</ion-label>
+            </ion-chip>
+          </div>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Patient Summary -->
+        <div class="patient-summary">
+          <div class="summary-item">
+            <ion-icon name="medical-outline"></ion-icon>
+            <span>{{ patient.primaryAllergies.join(', ') || 'No allergies recorded' }}</span>
+          </div>
+          
+          <div class="summary-item" *ngIf="patient.lastVisit">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>Last visit: {{ getTimeSinceLastVisit(patient.lastVisit) }}</span>
+          </div>
+          
+          
+          <div class="summary-item">
+            <ion-icon name="documents-outline"></ion-icon>
+            <span>{{ patient.totalVisits }} visit(s)</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="patient-actions">
+          <ion-button 
+            fill="outline" 
+            size="small" 
+            (click)="viewPatientAnalysis(patient)">
+            <ion-icon name="analytics-outline" slot="start"></ion-icon>
+            View Analysis
+          </ion-button>
+          
+          <ion-button 
+            fill="outline" 
+            size="small" 
+            (click)="addTreatmentOutcome(patient)"
+            [disabled]="isNurse">
+            <ion-icon name="medical-outline" slot="start"></ion-icon>
+            {{ isNurse ? 'Add Treatment (Doctor Only)' : 'Add Treatment' }}
+          </ion-button>
+          
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredPatients.length === 0" class="empty-state">
+    <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+    <h3>No Patients Found</h3>
+    <p *ngIf="searchTerm || riskFilter !== 'all'">
+      Try adjusting your search or filter criteria.
+    </p>
+    <p *ngIf="!searchTerm && riskFilter === 'all'">
+      No patients have granted you access to their medical records yet.
+    </p>
+  </div>
+</ion-content>

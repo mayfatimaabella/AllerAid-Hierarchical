@@ -1,0 +1,63 @@
+<ion-tabs>
+  <ion-tab-bar slot="bottom">
+    <!-- Patient Tabs -->
+    <ng-container *ngIf="userRole === 'user'">
+      <ion-tab-button tab="scan" [routerLink]="['/tabs/scan']">
+        <ion-icon name="scan-outline"></ion-icon>
+        <ion-label>Scan</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button tab="home" [routerLink]="['/tabs/home']">
+        <ion-icon name="home-outline"></ion-icon>
+        <ion-label>Pinch</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button tab="smartwatch" [routerLink]="['/tabs/smartwatch']">
+        <ion-icon name="watch-outline"></ion-icon>
+        <ion-label>Smartwatch</ion-label>
+      </ion-tab-button>
+    </ng-container>
+
+    <!-- Buddy Tabs -->
+    <ng-container *ngIf="userRole === 'buddy'">
+      <ion-tab-button tab="responder-dashboard" [routerLink]="['/tabs/responder-dashboard']">
+        <ion-icon name="speedometer-outline"></ion-icon>
+        <ion-label>Dashboard</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="emergencies" [routerLink]="['/tabs/emergencies']">
+        <ion-icon name="warning-outline"></ion-icon>
+        <ion-label>Emergencies</ion-label>
+        <ion-badge *ngIf="emergencyCount > 0" color="danger">{{ emergencyCount }}</ion-badge>
+      </ion-tab-button>
+      <!-- <ion-tab-button tab="patients" [routerLink]="['/tabs/patients']">
+        <ion-icon name="medical-outline"></ion-icon>
+        <ion-label>Patients</ion-label>
+      </ion-tab-button> -->
+      <ion-tab-button tab="buddy" [routerLink]="['/tabs/buddy']">
+        <ion-icon name="mail-outline"></ion-icon>
+        <ion-label>Invitations</ion-label>
+        <ion-badge *ngIf="invitationCount > 0" color="danger">{{ invitationCount }}</ion-badge>
+      </ion-tab-button>
+      <ion-tab-button tab="profile" [routerLink]="['/tabs/profile']">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>Profile</ion-label>
+      </ion-tab-button>
+    </ng-container>
+
+    <!-- Doctor/Nurse Tabs -->
+    <ng-container *ngIf="userRole === 'doctor' || userRole === 'nurse'">
+      <ion-tab-button tab="doctor-dashboard" [routerLink]="['/tabs/doctor-dashboard']">
+        <ion-icon name="medical-outline"></ion-icon>
+        <ion-label>Dashboard</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="smartwatch" [routerLink]="['/tabs/smartwatch']">
+        <ion-icon name="watch-outline"></ion-icon>
+        <ion-label>Smartwatch</ion-label>
+      </ion-tab-button>
+      <ion-tab-button tab="profile" [routerLink]="['/tabs/profile']">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>Profile</ion-label>
+      </ion-tab-button>
+    </ng-container>
+  </ion-tab-bar>
+</ion-tabs>

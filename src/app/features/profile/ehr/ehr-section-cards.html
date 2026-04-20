@@ -1,0 +1,138 @@
+<ng-container *ngIf="selectedTab === 'ehr'">
+
+        <div class="ehr-section-card">
+          <div class="section-title">
+            <div class="title-left">
+              <ion-icon name="medical-outline" color="secondary"></ion-icon>
+              <span>Doctor Visits</span>
+            </div>
+            <ion-button size="small" fill="clear" (click)="openAddDoctorVisitModal()" class="add-visit-btn">
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Add Visit
+            </ion-button>
+          </div>
+
+          <div class="card-content">
+            <!-- Loading state (aligned with Health section) -->
+            <div *ngIf="isLoadingDoctorVisits" class="loading-state">
+              <ion-skeleton-text animated class="skeleton-60"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-40"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-30"></ion-skeleton-text>
+            </div>
+            <div *ngIf="doctorVisits.length > 0">
+              <div *ngFor="let visit of doctorVisits"
+                   class="history-summary-card"
+                   (click)="openVisitDetailsHandler(visit)"
+                   tabindex="0"
+                   role="button"
+                   (keydown.enter)="openVisitDetailsHandler(visit)">
+                <div class="history-summary-header">
+                  <div class="history-summary-info">
+                    <div class="history-title-row">
+                      <h4 class="history-condition">{{ visit.doctorName }}</h4>
+                      <span *ngIf="visit.specialty" class="history-status-pill history-status-other">{{ visit.specialty }}</span>
+                    </div>
+                    <p class="history-date"><ion-icon name="calendar-clear-outline" class="history-date-icon"></ion-icon> {{ visit.visitDate | date:'MMM d, y' }}</p>
+                  </div>
+                  <div class="history-header-actions" (click)="$event.stopPropagation()">
+                    <ion-button fill="clear" size="small" class="menu-toggle-btn history-menu-btn"
+                      (click)="presentVisitActionsPopoverHandler($event, visit); $event.stopPropagation()"
+                      #visitPopoverTrigger title="More actions">
+                      <ion-icon name="ellipsis-vertical-outline" class="history-menu-icon"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+                <div class="history-click-hint">
+                  <ion-icon name="eye-outline" class="history-eye-icon"></ion-icon>
+                  <span class="history-details-inline">View details</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- No data state -->
+            <div *ngIf="!isLoadingDoctorVisits && doctorVisits.length === 0" class="empty-state">
+              <p class="empty-title">No doctor visits recorded</p>
+              <p class="empty-subtitle">Log your consultations and follow-ups</p>
+            </div>
+          </div>
+        </div>
+
+         <!-- Medical History Card -->
+        <div class="ehr-section-card">
+          <div class="section-title">
+            <div class="title-left">
+              <ion-icon name="document-text-outline" color="secondary"></ion-icon>
+              <span>Medical History</span>
+            </div>
+            <ion-button size="small" fill="clear" (click)="openAddMedicalHistoryModal()" class="add-visit-btn">
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Add History
+            </ion-button>
+          </div>
+
+          <div class="card-content">
+            <!-- Loading state -->
+            <div *ngIf="isLoadingMedicalHistory" class="loading-state">
+              <ion-skeleton-text animated class="skeleton-60"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-40"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-30"></ion-skeleton-text>
+            </div>
+            
+            <!-- Data loaded state -->
+            <div *ngIf="!isLoadingMedicalHistory && medicalHistory.length > 0">
+              <div *ngFor="let history of (isMedicalHistoryExpanded ? medicalHistory : (medicalHistory | slice:0:3))" 
+                   class="history-summary-card"
+                   (click)="openMedicalHistoryDetailsHandler(history)"
+                   tabindex="0"
+                   role="button"
+                   (keydown.enter)="openMedicalHistoryDetailsHandler(history)">
+                <div class="history-summary-header">
+                  <div class="history-summary-info">
+                    <div class="history-title-row">
+                      <h4 class="history-condition">{{ history.condition }}</h4>
+                      <span class="history-status-pill" [ngClass]="getHistoryStatusClass(history.status)">{{ history.status | titlecase }}</span>
+                    </div>
+                    <p class="history-date"><ion-icon name="calendar-clear-outline" class="history-date-icon"></ion-icon> Diagnosed: {{ history.diagnosisDate | date:'MMM d, y' }}</p>
+                  </div>
+                  <div class="history-header-actions" (click)="$event.stopPropagation()">
+                    <ion-button fill="clear" size="small" class="menu-toggle-btn history-menu-btn" (click)="presentHistoryActionsPopoverHandler($event, history); $event.stopPropagation()" #popoverTrigger>
+                      <ion-icon name="ellipsis-vertical-outline" class="history-menu-icon"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+                <p class="history-notes" *ngIf="history.notes">{{ history.notes | slice:0:100 }}<span *ngIf="history.notes.length > 100" class="history-notes-more">...</span></p>
+                <div class="history-click-hint">
+                  <ion-icon name="eye-outline" class="history-eye-icon"></ion-icon>
+                  <span class="history-details-inline">View details</span>
+                </div>
+              </div>
+              
+              <div *ngIf="medicalHistory.length > 3" class="view-all-link">
+                <ion-button fill="clear" size="small" (click)="expandMedicalHistoryHandler()">
+                  {{ isMedicalHistoryExpanded ? 'Show less' : 'View all ' + medicalHistory.length + ' conditions' }}
+                  <ion-icon [name]="isMedicalHistoryExpanded ? 'chevron-up-outline' : 'chevron-down-outline'" slot="end"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+
+            <!-- No data state -->
+            <div *ngIf="!isLoadingMedicalHistory && medicalHistory.length === 0" class="empty-state">
+              <p class="empty-title">No medical history recorded</p>
+              <p class="empty-subtitle">Document your medical conditions and diagnoses</p>
+            </div>
+          </div>
+        </div>
+
+        <app-ehr-access-management-card
+          [ehrAccessList]="ehrAccessList"
+          [newProviderEmail]="newProviderEmail"
+          [newProviderName]="newProviderName"
+          [newProviderRole]="newProviderRole"
+          [newProviderLicense]="newProviderLicense"
+          [newProviderSpecialty]="newProviderSpecialty"
+          [newProviderHospital]="newProviderHospital"
+          (sendAccessRequest)="sendAccessRequestHandler()"
+          (revokeAccess)="revokeEHRAccessHandler($event)">
+        </app-ehr-access-management-card>
+
+      </ng-container>

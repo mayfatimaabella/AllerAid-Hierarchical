@@ -1,0 +1,31 @@
+:root {
+	--ion-font-family: 'Comfortaa', sans-serif;
+	--app-color-primary: #036a5d;
+	--app-color-primary-rgb: 3,106,93;
+	--app-color-primary-light: #0a8c7a;
+	--app-color-primary-bg: #e8f2f0;
+	--app-color-surface: #ffffff;
+	--app-color-surface-alt: #f9fbfb;
+	--app-color-border: #d2e7e3;
+	--app-color-border-strong: #9bcfc6;
+	--app-color-text: #1f2d29;
+	--app-color-text-soft: #546b64;
+	--app-color-muted: #8aa7a0;
+	--app-radius-sm: 8px;
+	--app-radius-md: 12px;
+	--app-radius-lg: 16px;
+	--app-shadow-sm: 0 2px 4px rgba(var(--app-color-primary-rgb),0.08);
+	--app-shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+	--app-shadow-lg: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+html,
+body,
+ion-app {
+  font-family: var(--ion-font-family);
+}
+
+html.ios,
+html.md {
+  --ion-font-family: 'Comfortaa', sans-serif;
+}

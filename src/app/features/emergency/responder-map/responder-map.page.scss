@@ -1,0 +1,275 @@
+#map {
+  height: 55vh;
+  max-height: 420px;
+  width: 100%;
+}
+
+.map-container {
+  width: 100%;
+  position: relative;
+  padding-bottom: 16px;
+}
+
+.map-fallback {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--ion-color-light);
+  color: var(--ion-color-medium);
+  text-align: center;
+  padding: 40px 20px;
+  
+  h3 {
+    margin: 16px 0 8px 0;
+    color: var(--ion-color-dark);
+    font-size: 1.2rem;
+  }
+  
+  p {
+    margin: 8px 0;
+    font-size: 1rem;
+    
+    &:last-child {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+  }
+}
+
+.responder-info-card {
+  position: static;
+  margin: 12px 10px 0 10px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.responder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #451d66;
+  }
+  
+  ion-icon {
+    font-size: 24px;
+  color: #036a5d;
+  }
+}
+
+.responder-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  color: #000 !important;
+  transition: none !important;
+  
+  ion-icon {
+    margin-right: 8px;
+    color: #000 !important;
+    transition: none !important;
+  }
+  
+  span {
+    font-size: 16px;
+    color: #000 !important;
+    transition: none !important;
+  }
+}
+
+.responder-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 10px 0;
+  
+  ion-spinner {
+    margin-bottom: 8px;
+  }
+  
+  p {
+    margin: 0;
+    color: #666;
+  }
+}
+
+.nav-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+ion-toolbar {
+  --background: var(--app-color-primary);
+  --color: #ffffff;
+}
+
+/* Leaflet routing UI (panel + instructions) */
+:host ::ng-deep .leaflet-routing-container,
+:host ::ng-deep .leaflet-routing-container * {
+  color: #000 !important;
+}
+
+:host ::ng-deep .leaflet-routing-container {
+  background: #fff !important;
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+.map-container {
+  height: 60vh;
+  width: 100%;
+  position: relative;
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.map-display {
+  height: 100%;
+  width: 100%;
+}
+
+ion-content {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.map-fallback {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--ion-color-light);
+  color: var(--ion-color-medium);
+  text-align: center;
+  padding: 40px 20px;
+  
+  h3 {
+    margin: 16px 0 8px 0;
+    color: var(--ion-color-dark);
+    font-size: 1.2rem;
+  }
+  
+  p {
+    margin: 8px 0;
+    font-size: 1rem;
+    
+    &:last-child {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+  }
+}
+
+.responder-info-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin: -20px 10px 20px 10px;
+  position: relative;
+  z-index: 10;
+}
+
+.responder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #451d66;
+  }
+  
+  ion-icon {
+    font-size: 24px;
+  color: #036a5d;
+  }
+}
+
+.responder-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  color: #000 !important;
+  transition: none !important;
+  
+  ion-icon {
+    margin-right: 8px;
+    color: #000 !important;
+    transition: none !important;
+  }
+  
+  span {
+    font-size: 16px;
+    color: #000 !important;
+    transition: none !important;
+  }
+}
+
+.responder-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 10px 0;
+  
+  ion-spinner {
+    margin-bottom: 8px;
+  }
+  
+  p {
+    margin: 0;
+    color: #666;
+  }
+}
+
+.nav-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+ion-toolbar {
+  --background: var(--app-color-primary);
+  --color: #ffffff;
+}
+
+/* Leaflet routing UI (panel + instructions) */
+:host ::ng-deep .leaflet-routing-container,
+:host ::ng-deep .leaflet-routing-container * {
+  color: #000 !important;
+}
+
+:host ::ng-deep .leaflet-routing-container {
+  background: #fff !important;
+}

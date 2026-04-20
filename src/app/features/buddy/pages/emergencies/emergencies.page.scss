@@ -1,0 +1,192 @@
+ion-toolbar {
+  --background: #036a5d;
+  --color: white;
+}
+
+ion-content {
+  --background: #ffffff !important;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--ion-color-medium);
+}
+
+ion-card ion-card-header ion-card-title {
+  color: black;
+}
+
+.empty-state ion-icon {
+  color: var(--ion-color-success);
+  margin-bottom: 1rem;
+}
+
+.emergency-card {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.emergency-card:last-child {
+  border-bottom: none;
+}
+
+.emergency-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.emergency-header h2 {
+  margin: 0;
+  color: white;
+  font-weight: 600;
+}
+
+.emergency-details {
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.emergency-details p {
+  margin: 0.5rem 0;
+}
+
+.emergency-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+ion-card[color="danger"] {
+  --background: var(--ion-color-danger);
+  --color: white;
+}
+
+ion-card {
+  --background: #f5f5f5;
+  --color: black;
+}
+
+ion-segment.main-segment {
+  --background: #065a4c;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 0;
+  margin-bottom: 2rem;
+}
+
+ion-segment.main-segment ion-segment-button {
+  --background: #e6edec;
+  --color: #036a5d;
+  --color-checked: #ffffff;
+  --indicator-color: #036a5d;
+  --background-checked: #036a5d;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background 0.2s, color 0.2s;
+}
+
+ion-segment.main-segment ion-segment-button.segment-button-checked {
+  --background: #036a5d;
+  --color: white;
+}
+
+ion-segment.main-segment ion-segment-button.segment-button-checked ion-label {
+  color: white !important;
+}
+
+ion-segment.main-segment ion-segment-button ion-label {
+  font-weight: 600;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ion-segment-button ion-label {
+  color: #808080;
+  text-align: center;
+  font-size: .9rem;
+}
+
+ion-segment-button.segment-button-checked ion-label {
+  color: black;
+}
+
+ion-card-content ion-segment-button {
+  --background: #e6edec;
+  --color: #036a5d;
+  --color-checked: #ffffff;
+  --indicator-color: #036a5d;
+  --background-checked: #036a5d;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* Ensure selected label is white in filter segment */
+ion-card-content ion-segment-button[aria-checked="true"]::part(label) { color: #ffffff !important; }
+ion-card-content ion-segment-button[aria-checked="false"]::part(label) { color: #036a5d !important; }
+
+ion-list{
+  background-color: transparent;
+}
+
+ion-item{
+  --background: rgb(234, 234, 234);
+  --color: black;
+  border-radius: 8px;
+}
+
+/* Active Emergency buttons styling */
+.active-emergency-card {
+  --background: #3f7e76 !important;
+  --color: white !important;
+}
+
+.active-emergency-card .emergency-actions ion-button::part(native) {
+  color: white !important;
+}
+
+.active-emergency-card .emergency-actions ion-button {
+  --color: white !important;
+  --border-color: white !important;
+  color: white !important;
+}
+
+.active-emergency-card .emergency-actions ion-button ion-icon {
+  color: white !important;
+}
+
+.active-emergency-card .emergency-actions ion-button[fill="outline"] {
+  --border-color: white !important;
+  --ion-color-light-rgb: 255,255,255 !important;
+}
+
+.active-emergency-card .emergency-actions ion-button[fill="outline"]::part(native) {
+  color: white !important;
+  border-color: white !important;
+}
+
+.active-emergency-card .emergency-actions ion-button[fill="clear"] {
+  --color: white !important;
+  color: white !important;
+}
+
+.active-emergency-card .emergency-actions ion-button[fill="clear"]::part(native) {
+  color: white !important;
+}
+
+.active-emergency-card .emergency-actions ion-button[fill="solid"] {
+  --background: white !important;
+  --color: #036a5d !important;
+  background: white !important;
+  color: #036a5d !important;
+}
+
+.active-emergency-card .emergency-actions ion-button[fill="solid"] ion-icon {
+  color: #036a5d !important;
+}

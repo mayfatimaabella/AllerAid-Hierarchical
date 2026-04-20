@@ -1,0 +1,37 @@
+ion-toolbar {
+  --background: #036a5d;
+  --color: white;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--ion-color-medium);
+}
+
+.empty-state ion-icon {
+  color: var(--ion-color-medium);
+  margin-bottom: 1rem;
+}
+
+.empty-state h2 {
+  color: var(--ion-color-dark);
+  margin: 1rem 0;
+}
+
+.patient-status {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.search-bar-item {
+  margin-bottom: 1rem;
+  --background: var(--ion-color-light);
+  --border-radius: 12px;
+}
+
+.search-bar-input {
+  --padding-start: 16px;
+  --padding-end: 16px;
+}

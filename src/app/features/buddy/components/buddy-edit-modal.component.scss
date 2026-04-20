@@ -1,0 +1,46 @@
+:host {
+  display: block;
+  background: transparent;
+}
+
+
+ion-content{
+  --background: #e8f2f0 !important;
+  color: #000 !important;
+  height: 47vh; /* Set a fixed height, adjust as needed */
+  max-height: 80vh;
+  border-radius: 5px;
+}
+
+ion-item{
+  --background: #cfeee6 !important;
+  color: #000 !important;
+  border-radius: 10px;
+}
+
+.buddy-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buddy-modal-content {
+  width: 90vw;
+  max-width: 400px;
+  height: 55vh; /* Set a fixed height, adjust as needed */
+  max-height: 80vh;
+  z-index: 1001;
+}
+
+ion-button.saveBtn {
+  --background: #036a5d !important;
+  --color: #fff !important;
+}
+

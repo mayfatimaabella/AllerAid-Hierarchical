@@ -1,0 +1,190 @@
+ion-card-title {
+  font-weight: bold !important;
+}
+ion-card ion-item,
+ion-list {
+  --background: #fff !important;
+  background: #fff !important;
+}
+
+
+ion-card {
+  background: #fff !important;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(229, 94, 118, 0.10);
+  border: 1px solid #036a5d;
+  color: #036a5d;
+}
+
+ion-card,
+ion-card * {
+  color: #036a5d !important;
+}
+:host {
+  display: block;
+  background: #ffffff;
+}
+
+ion-header ion-toolbar {
+  --background: #036a5d !important;
+  color: #fff !important;
+}
+
+
+// .wrapper {
+//   position: absolute;
+//   top: 0;
+//   left: 0;
+//   width: 100vw;
+//   height: 100vh;
+//   background-color: #faeaee;
+//   display: flex;
+//   flex-direction: column;
+//   padding: 20px;
+//   z-index: 1;
+//   margin-top: 56px; /* Push content below toolbar (default toolbar height for mobile) */
+// }
+
+ion-content{
+  --background: #ffffff;
+
+}
+
+ion-fab {
+  z-index: 100;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+}
+
+ion-fab-button {
+  --background: #036a5d !important;
+  --color: #fff;
+}
+
+ion-item.search-bar-item {
+  --background: #F1F2F5;
+  border: 0.5px solid #4a5553;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+ion-input.search-bar-input {
+  --background: #F1F2F5;
+  background: #F1F2F5;
+  border-radius: 8px;
+  --color: #272727;
+  color: #272727;
+}
+
+ion-button.search-bar-btn {
+  --background: transparent;
+  --color: #036a5d;
+  border-radius: 8px;
+  margin-left: 8px;
+  box-shadow: none;
+  min-width: 40px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Ensure shadow DOM native element is transparent */
+ion-button.search-bar-btn::part(native) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+ion-button.search-bar-btn ion-icon {
+  color: #036a5d;
+  font-size: 22px;
+}
+
+ion-button[fill="clear"] ion-icon[name="ellipsis-vertical"] {
+  color: #036a5d !important;
+}
+
+.user-info-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  ion-icon {
+    font-size: 32px;
+    color: #451d66;
+  }
+  
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #451d66;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+  }
+}
+
+/* Empty state card: gray background and centered muted text */
+.no-buddies-card {
+  background: #eaeaea !important;
+  border: 1 !important;
+  box-shadow: none !important;
+  border-color: #b7b7b7 !important;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Center the empty state block in the content area */
+.no-buddies-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 60vh; /* keep it centered vertically in most viewports */
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+.no-buddies-card .no-buddies-content {
+  text-align: center;
+  padding: 20px 16px;
+  font-size: 14px;
+}
+
+.no-buddies-icon {
+  font-size: 42px;
+  color: #8a8f94; /* muted gray */
+  display: block;
+  margin: 0 auto 10px auto;
+}
+
+.no-buddies-text {
+  line-height: 1.4;
+}
+
+/* Make sure the empty-state card and its children use dark gray, overriding the global card color */
+.no-buddies-card,
+.no-buddies-card * {
+  color: #6f6f6f !important;
+}
+
+.no-buddies-card ion-icon.no-buddies-icon {
+  color: #6f6f6f !important; /* ensure icon uses gray */
+}
+

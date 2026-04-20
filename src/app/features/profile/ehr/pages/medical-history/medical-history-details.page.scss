@@ -1,0 +1,567 @@
+/* Align details page styling to modal look */
+
+:host {
+  --app-radius-sm: 8px;
+  --app-radius-md: 12px;
+  --app-radius-lg: 16px;
+}
+
+.white-content {
+  background: #fff;
+}
+
+
+.history-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-card {
+  background: #fff;
+  border: 1px solid #e7eef9;
+  border-radius: var(--app-radius-lg);
+  box-shadow: 0 2px 8px rgba(10, 57, 119, 0.06);
+  padding: 12px 14px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.card-header ion-icon { color: var(--ion-color-primary); font-size: 20px; }
+.card-header h2 { font-size: 16px; font-weight: 700; color: #0a3977; letter-spacing: .3px; }
+
+.status-chip {
+  --border-radius: var(--app-radius-sm);
+  height: 24px;
+  font-size: 12px;
+}
+
+.card-content { font-size: 14px; color: #174a88; }
+
+.diagnosis-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.diagnosis-row ion-icon { color: var(--ion-color-primary); }
+.date-info { display: flex; gap: 6px; align-items: baseline; }
+.date-label { font-weight: 600; color: #0a3977; font-size: 12.5px; }
+.date-value { color: #174a88; }
+.time-since { color: #5b7fb3; font-size: 12px; }
+
+.diagnosis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.info-item {
+  background: #f9fbff;
+  border: 1px solid #e7eef9;
+  border-radius: var(--app-radius-md);
+  padding: 10px;
+}
+.info-label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #0a3977; font-weight: 600; }
+.info-label ion-icon { color: var(--ion-color-primary); }
+.info-value { color: #174a88; font-size: 14px; }
+
+.notes-content p { margin: 0; line-height: 1.5; }
+
+.metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+.metadata-item { display: flex; align-items: center; gap: 8px; }
+.metadata-item ion-icon { color: var(--ion-color-primary); }
+.metadata-label { font-weight: 600; font-size: 12.5px; color: #0a3977; }
+.metadata-value { color: #174a88; }
+
+.no-history-data {
+  text-align: center;
+  color: #174a88;
+}
+.no-history-data ion-icon { font-size: 24px; color: var(--ion-color-primary); }
+
+@media (max-width: 480px) {
+  .detail-card { padding: 10px 12px; }
+  .card-header h2 { font-size: 15px; }
+}
+ion-content {
+  --background: #f8f9fa;
+}
+
+.history-details-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+// History Header Card
+.history-header-card {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  color: white;
+  box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3);
+
+  .history-main-info {
+    .condition-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+
+      .status-icon {
+        font-size: 32px;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+      }
+    }
+
+    .history-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      .diagnosis-date {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+
+        ion-icon {
+          font-size: 20px;
+          margin-top: 2px;
+          color: rgba(255, 255, 255, 0.9);
+        }
+
+        .date-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          .date-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+          }
+
+          .date-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+          }
+
+          .time-since {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+          }
+        }
+      }
+
+      .status-chip {
+        --background: rgba(255, 255, 255, 0.2);
+        --color: white;
+        font-weight: 600;
+
+        ion-icon {
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+}
+
+// Detail Cards
+.detail-card {
+  background: white;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+
+  .card-header {
+    background: #f8f9fa;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    ion-icon {
+      font-size: 22px;
+      color: #28a745;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+  }
+
+  .card-content {
+    padding: 20px;
+  }
+}
+
+// Status Details
+.status-details {
+  .status-item {
+    .status-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+
+      ion-icon {
+        font-size: 32px;
+        margin-top: 4px;
+      }
+
+      .status-text {
+        flex: 1;
+
+        h3 {
+          font-size: 20px;
+          font-weight: 600;
+          color: #333;
+          margin: 0 0 8px 0;
+        }
+
+        .status-description {
+          font-size: 15px;
+          line-height: 1.5;
+          color: #666;
+          margin: 0;
+        }
+      }
+    }
+  }
+}
+
+// Diagnosis Grid
+.diagnosis-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  .info-item {
+    padding: 16px;
+    background: #f8fbff;
+    border: 1px solid #e3f2fd;
+    border-radius: 12px;
+
+    .info-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+      font-weight: 500;
+
+      ion-icon {
+        font-size: 16px;
+        color: #28a745;
+      }
+    }
+
+    .info-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+  }
+}
+
+// Notes Content
+.notes-content {
+  p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+}
+
+// Timeline
+.timeline {
+  position: relative;
+  padding-left: 24px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+    padding-left: 40px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .timeline-marker {
+      position: absolute;
+      left: -40px;
+      top: 4px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+
+      &.diagnosis {
+        background: #007bff;
+      }
+
+      &.resolved {
+        background: #28a745;
+      }
+
+      &.current {
+        background: #ffc107;
+        color: #333;
+      }
+    }
+
+    .timeline-content {
+      h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 4px 0;
+      }
+
+      .timeline-date {
+        font-size: 14px;
+        color: #666;
+        margin: 0 0 8px 0;
+        font-weight: 500;
+      }
+
+      .timeline-description {
+        font-size: 14px;
+        color: #555;
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// Metadata Card
+.metadata-card .card-content {
+  .metadata-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+
+    .metadata-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+
+      ion-icon {
+        font-size: 18px;
+        color: #666;
+        flex-shrink: 0;
+      }
+
+      .metadata-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .metadata-label {
+          font-size: 12px;
+          color: #666;
+          font-weight: 500;
+        }
+
+        .metadata-value {
+          font-size: 14px;
+          color: #333;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+// No History Data
+.no-history-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+
+  ion-icon {
+    font-size: 64px;
+    color: #ccc;
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 16px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+}
+
+// Mobile Responsive
+@media (max-width: 768px) {
+  .history-details-container {
+    padding: 12px;
+  }
+
+  .history-header-card {
+    padding: 20px;
+    margin-bottom: 16px;
+
+    .history-main-info {
+      .condition-header {
+        gap: 8px;
+
+        .status-icon {
+          font-size: 28px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+      }
+
+      .history-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+
+        .diagnosis-date {
+          .date-info .date-value {
+            font-size: 15px;
+          }
+        }
+      }
+    }
+  }
+
+  .detail-card {
+    margin-bottom: 12px;
+
+    .card-header {
+      padding: 14px 16px;
+
+      h2 {
+        font-size: 16px;
+      }
+    }
+
+    .card-content {
+      padding: 16px;
+    }
+  }
+
+  .status-details .status-item .status-info {
+    gap: 12px;
+
+    ion-icon {
+      font-size: 28px;
+    }
+
+    .status-text h3 {
+      font-size: 18px;
+    }
+  }
+
+  .timeline {
+    padding-left: 20px;
+
+    .timeline-item {
+      padding-left: 36px;
+
+      .timeline-marker {
+        left: -36px;
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .history-header-card {
+    padding: 16px;
+
+    .history-main-info {
+      .condition-header {
+        h1 {
+          font-size: 22px;
+        }
+      }
+    }
+  }
+
+  .detail-card {
+    .card-header {
+      padding: 12px 14px;
+
+      ion-icon {
+        font-size: 20px;
+      }
+
+      h2 {
+        font-size: 15px;
+      }
+    }
+
+    .card-content {
+      padding: 14px;
+    }
+  }
+
+  .diagnosis-grid .info-item {
+    padding: 12px;
+
+    .info-value {
+      font-size: 15px;
+    }
+  }
+}

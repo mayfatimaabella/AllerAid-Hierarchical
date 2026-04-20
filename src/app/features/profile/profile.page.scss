@@ -1,0 +1,1180 @@
+.profile-header {
+  position: relative;
+  width: 100%;
+  padding: 12px 0;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.profile-header-card {
+  width: 95%;
+  max-width: 400px;
+  background: #77817c;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.profile-header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  background: #7e8a88;
+  border-radius: 50%;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-menu-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #222;
+  padding: 0;
+  
+  &:hover {
+    background: #f0f0f0;
+  }
+  
+  &:active {
+    background: #e0e0e0;
+  }
+  
+  ion-icon {
+    font-size: 20px;
+    color: #222;
+  }
+}
+
+.profile-card {
+  background: #fff;
+  border-radius: 16px;
+  background: #ffffff !important;
+}
+
+// Force selected segment label color to white
+::ng-deep .medication-filters ion-segment-button[aria-checked="true"] ion-label {
+  color: #fff !important;
+}
+::ng-deep .medication-filters ion-segment-button[aria-checked="false"] ion-label {
+  color: #036a5d !important;
+}
+
+.medication-search ion-searchbar {
+  --background: #fff;
+  --color: #222;
+  --placeholder-color: #888;
+  --icon-color: #222;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+.medication-search ion-searchbar .searchbar-input {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.medication-search ion-searchbar .searchbar-search-icon {
+  color: #222 !important;
+}
+
+.medication-filters ion-segment {
+  --background: #065a4c;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 12px;
+}
+
+.medication-filters ion-segment-button {
+  --background: #e6edec;
+  --color: #036a5d;
+  --indicator-color: #036a5d;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background 0.2s, color 0.2s;
+}
+
+ion-toolbar {
+  --background: #036a5d;
+  --color: white;
+}
+
+ion-menu-button {
+  --color: white;
+  font-size: 24px;
+}
+
+ion-content {
+  --background: #ffffff !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.profile-stats {
+  display: flex;
+  justify-content: space-between;
+  background: #036a5d;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin: 10px 12px 0;
+  padding: 12px 0;
+}
+
+.stat {
+  flex: 1;
+  text-align: center;
+  &-label {
+    color: #ffffff;
+    font-size: 15px;
+  }
+  &-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #d8efe7;
+  }
+}
+
+.profile-tabs {
+  display: flex;
+  background: #bfd8d5;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  margin: 10px 0;
+  padding: 8px 16px;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  align-items: center;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  width: 100%;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab {
+  flex: 0 0 auto;
+  background: #bfd8d5;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+  padding: 10px 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #a8ccc9;
+    transform: translateY(-1px);
+  }
+  
+  &.active {
+    background: #036a5d;
+    box-shadow: 0 3px 8px rgba(3,106,93,0.25);
+    color: #ffffff;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-tabs {
+    padding: 8px 10px;
+  }
+  
+  .tab {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
+
+.profile-section {
+  padding: 20px 18px 0;
+}
+
+
+// Decluttered Emergency Instructions Section
+.instructions-section-header {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0a3977;
+  margin-bottom: 12px;
+  margin-top: 18px;
+  padding-left: 2px;
+}
+.instructions-list-scrollable {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
+.instruction-card.decluttered {
+  background: #f8f9fa;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-left: 4px solid #036a5d;
+  padding: 16px 18px;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  
+  &.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      background: #f1f3f4;
+    }
+    
+    &:active {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    }
+  }
+}
+
+.instruction-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #d32f2f;
+  
+  .clickable & {
+    justify-content: space-between;
+  }
+}
+.instruction-text {
+  font-size: 15px;
+  color: #333;
+  margin-left: 28px;
+  line-height: 1.5;
+}
+.no-instructions-card.decluttered {
+  background: #f8f9fa;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-left: 4px solid #036a5d;
+  padding: 16px 18px;
+  margin-bottom: 0;
+}
+@media (max-width: 480px) {
+  .instructions-list-scrollable {
+    max-height: 180px;
+    gap: 10px;
+  }
+  .instruction-card.decluttered, .no-instructions-card.decluttered {
+    padding: 10px 8px;
+    border-radius: 10px;
+  }
+  .instruction-header {
+    font-size: 14px;
+  }
+  .instruction-text {
+    font-size: 14px;
+    margin-left: 24px;
+  }
+}
+/* Instruction Details Modal Styles */
+ion-modal.instruction-details-modal {
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
+}
+
+.instruction-details-content {
+  background: #f5f7f8;
+}
+
+.detail-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 18px;
+  padding: 16px 18px 18px;
+  border: 1px solid #e2e6e9;
+}
+
+.detail-card-header {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 14px;
+  color: #0a3977;
+  gap: 8px;
+  ion-icon { font-size: 18px; }
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e0e5e7;
+  &:last-child { border-bottom: none; }
+  strong { color: #444; font-weight: 600; }
+  span { color: #222; font-weight: 500; }
+}
+
+.instruction-box {
+  background: #fafcfc;
+  border: 1.5px solid #d9534f;
+  border-radius: 10px;
+  padding: 14px 16px;
+  min-height: 70px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  &.empty { color: #777; font-style: italic; border-color: #c2c8cc; }
+}
+
+.action-buttons ion-button { margin-bottom: 10px; font-weight: 600; }
+.action-buttons ion-button:last-child { margin-bottom: 0; }
+
+.usage-tips {
+  margin: 0 0 4px 0;
+  padding-left: 18px;
+  li { margin-bottom: 6px; font-size: 13.5px; line-height: 1.4; }
+  li:last-child { margin-bottom: 0; }
+}
+
+@media (min-width: 520px) {
+  ion-modal.instruction-details-modal { --width: 440px; --margin-top: 40px; --height: auto; --border-radius: 18px; }
+}
+// Emergency Section Title
+.emergency-section-title {
+  font-weight: 700;
+  font-size: 18px;
+  margin: 24px 0 8px;
+  display: flex;
+  align-items: center;
+  color: #222;
+  gap: 6px;
+}
+
+.instructions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.instruction-item {
+  display: flex;
+  align-items: flex-start;
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-left: 4px solid #036a5d;
+  justify-content: space-between;
+}
+.instruction-content {
+  flex: 1;
+}
+.instruction-content strong {
+  color: #d32f2f;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: block;
+}
+.instruction-content p {
+  margin: 0;
+  color: #333;
+  line-height: 1.5;
+}
+.no-instructions {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  margin-top: 12px;
+}
+.emergency-info-card {
+  background: #e6eef6;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin: 16px 0;
+  border: none;
+}
+.emergency-info-card ion-card-header {
+  background: transparent;
+  border-bottom: 1px solid #dbe6f3;
+  padding-bottom: 8px;
+}
+.emergency-info-card ion-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0a3977;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.emergency-info-card ion-card-content {
+  padding: 12px 0 0 0;
+}
+.emergency-message-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.emergency-message-label {
+  font-weight: 700;
+  min-width: 100px;
+  color: #222;
+  font-size: 15px;
+}
+.emergency-message-value {
+  color: #444;
+  font-size: 15px;
+  word-break: break-word;
+}
+@media (max-width: 480px) {
+  .emergency-info-card {
+    border-radius: 12px;
+    margin: 10px 0;
+  }
+  .emergency-message-label, .emergency-message-value {
+    font-size: 14px;
+  }
+  .emergency-info-card ion-card-title {
+    font-size: 16px;
+  }
+  .instruction-item {
+    padding: 10px 8px;
+    border-radius: 8px;
+  }
+}
+.allergies-section {
+  background: #fff !important;
+  background-color: #fff !important;
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e8f2f0;
+  
+  .emergency-label {
+    background: #fff !important;
+    background-color: #fff !important;
+    color: #036a5d !important;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  
+  .allergy-chips {
+    background: #fff !important;
+    background-color: #fff !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .allergy-chip {
+    background: #036a5d;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .no-data {
+    color: #999;
+    font-style: italic;
+    font-size: 14px;
+  }
+}
+
+.allergies-list {
+  font-size: 14px;
+  color: #1f4a42;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.instructions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.instruction-item {
+  background: #f6fbfa;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.instruction-icon {
+  color: #036a5d;
+  font-size: 20px;
+  margin-top: 2px;
+}
+
+.instruction-content {
+  flex: 1;
+}
+
+.instruction-title {
+  font-weight: 600;
+  color: #1f4a42;
+  margin-bottom: 2px;
+  font-size: 15px;
+}
+
+.instruction-text {
+  color: #444;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.no-instructions {
+  color: #666;
+  font-style: italic;
+  padding: 10px;
+  text-align: center;
+}
+
+.location-section {
+  background: #fff !important;
+  background-color: #fff !important;
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e8f2f0;
+  
+  .emergency-label {
+    color: #036a5d !important;
+    background: #fff !important;
+    background-color: #fff !important;
+    opacity: 1;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  
+  .emergency-value {
+    color: #1f4a42 !important;
+    background: #fff !important;
+    background-color: #fff !important;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    ion-icon {
+      color: #036a5d;
+      font-size: 18px;
+    }
+  }
+}
+
+.location-value {
+  color: #036a5d;
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.emergency-message-value {
+  color: #444;
+  font-size: 15px;
+  word-break: break-word;
+}
+@media (max-width: 480px) {
+  .emergency-info-card {
+    border-radius: 12px;
+    margin: 10px 0;
+  }
+  .emergency-message-label, .emergency-message-value {
+    font-size: 14px;
+  }
+  .emergency-info-card ion-card-title {
+    font-size: 16px;
+  }
+}
+
+// Cards Base - PARTIAL (medication styles moved to component)
+/* Medication and emergency setting card styles removed - handled in component */
+
+// EHR Section - REMOVED (~400 lines of unused styles)
+
+// Emergency Instruction Details Modal
+.instruction-details-container {
+  padding: 8px;
+}
+
+.detail-section {
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f1f3f4 100%);
+  border-bottom: 1px solid #e9ecef;
+  
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+.detail-content {
+  padding: 20px;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: flex-start;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #666;
+  min-width: 80px;
+  margin-right: 12px;
+}
+
+.detail-value {
+  color: #333;
+  flex: 1;
+}
+
+.instruction-full-text {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+  border-left: 4px solid #036a5d;
+}
+
+.action-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tips-list {
+  margin: 0;
+  padding-left: 16px;
+  
+  li {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    line-height: 1.5;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Help text styling
+.help-text {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  
+  ion-icon {
+    font-size: 14px;
+    color: #036a5d;
+  }
+}
+
+/* DOCTOR PROFILE STYLES - UNUSED */
+/* Removed: doctor-dashboard-card, buddy-dashboard-card, professional-info-card styles ~400 lines */
+
+
+
+/* Emergency Specific Instructions section moved to emergency-settings-card.component.scss */
+
+// Emergency setting adjustments
+.emergency-setting-card {
+  .emergency-setting-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .emergency-setting-status {
+    margin-top: 8px;
+    
+    .audio-source {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+
+      &.custom-voice {
+        background: var(--ion-color-success-tint);
+        color: var(--ion-color-success);
+      }
+
+      &.default-voice {
+        background: var(--ion-color-light);
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+}
+
+// Emergency Info Modal Styles
+.emergency-info-modal {
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #054d45;
+    margin-bottom: 4px;
+  }
+
+  /* Lightweight info cards replacing ion-item rows for summary blocks */
+  .modal-info-card {
+    background: #ffffff;
+    border: 1px solid #dbe6e4;
+    border-left: 4px solid #036a5d;
+    border-radius: 12px;
+    padding: 14px 16px 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    position: relative;
+    transition: box-shadow .2s ease, transform .2s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    h3 {
+      margin: 0 0 6px 0;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      color: #036a5d;
+    }
+
+    .value, p.value {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: #1f4a42;
+      word-break: break-word;
+    }
+
+    &.allergies-card {
+      .chips-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 2px 0 0;
+      }
+    }
+
+    &.location-card {
+      border-left-color: #0a6979;
+      h3 { color: #0a6979; }
+    }
+
+    .no-data { color: rgba(31,74,66,0.6); font-style: italic; }
+  }
+
+  /* Default modal items: ensure white background (non-header content rows) */
+  ion-item:not(.modal-header-item) {
+    --background: #ffffff;
+    --color: #1f4a42;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    --inner-padding-start: 14px;
+    --inner-padding-end: 14px;
+    h3 { margin: 0 0 2px 0; font-size: 13px; font-weight: 700; letter-spacing: .4px; color: #036a5d; }
+    p { margin: 0; font-size: 13px; line-height: 1.45; color: #333; }
+  }
+
+  /* Restrict dark header styling ONLY to items explicitly marked with .modal-header-item
+     to prevent broad leakage of black backgrounds elsewhere. */
+  ion-item.modal-header-item {
+    --background: #054d45; /* use brand deep teal instead of pure black */
+    --color: #ffffff;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    --inner-padding-start: 12px;
+    --inner-padding-end: 12px;
+    h3 { margin: 0 0 4px 0; font-size: 14px; font-weight: 700; letter-spacing: .5px; }
+    p { margin: 0; font-size: 13px; line-height: 1.4; color: #e6f4f2; }
+  }
+
+  /* Safety: ensure any ion-item inside the emergency info card stays light */
+  .emergency-info-card ion-item {
+    --background: #fff !important;
+    --color: #036a5d;
+  }
+
+
+/* High-specificity overrides to kill any lingering black backgrounds inherited via Ionic variables */
+.emergency-info-card .allergies-section,
+.emergency-info-card .location-section,
+.emergency-info-card .emergency-section {
+  background: #fff !important;
+  --background: #fff !important;
+}
+  .instructions-detail-list {
+    margin-top: 8px;
+  }
+  .instruction-entry {
+    background: #f7fafa;
+    border: 1px solid #d9e3e1;
+    border-radius: 10px;
+    padding: 12px 14px 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    position: relative;
+  }
+  .instruction-entry-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0a3977;
+    margin-bottom: 6px;
+    ion-icon { font-size: 16px; }
+  }
+  .instruction-entry-text {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #333;
+    white-space: pre-wrap;
+  }
+  .instruction-entry:last-child { margin-bottom: 24px; }
+
+  .modal-actions ion-button {
+    --border-radius: 10px;
+    font-weight: 600;
+  }
+  .modal-actions ion-button:not(:last-child) {
+    margin-bottom: 4px;
+  }
+}
+
+  /* Emergency Details Modal Toolbar: force white foreground (title, icons, buttons) */
+  .emergency-details-toolbar {
+    --color: #ffffff !important;
+    color: #ffffff !important;
+    ion-title { color: #ffffff !important; }
+    ion-buttons, ion-button, ion-icon {
+      --color: #ffffff !important;
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      stroke: #ffffff !important;
+    }
+
+    /* Force white background for emergency message summary card (prevent dark theme bleed) */
+    .emergency-message-card {
+      background: #ffffff !important;
+      border: 1px solid #dbe6e4;
+      border-radius: 12px;
+      padding: 14px 16px 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .emergency-message-card.decluttered { /* keep decluttered variant consistent */
+      background: #ffffff !important;
+      border-left: 4px solid #036a5d;
+      padding-top: 18px;
+      padding-bottom: 6px;
+    }
+    .emergency-message-row {
+      display: flex;
+      flex-direction: column;
+      padding: 0 0 10px 0;
+      margin: 0 0 10px 0;
+      border-bottom: 1px solid rgba(3,106,93,0.15);
+      &:last-child { margin-bottom: 0; border-bottom: none; }
+    }
+    .emergency-message-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      font-weight: 600;
+      color: #036a5d !important;
+      margin: 0 0 4px 0;
+    }
+    .emergency-message-value {
+      font-size: 14px;
+      line-height: 1.4;
+      color: #1f4a42 !important;
+      word-break: break-word;
+    }
+    .emergency-message-card * { background: transparent !important; }
+
+    /* Edit Emergency Message Modal: enforce white backgrounds */
+    .edit-emergency-message-modal {
+      --background: #ffffff !important;
+      background: #ffffff !important;
+      padding-top: 4px;
+
+      ion-item {
+        --background: #ffffff !important;
+        background: #ffffff !important;
+        --color: #1f4a42;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        --inner-padding-start: 14px;
+        --inner-padding-end: 14px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        border: 1px solid #e1ecea;
+      }
+
+      /* Deep override to ensure no dark background bleeds into modal fields */
+      ::ng-deep .edit-emergency-message-modal ion-item {
+        --background: #ffffff !important;
+        background: #ffffff !important;
+      }
+
+      /* FULL WHITE Edit Emergency Message Modal */
+      ::ng-deep .edit-emergency-modal-white {
+        --background: #ffffff !important;
+        --ion-background-color: #ffffff !important;
+        background: #ffffff !important;
+      }
+      ::ng-deep .edit-emergency-modal-white .modal-wrapper,
+      ::ng-deep .edit-emergency-modal-white .ion-page,
+      ::ng-deep .edit-emergency-content-white {
+        --background: #ffffff !important;
+        background: #ffffff !important;
+      }
+      /* Toolbar */
+      .edit-emergency-toolbar-white {
+        --background: #ffffff !important;
+        background: #ffffff !important;
+        --color: #1f1f1f !important;
+        color: #1f1f1f !important;
+        border-bottom: 1px solid #e5eceb;
+        ion-title { font-weight: 700; letter-spacing: .3px; }
+        ion-button, ion-icon { --color: #036a5d !important; color: #036a5d !important; }
+      }
+      /* Content items */
+      .edit-emergency-content-white ion-item {
+        --background: #ffffff !important;
+        background: #ffffff !important;
+        --color: #1f4a42;
+        border: 1px solid #e3edeb;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      }
+      .edit-emergency-content-white ion-label[position="stacked"] {
+        color: #036a5d !important;
+        font-weight: 600;
+        letter-spacing: .4px;
+        font-size: 13px;
+      }
+      .edit-emergency-content-white ion-input,
+      .edit-emergency-content-white ion-textarea { --color: #1f4a42; color: #1f4a42 !important; }
+      .edit-emergency-content-white ion-textarea::part(native) { background: #ffffff !important; }
+      .edit-emergency-content-white ion-button {
+        --background: #036a5d !important;
+        background: #036a5d !important;
+        --color: #ffffff !important;
+        color: #ffffff !important;
+        font-weight: 600;
+        border-radius: 14px;
+        margin-top: 4px;
+      }
+
+      /* Stronger white background enforcement for entire modal */
+      ::ng-deep .edit-emergency-modal-white ion-content {
+        --background: #ffffff !important;
+        background: #ffffff !important;
+      }
+      ::ng-deep .edit-emergency-modal-white .inner-scroll {
+        --background: #ffffff !important;
+        background: #ffffff !important;
+      }
+      ::ng-deep .edit-emergency-modal-white ion-item {
+        --background: #ffffff !important;
+        background: #ffffff !important;
+        --color: #1f4a42 !important;
+        color: #1f4a42 !important;
+      }
+      ::ng-deep .edit-emergency-modal-white ion-item::part(native) {
+        background: #ffffff !important;
+      }
+
+      /* Card styling for Edit Emergency Message modal */
+      .edit-emergency-card {
+        background: #ffffff !important;
+        border: 1px solid #dbe6e4;
+        border-left: 5px solid #036a5d;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        margin: 4px 0 18px;
+        ion-card-header {
+          background: #f2f8f7;
+          padding: 14px 18px 10px;
+          border-bottom: 1px solid #e3eeec;
+        }
+        .edit-emergency-title {
+          font-size: 16px;
+          font-weight: 700;
+          color: #036a5d;
+          margin: 0;
+        }
+        ion-card-content { padding: 12px 14px 18px; }
+        ion-item { 
+          margin-bottom: 14px; 
+          border-radius: 10px; 
+          box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+          border: 1px solid #e1ecea;
+        }
+        ion-button { font-weight: 600; letter-spacing: .3px; }
+      }
+
+      ion-label[position="stacked"] {
+        color: #036a5d !important;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: .4px;
+        margin-bottom: 6px;
+      }
+
+      ion-input, ion-textarea {
+        --color: #1f4a42;
+        color: #1f4a42 !important;
+      }
+
+      ion-textarea::part(native) {
+        background: #ffffff !important;
+      }
+    }
+  ion-button::part(native) { color: #ffffff !important; }
+  ion-icon { color: #ffffff !important; }
+}
+
+/* Profile Menu Popover Styling */
+ion-popover {
+  --width: 200px;
+  --max-width: 200px;
+  --max-height: auto;
+  --border-radius: 12px;
+  --background: #ffffff;
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+ion-popover ion-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+ion-popover ion-list {
+  margin: 0;
+  padding: 8px 0;
+}
+
+ion-popover ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  min-height: 44px;
+}
+
+ion-popover ion-label {
+  margin: 0;
+  font-size: 14px;
+  color: inherit;
+  font-weight: 500;
+}

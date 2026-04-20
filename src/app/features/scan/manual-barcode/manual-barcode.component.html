@@ -1,0 +1,17 @@
+<div class="manual-barcode-modal-backdrop" (click)="closeModal()">
+  <div class="manual-barcode-modal-content" (click)="$event.stopPropagation()">
+    <ion-item class="ion-margin-top">
+      <ion-label position="stacked">Enter Barcode Manually</ion-label>
+      <ion-input [(ngModel)]="manualBarcode" placeholder="e.g. 737628064502"></ion-input>
+    </ion-item>
+
+    <ion-button expand="block" id="searchBtn" (click)="onSubmit()">
+      <ion-icon slot="start" name="search-outline"></ion-icon>
+      Search Product
+    </ion-button>
+    
+    <ion-button expand="block" fill="outline" style="outline-color: #036a5d;" (click)="closeModal()">
+      Cancel
+    </ion-button>
+  </div>
+</div>

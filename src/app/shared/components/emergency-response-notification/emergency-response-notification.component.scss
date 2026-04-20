@@ -1,0 +1,119 @@
+.notification-container {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 9999;
+  pointer-events: none; /* Makes the container pass through clicks */
+}
+
+.notification-content {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 340px;
+  overflow: hidden;
+  pointer-events: auto; /* Allows interaction with the content */
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+.notification-header {
+  background: #036a5d;
+  color: white;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  
+  ion-icon {
+    font-size: 24px;
+    margin-right: 8px;
+  }
+  
+  h2 {
+    flex: 1;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.notification-body {
+  padding: 16px;
+  
+  p {
+    margin: 0 0 8px;
+    font-size: 14px;
+  }
+
+  .responder-text {
+    color: #000;
+
+    strong {
+      color: #000;
+    }
+  }
+  
+  .eta-info {
+    display: flex;
+    gap: 12px;
+    margin: 12px 0;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    
+    .eta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #036a5d;
+      
+      ion-icon {
+        font-size: 16px;
+      }
+    }
+  }
+  
+  .fallback-time {
+    font-style: italic;
+    color: #666;
+  }
+  
+  .map-button {
+    --background: #036a5d;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  
+  ion-button {
+    --background: #036a5d;
+    margin-top: 12px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(229, 94, 118, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(229, 94, 118, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(229, 94, 118, 0);
+  }
+}

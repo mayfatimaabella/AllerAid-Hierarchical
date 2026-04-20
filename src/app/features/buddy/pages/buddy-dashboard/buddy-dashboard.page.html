@@ -1,0 +1,152 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Buddy Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="debugBuddyRelations()" color="secondary">
+        <ion-icon name="bug-outline"></ion-icon>
+        <ion-label>Debug</ion-label>
+      </ion-button>
+      <ion-button fill="clear" (click)="fixAcceptedInvitations()" color="warning">
+        <ion-icon name="build-outline"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="refreshDashboard()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Active Emergencies Alert -->
+  <ion-card *ngIf="activeEmergencies.length > 0" color="danger">
+    <ion-card-header>
+      <ion-card-title style="display: flex; align-items: center; gap: 8px; color: white;">
+        <ion-icon name="warning" size="large"></ion-icon>
+        Active Emergency ({{ activeEmergencies.length }})
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div *ngFor="let emergency of activeEmergencies" class="emergency-item">
+        <h3>{{ emergency.userName }}</h3>
+        <p><strong>Allergies:</strong> {{ emergency.allergies?.join(', ') || 'None listed' }}</p>
+        <p *ngIf="emergency.instruction"><strong>Instructions:</strong> {{ emergency.instruction }}</p>
+        <p><ion-icon name="location-outline"></ion-icon> 
+           {{ getLocationDisplay(emergency.location) }}
+        </p>
+        <p><ion-icon name="time-outline"></ion-icon> {{ getTimeAgo(emergency.timestamp) }}</p>
+        
+        <!-- I'm On My Way Button -->
+        <ion-button 
+          expand="block" 
+          fill="solid" 
+          color="light" 
+          (click)="respondToEmergency(emergency)"
+          *ngIf="emergency.status === 'active'">
+          <ion-icon name="car-outline" slot="start"></ion-icon>
+          I'm On My Way
+        </ion-button>
+        
+        <!-- Already Responding -->
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          color="light" 
+          (click)="respondToEmergency(emergency)"
+          *ngIf="emergency.status === 'responding' && emergency.responderId">
+          <ion-icon name="map-outline" slot="start"></ion-icon>
+          View Location
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- My Patients -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title style="display: flex; align-items: center; gap: 8px;">
+        <ion-icon name="people-outline"></ion-icon>
+        My Patients ({{ patients.length }})
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list *ngIf="patients.length > 0">
+        <ion-item *ngFor="let patient of patients" (click)="viewPatientDetails(patient)">
+          <ion-avatar slot="start">
+            <img [src]="patient.avatar || 'assets/icon/favicon.png'" [alt]="patient.fullName">
+          </ion-avatar>
+          <ion-label>
+            <h2>{{ patient.fullName }}</h2>
+            <p>{{ patient.relationship }}</p>
+            <ion-badge [color]="getStatusColor(patient.lastSeen)">
+              {{ getLastSeenText(patient.lastSeen) }}
+            </ion-badge>
+          </ion-label>
+          <ion-button fill="clear" slot="end" (click)="quickCall(patient, $event)">
+            <ion-icon name="call-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
+      <div *ngIf="patients.length === 0" class="empty-state">
+        <ion-icon name="people-outline" size="large"></ion-icon>
+        <p>No patients yet</p>
+        <p>Accept buddy invitations to start monitoring patients</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Quick Actions -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title style="display: flex; align-items: center; gap: 8px;">
+        <ion-icon name="flash-outline"></ion-icon>
+        Quick Actions
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6">
+            <ion-button expand="block" fill="outline" (click)="checkInvitations()">
+              <ion-icon name="mail-outline" slot="start"></ion-icon>
+              <ion-badge *ngIf="invitationCount > 0" color="danger" slot="end">{{ invitationCount }}</ion-badge>
+              Invitations
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button expand="block" fill="outline" (click)="viewEmergencyHistory()">
+              <ion-icon name="time-outline" slot="start"></ion-icon>
+              History
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Recent Alerts -->
+  <ion-card *ngIf="recentAlerts.length > 0">
+    <ion-card-header>
+      <ion-card-title style="display: flex; align-items: center; gap: 8px;">
+        <ion-icon name="notifications-outline"></ion-icon>
+        Recent Alerts
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let alert of recentAlerts">
+          <ion-label>
+            <h3>{{ alert.patientName }}</h3>
+            <p>{{ alert.type }}</p>
+            <p>{{ alert.timestamp | date:'short' }}</p>
+          </ion-label>
+          <ion-badge slot="end" [color]="getAlertColor(alert.status)">
+            {{ alert.status }}
+          </ion-badge>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

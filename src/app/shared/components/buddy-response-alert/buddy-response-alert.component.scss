@@ -1,0 +1,110 @@
+.alert-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.alert-icon {
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.alert-message {
+  margin-bottom: 24px;
+}
+
+.alert-message h2 {
+  color: var(--ion-color-primary);
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.buddy-name {
+  font-size: 1.1rem;
+  color: var(--ion-color-medium);
+  margin: 0;
+}
+
+.emergency-info {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-row ion-icon {
+  margin-right: 12px;
+  min-width: 24px;
+}
+
+.accessibility-info {
+  width: 100%;
+  margin-bottom: 24px;
+  background-color: var(--ion-color-light);
+}
+
+.accessibility-text {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin: 0;
+}
+
+.accessibility-text ion-icon {
+  margin-right: 8px;
+}
+
+.button-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-button {
+  height: 48px;
+  font-weight: 500;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .alert-message h2 {
+    color: var(--ion-color-primary-contrast);
+  }
+  
+  .emergency-info {
+    border: 2px solid var(--ion-color-primary);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .alert-icon {
+    animation: none;
+  }
+}

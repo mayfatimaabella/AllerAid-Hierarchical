@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Track Responder</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()" title="Close">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true">
+  <div class="map-container">
+    <!-- Leaflet Maps -->
+    <div #map id="patient-map" *ngIf="mapAvailable"></div>
+    
+    <!-- Fallback when map is not available -->
+    <div class="map-fallback" *ngIf="!mapAvailable">
+      <ion-icon name="map-outline" size="large" color="medium"></ion-icon>
+      <h3>Map view unavailable</h3>
+      <p>{{ responderName }} is on the way to your location</p>
+      <p><em>Unable to load map. Please check your internet connection.</em></p>
+    </div>
+    
+    <div class="responder-info-card">
+      <div class="responder-header">
+        <h2>{{ responderName }} is responding</h2>
+        <ion-icon name="navigate-circle-outline"></ion-icon>
+      </div>
+      
+      <div class="responder-details" *ngIf="estimatedArrivalTime">
+        <div class="detail-item">
+          <ion-icon name="time-outline"></ion-icon>
+          <span>ETA: {{ estimatedArrivalTime }}</span>
+        </div>
+        <div class="detail-item">
+          <ion-icon name="location-outline"></ion-icon>
+          <span>Distance: {{ responderDistance }}</span>
+        </div>
+      </div>
+      
+      <div class="responder-message" *ngIf="!estimatedArrivalTime">
+        <ion-spinner name="dots"></ion-spinner>
+        <p>Calculating arrival time...</p>
+      </div>
+
+      <div class="nav-actions">
+        <ion-button expand="block" fill="outline" color="primary" (click)="openExternalNavigation()">
+          <ion-icon slot="start" name="open-outline"></ion-icon>
+          Open in Google Maps
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,131 @@
+ion-toolbar {
+  --background: #035348 !important;
+  color: #fff !important;
+}
+
+ion-content{
+  --background: linear-gradient(0deg, #013b34 0%, #036a5d 100% ) !important;
+}
+
+ion-segment-button.segment-button-checked {
+  background: #fff !important;
+  color: #035348 !important;
+  border-radius: 5px;
+}
+
+ion-segment-button.segment-button-checked ion-label {
+  color: #035348 !important;
+}
+
+ion-segment-button ion-label {
+  font-size: 11px !important;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: normal;
+  text-align: center;
+}
+
+.invite-section, .received-section, .sent-section {
+  margin-top: 20px;
+}
+
+.invitation-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.invitation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.sender-info, .recipient-info {
+  flex: 1;
+}
+
+.sender-info h4, .recipient-info h4 {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.sender-email, .recipient-email {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.invitation-message {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  font-style: italic;
+  color: #555;
+  border-left: 3px solid var(--ion-color-primary);
+}
+
+.invitation-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #888;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.invitation-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .invitation-actions {
+    flex-direction: column;
+  }
+  
+  .invitation-actions ion-button {
+    width: 100%;
+  }
+}
+
+ion-item {
+  --background: #e0f7f5 !important;
+  color: #000 !important;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+// .send-invite-btn {
+//   --background: #ffffff !important;
+//   color: #036a5d !important;
+// }
+
+ion-button[type="submit"] {
+  --background: #fff !important;
+  --color: #035348 !important;
+  font-weight: 600;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(3, 83, 72, 0.15);
+  border-radius: 8px;
+}

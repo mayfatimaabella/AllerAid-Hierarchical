@@ -1,0 +1,170 @@
+ion-content{
+  --background: #fff !important;
+  color: #000 !important;
+}
+
+// Modal drag handle
+.modal-drag-handle {
+  width: 40px;
+  height: 4px;
+  background: #ccc;
+  border-radius: 2px;
+  margin: 10px auto;
+}
+
+// Product details
+.product-details {
+  padding: 16px;
+}
+
+.brand-text {
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0;
+  font-weight: 500;
+}
+
+// Allergen Status Styling
+.status-message {
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  ion-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  &.safe {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+
+    ion-icon {
+      color: #28a745;
+    }
+  }
+
+  &.warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+
+    ion-icon {
+      color: #ffc107;
+    }
+  }
+}
+
+.allergen-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+// Ingredients section
+.ingredients-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+
+  .ingredients-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #666;
+    margin-top: 8px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid #036a5d;
+  }
+}
+
+// Product image
+.product-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 10px;
+  margin-top: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #2b2b2b;
+}
+
+.product-image {
+  width: 100%;
+  max-width: 250px;
+  height: auto;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+// Ion component styling
+ion-modal {
+  --background: #ffffff;
+  --border-radius: 20px 20px 0 0;
+}
+
+ion-header {
+  --background: #ffffff !important;
+  --border-bottom: none !important;
+}
+
+ion-toolbar {
+  --background: transparent !important;
+  --border-bottom: 1px solid #f0f0f0;
+  padding: 8px 0;
+}
+
+ion-title {
+  color: #036a5d;
+  font-weight: bold;
+}
+
+ion-item {
+  --background: #e9eeec !important;
+  --color: #000;
+  border: 0.5px solid #036a5d;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+
+ion-label {
+  color: #036a5d !important;
+  font-weight: 600;
+}
+
+ion-button {
+  --background: #036a5d !important;
+  --color: #fff !important;
+  margin-top: 16px;
+}
+
+// Responsive
+@media (max-width: 480px) {
+  .product-details {
+    padding: 12px;
+  }
+
+  .status-message {
+    padding: 12px;
+  }
+
+  .product-image {
+    max-width: 200px;
+  }
+}

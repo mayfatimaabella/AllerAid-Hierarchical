@@ -1,0 +1,40 @@
+ion-icon[name="create-outline"] {
+  color: #3a2f31 !important;
+}
+:host {
+  display: block;
+  background: transparent;
+}
+
+
+ion-list{
+  --background: #e8f2f0 !important;
+  background: #e8f2f0 !important;
+  color: #000 !important;
+  border-radius: 5px;
+}
+
+ion-item{
+  --background: #e8f2f0 !important;
+  color: #000 !important;
+}
+
+.buddy-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buddy-modal-content {
+  width: 80vw;
+  max-width: 600px;
+}
+
+

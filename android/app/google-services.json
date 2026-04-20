@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "125756003828",
+    "project_id": "alleraid2",
+    "storage_bucket": "alleraid2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:125756003828:android:bbe6f53ac3f0fd0b3a95a1",
+        "android_client_info": {
+          "package_name": "io.ionic.starter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDufMC90MIPg-EdMWbM916a7KQIOhmHDA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

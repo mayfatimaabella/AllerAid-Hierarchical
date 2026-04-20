@@ -1,0 +1,118 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="toolbar--teal">
+    <ion-title>Medication Details</ion-title>
+    <ion-buttons slot="start">
+      <ion-button class="close-action-btn" fill="clear" (click)="close.emit()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button class="close-action-btn" fill="clear" (click)="$event.stopPropagation(); presentMedicationActions(medication)">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding white-content" [fullscreen]="true">
+  <div *ngIf="medication">
+    <div class="header">
+      <div class="title-row">
+        <div class="medication-icon">
+          <ion-icon name="medkit-outline"></ion-icon>
+        </div>
+        <div class="title-text">
+          <h2 class="title">{{ medication.name }}</h2>
+          <p class="subtitle" *ngIf="medication.frequency">
+            {{ medication.frequency }}
+          </p>
+        </div>
+      </div>
+      <div class="chips">
+        <ion-chip [color]="getStatusColor()" outline>
+          <ion-icon [name]="getStatusLabel() === 'Active' ? 'checkmark-circle' : 'close-circle'"></ion-icon>
+          <ion-label>{{ getStatusLabel() }}</ion-label>
+        </ion-chip>
+
+        <ion-chip color="danger" outline *ngIf="isEmergency()">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <ion-label>Emergency</ion-label>
+        </ion-chip>
+        <ion-chip color="warning" outline *ngIf="isExpiringSoon()">
+          <ion-icon name="hourglass-outline"></ion-icon>
+          <ion-label>Expiring Soon</ion-label>
+        </ion-chip>
+      </div>
+    </div>
+
+    <div class="details-card">
+      <div class="section">
+        <h3 class="section-label">Dosage &amp; Schedule</h3>
+        <div class="row">
+          <ion-icon name="flash-outline"></ion-icon>
+          <b>Dosage:</b>
+          <span>{{ medication?.dosage || 'Not provided' }}</span>
+        </div>
+        
+        <div class="row">
+          <ion-icon name="cube-outline"></ion-icon>
+          <b>Pills Remaining:</b> 
+          <span *ngIf="medication?.quantity !== undefined; else noPills">
+            {{ calculateRemainingPills() }} (of {{ medication.quantity }})
+          </span>
+          <ng-template #noPills>
+            <span>No data available</span>
+          </ng-template>
+        </div>
+
+        <div class="row">
+          <ion-icon name="time-outline"></ion-icon>
+          <b>Frequency/Duration:</b>
+          <span>{{ medication?.frequency || 'Not set' }}</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-label">Treatment Dates</h3>
+        <div class="row">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <b>Start:</b>
+          <span>
+            {{ medication?.startDate ? (medication.startDate | date:'mediumDate') : 'Not set' }}
+          </span>
+        </div>
+        <div class="row">
+          <ion-icon name="warning-outline"></ion-icon>
+          <b>Ends:</b>
+          <span>
+            {{ medication?.expiryDate ? (medication.expiryDate | date:'mediumDate') : 'Not set' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-label">Additional Info</h3>
+        <div class="row">
+          <ion-icon name="chatbubble-outline"></ion-icon>
+          <b>Notes:</b>
+          <span>{{ medication?.notes || 'No notes added' }}</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-label">Attachments</h3>
+        <div class="row image-row">
+          <ion-icon name="images-outline"></ion-icon>
+          <b>Images:</b>
+          <div class="image-links" *ngIf="medication?.prescriptionImageUrl || medication?.medicationImageUrl; else noImages">
+            <a *ngIf="medication.prescriptionImageUrl" [href]="medication.prescriptionImageUrl" target="_blank">Prescription</a>
+            <a *ngIf="medication.medicationImageUrl" [href]="medication.medicationImageUrl" target="_blank">Photo</a>
+          </div>
+          <ng-template #noImages>
+            <span>No images added</span>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

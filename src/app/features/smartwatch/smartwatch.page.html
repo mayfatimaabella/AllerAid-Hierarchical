@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Smartwatch</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Hardcoded Health Stats Section -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Health Stats</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <section class="health-stats-section">
+        <article class="smartwatch-card">
+          <header class="smartwatch-info">
+            <img src="assets/icon/smartwatch.png" alt="Smart Watch" style="width: 48px; height: 48px; margin-right: 16px;" />
+            <div>
+              <h2 class="smartwatch-title">Smart Watch</h2>
+              <nav class="smartwatch-link"><a href="#" style="font-weight: 500; text-decoration: underline;">Connect to Smartwatch</a></nav>
+            </div>
+          </header>
+        </article>
+        <section class="health-stats-grid">
+          <article class="health-stat-card">
+            <h3 class="stat-title">Heart Rate</h3>
+            <span class="stat-value">0</span>
+            <span class="stat-unit">bpm</span>
+          </article>
+          <article class="health-stat-card">
+            <h3 class="stat-title">Steps</h3>
+            <span class="stat-value">0</span>
+            <span class="stat-unit">steps</span>
+          </article>
+          <article class="health-stat-card">
+            <h3 class="stat-title">SPO₂</h3>
+            <span class="stat-value">0%</span>
+            <span class="stat-unit">Blood Oxygen</span>
+          </article>
+          <article class="health-stat-card">
+            <h3 class="stat-title">Calories</h3>
+            <span class="stat-value">0</span>
+            <span class="stat-unit">kcal</span>
+          </article>
+        </section>
+      </section>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

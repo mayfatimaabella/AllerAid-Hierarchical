@@ -1,0 +1,219 @@
+ion-toolbar {
+  --background: #036a5d;
+  --color: white;
+}
+
+ion-button [color="accent"] {
+  --background: var(--ion-color-accent);
+  --color: white;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #023f37;
+  margin: 5px 0;
+  text-align: center;
+}
+
+ion-content {
+  --background: #fff !important;
+}
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  min-height: auto;
+  height: auto;
+  background-color: #e8f4f1;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  padding-bottom: 10px;
+  z-index: 1;
+  border-radius: 5px;
+  border: 1px solid #198476;
+}
+
+ion-card {
+  background: #e9f5f0;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(229, 94, 118, 0.10);
+  border: 1px solid #198476;
+  margin: 12px 0;
+  padding: 12px 0 8px 0;
+}
+
+ion-card-header {
+  background: transparent;
+  border-bottom: 1px solid #fbe9eb;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 20px 8px 20px;
+}
+
+ion-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #126d61;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* Emergency card title row */
+.emergency-title-row {
+  color: #d32f2f;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+ion-card-content {
+  padding: 12px 20px 16px 20px;
+}
+
+ion-card-content p {
+  color: #333333;
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.emergency-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5px;
+  text-align: center;
+}
+
+.circle-button {
+  background-color: #e12826;
+  border-radius: 50%;
+  width: 210px;
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  margin-bottom: 5px;
+  border: 5px solid rgba(95, 22, 44, 0.9);
+}
+
+.circle-button ion-icon {
+  font-size: 60px;
+  margin-bottom: 0.5px;
+}
+
+.emergency-title {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px black;
+  margin-bottom: 2px;
+}
+
+.instruction-text {
+  font-size: 11px;
+  color: #fcfcfc;
+  margin-top: 0;
+}
+
+.bottom-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #034f45;
+}
+
+ion-tab-bar {
+  border-top: 1px solid #e5e5e5;
+  margin-top: 0;
+}
+
+/* Notification bell icon */
+.notif-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+}
+
+/* Optional: add hover feedback on header button */
+ion-toolbar .ion-buttons[slot="end"] ion-button:hover {
+  filter: brightness(1.1);
+}
+
+/* Health Overview Container */
+.health-overview-container {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0;
+  width: 100%;
+}
+
+.health-card ion-card-header {
+  background: transparent;
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  padding: 6px 12px 2px 12px;
+}
+
+.health-card ion-card-content {
+  padding: 2px 12px 10px 12px;
+}
+
+.health-card {
+  flex: 1;
+  background: #036a5d;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: none;
+  padding: 6px 0 2px 0;
+}
+
+.allergen-title {
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center !important;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.emergency-contact-title {
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center !important;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.count-display {
+  text-align: center;
+  margin: 4px 0 2px 0;
+}
+
+.count-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+  display: block;
+}
+
+.count-label {
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.85) !important; 
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Spacing utilities */
+.mt-16 { margin-top: 16px; }

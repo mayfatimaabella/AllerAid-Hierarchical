@@ -1,0 +1,316 @@
+.tab-navigation {
+  padding: 16px;
+  background: var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-light-shade);
+}
+
+.tab-content {
+  padding: 16px;
+}
+
+.tab-panel {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Overview Tab Styles */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-item .label {
+  font-weight: 600;
+  color: var(--ion-color-medium);
+  font-size: 0.9em;
+}
+
+.info-item .value {
+  font-weight: 500;
+  color: var(--ion-color-dark);
+}
+
+.risk-factors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ion-color-light-shade);
+}
+
+.recommendation-item:last-child {
+  border-bottom: none;
+}
+
+.recommendation-item ion-icon {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.allergies-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Reactions Tab Styles */
+.reaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.reaction-header ion-card-title {
+  flex: 1;
+  margin: 0;
+}
+
+.reaction-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-section {
+  border-left: 3px solid var(--ion-color-primary);
+  padding-left: 12px;
+}
+
+.detail-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.detail-section p {
+  margin: 0;
+  color: var(--ion-color-medium-shade);
+  line-height: 1.5;
+}
+
+.symptoms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Treatment Tab Styles */
+.treatment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.treatment-header ion-card-title {
+  flex: 1;
+  margin: 0;
+}
+
+.treatment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.medications,
+.side-effects,
+.prescriptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Visits Tab Styles */
+.visit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.visit-header ion-card-title {
+  flex: 1;
+  margin: 0;
+}
+
+.visit-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Medical History Styles */
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.history-header ion-card-title {
+  flex: 1;
+  margin: 0;
+}
+
+/* No Data States */
+.no-data,
+.no-data-card {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ion-color-medium);
+}
+
+.no-data-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+}
+
+.no-data-card ion-icon {
+  font-size: 48px;
+  color: var(--ion-color-medium-shade);
+}
+
+.no-data-card h3 {
+  margin: 0;
+  color: var(--ion-color-dark);
+  font-weight: 600;
+}
+
+.no-data-card p {
+  margin: 0;
+  color: var(--ion-color-medium);
+}
+
+/* Card Styling */
+ion-card {
+  margin: 0 0 16px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+ion-card-header {
+  padding-bottom: 8px;
+}
+
+ion-card-title {
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+ion-card-subtitle {
+  font-size: 0.9em;
+  color: var(--ion-color-medium);
+  margin-top: 4px;
+}
+
+/* Chip Styling */
+ion-chip {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-dark);
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+ion-chip[size="small"] {
+  font-size: 0.75em;
+  height: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tab-content {
+    padding: 12px;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .reaction-header,
+  .treatment-header,
+  .visit-header,
+  .history-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .reaction-header ion-card-title,
+  .treatment-header ion-card-title,
+  .visit-header ion-card-title,
+  .history-header ion-card-title {
+    order: 1;
+  }
+  
+  .reaction-header ion-chip,
+  .treatment-header ion-chip,
+  .visit-header ion-chip,
+  .history-header ion-chip {
+    order: 2;
+    align-self: flex-start;
+  }
+}
+
+/* Color Utilities for Status Indicators */
+.status-active { color: var(--ion-color-success); }
+.status-inactive { color: var(--ion-color-medium); }
+.status-resolved { color: var(--ion-color-success); }
+.status-ongoing { color: var(--ion-color-warning); }
+.status-chronic { color: var(--ion-color-danger); }
+
+/* Loading States */
+.loading-placeholder {
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  height: 20px;
+  margin: 8px 0;
+  animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 1; }
+  to { opacity: 0.3; }
+}
+
+/* Accessibility Improvements */
+.tab-panel:focus {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 4px;
+}
+
+ion-chip:focus {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}

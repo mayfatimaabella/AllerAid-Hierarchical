@@ -1,0 +1,154 @@
+:host { 
+  display: block;
+  height: 100%;
+}
+
+.emergency-modal-content {
+  --background: #ffffff;
+  background: #ffffff;
+  height: 100%;
+  --padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+}
+
+.content-wrapper {
+  padding: 0 16px 24px 16px;
+  background: #ffffff;
+  min-height: 100%;
+}
+
+.modal-info-card {
+  background: #ffffff;
+  border-left: 4px solid #036a5d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: #036a5d !important;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .4px;
+}
+
+.allergies-edit-btn {
+  --padding-start: 4px;
+  --padding-end: 4px;
+  --color: #1f4a42;
+  color: #1f4a42 !important;
+  height: 24px;
+}
+
+.contact-action-btn {
+  --color: #1f4a42;
+  color: #1f4a42 !important;
+}
+
+.allergies-edit-btn ion-icon,
+.contact-action-btn ion-icon {
+  color: #1f4a42 !important;
+}
+
+.name-value {
+  margin: 16px 0 20px;
+  color: #1f4a42 !important;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.section-title {
+  margin: 24px 0 16px;
+  color: #333333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.chips-wrapper { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 8px; 
+  margin-top: 12px;
+}
+
+.allergy-chip {
+	background: #036a5d;
+	color: #fff !important;
+	border-radius: 24px;
+	padding: 6px 14px;
+	font-size: 14px;
+	font-weight: 500;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.value { 
+	color: #1f4a42 !important; 
+	font-size: 16px;
+}
+
+.value.no-data { 
+  color: rgba(31,74,66,0.7) !important; 
+  font-style: italic; 
+}
+
+.instruction-entry {
+	border-left: 4px solid #036a5d;
+  border-radius: 8px;
+	padding: 16px;
+	margin-bottom: 16px;
+}
+
+.instruction-entry-header {
+	display: flex; 
+	align-items: center; 
+	gap: 8px; 
+	color: #036a5d !important; 
+	font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.instruction-icon { 
+  color: #036a5d !important;
+  font-size: 20px;
+  min-width: 20px;
+}
+
+.instruction-entry-text { 
+	color: #333333 !important; 
+	font-size: 14px; 
+	line-height: 1.4; 
+	padding-left: 28px;
+  font-weight: normal;
+}
+
+.modal-actions { 
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px; /* ensure space above safe-area */
+}
+
+.test-audio-btn { 
+  --border-color: #036a5d; 
+  --border-width: 1px;
+  --border-style: solid;
+  --padding-start: 32px;
+  --padding-end: 32px;
+  --border-radius: 28px;
+  height: 44px;
+  width: 100%;
+  max-width: 300px;
+  color: #036a5d !important;
+  font-weight: 500;
+  font-size: 15px;
+}

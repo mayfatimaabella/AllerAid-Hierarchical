@@ -1,0 +1,60 @@
+<div class="allergy-list-container">
+
+  <div class="section-title">Emergency Instructions & Message</div>
+
+  <ion-card class="emergency-info-card" (click)="openEmergencyInfo.emit()">
+    <ion-card-header>
+      <div class="emergency-header">
+        <ion-icon name="information-circle-outline" class="emergency-icon"></ion-icon>
+        <div class="emergency-title">Emergency Information</div>
+      </div>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="emergency-section">
+        <div class="emergency-label">EMERGENCY INFORMATION</div>
+        <div class="emergency-value">
+          {{ userProfile?.emergencyContactPhone || 'Not specified' }}
+        </div>
+      </div>
+
+      <div class="emergency-section allergies-section">
+        <div class="emergency-label">ALLERGIES</div>
+        <div class="allergy-chips">
+          <span *ngFor="let allergy of userAllergies" class="allergy-chip">{{ allergy.label || allergy.name || 'Unknown Allergy' }}</span>
+          <span *ngIf="userAllergies?.length === 0" class="no-data">None</span>
+        </div>
+      </div>
+      <div class="emergency-section">
+        <div class="emergency-label">EMERGENCY ACTION PLAN</div>
+
+        <div class="emergency-value instructions">
+          <ng-container *ngIf="emergencyInstructionsCombined; else noInstructions">
+            {{ emergencyInstructionsCombined }}
+          </ng-container>
+          <ng-template #noInstructions><i>No instructions set</i></ng-template>
+        </div>
+      </div>
+
+      <div class="emergency-section"> 
+        <div class="emergency-label">SPECIFIC INSTRUCTIONS</div>
+        <div class="emergency-value">
+          <ng-container *ngIf="emergencyInstructions?.length; else noSpecificInstructions">
+            <div class="specific-instructions-list">
+              <div *ngFor="let instr of emergencyInstructions" class="specific-instruction-item">
+                <span class="specific-instruction-text">{{ instr.allergyName || instr.label || 'Allergy' }}: {{ instr.instruction || instr.text }}</span>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #noSpecificInstructions><i>None</i></ng-template>
+        </div>
+      </div>
+
+      <div class="tap-details">
+        <ion-icon name="finger-print-outline"></ion-icon>
+        TAP FOR FULL DETAILS
+      </div>
+    </ion-card-content>
+  </ion-card>
+</div>
+
+

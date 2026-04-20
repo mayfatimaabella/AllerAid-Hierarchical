@@ -1,0 +1,354 @@
+// Tab Navigation
+.tab-navigation {
+  display: flex;
+  background: var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-light-shade);
+  padding: 0;
+}
+
+.tab-button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+
+  ion-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+    color: var(--ion-color-medium);
+  }
+
+  span {
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    font-weight: 500;
+  }
+
+  &.active {
+    background: var(--ion-color-primary-tint);
+    border-bottom-color: var(--ion-color-primary);
+
+    ion-icon, span {
+      color: var(--ion-color-primary);
+    }
+  }
+
+  &:hover:not(.active) {
+    background: var(--ion-color-light-tint);
+  }
+}
+
+// General Tab Content
+.tab-content {
+  padding: 20px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 24px;
+
+  h3 {
+    margin: 0 0 8px 0;
+    color: var(--ion-color-dark);
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium);
+    font-size: 14px;
+  }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+
+  ion-icon {
+    font-size: 64px;
+    color: var(--ion-color-light-shade);
+    margin-bottom: 16px;
+  }
+
+  h4 {
+    margin: 0 0 8px 0;
+    color: var(--ion-color-medium);
+  }
+
+  p {
+    margin: 0 0 20px 0;
+    color: var(--ion-color-medium-shade);
+    font-size: 14px;
+  }
+}
+
+// Recordings List
+.recordings-list {
+  margin-bottom: 20px;
+}
+
+.recording-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--ion-color-light-shade);
+
+  .recording-info {
+    flex: 1;
+    min-width: 0;
+
+    .recording-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+
+      h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+      }
+
+      .recording-selected {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--ion-color-success);
+        font-weight: 500;
+
+        ion-icon {
+          font-size: 16px;
+        }
+      }
+    }
+
+    .recording-details {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--ion-color-medium);
+
+      span {
+        &.duration {
+          background: var(--ion-color-primary-tint);
+          color: var(--ion-color-primary);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .recording-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: 12px;
+  }
+}
+
+// Recording Zone
+.recording-zone {
+  text-align: center;
+}
+
+.recording-status {
+  margin-bottom: 32px;
+  padding: 32px;
+  border-radius: 20px;
+  background: var(--ion-color-light);
+  transition: all 0.3s ease;
+
+  &.recording {
+    background: linear-gradient(135deg, #0aa38e, #036a5d);
+    color: white;
+    animation: pulse 2s infinite;
+
+    .recording-circle {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+  }
+
+  .recording-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--ion-color-light-shade);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    background: white;
+    transition: all 0.3s ease;
+
+    ion-icon {
+      font-size: 32px;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .recording-info {
+    h4 {
+      margin: 0 0 8px 0;
+      font-weight: 600;
+    }
+
+    .recording-time {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(10, 163, 142, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(10, 163, 142, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(10, 163, 142, 0);
+  }
+}
+
+.recording-controls {
+  margin-bottom: 32px;
+}
+
+.recording-tips {
+  text-align: left;
+  background: var(--ion-color-light);
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 4px solid var(--ion-color-primary);
+
+  h5 {
+    margin: 0 0 12px 0;
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--ion-color-medium);
+
+    li {
+      margin-bottom: 8px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+  }
+}
+
+// Settings
+.settings-section {
+  .setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .setting-info {
+      flex: 1;
+      margin-right: 16px;
+
+      h4 {
+        margin: 0 0 4px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+
+      p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    ion-toggle {
+      --track-background-checked: var(--ion-color-primary);
+    }
+
+    ion-select {
+      min-width: 100px;
+    }
+
+    ion-range {
+      min-width: 120px;
+    }
+  }
+
+  .test-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ion-color-light-shade);
+  }
+}
+
+// Quick Actions
+.quick-actions {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ion-color-light-shade);
+}
+
+// Responsive Design
+@media (max-width: 480px) {
+  .tab-button {
+    padding: 10px 6px;
+
+    ion-icon {
+      font-size: 18px;
+    }
+
+    span {
+      font-size: 11px;
+    }
+  }
+
+  .recording-item {
+    flex-direction: column;
+    align-items: stretch;
+
+    .recording-actions {
+      margin-left: 0;
+      margin-top: 12px;
+      justify-content: center;
+    }
+  }
+
+  .setting-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+
+    .setting-info {
+      margin-right: 0;
+    }
+  }
+}

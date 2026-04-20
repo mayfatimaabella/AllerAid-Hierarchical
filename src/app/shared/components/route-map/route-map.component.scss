@@ -1,0 +1,138 @@
+.route-info {
+  padding: 16px;
+}
+
+.route-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.route-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1rem;
+}
+
+.route-item ion-icon {
+  min-width: 24px;
+}
+
+.map-container {
+  height: 400px;
+  position: relative;
+  margin: 0 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.map-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--ion-color-light);
+  color: var(--ion-color-medium);
+  gap: 16px;
+  padding: 20px;
+  text-align: center;
+}
+
+.map-fallback h3 {
+  margin: 8px 0;
+  color: var(--ion-color-dark);
+  font-size: 1.2rem;
+}
+
+.map-fallback p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.fallback-details {
+  width: 100%;
+  max-width: 300px;
+  margin: 16px 0;
+}
+
+.fallback-details ion-item {
+  --background: transparent;
+  --padding: 8px 0;
+}
+
+.fallback-info {
+  font-size: 1rem !important;
+  color: var(--ion-color-dark) !important;
+  margin: 8px 0 !important;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.action-buttons ion-button {
+  height: 48px;
+  font-weight: 500;
+}
+
+/* Loading animation for map */
+.map::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--ion-color-light);
+  border-top: 4px solid var(--ion-color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 1000;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Remove loading animation when map is loaded */
+.map.loaded::before {
+  display: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .map-container {
+    height: 300px;
+    margin: 0 8px;
+  }
+  
+  .route-info {
+    padding: 8px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .map-container {
+    border: 2px solid var(--ion-color-primary);
+  }
+  
+  .route-item {
+    font-weight: 500;
+  }
+}

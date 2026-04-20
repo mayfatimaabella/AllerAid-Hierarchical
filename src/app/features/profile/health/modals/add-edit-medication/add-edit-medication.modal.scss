@@ -1,0 +1,431 @@
+/* Add/Edit Medication Modal Styles */
+
+ion-content {
+  --background: #ffffff;
+}
+
+.white-content {
+  --background: #ffffff;
+}
+
+form {
+  margin-bottom: 0;
+}
+
+// Form fields container
+.form-fields {
+  margin-bottom: 24px;
+}
+
+// Medication field styling
+.medication-field {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  --background: #ffffff;
+  --min-height: 70px;
+  
+  background: #ffffff;
+  border: 1px solid #d1e7e0;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px rgba(3, 106, 93, 0.08);
+  transition: all 0.2s ease;
+  overflow: visible;
+
+  &:hover {
+    border-color: #036a5d;
+    box-shadow: 0 2px 6px rgba(3, 106, 93, 0.12);
+  }
+
+  &:focus-within {
+    border-color: #036a5d;
+    box-shadow: 0 0 0 3px rgba(3, 106, 93, 0.1);
+  }
+
+  ion-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #036a5d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    position: static !important;
+    opacity: 1 !important;
+    transform: none !important;
+    display: block !important;
+
+    .optional-label {
+      font-size: 10px;
+      color: #8ba19c;
+      text-transform: none;
+      font-weight: 400;
+      margin-left: 4px;
+    }
+  }
+
+  ion-input,
+  ion-select,
+  ion-textarea {
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    font-size: 15px;
+    color: #1f4a42;
+    margin-top: 4px;
+
+    // Numeric input specific styling
+    &[type="number"] {
+      font-weight: 600;
+      font-size: 16px;
+      
+      // Hide spinner arrows on webkit browsers
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      
+      // Hide spinner arrows on Firefox
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+  }
+
+  ion-select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  ion-textarea {
+    min-height: 80px;
+  }
+
+    /* Ensure readable dark text inside modal form controls */
+    ion-input::part(native),
+    ion-textarea::part(native),
+    ion-select::part(text),
+    ion-select::part(placeholder) {
+      color: #1a1a1a;
+    }
+  // Date field specific styling
+  &.date-field {
+    ion-datetime-button {
+      width: 100%;
+      --padding-start: 0;
+      --padding-end: 0;
+      margin-top: 4px;
+      
+      &::part(native) {
+        background: transparent;
+        padding: 8px 0;
+        font-size: 15px;
+        color: #1f4a42;
+        text-align: left;
+        justify-content: flex-start;
+      }
+    }
+  }
+}
+
+// Structured Dosage Input Group
+.dosage-input-group {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  .medication-field {
+    margin-bottom: 0;
+  }
+
+  .dosage-amount-field {
+    ion-input {
+      font-weight: 600;
+      font-size: 16px;
+    }
+  }
+
+  .dosage-unit-field {
+    ion-select {
+      font-weight: 500;
+    }
+  }
+}
+
+// Generic inline validation error note
+.validation-error {
+  display: block;
+  font-size: 12px;
+  margin: 4px 4px 10px 4px;
+  color: #d63031;
+}
+
+// Quantity field specific styling
+.quantity-field {
+  ion-input[type="number"] {
+    text-align: center;
+    font-weight: 600;
+    font-size: 18px;
+    
+    &::placeholder {
+      text-align: center;
+      font-weight: 400;
+      font-size: 15px;
+      color: #8ba19c;
+    }
+
+    // Invalid state styling
+    &.ng-invalid.ng-touched {
+      --color: #d63031;
+      background-color: rgba(214, 48, 49, 0.05);
+    }
+  }
+
+  // Visual indicator for valid quantity
+  &.ng-valid ion-input[type="number"] {
+    background-color: rgba(3, 106, 93, 0.03);
+  }
+}
+
+// Helper note for dosage
+.dosage-helper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #5a6c69;
+  margin: 0 4px 20px 4px;
+  padding: 10px 14px;
+  background: #f0f8f6;
+  border-radius: 10px;
+  border-left: 3px solid #036a5d;
+
+  ion-icon {
+    font-size: 18px;
+    color: #036a5d;
+    flex-shrink: 0;
+  }
+}
+
+// Notes field specific styling
+.notes-field {
+  ion-textarea {
+    min-height: 90px;
+    line-height: 1.5;
+  }
+}
+
+// Image Section
+.image-section {
+  background: #f8faf9;
+  border: 1px solid #e0ebe8;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .section-icon {
+      font-size: 24px;
+      color: #036a5d;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .section-info {
+      flex: 1;
+
+      h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f4a42;
+        margin: 0 0 4px 0;
+      }
+
+      p {
+        font-size: 13px;
+        color: #5a6c69;
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .image-upload-btn {
+    --border-radius: 10px;
+    --border-width: 1.5px;
+    --border-style: dashed;
+    --border-color: #4a90e2;
+    --color: #4a90e2;
+    --background: transparent;
+    --background-hover: rgba(74, 144, 226, 0.05);
+    --background-activated: rgba(74, 144, 226, 0.1);
+    height: 44px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0.3px;
+    margin: 0;
+  }
+
+  .image-preview {
+    margin-top: 16px;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #d1e7e0;
+    box-shadow: 0 2px 8px rgba(3, 106, 93, 0.1);
+
+    img {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .remove-image-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      --background: rgba(255, 255, 255, 0.95);
+      --border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+      ion-icon {
+        font-size: 24px;
+      }
+    }
+  }
+}
+
+// Duration field with toggle button
+.duration-field {
+  .duration-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+
+    ion-input {
+      flex: 1;
+    }
+
+    ion-button {
+      --color: #036a5d;
+      --background: transparent;
+      --border-radius: 8px;
+      margin: 0;
+      min-width: 40px;
+      height: 40px;
+
+      &:hover {
+        --background: rgba(3, 106, 93, 0.1);
+      }
+
+      ion-icon {
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// Action Buttons
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e8f2f0;
+
+  ion-button {
+    --border-radius: 12px;
+    height: 50px;
+    font-weight: 600;
+    font-size: 15px;
+    text-transform: none;
+    letter-spacing: 0.3px;
+    margin: 0;
+
+    &[type="submit"] {
+      --background: #036a5d;
+      --background-hover: #025449;
+      --background-activated: #014a3e;
+      --color: #ffffff;
+
+      &:disabled {
+        --background: #b3d4ce;
+        --color: #7a9f98;
+        opacity: 0.6;
+      }
+    }
+
+    &[fill="outline"] {
+      --border-width: 1.5px;
+      --border-color: #8ba19c;
+      --color: #5a6c69;
+      --background: transparent;
+      --background-hover: rgba(139, 161, 156, 0.05);
+      --background-activated: rgba(139, 161, 156, 0.1);
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 480px) {
+  .dosage-input-group {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .medication-field {
+    --min-height: 65px;
+  }
+}
+
+// Remove default Ionic datetime button styles
+ion-datetime-button {
+  width: 100%;
+}
+
+// Pill supply projection banner
+.pill-projection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #1f4a42;
+  margin: 4px 4px 16px 4px;
+  padding: 10px 14px;
+  background: #e8f5f2;
+  border-radius: 10px;
+  border-left: 3px solid #036a5d;
+
+  ion-icon {
+    font-size: 18px;
+    color: #036a5d;
+    flex-shrink: 0;
+  }
+
+  b {
+    color: #036a5d;
+  }
+
+  &.pill-projection--hint {
+    background: #f5f5f5;
+    border-left-color: #aaa;
+    color: #666;
+
+    ion-icon {
+      color: #888;
+    }
+  }
+}

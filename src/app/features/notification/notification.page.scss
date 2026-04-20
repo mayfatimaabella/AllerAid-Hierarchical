@@ -1,0 +1,81 @@
+ion-toolbar {
+    --background: #036a5d;
+    --color: white;
+}
+
+.notification-bg {
+    --background: #ffffff; 
+    background: #ffffff;
+}
+
+.notification-container {
+    display: flex;
+    flex-direction: column; // Stack cards vertically
+    align-items: center;    // Center cards horizontally
+    padding: 20px 16px;     // Added padding at the top
+    gap: 16px;              // Space between cards
+    min-height: 100%;       // Allow scrolling instead of forcing center
+}
+
+.reminder-card {
+    background: #18574e;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    width: 100%;            // Take full available width
+    max-width: 450px;       // Prevents cards from getting too wide on tablets/laptops
+    transition: transform 0.2s ease;
+
+    &:active {
+        transform: scale(0.98); // Slight press effect for your demo
+    }
+}
+
+.reminder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; // Align text to the top
+    margin-bottom: 12px;
+
+    h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #ebf0ed;
+        letter-spacing: 0.5px;
+    }
+}
+
+.reminder-time {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8); // Slightly transparent for hierarchy
+    font-weight: 500;
+}
+
+.reminder-text {
+    font-size: 1rem;
+    line-height: 1.4;
+    color: #ffffff;
+    margin: 0;
+}
+
+// Added style for the "No Reminders" empty state
+.no-reminders {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 100px;
+    color: #888;
+
+    ion-icon {
+        font-size: 80px;
+        color: #ddd;
+        margin-bottom: 16px;
+    }
+
+    p {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+    }
+}

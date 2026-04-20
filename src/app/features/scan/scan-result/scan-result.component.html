@@ -1,0 +1,95 @@
+<ion-modal 
+  #modal
+  [isOpen]="isOpen"
+  [swipeToClose]="true"
+  [breakpoints]="[0, 0.5, 1]"
+  [initialBreakpoint]="0.9"
+  [handleBehavior]="'cycle'"
+  (ionModalDidDismiss)="onDismiss()">
+  
+  <ng-template>
+    <ion-header collapse="condense">
+      <ion-toolbar>
+        <div class="modal-drag-handle"></div>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content [fullscreen]="true" *ngIf="productInfo">
+      <ion-header collapse="condense">
+        <ion-toolbar>
+          <ion-title size="large">{{ productInfo.product_name || 'Unnamed Product' }}</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <div class="product-details ion-padding">
+        <p *ngIf="productInfo.brands" class="brand-text">Brand: {{ productInfo.brands }}</p>
+
+        <ion-item>
+          <ion-label>Allergen Status:</ion-label>
+          <ion-badge 
+            [color]="allergenStatus === 'safe' ? 'success' : 'danger'"
+            style="font-size: 12px; padding: 8px 12px;">
+            <ion-icon 
+              [name]="allergenStatus === 'safe' ? 'checkmark-circle' : 'warning'"
+              slot="start" 
+              style="margin-right: 4px;">
+            </ion-icon>
+            {{ allergenStatus === 'safe' ? 'SAFE' : 'WARNING' }}
+          </ion-badge>
+        </ion-item>
+
+        <!-- Safe Status -->
+        <div *ngIf="allergenStatus === 'safe'" class="status-message safe">
+          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+          <p>This product appears safe based on your allergy profile. No known allergens detected.</p>
+        </div>
+
+        <!-- Warning Status -->
+        <div *ngIf="allergenStatus === 'warning'" class="status-message warning">
+          <ion-icon name="warning" color="warning"></ion-icon>
+          <p><strong>Caution:</strong> This product may contain allergens from your profile.</p>
+
+          <ion-label class="ion-margin-top"><strong>Allergens detected:</strong></ion-label>
+          <div class="allergen-chips">
+            <ion-chip *ngFor="let allergen of ingredientsToWatch" color="danger" style="margin: 4px;">
+              <ion-icon name="warning" slot="start"></ion-icon>
+              {{ allergen }}
+            </ion-chip>
+          </div>
+
+          <ion-note color="warning">
+            <strong>Recommendation:</strong> Check the full ingredient list carefully before consuming.
+          </ion-note>
+        </div>
+
+        <!-- Ingredients Section -->
+        <div class="ingredients-section ion-margin-top">
+          <ion-label><strong>Ingredients:</strong></ion-label>
+          <p class="ingredients-text">
+            {{ productInfo.ingredients_text || 'No ingredient information available.' }}
+          </p>
+        </div>
+
+        <!-- Product Image -->
+        <div class="product-image-container ion-margin-top ion-text-center" *ngIf="productInfo.image_url">
+          <img 
+            [src]="productInfo.image_url" 
+            alt="Product Image"
+            class="product-image"
+          />
+        </div>
+
+        <!-- Nutritional Info Button -->
+        <ion-button 
+          *ngIf="productInfo.nutriments" 
+          fill="outline" 
+          size="small" 
+          expand="block" 
+          class="ion-margin-top">
+          <ion-icon name="nutrition" slot="start"></ion-icon>
+          View Nutritional Information
+        </ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

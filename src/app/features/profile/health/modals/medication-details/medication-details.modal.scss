@@ -1,0 +1,78 @@
+:host { display:block; }
+
+.white-content {
+  --background: #ffffff;
+  background: #ffffff;
+}
+
+.close-action-btn ion-icon {
+  color: #ffffff !important;
+}
+
+.header { display:flex; flex-direction:column; gap:12px; margin-bottom:16px; }
+
+.title-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.medication-icon {
+  width:40px;
+  height:40px;
+  border-radius:999px;
+  background:#e2f2ef;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.medication-icon ion-icon {
+  color:#036a5d;
+  font-size:22px;
+}
+
+.title-text { display:flex; flex-direction:column; gap:2px; }
+
+.title { margin:0; color:#1f4a42; font-size:20px; font-weight:700; }
+
+.subtitle {
+  margin:0;
+  font-size:13px;
+  color:#546e6a;
+}
+
+.chips { display:flex; gap:8px; flex-wrap:wrap; }
+
+.details-card {
+  background:#fff;
+  border-radius:12px;
+  border-left:4px solid #036a5d;
+  padding:16px;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+}
+.section { padding:10px 0; }
+.section + .section { border-top:1px dashed #e8f3f1; margin-top:8px; }
+
+.section-label {
+  margin:0 0 4px;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:#6b8581;
+}
+
+.row {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#333;
+  margin:8px 0;
+}
+.row ion-icon { color:#036a5d; }
+.row b { color:#1f4a42; }
+.row span { color:#333; }
+
+.image-row .image-links { display:flex; gap:12px; flex-wrap:wrap; }
+.image-row .image-links a { color:#0b66c3; text-decoration:none; }

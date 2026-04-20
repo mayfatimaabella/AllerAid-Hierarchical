@@ -1,0 +1,95 @@
+<ion-header>
+  <ion-toolbar class="toolbar--teal">
+    <ion-title>{{ mode === 'add' ? 'Add Emergency Message' : 'Edit Profile' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <ion-list>
+      <div class="avatar-section" aria-label="Profile picture">
+        <div class="avatar-header">
+          <div class="avatar-label">Profile Picture</div>
+        </div>
+        <div class="avatar-body">
+          <div class="avatar-wrapper">
+            <img
+              class="avatar-preview"
+              [src]="avatarPreview || defaultAvatarUrl"
+              alt="Profile picture preview">
+            <button
+              *ngIf="avatarPreview"
+              class="avatar-remove-icon"
+              (click)="removeAvatar()"
+              type="button"
+              aria-label="Remove profile picture">
+              <ion-icon name="close-circle"></ion-icon>
+            </button>
+          </div>
+          <ion-spinner *ngIf="isUploadingAvatar" name="crescent" class="avatar-spinner"></ion-spinner>
+          <input
+            #avatarInput
+            type="file"
+            accept="image/*"
+            (change)="onAvatarSelected($event)"
+            class="avatar-input" />
+        </div>
+        <ion-button fill="clear" size="small" class="avatar-action" (click)="avatarInput.click()">
+          Change
+        </ion-button>
+      </div>
+
+      <ion-item>
+        <ion-label position="stacked">Name</ion-label>
+        <ion-input formControlName="name"></ion-input>
+      </ion-item>
+
+      <div class="buddy-contact-note">
+        <p class="buddy-contact-text">Buddies are your primary emergency contacts.</p>
+        <ion-button fill="outline" size="small" (click)="goToBuddyTab()">
+          Manage Emergency Contacts
+        </ion-button>
+      </div>
+
+      <ion-item>
+        <ion-label position="stacked">Contact Phone</ion-label>
+        <ion-input
+          formControlName="emergencyContactPhone"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="11"
+          (ionInput)="onPhoneInput($event)">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Date of Birth</ion-label>
+        <ion-input formControlName="dateOfBirth" type="date" [min]="minDate" [max]="maxDate"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Blood Type (Optional)</ion-label>
+        <ion-input formControlName="bloodType" placeholder="e.g. O+"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Emergency Action Plan</ion-label>
+        <ion-textarea formControlName="instructions"></ion-textarea>
+      </ion-item>
+    </ion-list>
+    <ion-footer>
+      <ion-button
+        expand="block"
+        type="submit"
+        [disabled]="form.invalid || isUploadingAvatar || isSaving">
+        <span *ngIf="!isSaving">{{ mode === 'add' ? 'Create' : 'Save' }}</span>
+        <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
+      </ion-button>
+    </ion-footer>
+  </form>
+</ion-content>

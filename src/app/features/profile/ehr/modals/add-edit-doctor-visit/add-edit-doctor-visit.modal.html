@@ -1,0 +1,110 @@
+<ion-header>
+  <ion-toolbar class="toolbar--teal">
+    <ion-title>{{ isEditMode ? 'Edit Doctor Visit' : 'Add Doctor Visit' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()" fill="clear">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding white-content">
+  <form (ngSubmit)="saveVisit()">
+    <div class="form-fields">
+      <!-- Registered Doctor Dropdown -->
+      <ion-item class="medication-field" lines="none" *ngIf=availableDoctors.length > 0">
+        <ion-label position="stacked">Doctor *</ion-label>
+        <ion-select 
+          [(ngModel)]="selectedDoctorEmail" 
+          name="selectedDoctorEmail"
+          placeholder="Choose doctor"
+          interface="popover"
+          (ionChange)="onDoctorSelection()">
+          <ion-select-option *ngFor="let doctor of availableDoctors" [value]="doctor.email">
+            {{ doctor.name }} - {{ doctor.specialty }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- Empty state when no registered doctors -->
+      <ion-item class="medication-field" lines="none" *ngIf="availableDoctors.length === 0">
+        <ion-label>
+          <h3>No registered doctors found</h3>
+        </ion-label>
+      </ion-item>
+
+      <!-- Visit Date -->
+      <ion-item class="medication-field date-field" lines="none">
+        <ion-label position="stacked">Visit Date *</ion-label>
+        <ion-datetime-button datetime="visitDate"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime 
+              id="visitDate" 
+              [(ngModel)]="visitData.visitDate" 
+              name="visitDate"
+              presentation="date"
+              [showDefaultButtons]="true"
+              doneText="Done"
+              cancelText="Cancel">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+
+      <!-- Chief Complaint -->
+      <ion-item class="medication-field" lines="none">
+        <ion-label position="stacked">Reason of Visit *</ion-label>
+        <ion-textarea 
+          [(ngModel)]="visitData.chiefComplaint" 
+          name="chiefComplaint"
+          placeholder="Main reason for visit"
+          rows="2"
+          required>
+        </ion-textarea>
+      </ion-item>
+
+      <!-- Optional simple fields -->
+      <ion-item class="medication-field" lines="none">
+        <ion-label position="stacked">Diagnosis</ion-label>
+        <ion-textarea 
+          [(ngModel)]="visitData.diagnosis" 
+          name="diagnosis"
+          placeholder="Diagnosis (optional)"
+          rows="2">
+        </ion-textarea>
+      </ion-item>
+
+      <ion-item class="medication-field notes-field" lines="none">
+        <ion-label position="stacked">Notes</ion-label>
+        <ion-textarea 
+          [(ngModel)]="visitData.notes" 
+          name="notes"
+          placeholder="Additional notes (optional)"
+          rows="3">
+        </ion-textarea>
+      </ion-item>
+    </div>
+
+    <div class="action-buttons">
+      <ion-button 
+        expand="block" 
+        type="submit" 
+        class="teal-modal-btn"
+        [disabled]="!visitData.doctorName.trim() || !visitData.chiefComplaint.trim()">
+        <ion-icon [name]="isEditMode ? 'checkmark-outline' : 'add-outline'" slot="start"></ion-icon>
+        {{ isEditMode ? 'Update Visit' : 'Save Visit' }}
+      </ion-button>
+
+      <ion-button 
+        expand="block" 
+        fill="outline" 
+        color="medium"
+        (click)="dismiss()">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Cancel
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

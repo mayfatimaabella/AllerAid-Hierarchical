@@ -1,0 +1,415 @@
+.welcome-section {
+  text-align: center;
+  margin-bottom: 24px;
+  
+  h2 {
+    color: #2d5aa0;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  
+  p {
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  margin: 0;
+  border-radius: 12px;
+  
+  ion-card-content {
+    text-align: center;
+    padding: 16px;
+  }
+  
+  .stat-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2d5aa0;
+    margin-bottom: 4px;
+  }
+  
+  .stat-label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+  }
+  
+  &.critical .stat-number {
+    color: #eb445a;
+  }
+  
+  &.high-risk .stat-number {
+    color: #ffc409;
+  }
+  
+  &.pending .stat-number {
+    color: #3dc2ff;
+  }
+}
+
+.filters-section {
+  margin-bottom: 24px;
+  
+  .filter-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+.loading-section {
+  text-align: center;
+  margin: 40px 0;
+}
+
+.patients-list .patient-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+}
+
+.patient-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  
+  .patient-info {
+    flex: 1;
+    
+    ion-card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d5aa0;
+      margin-bottom: 4px;
+    }
+    
+    ion-card-subtitle {
+      font-size: 14px;
+      color: #666;
+    }
+  }
+  
+  .risk-badge {
+    ion-chip {
+      font-weight: 500;
+      
+      ion-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+}
+
+.patient-summary {
+  margin: 16px 0;
+  
+  .summary-item {
+    margin-bottom: 8px;
+    
+    ion-icon {
+      margin-right: 8px;
+      color: #666;
+    }
+  }
+}
+
+.patient-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  margin: 60px 20px;
+  
+  h3 {
+    color: #666;
+  }
+  
+  p {
+    color: #888;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .filter-controls {
+    grid-template-columns: 1fr;
+  }
+  
+  .patient-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .patient-actions {
+    ion-button {
+      flex: 1;
+      min-width: calc(50% - 4px);
+    }
+  }
+}
+
+// Mobile-Responsive Header
+ion-toolbar {
+  ion-buttons {
+    gap: 2px;
+    
+    ion-button {
+      --padding-start: 6px;
+      --padding-end: 6px;
+      min-width: 40px;
+      
+      &.notification-btn {
+        position: relative;
+        min-width: 44px;
+      }
+    }
+  }
+  
+  .role-chip {
+    font-size: 12px;
+    height: 28px;
+    
+    ion-icon {
+      font-size: 16px;
+    }
+  }
+}
+
+// Mobile breakpoint adjustments
+@media (max-width: 768px) {
+  ion-toolbar {
+    ion-title {
+      font-size: 16px;
+    }
+    
+    ion-buttons {
+      gap: 0;
+      
+      ion-button {
+        --padding-start: 4px;
+        --padding-end: 4px;
+        min-width: 36px;
+        
+        ion-icon {
+          font-size: 20px;
+        }
+      }
+    }
+    
+    .role-chip {
+      display: none; // Hide role chip on mobile
+    }
+  }
+}
+
+// Extra small screens (phones in portrait)
+@media (max-width: 480px) {
+  ion-toolbar {
+    ion-title {
+      font-size: 14px;
+    }
+    
+    ion-buttons {
+      .refresh-btn {
+        display: none; // Hide refresh on very small screens
+      }
+    }
+  }
+}
+
+// Notification Badge Styling
+.notification-btn {
+  position: relative;
+  
+  .request-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 600;
+    z-index: 10;
+    animation: pulse 2s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); }
+}
+
+// Access Requests Section
+.access-requests-section {
+  margin-bottom: 24px;
+  
+  h3 {
+    color: #2d5aa0;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+}
+
+.access-request-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border-left: 4px solid #ffc409;
+  
+  .request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    
+    .patient-info {
+      flex: 1;
+      
+      ion-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2d5aa0;
+        margin-bottom: 4px;
+      }
+      
+      ion-card-subtitle {
+        font-size: 14px;
+        color: #666;
+      }
+    }
+    
+    .request-date {
+      flex-shrink: 0;
+    }
+  }
+  
+  .request-details {
+    .request-message {
+      color: #333;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 3px solid #3880ff;
+    }
+    
+    .visit-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      
+      .original-name {
+        font-size: 13px;
+        color: #666;
+        font-style: italic;
+      }
+    }
+    
+    .expiry-info {
+      margin-bottom: 16px;
+    }
+  }
+  
+  .request-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    
+    ion-button {
+      flex: 1;
+      min-width: 140px;
+      --border-radius: 8px;
+    }
+  }
+}
+
+// Mobile Floating Action Button
+.mobile-notification-fab {
+  .notification-fab {
+    position: relative;
+    box-shadow: 0 4px 12px rgba(255, 196, 9, 0.4);
+    
+    .fab-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+      z-index: 15;
+      animation: bounce 1s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  60% { transform: translateY(-2px); }
+}
+
+// Notification badge
+.request-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 600;
+  z-index: 10;
+}
+
+// Mobile responsive
+@media (max-width: 768px) {
+  ion-toolbar {
+    ion-title { font-size: 16px; }
+    .role-chip { display: none; }
+    ion-button { 
+      min-width: 32px;
+      --padding-start: 4px;
+      --padding-end: 4px;
+    }
+  }
+  
+  .access-request-card .request-actions {
+    flex-direction: column;
+    ion-button { min-width: 100%; }
+  }
+}
+
+@media (max-width: 480px) {
+  ion-toolbar ion-title { font-size: 14px; }
+}

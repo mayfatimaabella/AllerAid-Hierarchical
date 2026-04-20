@@ -1,0 +1,56 @@
+
+.cancelBtn {
+  --color: #036a5d !important;
+  color: #036a5d !important;
+}
+
+ion-icon {
+  color: #036a5d !important;
+}
+
+.buddy-modal-content h2,
+.buddy-modal-content p {
+  color: #000 !important;
+}
+:host {
+  display: block;
+  background: transparent;
+}
+
+ion-content{
+  --background: #eaf1ee !important;
+  color: #000 !important;
+}
+
+ion-item{
+  --background: #e3ece7 !important;
+  color: #000 !important;
+  border-radius: 32px;
+}
+
+.buddy-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buddy-modal-content {
+  width: 90vw;
+  max-width: 400px;
+  height: 45vh;
+  max-height: 80vh;
+  z-index: 1001;
+}
+
+.deleteBtn{
+    --background: #e12826 !important;
+    --color: #fff !important;
+}
+

@@ -1,0 +1,299 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Patient Analysis - {{ patient.patientName }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()" fill="clear">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <ion-segment [(ngModel)]="selectedTab" (ionChange)="selectTab($event.detail.value)">
+      <ion-segment-button value="overview">
+        <ion-label>Overview</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="reactions">
+        <ion-label>Reactions</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="treatments">
+        <ion-label>Treatments</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="visits">
+        <ion-label>Visits</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="history">
+        <ion-label>History</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <div class="tab-content">
+    <!-- Overview Tab -->
+    <div *ngIf="selectedTab === 'overview'" class="tab-panel">
+      <!-- Patient Basic Info -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Patient Information</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Name:</span>
+              <span class="value">{{ analysis.personalInfo?.firstName }} {{ analysis.personalInfo?.lastName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Age:</span>
+              <span class="value">{{ calculateAge(analysis.personalInfo?.dateOfBirth) }} years</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Gender:</span>
+              <span class="value">{{ analysis.personalInfo?.gender | titlecase }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Blood Type:</span>
+              <span class="value">{{ analysis.personalInfo?.bloodType || 'Not specified' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Phone:</span>
+              <span class="value">{{ analysis.personalInfo?.phoneNumber }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Email:</span>
+              <span class="value">{{ analysis.personalInfo?.email }}</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Risk Factors -->
+      <ion-card *ngIf="analysis.riskFactors.length > 0">
+        <ion-card-header>
+          <ion-card-title>Risk Factors</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="risk-factors">
+            <ion-chip color="warning" *ngFor="let risk of analysis.riskFactors">
+              <ion-icon name="warning-outline"></ion-icon>
+              <ion-label>{{ risk }}</ion-label>
+            </ion-chip>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Recommendations -->
+      <ion-card *ngIf="analysis.recommendations.length > 0">
+        <ion-card-header>
+          <ion-card-title>Clinical Recommendations</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="recommendations">
+            <div class="recommendation-item" *ngFor="let rec of analysis.recommendations">
+              <ion-icon name="medical-outline" color="primary"></ion-icon>
+              <span>{{ rec }}</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Current Allergies -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Current Allergies</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="allergies-list">
+            <ng-container *ngFor="let allergy of (analysis.allergies || [])">
+              <ion-chip *ngIf="allergy.checked" 
+                        [color]="allergy.checked ? 'danger' : 'medium'">
+                <ion-label>{{ allergy.label || allergy.name }}</ion-label>
+                <span *ngIf="allergy.value"> - {{ allergy.value }}</span>
+              </ion-chip>
+            </ng-container>
+          </div>
+          <p *ngIf="!hasCheckedAllergies()" class="no-data">
+            No allergies recorded
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Reactions Tab -->
+    <div *ngIf="selectedTab === 'reactions'" class="tab-panel">
+      <ion-card *ngFor="let reaction of (analysis.recentReactions || [])">
+        <ion-card-header>
+          <div class="reaction-header">
+            <ion-card-title>{{ reaction.allergen }}</ion-card-title>
+            <ion-chip [color]="getSeverityColor(reaction.severity)">
+              {{ reaction.severity | titlecase }}
+            </ion-chip>
+          </div>
+          <ion-card-subtitle>{{ formatDate(reaction.reactionDate) }} - {{ getTimeSince(reaction.reactionDate) }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="reaction-details">
+            <div class="detail-section">
+              <h4>Symptoms</h4>
+              <div class="symptoms">
+                <ion-chip *ngFor="let symptom of reaction.symptoms" color="medium" size="small">
+                  {{ symptom }}
+                </ion-chip>
+              </div>
+            </div>
+            
+            <div class="detail-section" *ngIf="reaction.treatment">
+              <h4>Treatment Given</h4>
+              <p>{{ reaction.treatment }}</p>
+            </div>
+            
+            <div class="detail-section">
+              <h4>Outcome</h4>
+              <ion-chip [color]="reaction.outcome === 'resolved' ? 'success' : 'warning'">
+                {{ reaction.outcome | titlecase }}
+              </ion-chip>
+            </div>
+            
+            <div class="detail-section" *ngIf="reaction.treatmentEffectiveness">
+              <h4>Treatment Effectiveness</h4>
+              <ion-chip [color]="getOutcomeColor(reaction.treatmentEffectiveness)">
+                {{ reaction.treatmentEffectiveness | titlecase }}
+              </ion-chip>
+            </div>
+            
+            <div class="detail-section" *ngIf="reaction.notes">
+              <h4>Notes</h4>
+              <p>{{ reaction.notes }}</p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <div *ngIf="(analysis.recentReactions || []).length === 0" class="no-data-card">
+        <ion-icon name="medical-outline"></ion-icon>
+        <h3>No Recent Reactions</h3>
+        <p>No allergic reactions recorded in the system.</p>
+      </div>
+    </div>
+
+    <!-- Treatments Tab -->
+    <div *ngIf="selectedTab === 'treatments'" class="tab-panel">
+      <ion-card *ngFor="let treatment of (analysis.treatmentHistory || [])">
+        <ion-card-header>
+          <div class="treatment-header">
+            <ion-card-title>{{ treatment.treatmentType }}</ion-card-title>
+            <ion-chip [color]="getOutcomeColor(treatment.patientResponse)">
+              {{ treatment.patientResponse | titlecase }}
+            </ion-chip>
+          </div>
+          <ion-card-subtitle>{{ formatDate(treatment.createdAt?.toString() || '') }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="treatment-details">
+            <div class="detail-section" *ngIf="treatment.medicationsPrescribed && treatment.medicationsPrescribed.length > 0">
+              <h4>Medications Prescribed</h4>
+              <div class="medications">
+                <ion-chip *ngFor="let med of treatment.medicationsPrescribed" color="primary" size="small">
+                  {{ med }}
+                </ion-chip>
+              </div>
+            </div>
+            
+            <div class="detail-section" *ngIf="treatment.sideEffects && treatment.sideEffects.length > 0">
+              <h4>Side Effects</h4>
+              <div class="side-effects">
+                <ion-chip *ngFor="let effect of treatment.sideEffects" color="warning" size="small">
+                  {{ effect }}
+                </ion-chip>
+              </div>
+            </div>
+            
+            <div class="detail-section" *ngIf="treatment.followUpRequired">
+              <h4>Follow-up Required</h4>
+              <p *ngIf="treatment.followUpDate">Scheduled for: {{ formatDate(treatment.followUpDate) }}</p>
+              <p *ngIf="!treatment.followUpDate">Follow-up needed (date not scheduled)</p>
+            </div>
+            
+            <div class="detail-section" *ngIf="treatment.doctorNotes">
+              <h4>Doctor Notes</h4>
+              <p>{{ treatment.doctorNotes }}</p>
+            </div>
+            
+            <div class="detail-section" *ngIf="treatment.patientFeedback">
+              <h4>Patient Feedback</h4>
+              <p>{{ treatment.patientFeedback }}</p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <div *ngIf="(analysis.treatmentHistory || []).length === 0" class="no-data-card">
+        <ion-icon name="medical-outline"></ion-icon>
+        <h3>No Treatment History</h3>
+        <p>No treatment outcomes recorded in the system.</p>
+      </div>
+    </div>
+
+    <!-- Visits Tab -->
+    <div *ngIf="selectedTab === 'visits'" class="tab-panel">
+      <ion-card *ngFor="let visit of (analysis.visitHistory || [])">
+        <ion-card-header>
+          <div class="visit-header">
+            <ion-card-title>{{ visit.doctorName }}</ion-card-title>
+          </div>
+          <ion-card-subtitle>
+            {{ visit.specialty }} - {{ formatDate(visit.visitDate) }}
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="visit-details">
+            <div class="detail-section">
+              <h4>Chief Complaint</h4>
+              <p>{{ visit.chiefComplaint }}</p>
+            </div>
+            <div class="detail-section" *ngIf="visit.diagnosis">
+              <h4>Diagnosis</h4>
+              <p>{{ visit.diagnosis }}</p>
+            </div>
+            <div class="detail-section" *ngIf="visit.notes">
+              <h4>Notes</h4>
+              <p>{{ visit.notes }}</p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <div *ngIf="(analysis.visitHistory || []).length === 0" class="no-data-card">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <h3>No Visit History</h3>
+        <p>No doctor visits recorded in the system.</p>
+      </div>
+    </div>
+
+    <!-- Medical History Tab -->
+    <div *ngIf="selectedTab === 'history'" class="tab-panel">
+      <ion-card *ngFor="let history of (analysis.medicalHistory || [])">
+        <ion-card-header>
+          <div class="history-header">
+            <ion-card-title>{{ history.condition }}</ion-card-title>
+            <ion-chip [color]="getStatusColor(history.status)">
+              {{ history.status | titlecase }}
+            </ion-chip>
+          </div>
+          <ion-card-subtitle>Diagnosed: {{ formatDate(history.diagnosisDate) }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content *ngIf="history.notes">
+          <p>{{ history.notes }}</p>
+        </ion-card-content>
+      </ion-card>
+
+      <div *ngIf="(analysis.medicalHistory || []).length === 0" class="no-data-card">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <h3>No Medical History</h3>
+        <p>No medical history recorded in the system.</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

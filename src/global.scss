@@ -1,0 +1,669 @@
+// /* Global font styling */
+@import 'leaflet/dist/leaflet.css';
+@import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
+
+body,
+html,
+ion-app {
+  font-family: 'Comfortaa', sans-serif !important;
+}
+
+.ecc-row.allergy-row {
+  margin-top: -6px;
+  margin-bottom: 8px;
+}
+.allergy-pill {
+  background: #20a893 !important;
+  color: #fff;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  display: inline-block;
+}
+.ecc-header {
+  background: #20a893 !important;
+}
+.ecc-label {
+  color: #20a893 !important;
+}
+.emergency-contact-card-presentable.uniform {
+  background: #eaf7f4;
+  border: 1.5px solid #1ca086;
+  border-radius: 14px;
+  padding: 18px 20px 10px 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(28, 160, 134, 0.08);
+  font-size: 15px;
+}
+.ecc-header {
+  display: flex;
+  align-items: center;
+  background: #1ca086;
+  color: #fff;
+  border-radius: 10px 10px 0 0;
+  padding: 8px 12px 7px 12px;
+  margin: -18px -20px 16px -20px;
+}
+.ecc-header-icon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+.ecc-header-title {
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+.ecc-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.ecc-label {
+  min-width: 90px;
+  font-weight: 600;
+  color: #1ca086;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+.ecc-value {
+  flex: 1;
+  color: #222;
+  word-break: break-word;
+  font-size: 15px;
+}
+.allergy-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+.allergy-pill {
+  background: #1ca086;
+  color: #fff;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  display: inline-block;
+}
+.ecc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b2b2b2;
+  font-size: 13px;
+  margin-top: 8px;
+  padding-bottom: 2px;
+}
+.ecc-footer-icon {
+  font-size: 16px;
+  margin-right: 5px;
+}
+.ecc-footer-text {
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+/* Unified Emergency Contact Wrapper */
+.emergency-contact-wrapper-card {
+  background: var(--app-color-primary-bg);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-sm);
+  margin: 8px 0 18px;
+  overflow: hidden;
+}
+.emergency-contact-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--app-color-primary);
+  color: #fff;
+  padding: 10px 14px 9px 14px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: .5px;
+}
+.emergency-contact-header-bar ion-icon { font-size: 18px; }
+.emergency-contact-header-bar .header-left { display:flex; align-items:center; gap:8px; }
+.emergency-contact-header-bar .header-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.contact-action-btn { --border-radius: var(--app-radius-sm); }
+.emergency-contact-body { padding: 12px 16px 10px 16px; }
+.emergency-contact-body .ecc-row { margin-bottom:10px; border-bottom:1px solid var(--app-color-border); padding-bottom:6px; }
+.emergency-contact-body .ecc-row:last-of-type { border-bottom:none; }
+.tappable-hint { justify-content:center; border-top:1px dashed var(--app-color-border); margin-top:4px; padding-top:6px; }
+.tappable-hint .ecc-footer-text { font-size:12px; color: var(--app-color-muted); }
+
+/* Emergency Contact Section Enhancements */
+.emergency-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 4px 4px 2px 4px;
+}
+.emergency-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #045d53;
+  font-size: 15px;
+  letter-spacing: .5px;
+}
+.emergency-section-title ion-icon {
+  font-size: 20px;
+  color: #0a8c7a;
+}
+.emergency-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.emergency-section-actions .action-btn {
+  --border-radius: 10px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  font-weight: 500;
+  letter-spacing: .3px;
+}
+.emergency-contact-card-presentable.elevated {
+  position: relative;
+  border-top: 4px solid #20a893;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.emergency-contact-card-presentable.elevated .ecc-header {
+  border-radius: 0;
+}
+.emergency-contact-card-presentable.uniform .ecc-row:not(.allergy-row) {
+  border-bottom: 1px solid #d3ece7;
+  padding-bottom: 6px;
+}
+.emergency-contact-card-presentable.uniform .ecc-row:last-of-type {
+  border-bottom: none;
+}
+
+.emergency-contact-card-presentable {
+  background: #f4faff;
+  border: 1.5px solid #b3e0ff;
+  border-radius: 12px;
+  padding: 18px 20px 14px 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.06);
+  font-size: 15px;
+}
+.emergency-contact-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.emergency-contact-label {
+  font-weight: 600;
+  min-width: 90px;
+  color: #0077b6;
+  margin-right: 8px;
+}
+.emergency-contact-value {
+  flex: 1;
+  color: #222;
+  word-break: break-word;
+}
+.profile-page-bg {
+  --background: #fff !important;
+  background: #fff !important;
+}
+
+/* Force dark readable colors for AlertController overlays regardless of system theme */
+.fixed-dark-alert {
+  --background: #ffffff;
+  --color: #1f4a42;
+  --backdrop-opacity: 0.4;
+}
+
+.fixed-dark-alert .alert-wrapper {
+  background: #ffffff !important;
+  color: #1f4a42 !important;
+}
+
+.fixed-dark-alert .alert-head,
+.fixed-dark-alert .alert-title,
+.fixed-dark-alert .alert-sub-title,
+.fixed-dark-alert .alert-message,
+.fixed-dark-alert .alert-input,
+.fixed-dark-alert .alert-radio-label,
+.fixed-dark-alert .alert-checkbox-label {
+  color: #1f4a42 !important;
+}
+
+.fixed-dark-alert .alert-button {
+  color: #1f4a42 !important;
+}
+
+/* Profile menu popover: enforce white background regardless of app theme */
+// .profile-menu-popover {
+//   --background: #ffffff;
+//   --color: #000000;
+// }
+
+// .profile-menu-popover::part(content) {
+//   background: #ffffff !important;
+// }
+
+// .profile-menu-popover ion-content,
+// .profile-menu-popover ion-list,
+// .profile-menu-popover ion-item {
+//   --background: #ffffff !important;
+//   background: #ffffff !important;
+// }
+
+// .profile-menu-popover ion-item,
+// .profile-menu-popover ion-label,
+// .profile-menu-popover ion-icon {
+//   color: #000000 !important;
+//   --color: #000000 !important;
+// }
+
+/* Reusable Card Style */
+.app-card {
+  background: var(--app-color-surface);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  padding: 16px 18px 16px 18px;
+  box-shadow: var(--app-shadow-sm);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.app-card.elevated { box-shadow: var(--app-shadow-md); }
+.app-card .card-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  color: var(--app-color-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.app-card .card-subtext { font-size: 12px; color: var(--app-color-muted); }
+.app-card-divider { height:1px; background: var(--app-color-border); margin:4px 0 6px; }
+
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Leaflet CSS for map rendering */
+@import "~leaflet/dist/leaflet.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+// @import "@ionic/angular/css/palettes/dark.system.css";
+
+// For the alert interface (used by ion-select on mobile)
+ion-alert .alert-wrapper,
+ion-alert .alert-radio-group,
+ion-alert .alert-checkbox-group {
+  --background: #e8f2f0 !important;
+  background: #e8f2f0 !important;
+}
+ion-alert .alert-head,
+ion-alert .alert-title,
+ion-alert .alert-sub-title {
+  color: #1f4a42 !important;
+  font-weight: 700 !important;
+}
+ion-alert .alert-radio-label,
+ion-alert .alert-checkbox-label {
+  color: #036a5d !important;
+}
+
+// Allergen Alert Styles
+.alert-success .alert-wrapper {
+  --background: #d4edda !important;
+  border-left: 4px solid #28a745 !important;
+}
+
+.alert-success .alert-head {
+  color: #155724 !important;
+}
+
+.alert-success .alert-message {
+  color: #155724 !important;
+}
+
+.alert-warning .alert-wrapper {
+  --background: #fff3cd !important;
+  border-left: 4px solid #ffc107 !important;
+}
+
+.alert-warning .alert-head {
+  color: #856404 !important;
+}
+
+.alert-warning .alert-message {
+  color: #856404 !important;
+}
+
+.alert-danger .alert-wrapper {
+  --background: #f5f5f5 !important;
+  border-left: 4px solid #dc3545 !important;
+}
+
+.alert-danger .alert-head {
+  color: #721c24 !important;
+  font-weight: bold !important;
+}
+
+.alert-danger .alert-message {
+  color: #721c24 !important;
+  font-weight: 500 !important;
+}
+
+/* Buddy Response Alert Modal Styles */
+.buddy-alert-modal {
+  --width: 90%;
+  --max-width: 400px;
+  --height: auto;
+  --border-radius: 16px;
+  --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.buddy-alert-modal .modal-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Route Map Modal Styles */
+.route-map-modal {
+  --width: 95%;
+  --max-width: 600px;
+  --height: 80%;
+  --border-radius: 12px;  --box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.route-map-modal .modal-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .buddy-alert-modal,
+  .route-map-modal {
+    --animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .buddy-alert-modal,
+  .route-map-modal {
+    --box-shadow: 0 0 0 2px var(--ion-color-primary);
+  }
+}
+
+/* (reverted custom popover styles) */
+
+/* =====================================================================
+   UNIVERSAL PURE WHITE MODAL OVERRIDE
+   Apply cssClass="force-white-modal" (and optionally force-white-content) to
+   any <ion-modal> to guarantee a white background regardless of theme/dark mode
+   or component-level variable leakage. This operates at global level so it
+   penetrates Ionic shadow DOM boundaries via ::part + high specificity.
+   ===================================================================== */
+ion-modal.force-white-modal,
+ion-modal.force-white-modal::part(content),
+ion-modal.force-white-modal .modal-wrapper,
+ion-modal.force-white-modal .ion-page,
+ion-modal.force-white-modal ion-content,
+ion-modal.force-white-modal ion-content::part(scroll),
+ion-modal.force-white-modal .inner-scroll {
+  --background: #ffffff !important;
+  --ion-background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #1f2d29 !important;
+}
+
+/* Toolbar is NOT forced to white - it should use teal-modal-toolbar class */
+/* Teal toolbar utility (works with or without force-white-modal) */
+
+ion-modal.force-white-modal ion-item,
+ion-modal.force-white-modal ion-item::part(native),
+ion-modal.force-white-modal ion-item::part(container) {
+  --background: #ffffff !important;
+  background: #ffffff !important;
+  --color: #1f2d29 !important;
+  color: #1f2d29 !important;
+}
+
+ion-modal.force-white-modal ion-label[position="stacked"] {
+  color: #045146 !important;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+
+ion-modal.force-white-modal ion-input,
+ion-modal.force-white-modal ion-textarea,
+ion-modal.force-white-modal ion-textarea::part(native) {
+  --color: #1f2d29 !important;
+  color: #1f2d29 !important;
+  background: #ffffff !important;
+}
+
+ion-modal.force-white-modal ion-button {
+  --background: #036a5d !important;
+  background: #036a5d !important;
+  --color: #ffffff !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: 14px;
+}
+
+/* Enhanced styling for Edit Emergency Message fields */
+ion-modal.force-white-modal ion-item.eem-field {
+  --background: #ffffff !important;
+  background: #ffffff !important;
+  border: 1px solid #e8f2f0;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  --inner-padding-start: 16px;
+  --inner-padding-end: 16px;
+  --inner-padding-top: 14px;
+  --inner-padding-bottom: 14px;
+  min-height: 70px;
+}
+
+ion-modal.force-white-modal ion-item.eem-field ion-label[position="stacked"] {
+  color: #036a5d !important;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+ion-modal.force-white-modal ion-item.eem-field ion-input,
+ion-modal.force-white-modal ion-item.eem-field ion-textarea {
+  --color: #1f4a42 !important;
+  color: #1f4a42 !important;
+  background: #ffffff !important;
+  font-size: 15px;
+  font-weight: 400;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+}
+
+ion-modal.force-white-modal ion-item.eem-field ion-textarea::part(native) {
+  --color: #1f4a42 !important;
+  color: #1f4a42 !important;
+  background: #ffffff !important;
+  min-height: 60px;
+}
+
+/* Read-only field styling */
+ion-modal.force-white-modal ion-item.eem-field ion-input[readonly] {
+  opacity: 0.8;
+  font-style: italic;
+  color: #666 !important;
+}
+
+/* Remove unintended dark overlays from backdrop-derived variables */
+ion-modal.force-white-modal::part(backdrop) {
+  --backdrop-opacity: 0.32;
+}
+
+/* Reusable teal toolbar utility */
+.toolbar--teal, ion-toolbar.toolbar--teal,
+.teal-modal-toolbar, ion-toolbar.teal-modal-toolbar {
+  --background: #036a5d !important;
+  background: #036a5d !important;
+  --color: #ffffff !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid #004d42;
+  width: 100%;
+}
+.toolbar--teal ion-title, .teal-modal-toolbar ion-title { color:#ffffff !important; font-weight:700; letter-spacing:.4px; }
+.toolbar--teal ion-button, .toolbar--teal ion-icon,
+.teal-modal-toolbar ion-button, .teal-modal-toolbar ion-icon { --color:#ffffff !important; color:#ffffff !important; }
+
+/* Modal styling for better display */
+ion-modal {
+  --height: 100%;
+  --width: 100%;
+  --border-radius: 0;
+  
+  &.force-white-modal {
+    --background: #ffffff;
+    --width: 100%;
+    --height: 100%;
+  }
+}
+
+.teal-modal-btn {
+  --background: #009688;
+  --background-hover: #00796b;
+  --color: #fff;
+  --border-radius: 8px;
+}
+
+/* Responder-map sheet modal */
+ion-modal.responder-map-modal {
+  --border-radius: 16px 16px 0 0;
+  --box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* --- AQI CUSTOM ALERT (Must be in global.scss) --- */
+.aqi-custom-alert {
+  --background: #f4fbf9; 
+  --width: 90%;
+  --max-width: 350px;
+
+  .alert-wrapper {
+    border-radius: 16px !important;
+  }
+
+  .alert-head {
+    padding-bottom: 8px;
+    .alert-title {
+      color: #126d61;
+      font-weight: 700;
+      font-size: 18px;
+    }
+  }
+
+  .alert-message {
+    text-align: left;
+    font-size: 13px !important;
+    line-height: 1.5;
+    color: #333;
+    white-space: pre-wrap !important; 
+    padding: 10px 15px !important;
+    
+    font {
+       display: block;
+       margin-top: 10px;
+       font-size: 11px;
+       font-style: italic;
+       color: #666;
+    }
+  }
+
+  .alert-radio-group {
+    border-top: 1px solid #f0f0f0;
+    margin-top: 5px;
+
+    .alert-radio-button {
+      height: 45px;
+    }
+
+    .alert-radio-icon {
+      width: 18px !important;
+      height: 18px !important;
+      border-radius: 50%;
+    }
+
+    /* Solid Colors for the Legend dots */
+    .alert-radio-button:nth-child(1) .alert-radio-icon { background: #126d61 !important; border-color: #126d61 !important; }
+    .alert-radio-button:nth-child(2) .alert-radio-icon { background: #ffc409 !important; border-color: #ffc409 !important; }
+    .alert-radio-button:nth-child(3) .alert-radio-icon { background: #f7a01c !important; border-color: #f7a01c !important; }
+    .alert-radio-button:nth-child(4) .alert-radio-icon { background: #eb445a !important; border-color: #eb445a !important; }
+    .alert-radio-button:nth-child(5) .alert-radio-icon { background: #8932b2 !important; border-color: #8932b2 !important; }
+
+    .alert-radio-inner {
+      display: none !important;
+    }
+
+    .alert-radio-label {
+      font-size: 13px !important;
+      color: #333 !important;
+      font-weight: 500;
+    }
+  }
+
+  .alert-button-group {
+    padding: 10px;
+    .alert-button {
+      color: #126d61;
+      font-weight: bold;
+    }
+  }
+}

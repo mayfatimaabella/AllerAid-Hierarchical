@@ -1,0 +1,97 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Route & ETA</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Route Information -->
+  <div class="route-info">
+    <ion-card>
+      <ion-card-content>
+        <div class="route-details">
+          <div class="route-item">
+            <ion-icon name="person-outline" color="primary"></ion-icon>
+            <span>{{ routeData.buddyName }} → {{ routeData.patientName }}</span>
+          </div>
+          <div class="route-item">
+            <ion-icon name="time-outline" color="success"></ion-icon>
+            <span><strong>ETA: {{ estimatedTime }}</strong></span>
+          </div>
+          <div class="route-item">
+            <ion-icon name="location-outline" color="tertiary"></ion-icon>
+            <span><strong>Distance: {{ distance }}</strong></span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Map Container -->
+  <div class="map-container">
+    <div #mapContainer class="map" id="map" *ngIf="mapAvailable"></div>
+    
+    <!-- Fallback for when map doesn't load -->
+    <div class="map-fallback" *ngIf="!mapAvailable">
+      <ion-icon name="map-outline" size="large" color="medium"></ion-icon>
+      <h3>Map View Unavailable</h3>
+      <p *ngIf="distance !== 'Unable to calculate'; else noDataTemplate">
+        <strong>{{ routeData.buddyName }}</strong> is on their way!
+      </p>
+      <ng-template #noDataTemplate>
+        <p>Waiting for location data...</p>
+      </ng-template>
+      
+      <div class="fallback-details">
+        <ion-item lines="none">
+          <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <h3>Distance</h3>
+            <p>{{ distance }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon name="time-outline" slot="start" color="success"></ion-icon>
+          <ion-label>
+            <h3>Estimated Time</h3>
+            <p>{{ estimatedTime }}</p>
+          </ion-label>
+        </ion-item>
+      </div>
+      
+      <ion-button 
+        fill="outline" 
+        (click)="openInMapsApp()"
+        [disabled]="distance === 'Unable to calculate'">
+        <ion-icon name="navigate-outline" slot="start"></ion-icon>
+        Open in Maps App
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons ion-padding">
+    <ion-button 
+      expand="block" 
+      fill="solid" 
+      color="primary" 
+      (click)="openInMapsApp()">
+      <ion-icon name="navigate-outline" slot="start"></ion-icon>
+      Open in Maps App
+    </ion-button>
+    
+    <ion-button 
+      expand="block" 
+      fill="outline" 
+      color="medium" 
+      (click)="dismiss()">
+      <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+      Close
+    </ion-button>
+  </div>
+</ion-content>

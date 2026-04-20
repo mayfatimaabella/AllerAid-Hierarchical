@@ -1,0 +1,141 @@
+/* --- Toolbar Styles --- */
+ion-toolbar {
+  --background: #036a5d;
+  --color: white;
+}
+
+/* --- Container Wrappers --- */
+.wrapper {
+  padding: 0; // Keeping it tight to let the card fill the space
+}
+
+.aqi-main-card {
+  background: #e9f5f0;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(18, 109, 97, 0.15);
+  border: 1px solid #198476;
+  margin: 0;
+
+  ion-card-content {
+    padding: 12px;
+  }
+}
+
+/* --- Stats Row --- */
+.live-data-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(25, 132, 118, 0.1);
+  margin-bottom: 10px;
+}
+
+.data-badge {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+  min-width: 90px;
+  text-align: center;
+}
+
+.metric-group p {
+  margin: 0;
+  font-size: 11px;
+  color: #444;
+  strong { color: #126d61; }
+}
+
+/* --- Map Section & Legend --- */
+.map-wrapper {
+  position: relative; // Essential for positioning the legend overlay
+  margin-bottom: 10px;
+}
+
+.map-container {
+  height: 220px; 
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #198476;
+  background-color: #f0f0f0; 
+  z-index: 1; // Map sits behind the legend
+}
+
+.map-legend-overlay {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 10; // Legend floats on top of the map tiles
+  background: rgba(255, 255, 255, 0.95); // Slightly more opaque for better legibility
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #333;
+    
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      &.g { background: #126d61; }
+      &.y { background: #ffc409; }
+      &.o { background: #f7a01c; }
+      &.r { background: #eb445a; }
+      &.p { background: #8932b2; }
+    }
+  }
+}
+
+/* --- Risk Logs --- */
+.logs-container {
+  background: white;
+  border-radius: 12px;
+  padding: 8px;
+  border: 1px solid rgba(25, 132, 118, 0.1);
+
+  .logs-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    h3 { margin: 0; font-size: 14px; color: #126d61; font-weight: bold; }
+  }
+}
+
+.empty-logs {
+  text-align: center; 
+  padding: 12px; 
+  color: #888; 
+  font-size: 12px; 
+  border: 1px dashed #ccc; 
+  border-radius: 8px;
+  margin-top: 5px;
+}
+
+/* --- Dynamic Status Colors --- */
+.pollen-low    { background-color: #126d61; } 
+.pollen-mod    { background-color: #ffc409; color: #333; } 
+.pollen-orange { background-color: #f7a01c; } 
+.pollen-high   { background-color: #eb445a; } 
+.pollen-purple { background-color: #8932b2; }
+
+/* --- Footer Note --- */
+.pollen-map-note {
+  font-size: 10px;
+  color: #888;
+  margin: 8px 0;
+  text-align: center;
+}

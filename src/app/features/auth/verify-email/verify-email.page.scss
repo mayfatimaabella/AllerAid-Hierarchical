@@ -1,0 +1,57 @@
+
+@use '../registration/registration.page.scss' as *;
+
+.verify-message {
+	font-size: 1.1rem;
+	margin-bottom: 1px;
+	text-align: left;
+}
+
+.verify-email {
+	font-size: 1.1rem;
+	font-weight: 500;
+	margin-bottom: 10px;
+	word-break: break-all;
+	text-align: center;
+}
+
+.verify-instructions {
+	font-size: 0.8rem;
+	margin-bottom: 1px;
+	text-align: center;
+	color: gray
+}
+
+/* Ensure card content centers horizontally */
+.register-card ion-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Bottom actions: left and right buttons on the same row */
+.bottom-actions {
+	display: flex;
+	width: 100%;
+	gap: 8px;
+	margin-top: 8px;
+	padding: 0 4px;
+	box-sizing: border-box;
+	justify-content: space-between;
+}
+
+.bottom-actions ion-button {
+	--padding-start: 8px;
+	--padding-end: 8px;
+	color: #000;
+	font-size: 0.8rem; /* slightly larger font for better visibility */
+	--ion-icon-font-size: 1.1rem;
+}
+
+.bottom-actions .left-btn {
+	justify-content: flex-start;
+}
+
+.bottom-actions .right-btn {
+	justify-content: flex-end;
+}

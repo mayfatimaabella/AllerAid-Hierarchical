@@ -1,0 +1,153 @@
+<ion-header>
+  <ion-toolbar class="dark-toolbar">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>AllerAid</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button fill="clear" [routerLink]="['/tabs/alerts']">
+        <ion-icon name="warning"></ion-icon>
+      </ion-button>
+
+      <ion-button fill="clear" size="small" (click)="openNotifications()">
+        <img src="assets/icon/bell.png" alt="bell" class="notif-icon" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="wrapper scrollable-content">
+    <h2 class="page-title">Welcome, {{ userName }}!</h2>
+
+    <div class="emergency-wrapper">
+      <div class="circle-button" (click)="triggerEmergency()">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <h2 class="emergency-title">EMERGENCY</h2>
+        <p class="instruction-text">Press the button or shake</p>
+      </div>
+      <p class="bottom-text">Press the button above in case of emergency</p>
+    </div>
+
+    <!-- Show the emergency response notification when a buddy responds -->
+    <app-emergency-response-notification
+      *ngIf="respondingBuddy"
+      [responderName]="respondingBuddy.responderName"
+      [estimatedTime]="respondingBuddy.estimatedTime"
+      [distance]="respondingBuddy.distance"
+      [estimatedMinutes]="respondingBuddy.estimatedArrival"
+      (viewMap)="openResponderMap(respondingBuddy)"
+      (dismiss)="respondingBuddy = null"
+    >
+    </app-emergency-response-notification>
+
+    <!-- Emergency Status Card -->
+    <ion-card *ngIf="isEmergencyActive" class="emergency-status-card">
+      <ion-card-header>
+        <ion-card-title class="emergency-title-row">
+          <ion-icon name="alert-circle" color="danger"></ion-icon>
+          EMERGENCY ACTIVE
+        </ion-card-title>
+        <ion-card-subtitle>Started: {{ emergencyStartTime | date: 'short' }}</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="emergency-info">
+          <p>
+            <strong>Location:</strong>
+            <span *ngIf="isEmergencyAddressLoading">Resolving address...</span>
+            <span *ngIf="!isEmergencyAddressLoading && emergencyAddress">{{ emergencyAddress }}</span>
+            <span *ngIf="!isEmergencyAddressLoading && !emergencyAddress && emergencyLocation">
+              {{ emergencyLocation.latitude.toFixed(4) }}, {{ emergencyLocation.longitude.toFixed(4) }}
+            </span>
+            <span *ngIf="!emergencyLocation && !isEmergencyAddressLoading">Updating...</span>
+          </p>
+
+          <div class="buddy-responses" *ngIf="hasBuddyResponses()">
+            <h4>Buddy Responses & Notifications:</h4>
+            <div class="response-list">
+              <div *ngFor="let buddyId of getObjectKeys(buddyResponses)" class="response-item">
+                <div class="buddy-info">
+                  <span class="buddy-name">{{ buddyResponses[buddyId].name }}</span>
+                  <div class="buddy-status">
+                    <ion-badge class="status-badge" [color]="getBuddyResponseColor(buddyId)">
+                      {{ getBuddyResponseStatus(buddyId) }}
+                    </ion-badge>
+                    <ion-badge
+                      *ngIf="shouldShowNotificationBadge(buddyId)"
+                      class="notification-badge"
+                      [color]="getNotificationStatusColor(buddyId)">
+                      {{ getNotificationStatus(buddyId) }}
+                    </ion-badge>
+                  </div>
+                </div>
+                <div class="response-time">
+                  {{ buddyResponses[buddyId].timestamp | date: 'short' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Persistent hotline fallback when no buddies or all cannot respond -->
+          <div class="hotline-fallback" *ngIf="shouldShowHotlineFallback()">
+            <p class="hotline-note">
+              No available responders at the moment. Please contact emergency services.
+            </p>
+            <ion-button expand="block" color="danger" (click)="callNumber('911')">
+              <ion-icon name="call-outline" slot="start"></ion-icon>
+              Call 911
+            </ion-button>
+            <ion-button expand="block" color="warning" (click)="callNumber('117')">
+              <ion-icon name="call-outline" slot="start"></ion-icon>
+              Call 117
+            </ion-button>
+            <ion-button expand="block" color="medium" (click)="callNumber('143')">
+              <ion-icon name="call-outline" slot="start"></ion-icon>
+              Call Red Cross 143
+            </ion-button>
+          </div>
+
+          <div class="emergency-actions">
+            <ion-button class="mt-16" expand="block" color="success" (click)="resolveEmergency()">
+              <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+              Help Completed
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="health-overview-container">
+      <ion-card class="health-card">
+        <ion-card-header>
+          <ion-card-title class="allergen-title">
+            ALLERGENS
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="count-display">
+            <span class="count-number" *ngIf="userAllergies.length > 0">{{ userAllergies.length }}</span>
+            <span class="count-number" *ngIf="userAllergies.length === 0">0</span>
+          </div>
+          <p class="count-label">recorded</p>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="health-card">
+        <ion-card-header>
+          <ion-card-title class="emergency-contact-title">
+            CONTACTS
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="count-display">
+            <span class="count-number">{{ getBuddiesCount() }}</span>
+          </div>
+          <p class="count-label">buddies</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

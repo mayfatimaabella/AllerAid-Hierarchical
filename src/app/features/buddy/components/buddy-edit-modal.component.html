@@ -1,0 +1,30 @@
+<ng-container>
+  <div class="buddy-modal-backdrop" (click)="close()">
+    <div class="buddy-modal-content" (click)="$event.stopPropagation()">
+      <!-- No ion-header or ion-toolbar, just the modal content -->
+      <ion-content class="ion-padding" [style.background]="'#fff'">
+        <form>
+          <ion-item>
+            <ion-label position="stacked">First Name</ion-label>
+            <ion-input [(ngModel)]="editFirstName" name="editFirstName" required></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Last Name</ion-label>
+            <ion-input [(ngModel)]="editLastName" name="editLastName" required></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Email</ion-label>
+            <ion-input [(ngModel)]="editEmail" name="editEmail" type="email" required></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">
+              Contact Number
+            </ion-label>
+            <ion-input [(ngModel)]="editContact" name="editContact" type="tel" [disabled]="isLoadingContact"></ion-input>
+          </ion-item>
+          <ion-button expand="block" class="saveBtn" (click)="saveEdit()" style="margin-top: 16px;">Save Changes</ion-button>
+        </form>
+      </ion-content>
+    </div>
+  </div>
+</ng-container>

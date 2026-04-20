@@ -1,0 +1,168 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Buddy Invitations</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()" fill="clear">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange()">
+    <ion-segment-button value="invite">
+      <ion-label>Send Invite</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="received">
+      <ion-label>
+        Received 
+        <ion-badge *ngIf="getPendingReceivedCount() > 0" 
+                   color="danger" 
+                   style="margin-left: 4px;">
+          {{ getPendingReceivedCount() }}
+        </ion-badge>
+      </ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="sent">
+      <ion-label>Sent ({{ sentInvitations.length }})</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Send Invitation Tab -->
+  <div *ngIf="selectedSegment === 'invite'" class="invite-section">
+    <h3>Invite Someone as Your Buddy</h3>
+    <p style="color: #e9e9e9; font-size: 14px; margin-bottom: 20px;">
+      Search for users by email and send them a buddy request.
+    </p>
+
+    <form (ngSubmit)="sendInvitation()">
+      <ion-item lines="none">
+        <ion-label position="stacked">Recipient Email *</ion-label>
+        <ion-input 
+          [(ngModel)]="inviteEmail"
+          name="inviteEmail"
+          type="email"
+          placeholder="Enter their email address"
+          required>
+        </ion-input>
+      </ion-item>
+
+      <ion-item lines="none">
+        <ion-label position="stacked">Personal Message</ion-label>
+        <ion-textarea 
+          [(ngModel)]="inviteMessage"
+          name="inviteMessage"
+          placeholder="Hi! I'd like you to be my emergency buddy. This will help us stay connected during allergy emergencies."
+          rows="3">
+        </ion-textarea>
+      </ion-item>
+
+      <ion-button 
+        expand="block" 
+        type="submit"
+        [disabled]="!inviteEmail || isLoading"
+        style="margin-top: 20px;">
+        <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
+        {{ isLoading ? 'Sending...' : 'Send Invitation' }}
+      </ion-button>
+    </form>
+  </div>
+
+  <!-- Received Invitations Tab -->
+  <div *ngIf="selectedSegment === 'received'" class="received-section">
+    <h3>Received Invitations</h3>
+    
+    <div *ngIf="receivedInvitations.length > 0">
+      <div *ngFor="let invitation of receivedInvitations" class="invitation-card">
+        <div class="invitation-header">
+          <div class="sender-info">
+            <h4>{{ invitation.fromUserName }}</h4>
+            <p class="sender-email">{{ invitation.fromUserEmail }}</p>
+          </div>
+          <ion-chip [color]="getInvitationStatusColor(invitation.status)" size="small">
+            {{ invitation.status | titlecase }}
+          </ion-chip>
+        </div>
+        
+        <p class="invitation-message" *ngIf="invitation.message">
+          "{{ invitation.message }}"
+        </p>
+        
+        <div class="invitation-date">
+          <ion-icon name="time-outline"></ion-icon>
+          <small>{{ invitation.createdAt | date:'medium' }}</small>
+        </div>
+
+        <div *ngIf="invitation.status === 'pending'" class="invitation-actions">
+          <ion-button 
+            size="small" 
+            fill="solid" 
+            color="success"
+            (click)="acceptInvitation(invitation.id!)">
+            <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+            Accept
+          </ion-button>
+          
+          <ion-button 
+            size="small" 
+            fill="outline" 
+            color="danger"
+            (click)="declineInvitation(invitation.id!)">
+            <ion-icon name="close-outline" slot="start"></ion-icon>
+            Decline
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="receivedInvitations.length === 0" class="empty-state">
+      <ion-icon name="mail-outline" class="empty-icon"></ion-icon>
+      <p style="color: #ececec">No buddy invitations received</p>
+    </div>
+  </div>
+
+  <!-- Sent Invitations Tab -->
+  <div *ngIf="selectedSegment === 'sent'" class="sent-section">
+    <h3>Sent Invitations</h3>
+    
+    <div *ngIf="sentInvitations.length > 0">
+      <div *ngFor="let invitation of sentInvitations" class="invitation-card">
+        <div class="invitation-header">
+          <div class="recipient-info">
+            <h4>{{ invitation.toUserName }}</h4>
+            <p class="recipient-email">{{ invitation.toUserEmail }}</p>
+          </div>
+          <ion-chip [color]="getInvitationStatusColor(invitation.status)" size="small">
+            {{ invitation.status | titlecase }}
+          </ion-chip>
+        </div>
+        
+        <p class="invitation-message" *ngIf="invitation.message">
+          "{{ invitation.message }}"
+        </p>
+        
+        <div class="invitation-date">
+          <ion-icon name="time-outline"></ion-icon>
+          <small>{{ invitation.createdAt | date:'medium' }}</small>
+        </div>
+
+        <div *ngIf="invitation.status === 'pending'" class="invitation-actions">
+          <ion-button 
+            size="small" 
+            fill="outline" 
+            color="warning"
+            (click)="cancelInvitation(invitation.id!)">
+            <ion-icon name="close-outline" slot="start"></ion-icon>
+            Cancel
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="sentInvitations.length === 0" class="empty-state">
+      <ion-icon name="paper-plane-outline" class="empty-icon"></ion-icon>
+      <p style="color: #ececec">No buddy invitations sent</p>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,110 @@
+<ion-content [fullscreen]="true" class="ion-padding register-bg">
+  <div class="form-container">
+
+    <ion-card class="register-card">
+      <ion-card-header>
+        <ion-card-title>Join AllerAid</ion-card-title>
+        <ion-card-subtitle>Join us to stay protected from allergy triggers!</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-icon slot="start" name="person-outline"></ion-icon>
+            <ion-input placeholder="First Name" [(ngModel)]="firstName"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon slot="start" name="person-outline"></ion-icon>
+            <ion-input placeholder="Last Name" [(ngModel)]="lastName"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon slot="start" name="mail-outline"></ion-icon>
+            <ion-input type="email" placeholder="Email" [(ngModel)]="email"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon slot="start" name="people-outline"></ion-icon>
+            <ion-select 
+              placeholder="Select Role" 
+              [(ngModel)]="role" 
+              interface="popover" 
+              [interfaceOptions]="{ cssClass: 'white-select-popover' }">
+              <ion-select-option value="user">Patient</ion-select-option>
+              <!-- <ion-select-option value="buddy">Buddy</ion-select-option> -->
+              <ion-select-option value="doctor">Doctor</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- License Upload for Doctors -->
+          <div *ngIf="role === 'doctor'" class="ion-margin-top upload-area">
+            <ion-item lines="none" class="upload-item">
+              <ion-icon slot="start" name="document-attach-outline" class="upload-icon"></ion-icon>
+              <div class="upload-content">
+                <ion-label class="upload-label">Upload Medical License <span class="thin">(Proof of Identity)</span></ion-label>
+
+                <!-- Use a visually-hidden file input but keep it accessible; clicking the button opens file picker -->
+                <input 
+                  type="file" 
+                  accept="image/*,application/pdf" 
+                  #fileInput 
+                  (change)="onFileSelected($event)" 
+                  id="licenseInput"
+                  class="visually-hidden" />
+
+                <ion-button type="button" expand="block" fill="outline" class="upload-btn" (click)="triggerFileInput()" aria-controls="licenseInput" aria-label="Upload medical license">
+                  <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+                  Upload License
+                </ion-button>
+
+                <ion-text *ngIf="selectedFileName" color="success" class="uploaded-text">
+                  <small>{{ selectedFileName }} uploaded successfully</small>
+                </ion-text>
+              </div>
+            </ion-item>
+          </div>
+
+          <ion-item>
+            <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+
+            <ion-input 
+              [type]="showPassword ? 'text' : 'password'" 
+              placeholder="Password" 
+              [(ngModel)]="password">
+            </ion-input>
+
+            <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword" [ngClass]="{ 'active': showPassword }">
+              <ion-icon [name]="showPassword ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <!-- Confirm Password -->
+          <ion-item>
+            <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+
+            <ion-input 
+              [type]="showConfirmPassword ? 'text' : 'password'" 
+              placeholder="Confirm Password" 
+              [(ngModel)]="confirmPassword">
+            </ion-input>
+
+            <ion-button fill="clear" slot="end" (click)="showConfirmPassword = !showConfirmPassword" [ngClass]="{ 'active': showConfirmPassword }">
+              <ion-icon [name]="showConfirmPassword ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+        </ion-list>
+
+        <ion-button expand="block" class="registerBtn" shape="round" (click)="register()">
+          Register
+        </ion-button>
+
+        <div class="text-center">
+          <p>Already have an account? <a routerLink="/login">Log in</a></p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+</ion-content>

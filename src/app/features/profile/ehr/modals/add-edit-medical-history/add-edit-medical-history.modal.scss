@@ -1,0 +1,141 @@
+/* Add/Edit Medical History Modal Styles - aligned with Medication modal */
+
+ion-content { --background: #ffffff; }
+.white-content { --background: #ffffff; }
+
+form { margin-bottom: 0; }
+
+.form-fields { margin-bottom: 24px; }
+
+/* Shared field styling (mirrors medication-field) */
+.medication-field {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  --background: #ffffff;
+  --min-height: 70px;
+
+  background: #ffffff;
+  border: 1px solid #d1e7e0;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px rgba(3, 106, 93, 0.08);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #036a5d;
+    box-shadow: 0 2px 6px rgba(3, 106, 93, 0.12);
+  }
+
+  &:focus-within {
+    border-color: #036a5d;
+    box-shadow: 0 0 0 3px rgba(3, 106, 93, 0.1);
+  }
+
+  ion-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #036a5d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  ion-input,
+  ion-select,
+  ion-textarea {
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    font-size: 15px;
+    color: #1f4a42;
+    margin-top: 4px;
+  }
+
+  ion-select { width: 100%; max-width: 100%; }
+  ion-textarea { min-height: 80px; }
+
+  ion-input::part(native),
+  ion-textarea::part(native),
+  ion-select::part(text),
+  ion-select::part(placeholder) { color: #1a1a1a; }
+
+  &.date-field {
+    ion-datetime-button {
+      width: 100%;
+      --padding-start: 0;
+      --padding-end: 0;
+      margin-top: 4px;
+      &::part(native) {
+        background: transparent;
+        padding: 8px 0;
+        font-size: 15px;
+        color: #1f4a42;
+        text-align: left;
+        justify-content: flex-start;
+      }
+    }
+  }
+}
+
+/* Notes field adjustments */
+.notes-field ion-textarea { line-height: 1.5; }
+
+/* Action buttons styling */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e8f2f0;
+
+  ion-button {
+    --border-radius: 12px;
+    height: 50px;
+    font-weight: 600;
+    font-size: 15px;
+    text-transform: none;
+    letter-spacing: 0.3px;
+    margin: 0;
+
+    &[type="submit"] {
+      --background: #036a5d;
+      --background-hover: #025449;
+      --background-activated: #014a3e;
+      --color: #ffffff;
+
+      &:disabled {
+        --background: #b3d4ce;
+        --color: #7a9f98;
+        opacity: 0.6;
+      }
+    }
+
+    &[fill="outline"] {
+      --border-width: 1.5px;
+      --border-color: #8ba19c;
+      --color: #5a6c69;
+      --background: transparent;
+      --background-hover: rgba(139, 161, 156, 0.05);
+      --background-activated: rgba(139, 161, 156, 0.1);
+    }
+
+    &.remove-btn {
+      --border-color: #d63031;
+      --color: #d63031;
+      &:hover { --background: rgba(214,48,49,0.08); }
+    }
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .medication-field { --min-height: 65px; }
+}
+
+/* Ensure datetime button universal width */
+ion-datetime-button { width: 100%; }

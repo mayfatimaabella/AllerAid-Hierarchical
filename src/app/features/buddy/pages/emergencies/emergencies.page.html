@@ -1,0 +1,126 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Emergency Center</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="refreshEmergencies()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Main Segment Navigation -->
+  <ion-segment [(ngModel)]="selectedTab" (ionChange)="onTabChange()" class="main-segment">
+    <ion-segment-button value="active">
+      <ion-label>Active</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="history">
+      <ion-label>History</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Active Emergencies -->
+  <ion-card *ngIf="selectedTab === 'active' && activeEmergencies.length > 0" class="active-emergency-card">
+    <ion-card-header>
+      <ion-card-title style="display: flex; align-items: center; gap: 8px; color: white;">
+        <ion-icon name="warning" size="large"></ion-icon>
+        Active Emergencies ({{ activeEmergencies.length }})
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div *ngFor="let emergency of activeEmergencies" class="emergency-card">
+        <div class="emergency-header">
+          <h2>{{ emergency.userName }}</h2>
+          <ion-badge color="light">{{ emergency.status }}</ion-badge>
+        </div>
+        <div class="emergency-details">
+          <p><strong>Location:</strong> {{ emergency.displayAddress || getLocationDisplay(emergency.location) }}</p>
+          <p><strong>Time:</strong> {{ getTimeAgo(emergency.timestamp) }}</p>
+          <p><strong>Allergies:</strong> {{ emergency.allergies?.join(', ') || 'None listed' }}</p>
+          <p *ngIf="emergency.instruction"><strong>Instructions:</strong> {{ emergency.instruction }}</p>
+        </div>
+        <div class="emergency-actions">
+          <ion-button 
+            expand="block" 
+            fill="solid" 
+            color="light" 
+            (click)="respondToEmergency(emergency)"
+            *ngIf="emergency.status === 'active'">
+            <ion-icon name="car-outline" slot="start"></ion-icon>
+            I'm On My Way
+          </ion-button>
+          <ion-button expand="block" fill="outline" color="light" (click)="viewOnMap(emergency)">
+            <ion-icon name="map-outline" slot="start"></ion-icon>
+            View on Map
+          </ion-button>
+          <ion-button expand="block" fill="outline" color="light" (click)="dismissEmergency(emergency)">
+            <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+            Dismiss
+          </ion-button>
+          <ion-button expand="block" fill="clear" color="light" (click)="callPatient(emergency)">
+            <ion-icon name="call-outline" slot="start"></ion-icon>
+            Call {{ emergency.userName }}
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Empty State for Active Emergencies -->
+  <div *ngIf="selectedTab === 'active' && activeEmergencies.length === 0" class="empty-state">
+    <ion-icon name="checkmark-circle-outline" size="large"></ion-icon>
+    <p>No active emergencies</p>
+    <p>This is good news!</p>
+  </div>
+
+  <!-- Emergency History -->
+  <ion-card *ngIf="selectedTab === 'history'">
+    <ion-card-header>
+      <ion-card-title style="display: flex; align-items: center; gap: 8px;">
+        <ion-icon name="time-outline"></ion-icon>
+        Emergency History
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-segment [(ngModel)]="selectedFilter" (ionChange)="filterEmergencies()" scrollable="true" class="main-segment">
+        <ion-segment-button value="all">
+          <ion-label>All</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="resolved">
+          <ion-label>Resolved</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="responding">
+          <ion-label>Responding</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="dismissed">
+          <ion-label>Dismissed</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <ion-list *ngIf="filteredEmergencies.length > 0">
+        <ion-item *ngFor="let emergency of filteredEmergencies" (click)="viewEmergencyDetails(emergency)">
+          <ion-label>
+            <h2>{{ emergency.userName }}</h2>
+            <p><strong>Location:</strong> {{ emergency.displayAddress || getLocationDisplay(emergency.location) }}</p>
+            <p><strong>Date &amp; Time:</strong>
+              {{ emergency.timestamp?.toDate ? emergency.timestamp.toDate() : emergency.timestamp | date:'short' }}
+            </p>
+          </ion-label>
+          <ion-badge slot="end" [color]="getStatusColor(getStatusDisplay(emergency))">
+            {{ getStatusDisplay(emergency) | titlecase }}
+          </ion-badge>
+        </ion-item>
+      </ion-list>
+
+      <div *ngIf="filteredEmergencies.length === 0" class="empty-state">
+        <ion-icon name="checkmark-circle-outline" size="large"></ion-icon>
+        <p>No emergencies found</p>
+        <p>This is good news!</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

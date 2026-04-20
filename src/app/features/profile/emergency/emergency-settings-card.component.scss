@@ -1,0 +1,163 @@
+.emergency-setting-card {
+  background: var(--app-color-surface);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  padding: 14px 16px 14px 16px;
+  box-shadow: var(--app-shadow-sm);
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.emergency-setting-info { flex: 1; }
+
+.emergency-setting-title {
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: .3px;
+  color: var(--app-color-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.emergency-setting-title ion-icon { font-size:18px; color: var(--app-color-primary-light); }
+
+.emergency-setting-desc {
+  color: var(--app-color-text-soft);
+  font-size: 12.5px;
+  line-height: 1.35;
+  margin-top: 4px;
+}
+
+.emergency-setting-status {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--app-color-primary-light);
+}
+
+.emergency-setting-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Wrapper card & header for unified look */
+.emergency-settings-wrapper-card {
+  background: var(--app-color-primary-bg);
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-lg);
+  padding: 0 0 16px 0;
+  margin-bottom: 18px;
+  box-shadow: var(--app-shadow-sm);
+  overflow: hidden;
+}
+.emergency-settings-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--app-color-primary);
+  color: #fff;
+  padding: 10px 14px 9px 14px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: .5px;
+}
+.emergency-settings-header-bar ion-icon { font-size: 18px; }
+.settings-group { padding: 12px 14px 4px 14px; }
+
+/* Harmonize ion-item host for header and setting rows */
+ion-item.emergency-settings-header-bar {
+  --background: var(--app-color-primary);
+  --color: #fff;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --inner-padding-top: 10px;
+  --inner-padding-bottom: 9px;
+}
+ion-item.emergency-settings-header-bar::part(native) {
+  border-bottom: none;
+}
+ion-item.emergency-setting-card {
+  --background: var(--app-color-surface);
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --inner-padding-top: 12px;
+  --inner-padding-bottom: 12px;
+  --border-radius: var(--app-radius-md);
+}
+ion-item.emergency-setting-card::part(native) {
+  border: 1px solid var(--app-color-border);
+  box-shadow: var(--app-shadow-sm);
+}
+
+/* Compact card variant */
+.emergency-setting-card.compact { border-radius: var(--app-radius-md); padding: 12px 14px; margin-bottom: 10px; }
+.emergency-setting-card.compact:last-child { margin-bottom: 14px; }
+
+/* Label and actions alignment within ion-item */
+ion-label.emergency-setting-info { display: block; }
+.emergency-setting-actions { margin-left: 8px; }
+ion-buttons.emergency-setting-actions ion-toggle { margin-left: 6px; }
+
+/* Testing grid */
+.emergency-testing-subheader {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--app-color-primary);
+  padding: 4px 14px 0 14px;
+}
+.emergency-test-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(110px,1fr));
+  gap: 8px;
+  padding: 10px 14px 4px 14px;
+}
+.emergency-test-grid ion-button {
+  --border-radius: var(--app-radius-md);
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .3px;
+}
+
+/* Toggle & button harmonization */
+// ion-toggle { 
+//   --handle-background: #7fa8a1;
+//   --background: #a2b7b2;
+//   --background-checked: #7d9a93;
+//   --handle-background-checked: #036a5d;
+//   --handle-width: 18px;
+//   --handle-height: 18px;
+// }
+
+ion-toggle::part(track) {
+  background: #666e6c;          /* OFF track */
+  border: 1px solid #c6dad6;
+  transition: background 0.2s ease;
+}
+
+ion-toggle::part(handle) {
+  background: #d0e6e3;          /* OFF handle */
+}
+
+/* ON state */
+ion-toggle.toggle-checked::part(track) {
+  background: var(--app-color-primary);
+  border-color: var(--app-color-primary);
+}
+
+ion-toggle.toggle-checked::part(handle) {
+  background: #d0e6e3;
+}
+
+@media (max-width: 480px) {
+  .emergency-setting-card { flex-direction: column; align-items: stretch; }
+  .emergency-setting-actions { justify-content: flex-end; }
+}

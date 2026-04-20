@@ -1,0 +1,54 @@
+<div class="emergency-settings-wrapper-card">
+  <ion-item lines="none" class="emergency-settings-header-bar">
+    <ion-icon name="settings-outline" slot="start"></ion-icon>
+    <ion-label>Emergency Settings</ion-label>
+  </ion-item>
+  <div class="settings-group">
+    <ion-item lines="none" class="emergency-setting-card compact">
+      <ion-label class="emergency-setting-info">
+        <div class="emergency-setting-title">Shake to Alert</div>
+        <div class="emergency-setting-desc">Shake phone to trigger emergency</div>
+      </ion-label>
+      <ion-toggle slot="end" [(ngModel)]="emergencySettings.shakeToAlert" (ionChange)="saveEmergencySettings()"></ion-toggle>
+    </ion-item>
+
+    <ion-item lines="none" class="emergency-setting-card compact">
+      <ion-label class="emergency-setting-info">
+        <div class="emergency-setting-title">Volume Button Alert</div>
+        <div class="emergency-setting-desc">Press volume button 3 times</div>
+      </ion-label>
+      <ion-toggle slot="end" [(ngModel)]="emergencySettings.powerButtonAlert" (ionChange)="saveEmergencySettings()"></ion-toggle>
+    </ion-item>
+
+    <ion-item lines="none" class="emergency-setting-card compact">
+      <ion-label class="emergency-setting-info">
+        <div class="emergency-setting-title">Audio Instructions</div>
+        <div class="emergency-setting-desc">Play emergency message aloud</div>
+        <div class="emergency-setting-status" *ngIf="emergencySettings.audioInstructions">
+          <span [class]="getAudioSourceClass()">{{ getAudioSourceText() }}</span>
+        </div>
+      </ion-label>
+      <ion-buttons slot="end" class="emergency-setting-actions">
+        <ion-button *ngIf="emergencySettings.audioInstructions" 
+                    (click)="openVoiceRecordingModal()" 
+                    fill="clear" 
+                    size="small"
+                    [color]="showVoiceSettings ? 'primary' : 'medium'">
+          <ion-icon name="mic-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-toggle [(ngModel)]="emergencySettings.audioInstructions" (ionChange)="saveEmergencySettings()"></ion-toggle>
+      </ion-buttons>
+    </ion-item>
+  </div>
+
+  <div class="emergency-testing-subheader">Smartwatch Test</div>
+  <div class="emergency-test-grid">
+    <ion-button fill="outline" size="small">
+      <ion-icon name="watch-outline" slot="start"></ion-icon>
+      Watch
+    </ion-button>
+
+  </div>
+</div>
+
+

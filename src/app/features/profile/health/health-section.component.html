@@ -1,0 +1,98 @@
+<div class="section-title">
+  Medications 
+</div>
+
+<div class="medication-search">
+  <ion-searchbar 
+    [value]="medicationSearchTerm"
+    (ionInput)="search.emit($event)"
+    (ionClear)="clearSearch.emit()"
+    placeholder="Search medications..."
+    showClearButton="focus"
+    debounce="300">
+  </ion-searchbar>
+  <div *ngIf="medicationSearchTerm && medicationSearchTerm.trim()" class="search-results-info">
+    <small>{{ filteredMedications.length }} of {{ userMedications.length }} medications found</small>
+  </div>
+</div>
+
+<div class="medication-filters">
+  <ion-segment [ngModel]="medicationFilter" (ionChange)="onFilterChange($event)">
+    <ion-segment-button value="all">
+      <ion-icon name="list-outline"></ion-icon>
+    </ion-segment-button>
+    <ion-segment-button value="active">
+      <ion-icon name="medkit-outline"></ion-icon>
+    </ion-segment-button>
+  </ion-segment>
+</div>
+
+<div class="medications-list">
+  <div *ngIf="isLoading && (!userMedications || userMedications.length === 0)" class="loading-state">
+    <ion-skeleton-text animated class="medication-skeleton"></ion-skeleton-text>
+    <ion-skeleton-text animated class="medication-skeleton"></ion-skeleton-text>
+    <ion-skeleton-text animated class="medication-skeleton"></ion-skeleton-text>
+  </div>
+
+  <ng-container *ngIf="!isLoading">
+    <div *ngFor="let medication of filteredMedications; trackBy: trackByMedication" 
+      class="medication-card" 
+      [ngClass]="{ 'emergency-medication': isEmergencyMedication(medication) }"
+      (click)="viewDetails.emit(medication)"
+      style="cursor: pointer;">
+          
+      <div class="medication-header">
+        <div class="medication-title-section">
+          <span class="medication-title">{{ medication.name }}</span>
+          
+          <div class="medication-summary">
+             <span class="dosage">{{ medication.dosage }}</span>
+             <span class="frequency" *ngIf="medication.frequency"> • {{ medication.frequency }}</span>
+             <span class="pills" *ngIf="medication.quantity !== undefined"> 
+               • {{ calculateRemainingPills(medication) | number:'1.0-0' }} pills left
+             </span>
+          </div>
+        </div>
+
+        <div class="medication-actions">
+          <ion-chip [color]="getStatusColor(medication)" size="small">
+            <ion-label>{{ getStatusLabel(medication) }}</ion-label>
+          </ion-chip>
+
+          <div class="action-buttons">
+            <ion-button
+              fill="outline"
+              color="medium"
+              size="small"
+              *ngIf="medication.id"
+              (click)="$event.stopPropagation(); toggleStatus.emit(medication.id)"
+              [attr.aria-label]="getToggleStatusLabel(medication)"
+            >
+              {{ medication.isActive ? 'Deactivate' : 'Activate' }}
+            </ion-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && filteredMedications.length === 0" class="no-medications">
+      <div class="no-medications-container">
+        <ion-icon name="medical-outline" class="no-medications-icon"></ion-icon>
+        <p class="no-medications-text">
+          <ng-container *ngIf="medicationSearchTerm && medicationSearchTerm.trim(); else noMedicationsAtAll">
+            No medications found matching "{{ medicationSearchTerm }}"
+          </ng-container>
+          <ng-template #noMedicationsAtAll>
+            No medications recorded
+          </ng-template>
+        </p>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<ion-fab class="add-med-fab" horizontal="end" vertical="bottom" slot="fixed">
+  <ion-fab-button (click)="add.emit()">
+    <ion-icon name="add"></ion-icon>
+  </ion-fab-button>
+</ion-fab>

@@ -1,0 +1,42 @@
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--ion-color-medium);
+}
+
+.empty-state ion-icon {
+  color: var(--ion-color-medium);
+  margin-bottom: 1rem;
+}
+
+.emergency-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--ion-color-light);
+}
+
+.emergency-item:last-child {
+  border-bottom: none;
+}
+
+.emergency-item h3 {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.emergency-item p {
+  margin: 0.25rem 0;
+  color: var(--ion-color-medium);
+}
+
+ion-card[color="danger"] {
+  --background: var(--ion-color-danger);
+  --color: white;
+}
+
+ion-card[color="danger"] ion-card-content {
+  color: white;
+}
+
+ion-badge {
+  margin-left: 0.5rem;
+}

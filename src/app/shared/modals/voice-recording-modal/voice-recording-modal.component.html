@@ -1,0 +1,247 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Voice Instructions</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <div class="tab-button" 
+         [class.active]="activeTab === 'recordings'" 
+         (click)="setActiveTab('recordings')">
+      <ion-icon name="list-outline"></ion-icon>
+      <span>My Recordings</span>
+    </div>
+    <div class="tab-button" 
+         [class.active]="activeTab === 'record'" 
+         (click)="setActiveTab('record')">
+      <ion-icon name="mic-outline"></ion-icon>
+      <span>Record</span>
+    </div>
+    <div class="tab-button" 
+         [class.active]="activeTab === 'settings'" 
+         (click)="setActiveTab('settings')">
+      <ion-icon name="settings-outline"></ion-icon>
+      <span>Settings</span>
+    </div>
+  </div>
+
+  <!-- Recordings Tab -->
+  <div *ngIf="activeTab === 'recordings'" class="tab-content">
+    <div class="section-header">
+      <h3>Custom Voice Recordings</h3>
+      <p>Record your own voice for emergency instructions</p>
+    </div>
+
+    <div *ngIf="recordings.length === 0" class="empty-state">
+      <ion-icon name="mic-off-outline"></ion-icon>
+      <h4>No recordings yet</h4>
+      <p>Tap the Record tab to create your first voice recording</p>
+      <ion-button (click)="setActiveTab('record')" fill="outline">
+        <ion-icon name="mic" slot="start"></ion-icon>
+        Start Recording
+      </ion-button>
+    </div>
+
+    <div *ngIf="recordings.length > 0" class="recordings-list">
+      <div *ngFor="let recording of recordings" class="recording-item">
+        <div class="recording-info">
+          <div class="recording-header">
+            <h4>{{ recording.name }}</h4>
+            <div class="recording-selected" *ngIf="isRecordingSelected(recording.id)">
+              <ion-icon name="checkmark-circle" color="success"></ion-icon>
+              <span>Selected</span>
+            </div>
+          </div>
+          <div class="recording-details">
+            <span class="duration">{{ formatDuration(recording.duration) }}</span>
+            <span class="size">{{ formatFileSize(recording.size) }}</span>
+            <span class="date">{{ recording.timestamp | date:'short' }}</span>
+          </div>
+        </div>
+
+        <div class="recording-actions">
+          <ion-button (click)="playRecording(recording.id)" 
+                      fill="clear" 
+                      size="small">
+            <ion-icon name="play" slot="icon-only"></ion-icon>
+          </ion-button>
+          
+          <ion-button (click)="selectRecording(recording.id)" 
+                      fill="clear" 
+                      size="small"
+                      [color]="isRecordingSelected(recording.id) ? 'success' : 'medium'">
+            <ion-icon name="checkmark" slot="icon-only"></ion-icon>
+          </ion-button>
+          
+          <ion-button (click)="renameRecording(recording)" 
+                      fill="clear" 
+                      size="small">
+            <ion-icon name="create" slot="icon-only"></ion-icon>
+          </ion-button>
+          
+          <ion-button (click)="deleteRecording(recording)" 
+                      fill="clear" 
+                      size="small" 
+                      color="danger">
+            <ion-icon name="trash" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="recordings.length > 0" class="quick-actions">
+      <ion-button (click)="setActiveTab('record')" expand="block" fill="outline">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Record New Voice
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Record Tab -->
+  <div *ngIf="activeTab === 'record'" class="tab-content">
+    <div class="section-header">
+      <h3>Record Emergency Instructions</h3>
+      <p>Record a clear message explaining your medical conditions and emergency needs</p>
+    </div>
+
+    <div class="recording-zone">
+      <div class="recording-status" [class.recording]="isRecording">
+        <div class="recording-circle">
+          <ion-icon [name]="isRecording ? 'mic' : 'mic-outline'"></ion-icon>
+        </div>
+        
+        <div class="recording-info">
+          <h4 *ngIf="!isRecording">Ready to Record</h4>
+          <h4 *ngIf="isRecording">Recording...</h4>
+          <div class="recording-time" *ngIf="isRecording">
+            {{ formatDuration(recordingTime) }}
+          </div>
+        </div>
+      </div>
+
+      <div class="recording-controls">
+        <ion-button *ngIf="!isRecording" 
+                    (click)="startRecording()" 
+                    size="large" 
+                    color="danger"
+                    expand="block">
+          <ion-icon name="mic" slot="start"></ion-icon>
+          Start Recording
+        </ion-button>
+
+        <ion-button *ngIf="isRecording" 
+                    (click)="stopRecording()" 
+                    size="large" 
+                    color="success"
+                    expand="block">
+          <ion-icon name="stop" slot="start"></ion-icon>
+          Stop Recording
+        </ion-button>
+      </div>
+
+      <div class="recording-tips">
+        <h5>Recording Tips:</h5>
+        <ul>
+          <li>Speak clearly and at a normal pace</li>
+          <li>Include your name and key medical information</li>
+          <li>Mention important allergies and medications</li>
+          <li>Keep it under 30 seconds for best results</li>
+          <li>Record in a quiet environment</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Tab -->
+  <div *ngIf="activeTab === 'settings'" class="tab-content">
+    <div class="section-header">
+      <h3>Audio Settings</h3>
+      <p>Configure how emergency audio instructions are played</p>
+    </div>
+
+    <div class="settings-section">
+      <div class="setting-item">
+        <div class="setting-info">
+          <h4>Use Custom Voice</h4>
+          <p>Play your recorded message instead of text-to-speech</p>
+        </div>
+        <ion-toggle [(ngModel)]="audioSettings.useCustomVoice" 
+                    (ionChange)="onSettingChange()"></ion-toggle>
+      </div>
+
+      <div class="setting-item" *ngIf="audioSettings.useCustomVoice">
+        <div class="setting-info">
+          <h4>Selected Recording</h4>
+          <p>{{ getSelectedRecordingName() }}</p>
+        </div>
+        <ion-button (click)="setActiveTab('recordings')" 
+                    fill="outline" 
+                    size="small">
+          Change
+        </ion-button>
+      </div>
+
+      <div class="setting-item" *ngIf="!audioSettings.useCustomVoice">
+        <div class="setting-info">
+          <h4>Default Voice</h4>
+          <p>Choose text-to-speech voice type</p>
+        </div>
+        <ion-select [(ngModel)]="audioSettings.defaultVoice" 
+                    (ionChange)="onSettingChange()"
+                    interface="popover">
+          <ion-select-option value="female">Female</ion-select-option>
+          <ion-select-option value="male">Male</ion-select-option>
+        </ion-select>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h4>Speech Rate</h4>
+          <p>How fast the audio plays ({{ audioSettings.speechRate }}x)</p>
+        </div>
+        <ion-range [(ngModel)]="audioSettings.speechRate"
+                   (ionChange)="onSettingChange()"
+                   min="0.5"
+                   max="2.0"
+                   step="0.1"
+                   pin="true">
+          <ion-label slot="start">0.5x</ion-label>
+          <ion-label slot="end">2.0x</ion-label>
+        </ion-range>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h4>Volume</h4>
+          <p>Audio playback volume ({{ Math.round(audioSettings.volume * 100) }}%)</p>
+        </div>
+        <ion-range [(ngModel)]="audioSettings.volume"
+                   (ionChange)="onSettingChange()"
+                   min="0"
+                   max="1"
+                   step="0.1"
+                   pin="true">
+          <ion-label slot="start">0%</ion-label>
+          <ion-label slot="end">100%</ion-label>
+        </ion-range>
+      </div>
+
+      <div class="test-section">
+        <ion-button (click)="testCurrentSettings()" 
+                    expand="block" 
+                    fill="outline"
+                    color="secondary">
+          <ion-icon name="volume-high" slot="start"></ion-icon>
+          Test Current Settings
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,287 @@
+// No medications state styles
+.no-medications-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.no-medications-icon {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 12px;
+}
+
+.no-medications-text {
+  color: #666;
+  font-style: italic;
+}
+// Style for medication image button container
+.medication-image-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+// Skeleton loading style for medications
+.medication-skeleton {
+  width: 100%;
+  height: 64px;
+  margin-bottom: 12px;
+}
+// Style for medication search results info
+.search-results-info small {
+  color: #666;
+}
+:host {
+  display: block;
+  position: relative;
+  z-index: 0;
+}
+
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f4a42;
+  margin: 12px 0 8px;
+}
+
+/* Make the inline Add Medication action more visible */
+.section-title ion-button {
+  --color: #065a4c !important; /* ensure Ionic uses this color */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.section-title ion-button ion-icon { color: #065a4c !important; }
+
+/* Search */
+.medication-search ion-searchbar {
+  width: 100%;
+  min-width: 100%;
+  --background: transparent;
+  --color: #222;
+  --placeholder-color: #888;
+  --icon-color: #222;
+  --box-shadow: none;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+/* Remove container background/shadow to avoid double box */
+.medication-search ion-searchbar::part(container) {
+  background: #ffffff !important;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 8px !important; 
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+  padding: 0 !important;
+}
+
+.medication-search ion-searchbar .searchbar-input,
+.medication-search ion-searchbar::part(input) { 
+  background: transparent !important; 
+  color: #222 !important; 
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.medication-search ion-searchbar .searchbar-search-icon { 
+  color: #222 !important; 
+}
+
+/* Filters */
+.medication-filters { margin: 0 16px 16px; }
+.medication-filters ion-segment {
+  --background: #065a4c;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 12px;
+}
+.medication-filters ion-segment-button {
+  --background: #e6edec;
+  --color: #036a5d;
+  --color-checked: #ffffff;
+  --indicator-color: #036a5d;
+  --background-checked: #036a5d;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* Ensure selected label is white */
+.medication-filters ion-segment-button[aria-checked="true"]::part(label) { color: #ffffff !important; }
+.medication-filters ion-segment-button[aria-checked="false"]::part(label) { color: #036a5d !important; }
+
+/* Layout paddings (match Profile) */
+.medications-list, 
+.medication-search, 
+.medication-filters { 
+  margin: 0 16px 16px; 
+  position: relative;
+}
+
+/* Medication cards */
+.medication-card { 
+  border: 1.5px solid #bbb; 
+  border-radius: 12px; 
+  background: #fff; 
+  margin-bottom: 12px; 
+  padding: 16px; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
+  cursor: pointer; 
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+/* Make child content clickable but stop propagation at action area */
+.medication-card .medication-header,
+.medication-card .medication-title-section,
+.medication-card .medication-summary,
+.medication-card .medication-details-expanded {
+  pointer-events: auto;
+}
+.medication-card .medication-title,
+.medication-card .medication-summary,
+.medication-card .medication-summary .dosage,
+.medication-card .medication-detail,
+.medication-card .medication-detail b {
+  color: #1f1f1f !important;
+}
+
+/* Only set a default color when no Ionic color is applied */
+.medication-card ion-button:not(.ion-color) { --color: #333; }
+
+.medication-card:hover { 
+  border-color: #086c4a; 
+  box-shadow: 0 4px 12px rgba(0,123,255,0.1); 
+  transform: translateY(-1px); 
+}
+
+.medication-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; 
+}
+.medication-title-section { 
+  flex: 1; 
+  min-width: 0;
+}
+.medication-title-section .medication-title { 
+  font-size: 18px; 
+  font-weight: 700; 
+  color: #1f1f1f !important; 
+  margin-bottom: 4px; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.medication-summary { 
+  font-size: 14px; 
+  color: #666; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.medication-summary .dosage { 
+  font-weight: 600; 
+  color: #333 !important; 
+}
+
+.medication-actions { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px;
+  pointer-events: auto;
+}
+.action-buttons { 
+  display: flex; 
+  gap: 4px;
+  pointer-events: auto;
+}
+/* Let icons honor the ion-button color for better contrast */
+.action-buttons ion-button ion-icon { color: inherit; }
+
+/* Expandable details */
+.medication-details-expanded { 
+  margin-top: 16px; 
+  padding-top: 16px; 
+  border-top: 1px solid #e9ecef; 
+}
+.medication-details-grid { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 8px 16px; 
+  margin-bottom: 12px; 
+}
+.medication-detail { 
+  display: flex; 
+  align-items: center; 
+  font-size: 14px; 
+  color: #555; 
+  gap: 8px; 
+}
+.medication-detail.full-width { 
+  grid-column: 1 / -1; 
+  margin-top: 8px; 
+}
+.medication-detail ion-icon { 
+  font-size: 16px; 
+  color: #666 !important; 
+}
+.medication-detail b { 
+  color: #2a2a2a !important; 
+}
+
+/* In case any overlay is leaking, ensure content is above */
+.medication-card > * { position: relative; z-index: 1; }
+
+.loading-state {
+  margin: 0 0 12px 0;
+}
+
+/* Responsive tweaks from Profile for health */
+@media (max-width: 768px) {
+  .medications-list, .medication-search, .medication-filters { margin: 0 12px 12px; }
+  .medication-card { padding: 12px 14px; margin-bottom: 14px; }
+  .medication-details-grid { grid-template-columns: 1fr; gap: 6px; }
+}
+
+@media (max-width: 480px) { 
+  .medications-list, .medication-search, .medication-filters { margin: 0 8px 10px; }
+  .medication-card { padding: 10px 12px; border-radius: 10px; }
+  .medication-header { flex-direction: column; align-items: stretch; gap: 8px; }
+  .medication-title { font-size: 16px !important; }
+  .medication-summary { font-size: 13px; }
+  .medication-actions { justify-content: space-between; }
+  .medication-details-expanded { margin-top: 12px; padding-top: 12px; }
+}
+
+/* Mobile FAB visibility and safe-area */
+.add-med-fab { display: none; }
+@media (max-width: 768px) {
+  .add-med-fab {
+    display: block;
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 1000;
+    background: transparent !important;
+  }
+  .add-med-fab ion-fab-button {
+    --background: #065a4c;
+    --color: #fff;
+    --box-shadow: none;
+    box-shadow: none;
+  }
+}
+
+/* Hide inline add button on mobile to avoid duplicate CTAs */
+@media (max-width: 768px) {
+  .section-title ion-button { display: none; }
+}

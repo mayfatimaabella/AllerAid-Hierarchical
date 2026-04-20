@@ -1,0 +1,162 @@
+/* Add Doctor Visit Modal Styles */
+
+ion-content {
+  --background: #ffffff;
+  background: #ffffff;
+}
+
+ion-header {
+  --background: #036a5d;
+  --color: #fff;
+}
+
+ion-title {
+  font-weight: 700;
+}
+
+ion-list {
+  background: #fff;
+  padding: 0;
+}
+
+ion-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  --background: #ffffff;
+  --min-height: 70px;
+  
+  background: #ffffff;
+  border: 1px solid #d1e7e0;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px rgba(3, 106, 93, 0.08);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #036a5d;
+    box-shadow: 0 2px 6px rgba(3, 106, 93, 0.12);
+  }
+
+  &:focus-within {
+    border-color: #036a5d;
+    box-shadow: 0 0 0 3px rgba(3, 106, 93, 0.1);
+  }
+}
+
+ion-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #036a5d !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px !important;
+}
+
+ion-input,
+ion-select,
+ion-textarea {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  font-size: 15px;
+  color: #1f4a42;
+  margin-top: 4px;
+}
+
+ion-input::part(native),
+ion-textarea::part(native),
+ion-select::part(text),
+ion-select::part(placeholder) {
+  color: #1f4a42;
+}
+
+ion-textarea {
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+ion-item-divider {
+  --background: transparent;
+  --color: #1f4a42;
+  font-weight: 600;
+  margin-top: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #036a5d;
+}
+
+.vital-signs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+
+  ion-item {
+    margin-bottom: 0;
+  }
+}
+
+.prescription-item {
+  background: #f8faf9;
+  border: 1px solid #e8f2f0;
+  border-left: 4px solid #036a5d;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+form {
+  margin-bottom: 0;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e8f2f0;
+
+  ion-button {
+    --border-radius: 12px;
+    height: 50px;
+    font-weight: 600;
+    font-size: 15px;
+    text-transform: none;
+    letter-spacing: 0.3px;
+    margin: 0;
+
+    &[type="submit"] {
+      --background: #036a5d;
+      --background-hover: #025449;
+      --background-activated: #014a3e;
+      --color: #ffffff;
+
+      &:disabled {
+        --background: #b3d4ce;
+        --color: #7a9f98;
+        opacity: 0.6;
+      }
+    }
+
+    &[fill="outline"] {
+      --border-width: 1.5px;
+      --border-color: #8ba19c;
+      --color: #5a6c69;
+      --background: transparent;
+      --background-hover: rgba(139, 161, 156, 0.05);
+      --background-activated: rgba(139, 161, 156, 0.1);
+    }
+  }
+}

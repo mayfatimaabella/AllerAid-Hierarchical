@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Emergency Info</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="header">
+    <ion-chip color="primary" outline="true">
+      <ion-icon name="person-outline"></ion-icon>
+      <ion-label>{{ patientName }}</ion-label>
+    </ion-chip>
+  </div>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="medical-outline"></ion-icon>
+        Instructions
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="instructions" *ngIf="hasInstructions; else noInstructions">
+        {{ instructions }}
+      </div>
+      <ng-template #noInstructions>
+        <ion-text color="medium">No instructions available.</ion-text>
+      </ng-template>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="alert-outline"></ion-icon>
+        Allergies
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div *ngIf="hasAllergies; else noAllergies" class="allergy-chips">
+        <ion-chip *ngFor="let allergy of allergies" color="danger" outline="true">
+          <ion-label>{{ getAllergyLabel(allergy) }}</ion-label>
+        </ion-chip>
+      </div>
+      <ng-template #noAllergies>
+        <ion-text color="medium">No recorded allergies.</ion-text>
+      </ng-template>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+

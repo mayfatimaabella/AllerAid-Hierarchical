@@ -1,0 +1,135 @@
+<ion-header>
+  <ion-toolbar class="toolbar--teal">
+    <ion-title>Medical History</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="goBack()" fill="clear">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  </ion-header>
+
+<ion-content class="ion-padding white-content">
+  <div *ngIf="history" class="history-details-container">
+    <!-- Compact header card matching modal simplicity -->
+    <div class="detail-card">
+      <div class="card-header">
+        <ion-icon [name]="getStatusIcon(history.status)"></ion-icon>
+        <h2>{{ history.condition }}</h2>
+        <ion-chip [color]="getStatusColor(history.status)" class="status-chip">
+          <ion-icon [name]="getStatusIcon(history.status)"></ion-icon>
+          {{ getStatusLabel(history.status) }}
+        </ion-chip>
+      </div>
+      <div class="card-content">
+        <div class="diagnosis-row">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <div class="date-info">
+            <span class="date-label">Diagnosed</span>
+            <span class="date-value">{{ getFormattedDiagnosisDate() }}</span>
+            <span class="time-since" *ngIf="getTimeSinceDiagnosis()">{{ getTimeSinceDiagnosis() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status summary (brief, modal-like) -->
+    <div class="detail-card">
+      <div class="card-header">
+        <ion-icon name="pulse-outline"></ion-icon>
+        <h2>Status</h2>
+      </div>
+      <div class="card-content">
+        <p class="status-description">
+          <span *ngIf="history.status === 'active'">This condition is currently active and may require ongoing treatment or monitoring.</span>
+          <span *ngIf="history.status === 'resolved'">This condition has been successfully treated and is no longer a concern.</span>
+          <span *ngIf="history.status === 'chronic'">This is a long-term condition that requires ongoing management.</span>
+          <span *ngIf="history.status === 'not-cured'">This condition remains present and requires continued attention or alternative treatment approaches.</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Key info (compact grid) -->
+    <div class="detail-card">
+      <div class="card-header">
+        <ion-icon name="medical-outline"></ion-icon>
+        <h2>Key Information</h2>
+      </div>
+      <div class="card-content">
+        <div class="diagnosis-grid">
+          <div class="info-item">
+            <div class="info-label">
+              <ion-icon name="clipboard-outline"></ion-icon>
+              Condition
+            </div>
+            <div class="info-value">{{ history.condition }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">
+              <ion-icon name="calendar-outline"></ion-icon>
+              Diagnosis Date
+            </div>
+            <div class="info-value">{{ getFormattedDiagnosisDate() }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">
+              <ion-icon name="time-outline"></ion-icon>
+              Time Since Diagnosis
+            </div>
+            <div class="info-value">{{ getTimeSinceDiagnosis() }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes (optional, concise) -->
+    <div class="detail-card" *ngIf="history.notes">
+      <div class="card-header">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <h2>Notes</h2>
+      </div>
+      <div class="card-content">
+        <div class="notes-content">
+          <p>{{ history.notes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-card metadata-card">
+      <div class="card-header">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <h2>Record</h2>
+      </div>
+      <div class="card-content">
+        <div class="metadata-grid">
+          <div class="metadata-item" *ngIf="history.createdAt">
+            <ion-icon name="add-circle-outline"></ion-icon>
+            <div class="metadata-content">
+              <span class="metadata-label">Created</span>
+              <span class="metadata-value">{{ getFormattedCreatedAt() }}</span>
+            </div>
+          </div>
+          <div class="metadata-item" *ngIf="history.updatedAt && history.updatedAt !== history.createdAt">
+            <ion-icon name="create-outline"></ion-icon>
+            <div class="metadata-content">
+              <span class="metadata-label">Updated</span>
+              <span class="metadata-value">{{ getFormattedUpdatedAt() }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- No history data fallback -->
+  <div *ngIf="!history" class="no-history-data">
+    <ion-icon name="warning-outline"></ion-icon>
+    <h2>No Medical History Data</h2>
+    <p>Unable to load medical history details. Please try again.</p>
+    <ion-button fill="outline" (click)="goBack()">
+      Go Back
+    </ion-button>
+  </div>
+
+</ion-content>

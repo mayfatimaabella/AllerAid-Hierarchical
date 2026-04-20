@@ -1,0 +1,131 @@
+<div class="voice-settings-section" *ngIf="audioInstructionsEnabled && showVoiceSettings">
+  <div class="voice-recording-controls">
+    <h4>Record Custom Voice</h4>
+    <p>Record your own voice for emergency instructions</p>
+
+    <div class="recording-zone" [class.recording]="profileVoiceFacade.isRecording">
+      <div class="recording-status">
+        <ion-icon [name]="profileVoiceFacade.isRecording ? 'mic' : 'mic-outline'"></ion-icon>
+        <span *ngIf="!profileVoiceFacade.isRecording">Ready to Record</span>
+        <span *ngIf="profileVoiceFacade.isRecording">Recording... {{ profileVoiceFacade.formatDuration(profileVoiceFacade.recordingTime) }}</span>
+      </div>
+
+      <div class="recording-buttons">
+        <ion-button *ngIf="!profileVoiceFacade.isRecording"
+                    (click)="profileVoiceFacade.startRecording()"
+                    color="danger"
+                    fill="solid">
+          <ion-icon name="mic" slot="start"></ion-icon>
+          Start Recording
+        </ion-button>
+
+        <ion-button *ngIf="profileVoiceFacade.isRecording"
+                    (click)="profileVoiceFacade.stopRecording()"
+                    color="success"
+                    fill="solid">
+          <ion-icon name="stop" slot="start"></ion-icon>
+          Stop Recording
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="voice-recordings-list" *ngIf="profileVoiceFacade.recordings.length > 0">
+    <h4>Your Recordings</h4>
+    <div class="recording-item" *ngFor="let recording of profileVoiceFacade.recordings">
+      <div class="recording-info">
+        <div class="recording-name">
+          <span>{{ recording.name }}</span>
+          <ion-icon *ngIf="profileVoiceFacade.isRecordingSelected(recording.id)"
+                    name="checkmark-circle"
+                    color="success"></ion-icon>
+        </div>
+        <div class="recording-details">
+          <span>{{ profileVoiceFacade.formatDuration(recording.duration) }}</span>
+          <span>{{ profileVoiceFacade.formatFileSize(recording.size) }}</span>
+        </div>
+      </div>
+      <div class="recording-actions">
+        <ion-button (click)="profileVoiceFacade.playRecording(recording.id)"
+                    fill="clear"
+                    size="small">
+          <ion-icon name="play" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button (click)="profileVoiceFacade.selectRecording(recording.id)"
+                    fill="clear"
+                    size="small"
+                    [color]="profileVoiceFacade.isRecordingSelected(recording.id) ? 'success' : 'medium'">
+          <ion-icon name="checkmark" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button (click)="profileVoiceFacade.deleteRecording(recording)"
+                    fill="clear"
+                    size="small"
+                    color="danger">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="voice-audio-settings">
+    <h4>Audio Settings</h4>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <label>Use Custom Voice</label>
+        <p>Play your recorded message instead of text-to-speech</p>
+      </div>
+      <ion-toggle [(ngModel)]="profileVoiceFacade.audioSettings.useCustomVoice"
+                  (ionChange)="profileVoiceFacade.onAudioSettingChange()"></ion-toggle>
+    </div>
+
+    <div class="setting-item" *ngIf="!profileVoiceFacade.audioSettings.useCustomVoice">
+      <div class="setting-info">
+        <label>Default Voice</label>
+        <p>Choose text-to-speech voice type</p>
+      </div>
+      <ion-select [(ngModel)]="profileVoiceFacade.audioSettings.defaultVoice"
+                  (ionChange)="profileVoiceFacade.onAudioSettingChange()"
+                  interface="popover">
+        <ion-select-option value="female">Female</ion-select-option>
+        <ion-select-option value="male">Male</ion-select-option>
+      </ion-select>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <label>Speech Rate ({{ profileVoiceFacade.audioSettings.speechRate }}x)</label>
+        <p>How fast the audio plays</p>
+      </div>
+      <ion-range [(ngModel)]="profileVoiceFacade.audioSettings.speechRate"
+                (ionChange)="profileVoiceFacade.onAudioSettingChange()"
+                min="0.5"
+                max="2.0"
+                step="0.1"
+                pin="true">
+      </ion-range>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <label>Volume ({{ (profileVoiceFacade.audioSettings.volume * 100).toFixed(0) }}%)</label>
+        <p>Audio playback volume</p>
+      </div>
+      <ion-range [(ngModel)]="profileVoiceFacade.audioSettings.volume"
+                (ionChange)="profileVoiceFacade.onAudioSettingChange()"
+                min="0"
+                max="1"
+                step="0.1"
+                pin="true">
+      </ion-range>
+    </div>
+
+    <ion-button (click)="testAudioSettings()"
+                expand="block"
+                fill="outline"
+                color="secondary">
+      <ion-icon name="volume-high" slot="start"></ion-icon>
+      Test Audio Settings
+    </ion-button>
+  </div>
+</div>

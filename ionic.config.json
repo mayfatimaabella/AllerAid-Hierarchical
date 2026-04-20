@@ -1,0 +1,7 @@
+{
+  "name": "AllerAid",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

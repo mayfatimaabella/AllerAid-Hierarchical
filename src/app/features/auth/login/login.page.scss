@@ -1,0 +1,75 @@
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+ion-card {
+  background: #fff !important;
+  color: #272727 !important;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(229, 94, 118, 0.10);
+  border: 1px solid rgba(3,106,93,0.08);
+}
+ion-card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #272727;
+}
+
+ion-list{
+  background-color: #ffffff !important;
+}
+ion-item{
+  --background: #dddddd !important;
+  color: #272727 !important;
+  border-radius: 15px;
+  margin-top: 5px;
+}
+
+ion-icon[name="mail-outline"],
+ion-icon[name="lock-closed-outline"] {
+  color: #272727 !important;
+}
+
+ion-button.loginBtn {
+  --background: #036a5d !important;
+  --color: #ffffff !important;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.text-center {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.forgot-password-link {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+
+  a {
+    cursor: pointer;
+    color: #036a5d;
+    font-weight: 600;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
+}
+
+a{
+  color: #036a5d;
+  font-weight: bold;;
+  text-decoration: none;
+}
+
+ion-content{
+  --background: linear-gradient(0deg, #deded6 -70%, #036a5d 100%) !important;
+  min-height: 100vh !important;
+  height: 100vh !important;
+  width: 100vw !important;
+}

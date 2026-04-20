@@ -1,0 +1,150 @@
+ion-toolbar {
+  --background: #036a5d;
+  --color: white;
+}
+
+ion-button [color="accent"] {
+  --background: var(--ion-color-accent);
+  --color: white;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #023f37;
+  margin: 10px 0;
+  text-align: center;
+}
+
+ion-content {
+  --background: #fff !important;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+}
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  height: auto;
+  background-color: #9dbbb3;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  padding-bottom: 25px; /* ensures a larger white gap above tab bar */
+  z-index: 1;
+  border-radius: 5px;
+}
+
+ion-card {
+  background: #d1dbd7;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(229, 94, 118, 0.10);
+  border: 1px solid #198476;
+  margin: 12px 0;
+  padding: 12px 0 8px 0;
+  max-width: 400px;
+}
+
+ion-card-header {
+  background: transparent;
+  border-bottom: 1px solid #fbe9eb;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 20px 8px 20px;
+}
+
+ion-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #126d61;
+;
+  letter-spacing: 1px;
+}
+
+ion-card-content {
+  padding: 12px 20px 16px 20px;
+}
+
+ion-card-content p {
+  color: #333333;
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.health-stats-section {
+  margin-top: 15px;
+  margin-bottom: 16px; /* add gap below health stats */
+}
+
+.health-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  justify-content: center;
+}
+
+.health-stat-card {
+  background: #f6f6fa;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(3,106,93,0.06);
+  padding: 18px 24px;
+  min-width: 140px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #299f93;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #13786a;
+}
+
+.stat-unit {
+  font-size: 1rem;
+  color: #036a5d;
+}
+
+.smartwatch-card {
+  background: #f5fafa;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(3,106,93,0.06);
+  padding: 18px 18px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.smartwatch-info {
+  display: flex;
+  align-items: center;
+}
+
+.smartwatch-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #036a5d;
+}
+
+.smartwatch-link a {
+  color: #0f7668;
+  font-weight: 500;
+  text-decoration: underline;
+  font-size: 1rem;
+}
+
+ion-tab-bar {
+  border-top: 1px solid #e5e5e5;
+  margin-top: 0;
+}

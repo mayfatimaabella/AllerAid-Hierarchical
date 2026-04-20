@@ -1,0 +1,77 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="toolbar--teal">
+
+    <ion-title>Doctor Visit Details</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="goBack()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+ </ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="visit" class="visit-details-container">
+    
+    <!-- Visit Header -->
+    <div class="visit-header-card">
+      <div class="visit-main-info">
+        <h1>{{ visit.doctorName }}</h1>
+        <p class="specialty" *ngIf="visit.specialty">{{ visit.specialty }}</p>
+        <div class="visit-meta">
+          <div class="visit-date">
+            <ion-icon name="calendar-outline"></ion-icon>
+            {{ getFormattedVisitDate() }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Reason of Visit aka Chief Complaint -->
+    <div class="detail-card" *ngIf="visit.chiefComplaint">
+      <div class="card-header">
+        <ion-icon name="medical-outline"></ion-icon>
+        <h2>Main Reason of Visit</h2>
+      </div>
+      <div class="card-content">
+        <p>{{ visit.chiefComplaint }}</p>
+      </div>
+    </div>
+
+    <!-- Diagnosis -->
+    <div class="detail-card" *ngIf="visit.diagnosis">
+      <div class="card-header">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <h2>Diagnosis</h2>
+      </div>
+      <div class="card-content">
+        <p>{{ visit.diagnosis }}</p>
+      </div>
+    </div>
+
+    
+
+    <!-- Additional Notes -->
+    <div class="detail-card" *ngIf="visit.notes">
+      <div class="card-header">
+        <ion-icon name="clipboard-outline"></ion-icon>
+        <h2>Additional Notes</h2>
+      </div>
+      <div class="card-content">
+        <p>{{ visit.notes }}</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- No visit data fallback -->
+  <div *ngIf="!visit" class="no-visit-data">
+    <ion-icon name="warning-outline"></ion-icon>
+    <h2>No Visit Data</h2>
+    <p>Unable to load visit details. Please try again.</p>
+    <ion-button fill="outline" (click)="goBack()">
+      Go Back
+    </ion-button>
+  </div>
+
+</ion-content>

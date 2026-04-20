@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Buddy Response Alert</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="alert-container">
+    <!-- Visual Alert Icon -->
+    <div class="alert-icon">
+      <ion-icon name="car" size="large" color="primary"></ion-icon>
+    </div>
+
+    <!-- Alert Message -->
+    <div class="alert-message">
+      <h2>Help is on the way!</h2>
+      <p class="buddy-name">{{ buddyData.buddyName }} is coming to assist you</p>
+    </div>
+
+    <!-- Emergency Info -->
+    <ion-card class="emergency-info">
+      <ion-card-content>
+        <div class="info-row">
+          <ion-icon name="time-outline" color="primary"></ion-icon>
+          <span>Estimated Arrival: <strong>{{ buddyData.estimatedArrival }}</strong></span>
+        </div>
+        <div class="info-row">
+          <ion-icon name="location-outline" color="primary"></ion-icon>
+          <span>Distance: <strong>{{ buddyData.distance }}</strong></span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Accessibility Information -->
+    <ion-card class="accessibility-info">
+      <ion-card-content>
+        <p class="accessibility-text">
+          <ion-icon name="volume-high-outline" color="secondary"></ion-icon>
+          This alert includes audio and vibration notifications for accessibility
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action Buttons -->
+    <div class="button-container">
+      <ion-button 
+        expand="block" 
+        fill="solid" 
+        color="primary" 
+        (click)="showRoute()"
+        class="action-button">
+        <ion-icon name="map-outline" slot="start"></ion-icon>
+        View Route & ETA
+      </ion-button>
+      
+      <ion-button 
+        expand="block" 
+        fill="outline" 
+        color="medium" 
+        (click)="dismiss()"
+        class="action-button">
+        <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+        Got it
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

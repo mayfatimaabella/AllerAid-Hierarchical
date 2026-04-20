@@ -1,0 +1,168 @@
+
+.ehr-section-card {
+  background: #ffffff !important; /* force white background */
+  border-radius: var(--app-radius-lg, 16px);
+  padding: 16px 18px 20px;
+  box-shadow: var(--app-shadow-sm, 0 2px 4px rgba(0,0,0,0.08));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid #e2ece9;
+}
+
+/* Ensure all nested text has proper contrast */
+.ehr-section-card,
+.ehr-section-card span,
+.ehr-section-card p,
+.ehr-section-card h3,
+.ehr-section-card h4,
+.ehr-section-card ion-label,
+.ehr-section-card ion-input,
+.ehr-section-card ion-select,
+.ehr-section-card .provider-info span {
+  color: #1f4a42 !important;
+}
+
+/* Muted helper / description text override */
+.ehr-section-card .access-description,
+.ehr-section-card .help-text,
+.ehr-section-card .empty-subtitle {
+  color: #506a64 !important;
+}
+
+/* Optional label lighter tone */
+.ehr-section-card .optional-label { color: #78938d !important; }
+
+/* Inputs: ensure internal text contrast */
+.ehr-section-card ion-input,
+.ehr-section-card ion-select {
+  --color: #244f47;
+}
+.ehr-section-card ion-input::part(native) { color: #244f47; }
+.ehr-section-card ion-select::part(text) { color: #244f47; }
+
+/* Ion labels forced contrast */
+.ehr-section-card ion-label { --color: #1f4a42; font-weight: 600; }
+
+/* Provider info span inside access list */
+.provider-info span { color: #244f47 !important; }
+
+/* Disabled button state readability */
+.add-visit-btn[disabled] { --background: #c8d6d3; --color: #ffffff; opacity: 1; }
+
+/* New section title style */
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: linear-gradient(135deg, #f0f9f6 0%, #e6f4f1 100%);
+  border: 1px solid #d1e7e2;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+
+.title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #1f4a42;
+}
+
+.section-title ion-icon {
+  font-size: 22px;
+  color: #1f4a42;
+}
+
+.add-visit-btn {
+  --background: #1f4a42;
+  --background-activated: #173832;
+  --background-hover: #1b4039;
+  --color: #fff;
+  font-size: 13px;
+  letter-spacing: .4px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 7px;
+}
+
+.card-content { margin-top: -4px; }
+
+.access-description {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--app-color-text-muted, #506a64);
+  margin: 4px 2px 2px;
+}
+
+.add-provider-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.provider-input {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --inner-padding-top: 4px;
+  --inner-padding-bottom: 4px;
+  --background: transparent;
+}
+
+.help-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--app-color-text-muted, #5d746e);
+  margin: 4px 2px 0;
+}
+
+.help-text ion-icon { font-size: 16px; }
+
+.current-access { margin-top: 4px; }
+
+.current-access-title {
+  margin: 8px 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f4a42;
+}
+
+.access-list { display: flex; flex-direction: column; gap: 6px; }
+
+.access-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f6fbfa;
+  border: 1px solid #d6e9e4;
+  border-radius: 8px;
+}
+
+.provider-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #244f47;
+}
+
+.no-access {
+  margin-top: 10px;
+  padding: 14px 12px;
+  background: #f6fbfa;
+  border: 1px dashed #c8ded9;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.empty-subtitle { font-size: 12.5px; margin: 0; color: #4f6b65; }
+
+.optional-label { color: #78938d; font-size: 11px; }

@@ -1,0 +1,72 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>AllergyScan</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<!-- Backdrop overlay - positioned outside ion-content -->
+
+<ion-content class="ion-padding">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Scan Product Barcode</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="scanner-container">
+          <div class="scanner-overlay"></div>
+          <div class="scanner-frame">
+            <ion-icon name="barcode-outline" style="font-size: 50px; color: #b3dfd9;"></ion-icon>
+          </div>
+          <ion-button id="scanBtn" class="pulse scanner-btn" (click)="startCameraScan()">
+            <ion-icon slot="start" name="camera-outline"></ion-icon>
+            Scan Barcode
+          </ion-button>
+        </div>
+        <p class="ion-text-center ion-margin-top">
+          Align the barcode within the frame to scan
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="button-row">
+          <ion-button class="recent-scans-btn"  (click)="viewRecentScans()">
+            <ion-icon slot="start" name="time-outline"></ion-icon>
+            Recent
+          </ion-button>
+
+          <ion-button class="manual-input-btn" (click)="openManualInputModal()">
+            <ion-icon slot="start" name="pencil-outline"></ion-icon>
+            Manual
+          </ion-button>
+        </div>
+
+        <!-- Manual Barcode Component -->
+        <app-manual-barcode 
+          #manualBarcodeModal
+          *ngIf="isManualInputModalOpen"
+          (barcodeSubmitted)="onBarcodeSubmitted($any($event))"
+          (close)="isManualInputModalOpen = false">
+        </app-manual-barcode>
+
+        <!-- Recent Scans Modal Component -->
+        <app-recent-scans 
+          #recentScansModal
+          [recentScans]="recentScans"
+          (scanSelected)="onRecentScanSelected($any($event))"
+          (deleteScan)="confirmDeleteScan($event)"
+          (clearScans)="clearRecentScans()"
+          (close)="recentScansModal.onDismiss()">
+        </app-recent-scans>
+
+  <!-- Scan Result Modal -->
+  <app-scan-result
+    #scanResultModal
+    [productInfo]="productInfo"
+    [allergenStatus]="allergenStatus"
+    [ingredientsToWatch]="ingredientsToWatch">
+  </app-scan-result>
+</ion-content>
+

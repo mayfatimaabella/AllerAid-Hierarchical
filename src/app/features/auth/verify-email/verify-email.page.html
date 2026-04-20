@@ -1,0 +1,30 @@
+<ion-content [fullscreen]="true" class="ion-padding verify-bg">
+  <div class="form-container">
+    <ion-card class="register-card">
+      <ion-card-header>
+        <ion-card-subtitle>Check your inbox to verify your account!</ion-card-subtitle>
+        <ion-card-title>Verify Email</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="verify-message">A verification email has been sent to:</div>
+        <div class="verify-email">{{ email }}</div>
+        <div class="verify-instructions">Please click the link in your email to activate your account.</div>
+        <ion-button expand="block" class="registerBtn" shape="round" (click)="resendVerificationEmail()" [disabled]="resendDisabled">
+          Resend Verification Email
+          <span *ngIf="resendDisabled"> (Wait {{resendCountdown}}s)</span>
+        </ion-button>
+        <div class="bottom-actions">
+          <ion-button class="left-btn" fill="clear" (click)="goToRegistration()">
+            <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+            Back to Register
+          </ion-button>
+
+          <ion-button class="right-btn" fill="clear" (click)="goToLogin()">
+            <ion-icon name="log-in-outline" slot="start"></ion-icon>
+            Go to Login
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

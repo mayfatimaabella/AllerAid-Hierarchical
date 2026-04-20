@@ -1,0 +1,26 @@
+.emergency-contact-card-presentable {
+  background: #f4faff;
+  border: 1.5px solid #b3e0ff;
+  border-radius: 12px;
+  padding: 18px 20px 14px 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.06);
+  font-size: 15px;
+}
+.emergency-contact-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.emergency-contact-label {
+  font-weight: 600;
+  min-width: 90px;
+  color: #0077b6;
+  margin-right: 8px;
+}
+.emergency-contact-value {
+  flex: 1;
+  color: #222;
+  word-break: break-word;
+}
