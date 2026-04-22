@@ -129,12 +129,6 @@ export class RegistrationPage {
 
         await this.userService.createUserProfile(uid, profileData);
 
-        // Mark onboarding complete for non-patient roles
-        if (['doctor', 'nurse', 'buddy'].includes(this.role)) {
-          await this.userService.markAllergyOnboardingCompleted(uid);
-          console.log('Healthcare professional/buddy onboarding marked as completed');
-        }
-
         let verificationEmailSent = true;
         try {
           await this.authService.sendVerificationEmail(userCredential.user);
@@ -155,6 +149,8 @@ export class RegistrationPage {
       console.error('Registration error:', error);
       if (error.code === 'auth/email-already-in-use') {
         this.presentToast('This email address is already registered. Please log in or use a different email.');
+      } else if (error.code === 'auth/configuration-not-found') {
+        this.presentToast('Firebase Auth is not configured for this project. Enable Authentication and Email/Password sign-in in Firebase Console.');
       } else {
         this.presentToast(`Registration failed: ${error.message}`);
       }

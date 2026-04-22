@@ -57,7 +57,37 @@ export interface UserProfile {
   lastLogin?: any;
   isActive: boolean;
   allergyOnboardingCompleted?: boolean;
+  onboarding?: {
+    profileCompleted: boolean;
+    allergyCompleted?: boolean;
+    emergencySetupCompleted?: boolean;
+    licenseSubmitted?: boolean;
+    licenseVerified?: boolean;
+  };
 }
+
+export interface ProfileDetails {
+  phone: string | null;
+  avatar: string | null;
+  dateOfBirth: string | null;
+  bloodType: string | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+}
+
+export interface MedicalInfo {
+  allergies: any[];
+  emergencyMessage: UserProfile['emergencyMessage'] | null;
+  allergyOnboardingCompleted: boolean;
+}
+
+export interface EmergencyLocation {
+  latitude: number;
+  longitude: number;
+  address: string;
+  timestamp?: any;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
   // Create user profile for registration
@@ -76,8 +106,7 @@ export class UserService {
     }
   ): Promise<void> {
     try {
-      // Build base userProfile without optional fields to avoid undefined values
-      const userProfile: any = {
+      const baseProfile = {
         uid,
         email: userData.email,
         firstName: userData.firstName,
@@ -85,38 +114,49 @@ export class UserService {
         fullName: `${userData.firstName} ${userData.lastName}`.trim(),
         role: userData.role,
         dateCreated: serverTimestamp(),
-        lastLogin: serverTimestamp(),
         isActive: true
       };
 
-      // Conditionally add optional fields only when they have a value
-      if (userData.licenseURL) {
-        userProfile.licenseURL = userData.licenseURL;
+      // Base user doc
+      await setDoc(doc(this.db, 'users', uid), baseProfile);
+
+      // Profile subcollection
+      await setDoc(doc(this.db, 'users', uid, 'profile', 'details'), {
+        phone: userData.phone ?? null,
+        avatar: null,
+        dateOfBirth: null,
+        bloodType: null,
+        emergencyContactName: null,
+        emergencyContactPhone: null
+      });
+
+      // Medical subcollection
+      await setDoc(doc(this.db, 'users', uid, 'medical', 'info'), {
+        allergies: [],
+        emergencyMessage: null,
+        allergyOnboardingCompleted: false
+      });
+
+      // Doctor-only professional subcollection
+      if (userData.role === 'doctor') {
+        await setDoc(doc(this.db, 'users', uid, 'professional', 'credentials'), {
+          license: userData.license ?? null,
+          specialty: userData.specialty ?? null,
+          hospital: userData.hospital ?? null,
+          licenseURL: userData.licenseURL ?? null,
+          verificationStatus: 'pending'
+        });
       }
 
-      if (userData.license) {
-        userProfile.license = userData.license;
-      }
-
-      if (userData.specialty) {
-        userProfile.specialty = userData.specialty;
-      }
-
-      if (userData.hospital) {
-        userProfile.hospital = userData.hospital;
-      }
-
-      if (userData.phone) {
-        userProfile.phone = userData.phone;
-      }
-
-      // Final safety: strip any undefined values before sending to Firestore
-      Object.keys(userProfile).forEach(key => {
-        if (userProfile[key] === undefined) {
-          delete userProfile[key];
+      // Settings subcollection
+      await setDoc(doc(this.db, 'users', uid, 'settings', 'preferences'), {
+        emergencySettings: {
+          shakeToAlert: false,
+          powerButtonAlert: false,
+          audioInstructions: false
         }
       });
-      await setDoc(doc(this.db, 'users', uid), userProfile);
+
       console.log('User profile created successfully');
     } catch (error) {
       console.error('Error creating user profile:', error);
@@ -131,6 +171,7 @@ export class UserService {
     this.storage = this.firebaseService.getStorage();
   }
 
+  // Get just the base profile (for nav, role checks, greetings)
   async getUserProfile(uid: string, useCache: boolean = true): Promise<UserProfile | null> {
     try {
       // Check cache first if enabled
@@ -142,6 +183,7 @@ export class UserService {
       
       if (userDoc.exists()) {
         const profile = userDoc.data() as UserProfile;
+
         // Cache the profile
         this.userProfileCache.set(uid, profile);
         return profile;
@@ -155,13 +197,109 @@ export class UserService {
     }
   }
 
+  // Get profile details (for profile page)
+  async getUserProfileDetails(uid: string): Promise<any | null> {
+    const snap = await getDoc(doc(this.db, 'users', uid, 'profile', 'details'));
+    return snap.exists() ? snap.data() : null;
+  }
+
+  // Get medical info (for emergency/allergy pages)
+  async getUserMedicalInfo(uid: string): Promise<any | null> {
+    const snap = await getDoc(doc(this.db, 'users', uid, 'medical', 'info'));
+    return snap.exists() ? snap.data() : null;
+  }
+
+  // Get doctor credentials (for verification/professional pages)
+  async getDoctorCredentials(uid: string): Promise<any | null> {
+    const snap = await getDoc(doc(this.db, 'users', uid, 'professional', 'credentials'));
+    return snap.exists() ? snap.data() : null;
+  }
+
+  // Get emergency settings only
+  async getEmergencySettings(uid: string): Promise<UserProfile['emergencySettings'] | null> {
+    const snap = await getDoc(doc(this.db, 'users', uid, 'settings', 'preferences'));
+    return snap.exists() ? (snap.data()?.['emergencySettings'] ?? null) : null;
+  }
+
+  // Update only profile details; does not touch base or medical docs.
+  async updateProfileDetails(uid: string, updates: Partial<ProfileDetails>): Promise<void> {
+    await updateDoc(doc(this.db, 'users', uid, 'profile', 'details'), updates);
+    this.userProfileCache.delete(uid);
+  }
+
+  // Update only medical info.
+  async updateMedicalInfo(uid: string, updates: Partial<MedicalInfo>): Promise<void> {
+    await updateDoc(doc(this.db, 'users', uid, 'medical', 'info'), updates);
+  }
+
+  // Update emergency location in a dedicated doc used for frequent writes.
+  async updateEmergencyLocation(uid: string, location: EmergencyLocation): Promise<void> {
+    await setDoc(
+      doc(this.db, 'users', uid, 'emergency', 'active'),
+      { location, updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+  }
+
   // Update user profile
   async updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void> {
     try {
-      await updateDoc(doc(this.db, 'users', uid), {
-        ...updates,
-        lastLogin: serverTimestamp()
-      });
+      const baseUpdates: any = {};
+      const profileUpdates: any = {};
+      const professionalUpdates: any = {};
+      const medicalUpdates: any = {};
+      const settingsUpdates: any = {};
+
+      const baseFields = ['email', 'firstName', 'lastName', 'fullName', 'role', 'isActive'];
+      const profileFields = ['phone', 'avatar', 'dateOfBirth', 'bloodType', 'emergencyContactName', 'emergencyContactPhone'];
+      const professionalFields = ['license', 'specialty', 'hospital', 'licenseURL'];
+
+      for (const [key, value] of Object.entries(updates)) {
+        if (baseFields.includes(key)) {
+          baseUpdates[key] = value;
+          continue;
+        }
+
+        if (profileFields.includes(key)) {
+          profileUpdates[key] = value;
+          continue;
+        }
+
+        if (professionalFields.includes(key)) {
+          professionalUpdates[key] = value;
+          continue;
+        }
+
+        if (key === 'emergencyMessage') {
+          medicalUpdates.emergencyMessage = value;
+          continue;
+        }
+
+        if (key === 'allergyOnboardingCompleted') {
+          medicalUpdates.allergyOnboardingCompleted = value;
+          continue;
+        }
+
+        if (key === 'emergencySettings') {
+          settingsUpdates.emergencySettings = value;
+        }
+      }
+
+      baseUpdates.lastLogin = serverTimestamp();
+
+      await setDoc(doc(this.db, 'users', uid), baseUpdates, { merge: true });
+      if (Object.keys(profileUpdates).length > 0) {
+        await setDoc(doc(this.db, 'users', uid, 'profile', 'details'), profileUpdates, { merge: true });
+      }
+      if (Object.keys(professionalUpdates).length > 0) {
+        await setDoc(doc(this.db, 'users', uid, 'professional', 'credentials'), professionalUpdates, { merge: true });
+      }
+      if (Object.keys(medicalUpdates).length > 0) {
+        await setDoc(doc(this.db, 'users', uid, 'medical', 'info'), medicalUpdates, { merge: true });
+      }
+      if (Object.keys(settingsUpdates).length > 0) {
+        await setDoc(doc(this.db, 'users', uid, 'settings', 'preferences'), settingsUpdates, { merge: true });
+      }
       
       // Clear cache to ensure fresh data on next request
       this.userProfileCache.delete(uid);
@@ -287,20 +425,13 @@ export class UserService {
     phone: string
   ): Promise<void> {
     try {
-      const userProfile: UserProfile = {
-        uid,
-        email: email,
-        firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
-        lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
-        fullName: `${firstName.charAt(0).toUpperCase() + firstName.slice(1)} ${lastName.charAt(0).toUpperCase() + lastName.slice(1)}`.trim(),
-        role: 'buddy', // Buddy role
-        phone: phone,
-        dateCreated: serverTimestamp(),
-        lastLogin: serverTimestamp(),
-        isActive: true
-      };
-
-      await setDoc(doc(this.db, 'users', uid), userProfile);
+      await this.createUserProfile(uid, {
+        email,
+        firstName,
+        lastName,
+        role: 'buddy',
+        phone
+      });
       console.log('Buddy profile created successfully');
     } catch (error) {
       console.error('Error creating buddy profile:', error);
@@ -329,13 +460,16 @@ export class UserService {
         firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
         lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
         fullName: `${firstName.charAt(0).toUpperCase() + firstName.slice(1)} ${lastName.charAt(0).toUpperCase() + lastName.slice(1)}`.trim(),
-        role: 'user', // Default role for migrated users
-        dateCreated: serverTimestamp(),
-        lastLogin: serverTimestamp(),
+        role: 'user',
         isActive: true
       };
 
-      await setDoc(doc(this.db, 'users', uid), userProfile);
+      await this.createUserProfile(uid, {
+        email: userProfile.email,
+        firstName: userProfile.firstName,
+        lastName: userProfile.lastName,
+        role: userProfile.role
+      });
       console.log('User profile created from existing auth user');
     } catch (error) {
       console.error('Error creating user profile from auth:', error);
@@ -346,9 +480,14 @@ export class UserService {
   // Check if user has completed allergy onboarding
   async hasCompletedAllergyOnboarding(uid: string): Promise<boolean> {
     try {
-      // First check user profile flag
+      // This onboarding check only applies to patients.
       const userProfile = await this.getUserProfile(uid);
-      if (userProfile && userProfile.allergyOnboardingCompleted) {
+      if (userProfile?.role && userProfile.role !== 'user') {
+        return true;
+      }
+
+      const medicalInfo = await this.getUserMedicalInfo(uid);
+      if (medicalInfo?.allergyOnboardingCompleted) {
         return true;
       }
       
@@ -366,9 +505,9 @@ export class UserService {
   // Mark allergy onboarding as completed
   async markAllergyOnboardingCompleted(uid: string): Promise<void> {
     try {
-      await updateDoc(doc(this.db, 'users', uid), {
+      await setDoc(doc(this.db, 'users', uid, 'medical', 'info'), {
         allergyOnboardingCompleted: true
-      });
+      }, { merge: true });
       console.log('Allergy onboarding marked as completed');
     } catch (error) {
       console.error('Error marking allergy onboarding as completed:', error);
@@ -380,9 +519,9 @@ export class UserService {
   // Update user avatar
   async updateUserAvatar(uid: string, avatarUrl: string): Promise<void> {
     try {
-      await updateDoc(doc(this.db, 'users', uid), {
+      await setDoc(doc(this.db, 'users', uid, 'profile', 'details'), {
         avatar: avatarUrl
-      });
+      }, { merge: true });
       console.log('User avatar updated successfully');
     } catch (error) {
       console.error('Error updating user avatar:', error);
