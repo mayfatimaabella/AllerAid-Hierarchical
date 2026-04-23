@@ -24,12 +24,7 @@ export class AllergyOnboardingPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    // TEMPORARILY DISABLED: Check if user is logged in
-    // const currentUser = this.authService.getCurrentUser();
-    // if (!currentUser) {
-    //   this.router.navigate(['/login']);
-    //   return;
-    // }
+
     
     this.loadAllergyOptions();
   }
@@ -62,7 +57,7 @@ export class AllergyOnboardingPage implements OnInit {
       
       if (userAllergies && userAllergies.length > 0) {
         // User has existing allergy data - merge with options
-        const userAllergiesData = userAllergies[0].allergies || [];
+        const userAllergiesData = userAllergies;
         
         // Create a map for quick lookup of user's allergies by name
         const userAllergiesMap = new Map();
@@ -156,14 +151,15 @@ export class AllergyOnboardingPage implements OnInit {
       const sanitizedAllergies = this.allergyOptions
       .filter(allergy => allergy.checked)
       .map(allergy => {
-        // Create a clean copy without undefined values
-        const cleanAllergy: Record<string, any> = {
-          id: allergy.id,
+        const cleanAllergy: {
+          name: string;
+          label: string;
+          checked: boolean;
+          value?: string;
+        } = {
           name: allergy.name,
           label: allergy.label,
-          checked: allergy.checked,
-          order: allergy.order,
-          hasInput: allergy.hasInput
+          checked: allergy.checked
         };
         
         // Only include input value if it's not empty
@@ -171,28 +167,17 @@ export class AllergyOnboardingPage implements OnInit {
         const inputValue = allergy.value?.trim();
 
        if (inputValue) {
-          cleanAllergy['customValue'] = inputValue;
+            cleanAllergy.value = inputValue;
 
-      // Replace "Others" label with user input
-        cleanAllergy['label'] = inputValue;
+            // Replace "Others" label with user input
+            cleanAllergy.label = inputValue;
   }
 }
         return cleanAllergy;
       });
-      
-      // Check if user already has allergy data
-      const userAllergies = await this.allergyService.getUserAllergies(userId);
-      
-      if (userAllergies && userAllergies.length > 0) {
-        // User has existing allergy data - update it
-        const allergyDocId = userAllergies[0].id;
-        await this.allergyService.updateUserAllergies(allergyDocId, sanitizedAllergies);
-        console.log('Updated user allergies');
-      } else {
-        // No existing data - create new record
-        await this.allergyService.addUserAllergies(userId, sanitizedAllergies);
-        console.log('Created new user allergies record');
-      }
+
+        await this.allergyService.saveUserAllergies(userId, sanitizedAllergies);
+        console.log('Saved user allergies');
       
       // Show success toast
       const toast = await this.toastController.create({

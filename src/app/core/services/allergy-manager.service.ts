@@ -30,20 +30,9 @@ export class AllergyManagerService {
       console.log('Current allergy options:', allergyOptions);
     }
     const sanitizedAllergies = this.sanitizeAllergiesForSave(allergyOptions);
-    const userAllergies = await this.allergyService.getUserAllergies(currentUser.uid);
-    if (userAllergies && userAllergies.length > 0) {
-      // Update existing
-      const allergyDocId = userAllergies[0].id;
-      await this.allergyService.updateUserAllergies(allergyDocId, sanitizedAllergies);
-      if (!environment.production) {
-        console.log('Updated user allergies');
-      }
-    } else {
-      // Create new
-      await this.allergyService.addUserAllergies(currentUser.uid, sanitizedAllergies);
-      if (!environment.production) {
-        console.log('Created new user allergies record');
-      }
+    await this.allergyService.saveUserAllergies(currentUser.uid, sanitizedAllergies);
+    if (!environment.production) {
+      console.log('Saved user allergies');
     }
   }
 

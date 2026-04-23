@@ -270,8 +270,8 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
             
             if (nextEmergency.userId) {
               this.isAllergiesLoading = true;
-              const allergyDocs = await this.allergyService.getUserAllergies(nextEmergency.userId);
-              this.emergencyAllergies = (allergyDocs && allergyDocs[0]) ? allergyDocs[0].allergies.filter((a: any) => a.checked) : [];
+              const allergies = await this.allergyService.getUserAllergies(nextEmergency.userId);
+              this.emergencyAllergies = allergies ? allergies.filter((a: any) => a.checked) : [];
 
               const emergencyInstructions = await this.medicalService.getEmergencyInstructions(nextEmergency.userId);
               this.specificInstructionEntries = (emergencyInstructions || [])

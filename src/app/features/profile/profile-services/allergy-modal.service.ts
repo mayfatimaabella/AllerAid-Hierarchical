@@ -27,12 +27,7 @@ export class AllergyModalService {
       if (result.data?.refresh && result.data?.allergyOptions) {
         const currentUser = await this.authService.waitForAuthInit();
         if (!currentUser) return;
-        const userAllergyDocs = await this.allergyService.getUserAllergies(currentUser.uid);
-        if (userAllergyDocs && userAllergyDocs.length > 0) {
-          await this.allergyService.updateUserAllergies(userAllergyDocs[0].id, result.data.allergyOptions);
-        } else {
-          await this.allergyService.addUserAllergies(currentUser.uid, result.data.allergyOptions);
-        }
+        await this.allergyService.saveUserAllergies(currentUser.uid, result.data.allergyOptions);
         await refreshAllergiesDisplay();
       }
     });
