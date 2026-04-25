@@ -113,19 +113,22 @@ export class AllergyOnboardingPage implements OnInit {
     }
 
     try {
-      // Wait for auth to be initialized
-      const currentUser = await this.authService.waitForAuthInit();
-      
       // First, save allergies (reusing the saveAllergies method)
       await this.saveAllergies();
-      
-      // Mark allergy onboarding as completed (only if user is logged in)
-      if (currentUser) {
-        await this.userService.markAllergyOnboardingCompleted(currentUser.uid);
-      }
-      
-      // Navigate to main app
-      this.router.navigate(['/tabs/home']);
+
+      // Continue onboarding flow: collect emergency instructions per selected allergy.
+      const selectedAllergies = this.allergyOptions
+        .filter(allergy => allergy.checked)
+        .map(allergy => ({
+          name: allergy.name,
+          label: allergy.label,
+          checked: allergy.checked,
+          value: allergy.value
+        }));
+
+      this.router.navigate(['/emergency-instructions-onboarding'], {
+        state: { allergies: selectedAllergies }
+      });
       
     } catch (error) {
       console.error('Error during submission:', error);

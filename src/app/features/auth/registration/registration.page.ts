@@ -58,6 +58,23 @@ export class RegistrationPage {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      // Validate file type
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        this.presentToast('Invalid file type. Please upload an image (PNG, JPG) or PDF.');
+        this.fileInput.nativeElement.value = ''; // Clear the input
+        return;
+      }
+
+      // Validate file size (max 10MB)
+      const maxSizeMB = 10;
+      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+      if (file.size > maxSizeBytes) {
+        this.presentToast(`File is too large. Maximum size is ${maxSizeMB}MB.`);
+        this.fileInput.nativeElement.value = '';
+        return;
+      }
+
       this.selectedFile = file;
       this.selectedFileName = file.name;
       console.log('Selected license file:', this.selectedFileName);

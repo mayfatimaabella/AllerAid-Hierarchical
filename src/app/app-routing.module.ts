@@ -59,6 +59,14 @@ const routes: Routes = [
     loadChildren: () => import('./features/auth/onboarding/allergy-onboarding/allergy-onboarding.module').then( m => m.AllergyOnboardingPageModule)
   },
   {
+    path: 'emergency-instructions-onboarding',
+    loadChildren: () => import('./features/auth/onboarding/emergency-instructions-onboarding/emergency-instructions-onboarding.module').then( m => m.EmergencyInstructionsOnboardingPageModule)
+  },
+  {
+    path: 'buddy-setup-onboarding',
+    loadChildren: () => import('./features/auth/onboarding/buddy-setup-onboarding/buddy-setup-onboarding.module').then( m => m.BuddySetupOnboardingPageModule)
+  },
+  {
     path: 'notification',
     loadChildren: () => import('./features/notification/notification.module').then( m => m.NotificationPageModule),
     canActivate: [AuthGuard]

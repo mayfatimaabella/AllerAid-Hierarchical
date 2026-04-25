@@ -1,0 +1,43 @@
+<ion-content [fullscreen]="true" class="onboarding-bg">
+  <div class="onboarding-welcome">
+    <h2>Emergency Instructions Setup</h2>
+    <p>What should people do if this allergy is triggered?</p>
+  </div>
+
+  <ion-card class="onboarding-card">
+    <div *ngIf="isLoading" class="ion-text-center ion-padding">
+      <ion-spinner></ion-spinner>
+      <p>Loading selected allergies...</p>
+    </div>
+
+    <div *ngIf="!isLoading && selectedAllergies.length === 0" class="ion-text-center ion-padding">
+      <ion-icon name="information-circle-outline" size="large" color="medium"></ion-icon>
+      <h3>No Selected Allergies</h3>
+      <p>Select allergies first, then set emergency instructions.</p>
+      <ion-button expand="block" fill="outline" (click)="skipForNow()">Continue</ion-button>
+    </div>
+
+    <form *ngIf="!isLoading && selectedAllergies.length > 0">
+      <ion-list lines="none">
+        <ion-item *ngFor="let allergy of selectedAllergies" class="instruction-item">
+          <ion-label position="stacked" class="instruction-label">{{ allergy.label }}</ion-label>
+          <ion-textarea
+            autoGrow="true"
+            rows="3"
+            placeholder="Example: Use EpiPen immediately, call emergency contact, bring patient to nearest hospital"
+            [(ngModel)]="instructionsByAllergy[allergy.name]"
+            [name]="'instruction-' + allergy.name">
+          </ion-textarea>
+        </ion-item>
+      </ion-list>
+    </form>
+  </ion-card>
+
+  <div class="actions" *ngIf="!isLoading">
+    <ion-button fill="clear" color="medium" (click)="skipForNow()" [disabled]="isSaving">Skip for now</ion-button>
+    <ion-button class="nextBtn" (click)="saveAndContinue()" [disabled]="isSaving">
+      <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
+      <span *ngIf="!isSaving">Continue</span>
+    </ion-button>
+  </div>
+</ion-content>

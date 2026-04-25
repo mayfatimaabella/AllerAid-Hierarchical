@@ -1,0 +1,156 @@
+<ion-content [fullscreen]="true" class="onboarding-bg">
+  <div class="onboarding-welcome">
+    <h2>Buddy Setup</h2>
+    <p>Who should be notified and respond?</p>
+  </div>
+
+  <ion-card class="onboarding-card">
+    <div *ngIf="isLoading" class="ion-text-center ion-padding">
+      <ion-spinner></ion-spinner>
+      <p>Loading buddy setup...</p>
+    </div>
+
+    <form *ngIf="!isLoading">
+      <ion-list lines="none">
+        <ion-item-divider>
+          <ion-label>Primary Buddy (Required)</ion-label>
+        </ion-item-divider>
+
+        <ion-item>
+          <ion-input
+            placeholder="Full Name"
+            [(ngModel)]="primaryBuddy.fullName"
+            name="primaryFullName">
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-select
+            placeholder="Relationship"
+            [(ngModel)]="primaryBuddy.relationship"
+            name="primaryRelationship">
+            <ion-select-option *ngFor="let relation of relationships" [value]="relation">{{ relation }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-input
+            type="tel"
+            inputmode="numeric"
+            minlength="11"
+            maxlength="11"
+            pattern="[0-9]{11}"
+            placeholder="Contact Number"
+            [(ngModel)]="primaryBuddy.contactNumber"
+            (ionInput)="onContactInput($event, 'primary')"
+            name="primaryContactNumber">
+          </ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input
+            type="email"
+            placeholder="Email"
+            [(ngModel)]="primaryBuddy.email"
+            name="primaryEmail">
+          </ion-input>
+        </ion-item>
+
+        <div class="invite-action">
+          <ion-button
+            size="small"
+            fill="outline"
+            (click)="sendPrimaryInvite()"
+            [disabled]="isInviteButtonDisabled(primaryInviteStatus, isSendingPrimaryInvite)">
+            <ion-spinner *ngIf="isSendingPrimaryInvite" name="crescent"></ion-spinner>
+            <span *ngIf="!isSendingPrimaryInvite">{{ getInviteButtonLabel(primaryInviteStatus) }}</span>
+          </ion-button>
+        </div>
+
+        <ion-note *ngIf="primaryInviteStatus" color="medium" class="status-note">
+          Invitation status:
+          {{ primaryInviteStatus === 'sent' ? 'Sent' : '' }}
+          {{ primaryInviteStatus === 'already_exists' ? 'Already connected/invited' : '' }}
+          {{ primaryInviteStatus === 'failed' ? 'Not sent' : '' }}
+        </ion-note>
+
+        <ion-item class="secondary-toggle">
+          <ion-checkbox slot="start" [(ngModel)]="includeSecondary" name="includeSecondary"></ion-checkbox>
+          <ion-label>Add Secondary Buddy (Optional)</ion-label>
+        </ion-item>
+
+        <ng-container *ngIf="includeSecondary">
+          <ion-item-divider>
+            <ion-label>Secondary Buddy</ion-label>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-input
+              placeholder="Full Name"
+              [(ngModel)]="secondaryBuddy.fullName"
+              name="secondaryFullName">
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              placeholder="Relationship"
+              [(ngModel)]="secondaryBuddy.relationship"
+              name="secondaryRelationship">
+              <ion-select-option *ngFor="let relation of relationships" [value]="relation">{{ relation }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-input
+              type="tel"
+              inputmode="numeric"
+              minlength="11"
+              maxlength="11"
+              pattern="[0-9]{11}"
+              placeholder="Contact Number" 
+              [(ngModel)]="secondaryBuddy.contactNumber"
+              (ionInput)="onContactInput($event, 'secondary')"
+              name="secondaryContactNumber">
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-input
+              type="email"
+              placeholder="Email"
+              [(ngModel)]="secondaryBuddy.email"
+              name="secondaryEmail">
+            </ion-input>
+          </ion-item>
+
+          <div class="invite-action">
+            <ion-button
+              size="small"
+              fill="outline"
+              (click)="sendSecondaryInvite()"
+              [disabled]="isInviteButtonDisabled(secondaryInviteStatus, isSendingSecondaryInvite)">
+              <ion-spinner *ngIf="isSendingSecondaryInvite" name="crescent"></ion-spinner>
+              <span *ngIf="!isSendingSecondaryInvite">{{ getInviteButtonLabel(secondaryInviteStatus) }}</span>
+            </ion-button>
+          </div>
+
+          <ion-note *ngIf="secondaryInviteStatus" color="medium" class="status-note">
+            Invitation status:
+            {{ secondaryInviteStatus === 'sent' ? 'Sent' : '' }}
+            {{ secondaryInviteStatus === 'already_exists' ? 'Already connected/invited' : '' }}
+            {{ secondaryInviteStatus === 'failed' ? 'Not sent' : '' }}
+            {{ secondaryInviteStatus === 'skipped' ? 'Skipped' : '' }}
+          </ion-note>
+        </ng-container>
+      </ion-list>
+    </form>
+  </ion-card>
+
+  <div class="actions" *ngIf="!isLoading">
+    <ion-button class="nextBtn" expand="block" (click)="saveAndContinue()" [disabled]="isSaving">
+      <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
+      <span *ngIf="!isSaving">Finish Onboarding</span>
+    </ion-button>
+  </div>
+</ion-content>

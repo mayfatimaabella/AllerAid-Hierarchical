@@ -19,6 +19,7 @@ import {
   setDoc,
   limit
 } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { BehaviorSubject} from 'rxjs';
 
 export interface Buddy {
@@ -62,6 +63,7 @@ export interface BuddyRelation {
 })
 export class BuddyService {
   private db;
+  private functions;
   
   // Maximum number of buddy relations allowed per user
   private readonly MAX_BUDDY_RELATIONS = 10;
@@ -86,6 +88,7 @@ export class BuddyService {
   constructor(private userService: UserService) {
     const app = initializeApp(firebaseConfig);
     this.db = getFirestore(app);
+    this.functions = getFunctions(app, 'us-central1');
   }
 
   // Store a dismissal for a specific user so future pop-ups are suppressed
@@ -695,7 +698,34 @@ export class BuddyService {
       console.error('Error sending buddy invitation with user data:', error);
       throw error;
     }
-  }  // Get received invitations for current user
+  }
+
+  // Send buddy invitation via Cloud Function (for onboarding with proper permissions)
+  async sendBuddyInvitationViaFunction(
+    currentUser: any,
+    targetEmail: string,
+    message: string
+  ): Promise<void> {
+    try {
+      const sendBuddyInvitation = httpsCallable(this.functions, 'sendBuddyInvitationFunction');
+      const response = await sendBuddyInvitation({
+        currentUserName: currentUser.fullName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim(),
+        targetEmail,
+        message
+      });
+      
+      if (response.data && (response.data as any).success) {
+        console.log('Buddy invitation sent via Cloud Function:', response.data);
+      } else {
+        throw new Error('Cloud Function returned unsuccessful response');
+      }
+    } catch (error) {
+      console.error('Error sending buddy invitation via Cloud Function:', error);
+      throw error;
+    }
+  }
+
+  // Get received invitations for current user
   async getReceivedInvitations(userId: string): Promise<BuddyInvitation[]> {
     try {
       // For now, let's query by both methods to ensure we catch all invitations

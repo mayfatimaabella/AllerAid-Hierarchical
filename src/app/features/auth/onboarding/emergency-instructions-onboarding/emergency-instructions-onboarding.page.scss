@@ -1,0 +1,49 @@
+.onboarding-bg {
+  --background: linear-gradient(0deg, #deded6 -70%, #036a5d 100%) !important;
+}
+
+.onboarding-welcome {
+  color: #ffffff;
+  text-align: center;
+  padding: 20px 16px 4px;
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.95;
+  }
+}
+
+.onboarding-card {
+  margin: 12px;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.instruction-item {
+  --background: #f3f3f3;
+  margin: 8px;
+  border-radius: 12px;
+}
+
+.instruction-label {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px 20px;
+}
+
+.nextBtn {
+  --background: #036a5d;
+  --color: #ffffff;
+}

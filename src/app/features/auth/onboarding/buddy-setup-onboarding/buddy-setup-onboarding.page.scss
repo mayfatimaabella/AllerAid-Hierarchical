@@ -1,0 +1,63 @@
+.onboarding-bg {
+  --background: linear-gradient(0deg, #deded6 -70%, #036a5d 100%) !important;
+}
+
+.onboarding-welcome {
+  color: #ffffff;
+  text-align: center;
+  padding: 20px 16px 4px;
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.95;
+  }
+}
+
+.onboarding-card {
+  margin: 12px;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+ion-item {
+  --background: #f2f2f2;
+  border-radius: 12px;
+  margin: 8px;
+}
+
+ion-item-divider {
+  --background: transparent;
+  font-weight: 700;
+  color: #1f2d29;
+  margin-top: 8px;
+}
+
+.secondary-toggle {
+  --background: #ecf7f4;
+}
+
+.status-note {
+  display: block;
+  margin: 0 14px 8px;
+}
+
+.invite-action {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 12px 4px;
+}
+
+.actions {
+  padding: 10px 14px 20px;
+}
+
+.nextBtn {
+  --background: #036a5d;
+  --color: #ffffff;
+}
