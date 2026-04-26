@@ -1,5 +1,13 @@
 <ion-content [fullscreen]="true" class="onboarding-bg">
+  <div class="onboarding-top-actions">
+    <ion-button fill="clear" color="light" class="back-btn" (click)="goBackToAllergySetup()">
+      <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+      Back
+    </ion-button>
+  </div>
+
   <div class="onboarding-welcome">
+    <p class="step-counter">Step 2 of 3</p>
     <h2>Emergency Instructions Setup</h2>
     <p>What should people do if this allergy is triggered?</p>
   </div>

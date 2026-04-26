@@ -709,6 +709,8 @@ export class BuddyService {
     try {
       const sendBuddyInvitation = httpsCallable(this.functions, 'sendBuddyInvitationFunction');
       const response = await sendBuddyInvitation({
+        currentUserUid: currentUser.uid,
+        currentUserEmail: currentUser.email,
         currentUserName: currentUser.fullName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim(),
         targetEmail,
         message

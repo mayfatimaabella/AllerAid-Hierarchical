@@ -1,5 +1,6 @@
 <ion-content [fullscreen]="true" class="onboarding-bg">
   <div class="onboarding-welcome">
+    <p class="step-counter">Step 3 of 3</p>
     <h2>Buddy Setup</h2>
     <p>Who should be notified and respond?</p>
   </div>
@@ -13,7 +14,7 @@
     <form *ngIf="!isLoading">
       <ion-list lines="none">
         <ion-item-divider>
-          <ion-label>Primary Buddy (Required)</ion-label>
+          <ion-label>Primary Buddy</ion-label>
         </ion-item-divider>
 
         <ion-item>
@@ -76,7 +77,7 @@
 
         <ion-item class="secondary-toggle">
           <ion-checkbox slot="start" [(ngModel)]="includeSecondary" name="includeSecondary"></ion-checkbox>
-          <ion-label>Add Secondary Buddy (Optional)</ion-label>
+          <ion-label>Add Secondary Buddy</ion-label>
         </ion-item>
 
         <ng-container *ngIf="includeSecondary">

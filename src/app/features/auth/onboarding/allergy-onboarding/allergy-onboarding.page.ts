@@ -3,7 +3,8 @@ import { Router } from '@angular/router';
 import { AllergyService } from '../../../../core/services/allergy.service';
 import { UserService } from '../../../../core/services/user.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { ToastController } from '@ionic/angular';
+import { Platform, ToastController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-allergy-onboarding',
@@ -14,12 +15,14 @@ import { ToastController } from '@ionic/angular';
 export class AllergyOnboardingPage implements OnInit {
   allergyOptions: any[] = [];
   isLoading = true;
+  private backButtonSubscription?: Subscription;
 
   constructor(
     private router: Router,
     private allergyService: AllergyService,
     private userService: UserService,
     private authService: AuthService,
+    private platform: Platform,
     private toastController: ToastController
   ) { }
 
@@ -27,6 +30,37 @@ export class AllergyOnboardingPage implements OnInit {
 
     
     this.loadAllergyOptions();
+  }
+
+  ionViewDidEnter(): void {
+    this.enableBackNavigationBlock();
+  }
+
+  ionViewWillLeave(): void {
+    this.disableBackNavigationBlock();
+  }
+
+  ngOnDestroy(): void {
+    this.disableBackNavigationBlock();
+  }
+
+  private onPopState = (): void => {
+    history.pushState(null, '', window.location.href);
+  };
+
+  private enableBackNavigationBlock(): void {
+    this.disableBackNavigationBlock();
+    this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(9999, () => {
+      // Intentionally noop: lock onboarding to forward-only navigation
+    });
+    history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', this.onPopState);
+  }
+
+  private disableBackNavigationBlock(): void {
+    this.backButtonSubscription?.unsubscribe();
+    this.backButtonSubscription = undefined;
+    window.removeEventListener('popstate', this.onPopState);
   }
 
   async loadAllergyOptions() {
@@ -96,6 +130,11 @@ export class AllergyOnboardingPage implements OnInit {
     }
   }
 
+  async goBackToLogin(): Promise<void> {
+    this.disableBackNavigationBlock();
+    await this.router.navigate(['/login']);
+  }
+
 
 
   async submitAllergies() {
@@ -127,7 +166,8 @@ export class AllergyOnboardingPage implements OnInit {
         }));
 
       this.router.navigate(['/emergency-instructions-onboarding'], {
-        state: { allergies: selectedAllergies }
+        state: { allergies: selectedAllergies },
+        replaceUrl: true
       });
       
     } catch (error) {

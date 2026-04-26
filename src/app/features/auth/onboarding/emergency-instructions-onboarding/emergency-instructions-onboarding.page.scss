@@ -2,10 +2,28 @@
   --background: linear-gradient(0deg, #deded6 -70%, #036a5d 100%) !important;
 }
 
+.onboarding-top-actions {
+  padding: 8px 8px 0;
+}
+
+.back-btn {
+  --color: #ffffff;
+  font-weight: 600;
+}
+
 .onboarding-welcome {
   color: #ffffff;
   text-align: center;
   padding: 20px 16px 4px;
+
+  .step-counter {
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    opacity: 0.9;
+  }
 
   h2 {
     margin: 0 0 8px;

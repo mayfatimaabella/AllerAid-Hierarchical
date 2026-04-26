@@ -1,12 +1,41 @@
-
 ion-content.onboarding-bg {
   --background: linear-gradient(0deg, #deded6 -70%, #036a5d 100%) !important;
 }
 
-// .onboarding-bg, .onboarding-bg * {
-//   // color: #fff !important;
-//   font-weight: bold !important;
-// }
+.onboarding-top-actions {
+  padding: 8px 8px 0;
+}
+
+.back-btn {
+  --color: #ffffff;
+  font-weight: 600;
+}
+
+.onboarding-welcome {
+  color: #ffffff;
+  text-align: center;
+  padding: 20px 16px 4px;
+
+  .step-counter {
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    opacity: 0.9;
+  }
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.95;
+  }
+}
 
 .onboarding-card {
   background: #fff !important;
@@ -63,15 +92,14 @@ ion-content.onboarding-bg {
 /* Only set the background for the allergy label inside the onboarding card */
 
 .onboarding-welcome {
-  padding: 24px 20px 12px 20px;
+  padding: 20px 16px 4px;
   text-align: center;
 }
 
 .onboarding-welcome h2 {
-  font-weight: 800;
-  font-size: 2rem;
-  letter-spacing: 1px;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.10);
+  margin: 0 0 8px;
+  font-size: 1.4rem;
+  font-weight: 700;
 }
 
 

@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { Platform, ToastController } from '@ionic/angular';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { AuthService } from '../../../../core/services/auth.service';
 import { BuddyService } from '../../../../core/services/buddy.service';
 import { UserService } from '../../../../core/services/user.service';
 import { FirebaseService } from '../../../../core/services/firebase.service';
+import { Subscription } from 'rxjs';
 
 interface BuddySetupEntry {
   fullName: string;
@@ -46,11 +47,13 @@ export class BuddySetupOnboardingPage implements OnInit {
   isSendingSecondaryInvite = false;
   primaryInviteStatus: InviteStatus | null = null;
   secondaryInviteStatus: InviteStatus | null = null;
+  private backButtonSubscription?: Subscription;
 
   private db;
 
   constructor(
     private router: Router,
+    private platform: Platform,
     private authService: AuthService,
     private userService: UserService,
     private buddyService: BuddyService,
@@ -62,6 +65,37 @@ export class BuddySetupOnboardingPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.loadExistingSetup();
+  }
+
+  ionViewDidEnter(): void {
+    this.enableBackNavigationBlock();
+  }
+
+  ionViewWillLeave(): void {
+    this.disableBackNavigationBlock();
+  }
+
+  ngOnDestroy(): void {
+    this.disableBackNavigationBlock();
+  }
+
+  private onPopState = (): void => {
+    history.pushState(null, '', window.location.href);
+  };
+
+  private enableBackNavigationBlock(): void {
+    this.disableBackNavigationBlock();
+    this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(9999, () => {
+      // Intentionally noop: lock onboarding to forward-only navigation
+    });
+    history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', this.onPopState);
+  }
+
+  private disableBackNavigationBlock(): void {
+    this.backButtonSubscription?.unsubscribe();
+    this.backButtonSubscription = undefined;
+    window.removeEventListener('popstate', this.onPopState);
   }
 
   private async loadExistingSetup(): Promise<void> {
@@ -190,7 +224,7 @@ export class BuddySetupOnboardingPage implements OnInit {
         await this.showToast('Buddy setup complete.', 'success');
       }
 
-      await this.router.navigate(['/tabs/home']);
+      await this.router.navigate(['/tabs/home'], { replaceUrl: true });
     } catch (error) {
       console.error('Error saving buddy setup onboarding:', error);
       await this.showToast('Failed to save buddy setup. Please try again.', 'danger');
