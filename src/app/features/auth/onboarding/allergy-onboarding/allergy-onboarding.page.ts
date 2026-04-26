@@ -14,7 +14,10 @@ import { Subscription } from 'rxjs';
 })
 export class AllergyOnboardingPage implements OnInit {
   allergyOptions: any[] = [];
+  commonAllergens: any[] = [];
+  otherAllergens: any[] = [];
   isLoading = true;
+  isSaving = false;
   private backButtonSubscription?: Subscription;
 
   constructor(
@@ -76,6 +79,8 @@ export class AllergyOnboardingPage implements OnInit {
       if (!options || options.length === 0) {
         console.log('No options in Firebase, showing empty state');
         this.allergyOptions = [];
+        this.commonAllergens = [];
+        this.otherAllergens = [];
         return;
       }
       
@@ -121,13 +126,36 @@ export class AllergyOnboardingPage implements OnInit {
           value: option.hasInput ? '' : undefined
         }));
       }
+
+      this.groupAllergyOptions();
       
     } catch (error) {
       console.error('Error loading allergy options:', error);
       this.allergyOptions = [];
+      this.commonAllergens = [];
+      this.otherAllergens = [];
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private groupAllergyOptions(): void {
+    const commonNames = new Set([
+      'peanuts',
+      'shellfish',
+      'dairy',
+      'wheat',
+      'fish',
+      'eggs',
+      'soy'
+    ]);
+
+    this.commonAllergens = this.allergyOptions.filter(option => commonNames.has(option.name));
+    this.otherAllergens = this.allergyOptions.filter(option => !commonNames.has(option.name));
+  }
+
+  hasSelectedAllergies(): boolean {
+    return this.allergyOptions.some(allergy => allergy.checked);
   }
 
   async goBackToLogin(): Promise<void> {
@@ -138,6 +166,8 @@ export class AllergyOnboardingPage implements OnInit {
 
 
   async submitAllergies() {
+    this.isSaving = true;
+
     // Check if any allergies are selected
     const hasSelectedAllergies = this.allergyOptions.some(allergy => allergy.checked);
     
@@ -148,6 +178,7 @@ export class AllergyOnboardingPage implements OnInit {
         color: 'warning'
       });
       await toast.present();
+      this.isSaving = false;
       return;
     }
 
@@ -178,6 +209,8 @@ export class AllergyOnboardingPage implements OnInit {
         color: 'danger'
       });
       await toast.present();
+    } finally {
+      this.isSaving = false;
     }
   }
 

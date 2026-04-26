@@ -1,72 +1,333 @@
-.onboarding-bg {
-  --background: linear-gradient(0deg, #deded6 -70%, #036a5d 100%) !important;
+// ─── Shared tokens ──────────────────────────────────────────────────────────
+$teal: #036a5d;
+$teal-light: #eaf5f2;
+$teal-mid: #04856f;
+$page-bg: #f0ede6;
+$white: #ffffff;
+$text-dark: #1a1a1a;
+$text-mid: #555;
+$text-muted: #999;
+$border: #e4e4e0;
+$field-bg: #f7f7f5;
+$field-border: #e8e8e4;
+
+// ─── Page background ─────────────────────────────────────────────────────────
+ion-content.onboarding-bg {
+  --background: #{$page-bg};
 }
 
-.onboarding-welcome {
-  color: #ffffff;
-  text-align: center;
-  padding: 20px 16px 4px;
-
-  .step-counter {
-    margin: 0 0 8px;
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 700;
-    opacity: 0.9;
-  }
-
-  h2 {
-    margin: 0 0 8px;
-    font-size: 1.4rem;
-    font-weight: 700;
-  }
-
-  p {
-    margin: 0;
-    opacity: 0.95;
-  }
+// ─── Hero ────────────────────────────────────────────────────────────────────
+.onboarding-hero {
+  background: linear-gradient(155deg, $teal 0%, darken($teal, 6%) 100%);
+  padding: 52px 20px 20px;
+  position: relative;
 }
 
-.onboarding-card {
-  margin: 12px;
-  border-radius: 16px;
-  background: #ffffff;
+.hero-back {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: $white;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-ion-item {
-  --background: #f2f2f2;
-  border-radius: 12px;
-  margin: 8px;
+.hero-content {
+  margin-bottom: 16px;
 }
 
-ion-item-divider {
-  --background: transparent;
+.step-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 6px;
+}
+
+.hero-title {
+  font-size: 22px;
   font-weight: 700;
-  color: #1f2d29;
-  margin-top: 8px;
+  color: $white;
+  margin: 0 0 4px;
+  line-height: 1.2;
 }
 
-.secondary-toggle {
-  --background: #ecf7f4;
+.hero-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0;
+  line-height: 1.5;
 }
 
-.status-note {
-  display: block;
-  margin: 0 14px 8px;
+// ─── Progress bar ────────────────────────────────────────────────────────────
+.progress-wrap {
+  margin-top: 4px;
 }
 
-.invite-action {
+.progress-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: $white;
+  border-radius: 100px;
+  transition: width 0.4s ease;
+}
+
+.step-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+}
+
+.step-label {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+
+  &.active {
+    color: $white;
+  }
+
+  &.done {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+// ─── States ──────────────────────────────────────────────────────────────────
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 12px;
+}
+
+.state-text {
+  font-size: 13px;
+  color: $text-mid;
+  margin: 0;
+  line-height: 1.5;
+}
+
+// ─── Body ─────────────────────────────────────────────────────────────────────
+.body-content {
+  padding: 20px 16px 120px;
+}
+
+// ─── Buddy cards ─────────────────────────────────────────────────────────────
+.buddy-card {
+  background: $white;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.secondary-card {
+  border-color: rgba($teal, 0.25);
+}
+
+.buddy-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.buddy-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: $teal-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: $teal;
+  flex-shrink: 0;
+
+  &.secondary {
+    background: #f0ede6;
+    color: $text-muted;
+  }
+}
+
+.buddy-header-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.buddy-type {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.buddy-badge {
+  font-size: 10px;
+  border-radius: 100px;
+  padding: 2px 8px;
+  font-weight: 500;
+
+  &.required {
+    background: $teal-light;
+    color: $teal;
+  }
+
+  &.optional {
+    background: #f0ede6;
+    color: $text-muted;
+  }
+}
+
+// ─── Fields ──────────────────────────────────────────────────────────────────
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.field-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+.field-input {
+  --background: #{$field-bg};
+  --color: #{$text-dark};
+  --placeholder-color: #{$text-muted};
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --border-radius: 10px;
+  border: 1px solid $field-border;
+  border-radius: 10px;
+  font-size: 14px;
+  min-height: 42px;
+}
+
+.field-select {
+  --placeholder-color: #{$text-muted};
+}
+
+// ─── Invite ───────────────────────────────────────────────────────────────────
+.invite-row {
   display: flex;
   justify-content: flex-end;
-  padding: 0 12px 4px;
+  margin-top: 4px;
 }
 
-.actions {
-  padding: 10px 14px 20px;
+.invite-btn {
+  --border-color: #{$teal};
+  --color: #{$teal};
+  --border-radius: 10px;
+  font-size: 12px;
 }
 
-.nextBtn {
-  --background: #036a5d;
-  --color: #ffffff;
+.invite-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  margin: 6px 0 0;
+
+  ion-icon {
+    font-size: 14px;
+  }
+
+  &.success {
+    color: $teal;
+  }
+
+  &.danger {
+    color: #c0392b;
+  }
+
+  &.muted {
+    color: $text-muted;
+  }
+}
+
+// ─── Add secondary button ─────────────────────────────────────────────────────
+.add-secondary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: transparent;
+  border: 1px dashed $border;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: $text-muted;
+  font-family: inherit;
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: $teal;
+    color: $teal;
+  }
+}
+
+.add-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f0ede6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+// ─── Footer ──────────────────────────────────────────────────────────────────
+.onboarding-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px 28px;
+  background: $page-bg;
+  border-top: 1px solid $border;
+}
+
+.btn-main {
+  --background: #{$teal};
+  --color: #{$white};
+  --border-radius: 14px;
+  --box-shadow: none;
+  height: 50px;
+  font-weight: 600;
+  font-size: 15px;
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { firebaseConfig } from './firebase.config';
 import { environment } from '../../../environments/environment';
 import { UserService } from './user.service';
@@ -64,6 +65,7 @@ export interface BuddyRelation {
 export class BuddyService {
   private db;
   private functions;
+  private auth;
   
   // Maximum number of buddy relations allowed per user
   private readonly MAX_BUDDY_RELATIONS = 10;
@@ -89,6 +91,7 @@ export class BuddyService {
     const app = initializeApp(firebaseConfig);
     this.db = getFirestore(app);
     this.functions = getFunctions(app, 'us-central1');
+    this.auth = getAuth(app);
   }
 
   // Store a dismissal for a specific user so future pop-ups are suppressed
@@ -721,9 +724,49 @@ export class BuddyService {
       } else {
         throw new Error('Cloud Function returned unsuccessful response');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending buddy invitation via Cloud Function:', error);
-      throw error;
+
+      const isCorsOrInternal =
+        (error?.message || '').toLowerCase().includes('cors') ||
+        (error?.message || '').toLowerCase().includes('internal') ||
+        (error?.code || '').toString().toLowerCase().includes('internal');
+
+      if (!isCorsOrInternal) {
+        throw error;
+      }
+
+      // Fallback to CORS-enabled HTTP function endpoint
+      const currentAuthUser = this.auth.currentUser;
+      const idToken = currentAuthUser ? await currentAuthUser.getIdToken() : '';
+
+      if (!idToken) {
+        throw error;
+      }
+
+      const fallbackResponse = await fetch(
+        'https://us-central1-alleraid2.cloudfunctions.net/sendBuddyInvitationHttp',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`
+          },
+          body: JSON.stringify({
+            currentUserName: currentUser.fullName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim(),
+            targetEmail,
+            message
+          })
+        }
+      );
+
+      const fallbackBody = await fallbackResponse.json().catch(() => ({}));
+
+      if (!fallbackResponse.ok || !fallbackBody.success) {
+        throw new Error(fallbackBody.message || 'HTTP fallback failed for buddy invitation');
+      }
+
+      console.log('Buddy invitation sent via HTTP fallback:', fallbackBody);
     }
   }
 

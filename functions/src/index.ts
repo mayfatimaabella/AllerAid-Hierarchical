@@ -130,6 +130,80 @@ export const sendBuddyInvitationFunction = functions.region('us-central1').https
   }
 });
 
+export const sendBuddyInvitationHttp = functions.region('us-central1').https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    res.status(405).json({ success: false, message: 'Method Not Allowed' });
+    return;
+  }
+
+  try {
+    const authHeader = req.headers.authorization || '';
+    const idToken = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : '';
+
+    if (!idToken) {
+      res.status(401).json({ success: false, message: 'Missing auth token' });
+      return;
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const currentUserUid = decodedToken.uid;
+    const currentUserEmail = decodedToken.email || '';
+
+    const { currentUserName, targetEmail, message } = req.body as {
+      currentUserName?: string;
+      targetEmail: string;
+      message: string;
+    };
+
+    const normalizedTargetEmail = (targetEmail || '').trim().toLowerCase();
+    if (!currentUserUid || !currentUserEmail || !normalizedTargetEmail || !message) {
+      res.status(400).json({ success: false, message: 'Invalid request payload' });
+      return;
+    }
+
+    const targetSnapshot = await db.collection('users')
+      .where('email', '==', normalizedTargetEmail)
+      .limit(1)
+      .get();
+
+    if (targetSnapshot.empty) {
+      res.status(404).json({ success: false, message: `No user found for ${normalizedTargetEmail}` });
+      return;
+    }
+
+    const targetData = targetSnapshot.docs[0].data();
+    const targetUserId = targetSnapshot.docs[0].id;
+
+    const invitation = {
+      fromUserId: currentUserUid,
+      fromUserName: currentUserName || currentUserEmail,
+      fromUserEmail: currentUserEmail,
+      toUserId: targetUserId,
+      toUserEmail: targetData.email || normalizedTargetEmail,
+      toUserName: targetData.fullName || `${targetData.firstName || ''} ${targetData.lastName || ''}`.trim() || normalizedTargetEmail,
+      message,
+      status: 'pending',
+      createdAt: admin.firestore.Timestamp.now()
+    };
+
+    await db.collection('buddy_invitations').add(invitation);
+
+    res.status(200).json({ success: true, message: 'Buddy invitation sent successfully' });
+  } catch (error: any) {
+    console.error('sendBuddyInvitationHttp error:', error);
+    res.status(500).json({ success: false, message: error?.message || 'Error sending buddy invitation' });
+  }
+});
+
 // export const sendBuddyInvitationFunction = functions.region('us-central1').https.onCall(async (data, context) => {
 //   // Verify the user is authenticated
 //   if (!context.auth) {

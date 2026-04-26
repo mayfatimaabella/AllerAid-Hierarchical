@@ -1,50 +1,68 @@
 <ion-content [fullscreen]="true" class="onboarding-bg">
-  <div class="onboarding-welcome">
-    <p class="step-counter">Step 1 of 3</p>
-    <h2>Allergy Setup</h2>
-    <p>To ensure your safety, please indicate any allergies you may have before signing in.</p>
+
+  <!-- Hero + progress bar -->
+  <div class="onboarding-hero">
+    <div class="hero-content">
+      <p class="step-eyebrow">Step 1 of 3 · Allergies</p>
+      <h2 class="hero-title">What are you allergic to?</h2>
+      <p class="hero-sub">Select all that apply. This helps keep you safe.</p>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" style="width: 33%"></div>
+      </div>
+      <div class="step-labels">
+        <span class="step-label active">Allergies</span>
+        <span class="step-label">Emergency</span>
+        <span class="step-label">Buddy</span>
+      </div>
+    </div>
   </div>
 
-  <ion-card class="onboarding-card">
-    <!-- Loading spinner -->
-    <div *ngIf="isLoading" class="ion-text-center ion-padding">
-      <ion-spinner></ion-spinner>
-      <p>Loading allergy options...</p>
-    </div>
-    
-    <!-- Empty state when no options in Firebase -->
-    <div *ngIf="!isLoading && allergyOptions.length === 0" class="ion-text-center ion-padding">
-      <ion-icon name="alert-circle-outline" size="large" color="medium"></ion-icon>
-      <h3>No Allergy Options Found</h3>
-      <p>The allergy options collection is empty in Firebase.</p>
-      <p>Please add allergy options to the Firebase database.</p>
-    </div>
-    
-    <!-- Allergy form -->
-    <form *ngIf="!isLoading && allergyOptions.length > 0">
-      <ion-list lines="none">
-        <ion-item *ngFor="let allergy of allergyOptions">
-          <ion-checkbox
-            slot="start"
-            [(ngModel)]="allergy.checked"
-            [name]="allergy.name">
-          </ion-checkbox>
-          <ion-label>{{ allergy.label }}</ion-label>
-          <ion-input
-            *ngIf="allergy.hasInput"
-            placeholder="please specify"
-            [(ngModel)]="allergy.value"
-            [name]="allergy.name + 'Value'"
-            style="margin-left: 8px;">
-          </ion-input>
-        </ion-item>
-      </ion-list>
-    </form>
-  </ion-card>
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="state-container">
+    <ion-spinner color="medium"></ion-spinner>
+    <p class="state-text">Loading allergy options…</p>
+  </div>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="!isLoading && allergyOptions.length > 0">
-    <ion-fab-button class="nextBtn" (click)="submitAllergies()">
-      <ion-icon name="arrow-forward-outline"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && allergyOptions.length === 0" class="state-container">
+    <ion-icon name="alert-circle-outline" class="state-icon"></ion-icon>
+    <h3 class="state-title">No options found</h3>
+    <p class="state-text">Please add allergy options to the Firebase database.</p>
+  </div>
+
+  <!-- Allergy chip list -->
+  <div *ngIf="!isLoading && allergyOptions.length > 0" class="body-content">
+    <p class="section-label">Select all that apply</p>
+
+    <div
+      *ngFor="let allergy of allergyOptions"
+      class="allergy-chip"
+      [class.selected]="allergy.checked"
+      (click)="allergy.checked = !allergy.checked">
+      <div class="chip-check">
+        <ion-icon *ngIf="allergy.checked" name="checkmark-outline"></ion-icon>
+      </div>
+      <span class="chip-label">{{ allergy.label }}</span>
+      <ion-input
+        *ngIf="allergy.hasInput && allergy.checked"
+        class="chip-input"
+        placeholder="Please specify…"
+        [(ngModel)]="allergy.value"
+        [name]="allergy.name + 'Value'"
+        (click)="$event.stopPropagation()">
+      </ion-input>
+    </div>
+  </div>
+
+  <!-- Footer CTA -->
+  <div class="onboarding-footer" *ngIf="!isLoading && allergyOptions.length > 0">
+    <ion-button class="btn-main" expand="block" (click)="submitAllergies()" [disabled]="isSaving">
+      <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
+      <span *ngIf="!isSaving">Save &amp; Continue</span>
+      <ion-icon *ngIf="!isSaving" name="arrow-forward-outline" slot="end"></ion-icon>
+    </ion-button>
+  </div>
+
 </ion-content>

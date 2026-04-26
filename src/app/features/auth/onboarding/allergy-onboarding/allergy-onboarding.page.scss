@@ -1,122 +1,219 @@
+// ─── Shared token ───────────────────────────────────────────────────────────
+$teal: #036a5d;
+$teal-light: #eaf5f2;
+$teal-mid: #04856f;
+$page-bg: #f0ede6;
+$white: #ffffff;
+$text-dark: #1a1a1a;
+$text-mid: #555;
+$text-muted: #999;
+$border: #e4e4e0;
+
+// ─── Page background ────────────────────────────────────────────────────────
 ion-content.onboarding-bg {
-  --background: linear-gradient(0deg, #deded6 -70%, #036a5d 100%) !important;
+  --background: #{$page-bg};
 }
 
-.onboarding-top-actions {
-  padding: 8px 8px 0;
+// ─── Hero ───────────────────────────────────────────────────────────────────
+.onboarding-hero {
+  background: linear-gradient(155deg, $teal 0%, darken($teal, 6%) 100%);
+  padding: 52px 20px 20px;
+  position: relative;
 }
 
-.back-btn {
-  --color: #ffffff;
+.hero-content {
+  margin-bottom: 16px;
+}
+
+.step-eyebrow {
+  font-size: 10px;
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 6px;
 }
 
-.onboarding-welcome {
-  color: #ffffff;
-  text-align: center;
-  padding: 20px 16px 4px;
-
-  .step-counter {
-    margin: 0 0 8px;
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 700;
-    opacity: 0.9;
-  }
-
-  h2 {
-    margin: 0 0 8px;
-    font-size: 1.4rem;
-    font-weight: 700;
-  }
-
-  p {
-    margin: 0;
-    opacity: 0.95;
-  }
-}
-
-.onboarding-card {
-  background: #fff !important;
-  color: #272727 !important;
-  border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(229, 94, 118, 0.10);
-  border: 1px solid rgba(3,106,93,0.08);
-  margin: 0 0 24px 0;
-  padding: 8px;
-}
-
-.onboarding-card ion-list {
-  --background: #fff !important;
-  background: #fff !important;
-  border-radius: 12px;
-  margin: 0;
-  padding: 8px;
-}
-
-.onboarding-card ion-item {
-  --background: #ddd !important;
-  background: #ddd !important;
-  color: #272727 !important;
-  border-radius: 8px;
-  margin-top: 5px;
-  padding-left: 12px;
-  padding-right: 12px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  align-items: center;
-}
-
-/* Only set the background for the allergy label inside the onboarding card */
-.onboarding-card ion-item > ion-label {
-  background: #dddddd !important;
-  color: #272727 !important;
-  border-radius: 8px !important;
-  padding: 8px 16px !important;
-  margin: 4px 0 !important;
-  display: inline-block;
-  font-weight: 500;
-}
-
-.onboarding-card ion-item ion-checkbox {
-  margin-right: 8px;
-}
-
-.onboarding-card ion-item ion-input {
-  background: transparent !important;
-  color: #272727 !important;
-  margin-left: 8px;
-}
-
-/* Only set the background for the allergy label inside the onboarding card */
-
-.onboarding-welcome {
-  padding: 20px 16px 4px;
-  text-align: center;
-}
-
-.onboarding-welcome h2 {
-  margin: 0 0 8px;
-  font-size: 1.4rem;
+.hero-title {
+  font-size: 22px;
   font-weight: 700;
+  color: $white;
+  margin: 0 0 4px;
+  line-height: 1.2;
 }
 
-
-ion-fab-button.nextBtn {
-  --background: #036a5d !important;
-  --color: #fff !important;
+.hero-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0;
+  line-height: 1.5;
 }
 
+// ─── Progress bar ────────────────────────────────────────────────────────────
+.progress-wrap {
+  margin-top: 4px;
+}
 
-ion-checkbox {
-  --background: #dddddd !important;
-  --checkbox-background: #dddddd !important;
-  --checkbox-background-checked: #036a5d !important;
-  --checkbox-border-color: #036a5d !important;
-  --checkbox-border-color-checked: #036a5d !important;
-  --background-checked: #dddddd !important;
-  --border-color: #036a5d !important;
-  --border-color-checked: #036a5d !important;
-  --checkmark-color: #fff5f7 !important;
+.progress-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: $white;
+  border-radius: 100px;
+  transition: width 0.4s ease;
+}
+
+.step-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+}
+
+.step-label {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+
+  &.active {
+    color: $white;
+  }
+
+  &.done {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+// ─── States (loading / empty) ────────────────────────────────────────────────
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 12px;
+}
+
+.state-icon {
+  font-size: 40px;
+  color: $text-muted;
+}
+
+.state-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-dark;
+  margin: 0;
+}
+
+.state-text {
+  font-size: 13px;
+  color: $text-mid;
+  margin: 0;
+  line-height: 1.5;
+}
+
+// ─── Body content ─────────────────────────────────────────────────────────────
+.body-content {
+  padding: 20px 16px 100px;
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin: 0 0 10px;
+}
+
+// ─── Allergy chips ─────────────────────────────────────────────────────────────
+.allergy-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: $white;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 11px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &.selected {
+    background: $teal-light;
+    border-color: $teal;
+  }
+}
+
+.chip-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+  font-size: 12px;
+  color: transparent;
+
+  .allergy-chip.selected & {
+    background: $teal;
+    border-color: $teal;
+    color: $white;
+  }
+
+  ion-icon {
+    font-size: 12px;
+    color: $white;
+  }
+}
+
+.chip-label {
+  font-size: 14px;
+  color: $text-dark;
+  flex: 1;
+  font-weight: 400;
+}
+
+.chip-input {
+  --background: transparent;
+  --color: #{$text-mid};
+  --placeholder-color: #{$text-muted};
+  font-size: 12px;
+  max-width: 110px;
+  border-left: 1px solid rgba($teal, 0.25);
+  padding-left: 10px;
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+.onboarding-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px 28px;
+  background: $page-bg;
+  border-top: 1px solid $border;
+}
+
+.btn-main {
+  --background: #{$teal};
+  --color: #{$white};
+  --border-radius: 14px;
+  --box-shadow: none;
+  height: 50px;
+  font-weight: 600;
+  font-size: 15px;
 }
