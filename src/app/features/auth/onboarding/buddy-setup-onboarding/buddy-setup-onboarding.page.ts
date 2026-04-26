@@ -1,11 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform, ToastController } from '@ionic/angular';
-import {
-  doc,
-  getDoc,
-  setDoc
-} from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { AuthService } from '../../../../core/services/auth.service';
 import { BuddyService } from '../../../../core/services/buddy.service';
 import { UserService } from '../../../../core/services/user.service';
@@ -154,6 +150,12 @@ export class BuddySetupOnboardingPage implements OnInit {
         this.buddySearchEmail = this.primaryBuddy.email;
         this.primaryRelationship = this.primaryBuddy.relationship;
 
+        this.foundBuddy = {
+          email: this.primaryBuddy.email,
+          firstName: this.primaryBuddy.fullName || this.deriveNameFromEmail(this.primaryBuddy.email),
+          lastName: ''
+        };
+
         if (existing.primaryBuddy.inviteStatus) {
           this.primaryInviteStatus = existing.primaryBuddy.inviteStatus as InviteStatus;
         }
@@ -201,6 +203,7 @@ export class BuddySetupOnboardingPage implements OnInit {
       this.isSearchingBuddy = true;
       this.foundBuddy = null;
       this.isExternalBuddy = false;
+      this.primaryInviteStatus = null;
 
       const currentUser = await this.authService.waitForAuthInit();
 
@@ -209,24 +212,26 @@ export class BuddySetupOnboardingPage implements OnInit {
         return;
       }
 
-      // Do not query users collection from client (blocked by security rules).
-      // Prepare invite by email; server-side function validates whether target exists.
-      const fallbackFirstName = this.deriveNameFromEmail(email);
+      const fallbackName = this.deriveNameFromEmail(email);
+
       this.foundBuddy = {
         uid: '',
         email,
-        firstName: fallbackFirstName,
+        firstName: fallbackName,
         lastName: ''
       };
 
-      this.primaryBuddy.email = email;
-      this.primaryBuddy.fullName = fallbackFirstName;
-      this.primaryBuddy.contactNumber = '';
+      this.primaryBuddy = {
+        fullName: fallbackName,
+        relationship: this.primaryRelationship,
+        contactNumber: '',
+        email
+      };
 
-      await this.showToast('Buddy email ready. Set relationship and send request.', 'success');
+      await this.showToast('Email added. Set relationship and continue.', 'success');
     } catch (error) {
-      console.error('Error searching buddy:', error);
-      await this.showToast('Could not search buddy. Please try again.', 'danger');
+      console.error('Error preparing buddy email:', error);
+      await this.showToast('Could not prepare buddy request.', 'danger');
     } finally {
       this.isSearchingBuddy = false;
     }
@@ -234,7 +239,7 @@ export class BuddySetupOnboardingPage implements OnInit {
 
   async sendPrimaryInvite(): Promise<void> {
     if (!this.foundBuddy) {
-      await this.showToast('Please search and select a buddy first.', 'warning');
+      await this.showToast('Please enter a buddy email first.', 'warning');
       return;
     }
 
@@ -246,39 +251,43 @@ export class BuddySetupOnboardingPage implements OnInit {
     try {
       this.isSendingPrimaryInvite = true;
 
-      const currentUserProfile = await this.userService.getCurrentUserProfile();
+      const currentUser = await this.authService.waitForAuthInit();
 
-      if (!currentUserProfile) {
-        await this.showToast('Unable to load your profile.', 'danger');
+      if (!currentUser) {
+        await this.showToast('You must be logged in.', 'danger');
         return;
       }
 
+      const email = this.buddySearchEmail.trim().toLowerCase();
+
+      this.primaryBuddy.email = email;
       this.primaryBuddy.relationship = this.primaryRelationship;
-      this.primaryBuddy.email = this.buddySearchEmail.trim().toLowerCase();
 
-      const inviteMessage =
-        `Hi ${this.primaryBuddy.fullName}, I added you as my ${this.primaryRelationship.toLowerCase()} emergency buddy in AllerAid. Please accept this request so you can be notified during emergencies.`;
-
-      await this.buddyService.sendBuddyInvitationViaFunction(
-        currentUserProfile,
-        this.primaryBuddy.email,
-        inviteMessage
+      await setDoc(
+        doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
+        {
+          buddySetupOnboarding: {
+            primaryBuddy: {
+              ...this.primaryBuddy,
+              email,
+              relationship: this.primaryRelationship,
+              buddyUid: this.foundBuddy?.uid || '',
+              status: 'pending',
+              inviteStatus: 'sent',
+              createdAt: new Date()
+            },
+            updatedAt: new Date()
+          }
+        },
+        { merge: true }
       );
 
       this.primaryInviteStatus = 'sent';
-      await this.showToast('Buddy request sent.', 'success');
+      await this.showToast('Buddy request saved.', 'success');
     } catch (error) {
-      console.error('Error sending buddy request:', error);
+      console.error('Error saving primary invite during onboarding:', error);
       this.primaryInviteStatus = 'failed';
-
-      if (this.isNotFoundInviteError(error)) {
-        this.foundBuddy = null;
-        this.isExternalBuddy = true;
-        this.externalInvite.email = this.primaryBuddy.email || this.buddySearchEmail.trim().toLowerCase();
-        await this.showToast('Buddy is not on AllerAid yet. You can send an invite link instead.', 'warning');
-      } else {
-        await this.showToast('Could not send buddy request.', 'danger');
-      }
+      await this.showToast('Could not save buddy request.', 'danger');
     } finally {
       this.isSendingPrimaryInvite = false;
     }
@@ -317,7 +326,7 @@ export class BuddySetupOnboardingPage implements OnInit {
         { merge: true }
       );
 
-      await this.showToast('Invite link saved/sent.', 'success');
+      await this.showToast('Invite saved.', 'success');
     } catch (error) {
       console.error('Error saving external invite:', error);
       await this.showToast('Could not save invite.', 'danger');
@@ -326,21 +335,19 @@ export class BuddySetupOnboardingPage implements OnInit {
 
   async saveAndContinue(): Promise<void> {
     if (!this.foundBuddy && !this.isExternalBuddy) {
-      await this.showToast('Please search for a buddy first.', 'warning');
+      await this.showToast('Please enter a buddy email first.', 'warning');
       return;
     }
 
     if (this.foundBuddy && this.primaryInviteStatus !== 'sent') {
-        await this.sendPrimaryInvite();
-        
-        const inviteWasSent = this.primaryInviteStatus as InviteStatus;
-        
-        if (inviteWasSent !== 'sent') {
-            return;
-    }
-    }
+      await this.sendPrimaryInvite();
 
+      const inviteWasSent = this.primaryInviteStatus as InviteStatus;
 
+      if (inviteWasSent !== 'sent') {
+        return;
+      }
+    }
 
     if (this.isExternalBuddy) {
       await this.sendExternalInviteLink();
@@ -364,7 +371,8 @@ export class BuddySetupOnboardingPage implements OnInit {
               ? {
                   ...this.primaryBuddy,
                   relationship: this.primaryRelationship,
-                  buddyUid: this.foundBuddy.uid,
+                  buddyUid: this.foundBuddy?.uid || '',
+                  status: 'pending',
                   inviteStatus: this.primaryInviteStatus
                 }
               : null,
@@ -380,7 +388,7 @@ export class BuddySetupOnboardingPage implements OnInit {
             secondaryBuddy: this.includeSecondary
               ? {
                   ...this.secondaryBuddy,
-                  inviteStatus: this.secondaryInviteStatus
+                  inviteStatus: this.secondaryInviteStatus || 'skipped'
                 }
               : null,
 
@@ -412,7 +420,7 @@ export class BuddySetupOnboardingPage implements OnInit {
   async sendSecondaryInvite(): Promise<void> {
     if (!this.hasRequiredValues(this.secondaryBuddy)) {
       await this.showToast(
-        'Secondary buddy details must be complete before sending invitation.',
+        'Secondary buddy details must be complete before saving.',
         'warning'
       );
       return;
@@ -421,63 +429,44 @@ export class BuddySetupOnboardingPage implements OnInit {
     try {
       this.isSendingSecondaryInvite = true;
 
-      const currentUserProfile = await this.userService.getCurrentUserProfile();
+      const currentUser = await this.authService.waitForAuthInit();
 
-      if (!currentUserProfile) {
-        await this.showToast('Unable to load your profile. Please try again.', 'danger');
+      if (!currentUser) {
+        await this.showToast('You must be logged in.', 'danger');
         return;
       }
 
-      this.secondaryInviteStatus = await this.sendInvitationForBuddy(
-        this.secondaryBuddy,
-        currentUserProfile,
-        false
+      await setDoc(
+        doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
+        {
+          buddySetupOnboarding: {
+            secondaryBuddy: {
+              ...this.secondaryBuddy,
+              status: 'pending',
+              inviteStatus: 'sent',
+              createdAt: new Date()
+            },
+            updatedAt: new Date()
+          }
+        },
+        { merge: true }
       );
 
-      if (this.secondaryInviteStatus === 'sent') {
-        await this.showToast('Secondary buddy invitation sent.', 'success');
-      }
+      this.secondaryInviteStatus = 'sent';
+      await this.showToast('Secondary buddy request saved.', 'success');
+    } catch (error) {
+      console.error('Error saving secondary buddy request:', error);
+      this.secondaryInviteStatus = 'failed';
+      await this.showToast('Could not save secondary buddy request.', 'danger');
     } finally {
       this.isSendingSecondaryInvite = false;
     }
   }
 
-  private async sendInvitationForBuddy(
-    entry: BuddySetupEntry,
-    currentUserProfile: any,
-    isPrimary: boolean
-  ): Promise<InviteStatus> {
-    try {
-      const normalizedEmail = (entry.email || '').trim().toLowerCase();
-
-      if (!normalizedEmail) {
-        await this.showToast(
-          `${isPrimary ? 'Primary' : 'Secondary'} buddy email is required.`,
-          'warning'
-        );
-        return 'failed';
-      }
-
-      const inviteMessage =
-        `Hi ${entry.fullName}, I added you as my ${entry.relationship.toLowerCase()} emergency buddy in AllerAid. Please accept this invitation so you can be notified and respond during emergencies.`;
-
-      await this.buddyService.sendBuddyInvitationViaFunction(
-        currentUserProfile,
-        normalizedEmail,
-        inviteMessage
-      );
-
-      return 'sent';
-    } catch (error) {
-      console.error('Error sending buddy invitation:', error);
-      return 'failed';
-    }
-  }
-
   getInviteButtonLabel(status: InviteStatus | null): string {
-    if (status === 'sent') return 'Sent';
+    if (status === 'sent') return 'Saved';
     if (status === 'already_exists') return 'Already Connected';
-    return 'Send Invite';
+    return 'Save Request';
   }
 
   isInviteButtonDisabled(status: InviteStatus | null, isSending: boolean): boolean {
@@ -523,16 +512,11 @@ export class BuddySetupOnboardingPage implements OnInit {
 
   private deriveNameFromEmail(email: string): string {
     const localPart = (email || '').split('@')[0] || 'Buddy';
+
     return localPart
       .replace(/[._-]+/g, ' ')
       .replace(/\b\w/g, char => char.toUpperCase())
       .trim();
-  }
-
-  private isNotFoundInviteError(error: any): boolean {
-    const code = (error?.code || '').toString().toLowerCase();
-    const message = (error?.message || '').toString().toLowerCase();
-    return code.includes('not-found') || message.includes('not found') || message.includes('no user found');
   }
 
   private async showToast(

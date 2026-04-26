@@ -40,17 +40,18 @@
         <div class="buddy-avatar">P</div>
 
         <div class="buddy-header-text">
-          <span class="buddy-type">Find your buddy</span>
+          <span class="buddy-type">Primary buddy</span>
           <span class="buddy-badge required">Primary</span>
         </div>
       </div>
 
       <p class="state-text">
-        Enter their email. If they're already on AllerAid,
-        they'll get a request instantly.
+        Enter your buddy's email and relationship.
+        Tapping Finish setup saves a pending request in Firestore.
+        Your buddy can accept later inside the app.
       </p>
 
-      <!-- Email Search -->
+      <!-- Buddy Email -->
       <div class="field">
         <label class="field-label">Buddy email</label>
 
@@ -59,97 +60,32 @@
           type="email"
           placeholder="maria@email.com"
           [(ngModel)]="buddySearchEmail"
-          name="buddySearchEmail"
-          (ionBlur)="searchBuddyByEmail()">
+          name="buddySearchEmail">
         </ion-input>
       </div>
 
-      <div class="invite-row">
-        <ion-button
-          class="invite-btn"
-          fill="outline"
-          size="small"
-          (click)="searchBuddyByEmail()"
-          [disabled]="isSearchingBuddy">
+      <!-- Relationship -->
+      <div class="field">
+        <label class="field-label">Relationship</label>
 
-          <ion-spinner
-            *ngIf="isSearchingBuddy"
-            name="crescent"
-            slot="start">
-          </ion-spinner>
+        <ion-select
+          class="field-input field-select"
+          placeholder="Friend · Family · Partner · Coworker"
+          [(ngModel)]="primaryRelationship"
+          name="primaryRelationship">
 
-          Search buddy
-        </ion-button>
+          <ion-select-option
+            *ngFor="let r of relationships"
+            [value]="r">
+            {{ r }}
+          </ion-select-option>
+
+        </ion-select>
       </div>
 
-      <!-- FOUND USER -->
-      <div *ngIf="foundBuddy" class="buddy-preview">
-
-        <div class="buddy-header">
-          <div class="buddy-avatar">
-            {{
-              (foundBuddy.firstName ||
-              foundBuddy.email ||
-              'B').charAt(0).toUpperCase()
-            }}
-          </div>
-
-          <div class="buddy-header-text">
-            <span class="buddy-type">
-              {{ foundBuddy.firstName }} {{ foundBuddy.lastName }}
-            </span>
-
-            <span class="invite-status success">
-              Already on AllerAid ✓
-            </span>
-          </div>
-        </div>
-
-        <!-- Relationship -->
-        <div class="field">
-          <label class="field-label">Relationship</label>
-
-          <ion-select
-            class="field-input field-select"
-            placeholder="Friend · Family · Partner · Coworker"
-            [(ngModel)]="primaryRelationship"
-            name="primaryRelationship">
-
-            <ion-select-option
-              *ngFor="let r of relationships"
-              [value]="r">
-              {{ r }}
-            </ion-select-option>
-
-          </ion-select>
-        </div>
-
-        <!-- Send Request -->
-        <ion-button
-          class="btn-main"
-          expand="block"
-          (click)="sendPrimaryInvite()"
-          [disabled]="
-            isSendingPrimaryInvite ||
-            primaryInviteStatus === 'sent'
-          ">
-
-          <ion-spinner
-            *ngIf="isSendingPrimaryInvite"
-            name="crescent"
-            slot="start">
-          </ion-spinner>
-
-          <span *ngIf="primaryInviteStatus !== 'sent'">
-            Send buddy request
-          </span>
-
-          <span *ngIf="primaryInviteStatus === 'sent'">
-            Request sent
-          </span>
-
-        </ion-button>
-      </div>
+      <p *ngIf="primaryInviteStatus === 'sent'" class="invite-status success">
+        Pending buddy request saved. Waiting for acceptance.
+      </p>
     </div>
 
     <!-- NOT ON ALLERAID -->
