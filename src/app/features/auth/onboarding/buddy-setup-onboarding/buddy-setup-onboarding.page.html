@@ -16,7 +16,6 @@
       <div class="progress-track">
         <div class="progress-fill" style="width: 100%"></div>
       </div>
-
       <div class="step-labels">
         <span class="step-label done">Allergies</span>
         <span class="step-label done">Emergency</span>
@@ -38,7 +37,6 @@
     <div class="buddy-card">
       <div class="buddy-header">
         <div class="buddy-avatar">P</div>
-
         <div class="buddy-header-text">
           <span class="buddy-type">Primary buddy</span>
           <span class="buddy-badge required">Primary</span>
@@ -46,54 +44,79 @@
       </div>
 
       <p class="state-text">
-        Enter your buddy's email and relationship.
-        Tapping Finish setup saves a pending request in Firestore.
-        Your buddy can accept later inside the app.
+        Enter your buddy's email and tap <strong>Search</strong>.
+        Then select your relationship and tap <strong>Finish Setup</strong>.
       </p>
 
-      <!-- Buddy Email -->
+      <!-- Email + Search Button -->
       <div class="field">
         <label class="field-label">Buddy email</label>
-
-        <ion-input
-          class="field-input"
-          type="email"
-          placeholder="maria@email.com"
-          [(ngModel)]="buddySearchEmail"
-          name="buddySearchEmail">
-        </ion-input>
+        <div class="search-row">
+          <ion-input
+            class="field-input search-input"
+            type="email"
+            placeholder="maria@email.com"
+            [(ngModel)]="buddySearchEmail"
+            name="buddySearchEmail"
+            (keyup.enter)="searchBuddyByEmail()">
+          </ion-input>
+          <ion-button
+            class="search-btn"
+            (click)="searchBuddyByEmail()"
+            [disabled]="isSearchingBuddy">
+            <ion-spinner *ngIf="isSearchingBuddy" name="crescent" slot="icon-only"></ion-spinner>
+            <span *ngIf="!isSearchingBuddy">Search</span>
+          </ion-button>
+        </div>
       </div>
 
-      <!-- Relationship -->
-      <div class="field">
-        <label class="field-label">Relationship</label>
+      <!-- Found Buddy Result -->
+      <div *ngIf="foundBuddy" class="found-buddy-box">
+        <ion-icon name="checkmark-circle" class="found-icon"></ion-icon>
+        <div class="found-info">
+          <span class="found-name">{{ foundBuddy.firstName }} {{ foundBuddy.lastName }}</span>
+          <span class="found-email">{{ foundBuddy.email }}</span>
+        </div>
+      </div>
 
+      <!-- Relationship — only visible after search -->
+      <div class="field" *ngIf="foundBuddy">
+        <label class="field-label">Relationship</label>
         <ion-select
           class="field-input field-select"
           placeholder="Friend · Family · Partner · Coworker"
           [(ngModel)]="primaryRelationship"
           name="primaryRelationship">
-
-          <ion-select-option
-            *ngFor="let r of relationships"
-            [value]="r">
+          <ion-select-option *ngFor="let r of relationships" [value]="r">
             {{ r }}
           </ion-select-option>
-
         </ion-select>
       </div>
 
       <p *ngIf="primaryInviteStatus === 'sent'" class="invite-status success">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
         Pending buddy request saved. Waiting for acceptance.
       </p>
     </div>
 
+    <!-- Send Invite Button — shown after buddy is found and relationship is selected -->
+<div class="invite-row" *ngIf="foundBuddy && primaryRelationship">
+  <ion-button
+    class="invite-btn"
+    fill="outline"
+    size="small"
+    (click)="sendPrimaryInvite()"
+    [disabled]="isInviteButtonDisabled(primaryInviteStatus, isSendingPrimaryInvite)">
+    <ion-spinner *ngIf="isSendingPrimaryInvite" name="crescent" slot="start"></ion-spinner>
+    {{ getInviteButtonLabel(primaryInviteStatus) }}
+  </ion-button>
+</div>
+
+
     <!-- NOT ON ALLERAID -->
     <div *ngIf="isExternalBuddy" class="buddy-card secondary-card">
-
       <div class="buddy-header">
         <div class="buddy-avatar secondary">?</div>
-
         <div class="buddy-header-text">
           <span class="buddy-type">Buddy not on AllerAid yet?</span>
           <span class="buddy-badge optional">Optional</span>
@@ -101,15 +124,12 @@
       </div>
 
       <p class="state-text">
-        We’ll store the invitation.
-        When they sign up using this email,
-        the request appears automatically.
+        We'll store the invitation.
+        When they sign up using this email, the request appears automatically.
       </p>
 
-      <!-- Email -->
       <div class="field">
         <label class="field-label">Email</label>
-
         <ion-input
           class="field-input"
           type="email"
@@ -119,10 +139,8 @@
         </ion-input>
       </div>
 
-      <!-- Phone -->
       <div class="field">
         <label class="field-label">Phone number</label>
-
         <ion-input
           class="field-input"
           type="tel"
@@ -133,56 +151,34 @@
       </div>
 
       <p class="invite-status muted">
-        Invitation link will be sent to their
-        email or phone number.
+        Invitation link will be sent to their email or phone number.
       </p>
 
-      <ion-button
-        class="btn-main"
-        expand="block"
-        (click)="sendExternalInviteLink()">
-
+      <ion-button class="btn-main" expand="block" (click)="sendExternalInviteLink()">
         Send invite link
-
       </ion-button>
     </div>
 
     <!-- SECONDARY BUDDY TOGGLE -->
-    <button
-      class="add-secondary"
-      (click)="includeSecondary = !includeSecondary">
-
+    <button class="add-secondary" (click)="includeSecondary = !includeSecondary">
       <div class="add-icon">
-        <ion-icon
-          [name]="includeSecondary ? 'remove-outline' : 'add-outline'">
-        </ion-icon>
+        <ion-icon [name]="includeSecondary ? 'remove-outline' : 'add-outline'"></ion-icon>
       </div>
-
-      <span>
-        {{
-          includeSecondary
-            ? 'Remove secondary buddy'
-            : 'Add secondary buddy instead'
-        }}
-      </span>
+      <span>{{ includeSecondary ? 'Remove secondary buddy' : 'Add secondary buddy instead' }}</span>
     </button>
 
     <!-- SECONDARY BUDDY -->
     <div *ngIf="includeSecondary" class="buddy-card secondary-card">
-
       <div class="buddy-header">
         <div class="buddy-avatar secondary">S</div>
-
         <div class="buddy-header-text">
           <span class="buddy-type">Secondary buddy</span>
           <span class="buddy-badge optional">Optional</span>
         </div>
       </div>
 
-      <!-- Full Name -->
       <div class="field">
         <label class="field-label">Full name</label>
-
         <ion-input
           class="field-input"
           placeholder="e.g. Juan dela Cruz"
@@ -191,29 +187,19 @@
         </ion-input>
       </div>
 
-      <!-- Relationship -->
       <div class="field">
         <label class="field-label">Relationship</label>
-
         <ion-select
           class="field-input field-select"
           placeholder="Select relationship"
           [(ngModel)]="secondaryBuddy.relationship"
           name="secondaryRelationship">
-
-          <ion-select-option
-            *ngFor="let r of relationships"
-            [value]="r">
-            {{ r }}
-          </ion-select-option>
-
+          <ion-select-option *ngFor="let r of relationships" [value]="r">{{ r }}</ion-select-option>
         </ion-select>
       </div>
 
-      <!-- Contact -->
       <div class="field">
         <label class="field-label">Contact number</label>
-
         <ion-input
           class="field-input"
           type="tel"
@@ -225,10 +211,8 @@
         </ion-input>
       </div>
 
-      <!-- Email -->
       <div class="field">
         <label class="field-label">Email</label>
-
         <ion-input
           class="field-input"
           type="email"
@@ -244,52 +228,93 @@
           fill="outline"
           size="small"
           (click)="sendSecondaryInvite()"
-          [disabled]="
-            isInviteButtonDisabled(
-              secondaryInviteStatus,
-              isSendingSecondaryInvite
-            )
-          ">
-
-          <ion-spinner
-            *ngIf="isSendingSecondaryInvite"
-            name="crescent"
-            slot="start">
-          </ion-spinner>
-
+          [disabled]="isInviteButtonDisabled(secondaryInviteStatus, isSendingSecondaryInvite)">
+          <ion-spinner *ngIf="isSendingSecondaryInvite" name="crescent" slot="start"></ion-spinner>
           {{ getInviteButtonLabel(secondaryInviteStatus) }}
-
         </ion-button>
       </div>
     </div>
 
   </div>
 
-  <!-- Footer -->
-  <div class="onboarding-footer" *ngIf="!isLoading">
-    <ion-button
-      class="btn-main"
-      expand="block"
-      (click)="saveAndContinue()"
-      [disabled]="isSaving">
+<!-- SKIP BUTTON — sits below the buddy card, above fallback -->
+<div class="skip-row" *ngIf="!foundBuddy && !isExternalBuddy">
+  <button class="skip-btn" (click)="skipBuddySetup()">
+    Skip for now
+    <ion-icon name="chevron-forward-outline"></ion-icon>
+  </button>
+  <p class="skip-hint">You can always add a buddy later from your profile.</p>
+</div>
 
-      <ion-spinner
-        *ngIf="isSaving"
-        name="crescent"
-        slot="start">
-      </ion-spinner>
-
-      <span *ngIf="!isSaving">
-        Finish setup
-      </span>
-
-      <ion-icon
-        *ngIf="!isSaving"
-        name="checkmark-outline"
-        slot="end">
-      </ion-icon>
-
-    </ion-button>
+<!-- FALLBACK SECTION — shown when skipping OR after search, no buddy found -->
+<div class="buddy-card fallback-card" *ngIf="showFallback">
+  <div class="buddy-header">
+    <div class="buddy-avatar fallback">!</div>
+    <div class="buddy-header-text">
+      <span class="buddy-type">Emergency fallback</span>
+      <span class="buddy-badge optional">Recommended</span>
+    </div>
   </div>
 
+  <p class="state-text">
+    No buddy yet? Add a trusted contact or a local hotline so you're never without help.
+  </p>
+
+  <!-- Trusted Contact -->
+  <div class="fallback-section">
+    <p class="fallback-label">Trusted contact</p>
+
+    <div class="field">
+      <label class="field-label">Full name</label>
+      <ion-input
+        class="field-input"
+        placeholder="e.g. Maria Santos"
+        [(ngModel)]="fallbackContact.name"
+        name="fallbackContactName">
+      </ion-input>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Phone number</label>
+      <ion-input
+        class="field-input"
+        type="tel"
+        placeholder="09XXXXXXXXX"
+        [(ngModel)]="fallbackContact.phone"
+        name="fallbackContactPhone">
+      </ion-input>
+    </div>
+  </div>
+
+  <!-- Emergency Hotlines -->
+  <div class="fallback-section">
+    <p class="fallback-label">Emergency hotlines</p>
+
+    <div class="hotline-list">
+      <div class="hotline-item" *ngFor="let h of hotlines; let i = index">
+        <div class="hotline-info">
+          <span class="hotline-name">{{ h.name }}</span>
+          <span class="hotline-number">{{ h.number }}</span>
+        </div>
+        <button
+          class="hotline-toggle"
+          [class.active]="h.enabled"
+          (click)="toggleHotline(i)">
+          <ion-icon [name]="h.enabled ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top: 10px;">
+      <label class="field-label">Custom hotline (optional)</label>
+      <ion-input
+        class="field-input"
+        type="tel"
+        placeholder="e.g. 02-XXXX-XXXX"
+        [(ngModel)]="fallbackContact.customHotline"
+        name="customHotline">
+      </ion-input>
+    </div>
+  </div>
+</div>
 </ion-content>

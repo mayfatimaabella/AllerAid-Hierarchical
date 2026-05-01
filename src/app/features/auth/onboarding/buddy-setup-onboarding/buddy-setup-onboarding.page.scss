@@ -331,3 +331,154 @@ ion-content.onboarding-bg {
   font-weight: 600;
   font-size: 15px;
 }
+
+
+.search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+}
+
+.search-btn {
+  --background: #036a5d;
+  --color: #ffffff;
+  --border-radius: 10px;
+  --box-shadow: none;
+  height: 42px;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.found-buddy-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #eaf5f2;
+  border: 1px solid #036a5d;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+
+  .found-icon {
+    font-size: 22px;
+    color: #036a5d;
+    flex-shrink: 0;
+  }
+
+  .found-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .found-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .found-email {
+    font-size: 12px;
+    color: #555;
+  }
+}
+
+.skip-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 16px;
+}
+
+.skip-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 16px;
+
+  ion-icon { font-size: 14px; }
+}
+
+.skip-hint {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  margin: 0;
+  text-align: center;
+}
+
+.fallback-card {
+  border-left: 3px solid var(--ion-color-warning);
+}
+
+.buddy-avatar.fallback {
+  background: var(--ion-color-warning-tint);
+  color: var(--ion-color-warning-shade);
+}
+
+.fallback-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ion-color-light);
+}
+
+.fallback-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ion-color-medium);
+  margin: 0 0 10px;
+}
+
+.hotline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hotline-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ion-color-light);
+}
+
+.hotline-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hotline-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.hotline-number {
+  font-size: 13px;
+  color: var(--ion-color-medium);
+}
+
+.hotline-toggle {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+  padding: 0;
+
+  &.active { color: var(--ion-color-success); }
+}

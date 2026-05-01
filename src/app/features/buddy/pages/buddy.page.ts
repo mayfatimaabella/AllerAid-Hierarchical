@@ -291,10 +291,3 @@ export class BuddyPage implements OnInit {
     }
   }
 }
-
-
-
-
-
-
-

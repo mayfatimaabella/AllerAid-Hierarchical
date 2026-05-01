@@ -384,7 +384,13 @@ export class UserService {
       const querySnapshot = await getDocs(q);
       
       if (!querySnapshot.empty) {
-        return querySnapshot.docs[0].data() as UserProfile;
+        const docSnap = querySnapshot.docs[0];
+        const data = docSnap.data() as UserProfile;
+
+        return {
+          ...data,
+          uid: data.uid || docSnap.id
+        } as UserProfile;
       }
       return null;
     } catch (error) {
@@ -416,28 +422,28 @@ export class UserService {
     }
   }
 
-  // Create buddy user profile (simplified registration)
-  async createBuddyProfile(
-    uid: string, 
-    email: string, 
-    firstName: string, 
-    lastName: string,
-    phone: string
-  ): Promise<void> {
-    try {
-      await this.createUserProfile(uid, {
-        email,
-        firstName,
-        lastName,
-        role: 'buddy',
-        phone
-      });
-      console.log('Buddy profile created successfully');
-    } catch (error) {
-      console.error('Error creating buddy profile:', error);
-      throw error;
-    }
-  }
+  // // Create buddy user profile (simplified registration)
+  // async createBuddyProfile(
+  //   uid: string, 
+  //   email: string, 
+  //   firstName: string, 
+  //   lastName: string,
+  //   phone: string
+  // ): Promise<void> {
+  //   try {
+  //     await this.createUserProfile(uid, {
+  //       email,
+  //       firstName,
+  //       lastName,
+  //       role: 'buddy',
+  //       phone
+  //     });
+  //     console.log('Buddy profile created successfully');
+  //   } catch (error) {
+  //     console.error('Error creating buddy profile:', error);
+  //     throw error;
+  //   }
+  // }
 
   // Create user profile for existing auth users (migration helper)
   async createUserProfileFromAuth(uid: string, email: string): Promise<void> {

@@ -20,6 +20,18 @@ interface ExternalBuddyInvite {
   phone: string;
 }
 
+interface FallbackContact {
+  name: string;
+  phone: string;
+  customHotline: string;
+}
+
+interface Hotline {
+  name: string;
+  number: string;
+  enabled: boolean;
+}
+
 type InviteStatus = 'sent' | 'already_exists' | 'failed' | 'skipped';
 
 @Component({
@@ -36,6 +48,20 @@ export class BuddySetupOnboardingPage implements OnInit {
   isSearchingBuddy = false;
   isExternalBuddy = false;
   primaryRelationship = '';
+  showFallback = false;
+
+  fallbackContact: FallbackContact = {
+  name: '',
+  phone: '',
+  customHotline: ''
+};
+
+hotlines: Hotline[] = [
+  { name: 'Emergency (PH)', number: '911',        enabled: true  },
+  { name: 'Red Cross PH',   number: '143',        enabled: true  },
+  { name: 'DOH Hotline',    number: '1555',       enabled: false },
+  { name: 'NDRRMC',         number: '911',        enabled: false },
+];
 
   externalInvite: ExternalBuddyInvite = {
     email: '',
@@ -66,6 +92,7 @@ export class BuddySetupOnboardingPage implements OnInit {
   secondaryInviteStatus: InviteStatus | null = null;
 
   private backButtonSubscription?: Subscription;
+  private invitationUnsubscribe?: () => void;
   private db;
 
   constructor(
@@ -82,6 +109,14 @@ export class BuddySetupOnboardingPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.loadExistingSetup();
+
+    const currentUser = await this.authService.waitForAuthInit();
+  if (currentUser) {
+    await this.listenForPrimaryInviteAcceptance(currentUser.uid);
+    this.buddyService.listenForBuddyRelations(currentUser.uid);
+  }
+
+    
   }
 
   ionViewDidEnter(): void {
@@ -94,6 +129,7 @@ export class BuddySetupOnboardingPage implements OnInit {
 
   ngOnDestroy(): void {
     this.disableBackNavigationBlock();
+    this.invitationUnsubscribe?.();
   }
 
   private onPopState = (): void => {
@@ -191,107 +227,169 @@ export class BuddySetupOnboardingPage implements OnInit {
     }
   }
 
-  async searchBuddyByEmail(): Promise<void> {
-    const email = this.buddySearchEmail.trim().toLowerCase();
+  private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<void> {
+  const currentUserProfile = await this.userService.getUserProfile(currentUserUid);
+  if (!currentUserProfile?.email) return;
 
-    if (!this.isValidEmail(email)) {
-      await this.showToast('Please enter a valid email.', 'warning');
-      return;
+  // Clean up previous listener
+  this.invitationUnsubscribe?.();
+
+  this.invitationUnsubscribe = this.buddyService.listenForBuddyInvitations(
+    currentUserUid
+  );
+
+  // Watch accepted buddy relations
+  this.buddyService.buddyRelations$.subscribe(relations => {
+    if (relations.length > 0) {
+      this.primaryInviteStatus = 'accepted' as any;
     }
+  });
+}
 
-    try {
-      this.isSearchingBuddy = true;
-      this.foundBuddy = null;
-      this.isExternalBuddy = false;
-      this.primaryInviteStatus = null;
 
-      const currentUser = await this.authService.waitForAuthInit();
+async searchBuddyByEmail(): Promise<void> {
+  const email = this.buddySearchEmail.trim().toLowerCase();
 
-      if (currentUser?.email?.toLowerCase() === email) {
-        await this.showToast('You cannot add yourself as your buddy.', 'warning');
-        return;
-      }
-
-      const fallbackName = this.deriveNameFromEmail(email);
-
-      this.foundBuddy = {
-        uid: '',
-        email,
-        firstName: fallbackName,
-        lastName: ''
-      };
-
-      this.primaryBuddy = {
-        fullName: fallbackName,
-        relationship: this.primaryRelationship,
-        contactNumber: '',
-        email
-      };
-
-      await this.showToast('Email added. Set relationship and continue.', 'success');
-    } catch (error) {
-      console.error('Error preparing buddy email:', error);
-      await this.showToast('Could not prepare buddy request.', 'danger');
-    } finally {
-      this.isSearchingBuddy = false;
-    }
+  if (!this.isValidEmail(email)) {
+    await this.showToast('Please enter a valid email.', 'warning');
+    return;
   }
 
-  async sendPrimaryInvite(): Promise<void> {
-    if (!this.foundBuddy) {
-      await this.showToast('Please enter a buddy email first.', 'warning');
+  try {
+    this.isSearchingBuddy = true;
+    this.foundBuddy = null;
+    this.isExternalBuddy = false;
+    this.primaryInviteStatus = null;
+
+    const currentUser = await this.authService.waitForAuthInit();
+    if (!currentUser) return;
+
+    // Can't add yourself
+    if (currentUser.email?.toLowerCase() === email) {
+      await this.showToast('You cannot add yourself as your buddy.', 'warning');
       return;
     }
 
-    if (!this.primaryRelationship) {
-      await this.showToast('Please select your relationship.', 'warning');
-      return;
-    }
-
-    try {
-      this.isSendingPrimaryInvite = true;
-
-      const currentUser = await this.authService.waitForAuthInit();
-
-      if (!currentUser) {
-        await this.showToast('You must be logged in.', 'danger');
-        return;
-      }
-
-      const email = this.buddySearchEmail.trim().toLowerCase();
-
-      this.primaryBuddy.email = email;
-      this.primaryBuddy.relationship = this.primaryRelationship;
-
-      await setDoc(
-        doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
-        {
-          buddySetupOnboarding: {
-            primaryBuddy: {
-              ...this.primaryBuddy,
-              email,
-              relationship: this.primaryRelationship,
-              buddyUid: this.foundBuddy?.uid || '',
-              status: 'pending',
-              inviteStatus: 'sent',
-              createdAt: new Date()
-            },
-            updatedAt: new Date()
-          }
-        },
-        { merge: true }
+    // Check buddy limit before doing anything else
+    const atLimit = await this.buddyService.hasReachedBuddyLimit(currentUser.uid);
+    if (atLimit) {
+      await this.showToast(
+        `You've reached the maximum of ${this.buddyService.getMaxBuddyLimit()} buddies.`,
+        'warning'
       );
-
-      this.primaryInviteStatus = 'sent';
-      await this.showToast('Buddy request saved.', 'success');
-    } catch (error) {
-      console.error('Error saving primary invite during onboarding:', error);
-      this.primaryInviteStatus = 'failed';
-      await this.showToast('Could not save buddy request.', 'danger');
-    } finally {
-      this.isSendingPrimaryInvite = false;
+      return;
     }
+
+    // Check for duplicates
+    const duplicate = await this.buddyService.checkDuplicateBuddyByEmail(currentUser.uid, email);
+    if (duplicate.isDuplicate) {
+      const msg =
+        duplicate.type === 'pending_sent_invitation'
+          ? `You already sent a request to ${duplicate.details?.name}.`
+          : `${duplicate.details?.name} is already your buddy.`;
+      await this.showToast(msg, 'warning');
+      return;
+    }
+
+    // Actually search for the user in Firestore
+    const matchedUser = await this.userService.getUserByEmail(email);
+
+    if (matchedUser) {
+      // User exists in AllerAid
+      this.foundBuddy = {
+        uid: matchedUser.uid,
+        email: matchedUser.email,
+        firstName: matchedUser.firstName,
+        lastName: matchedUser.lastName
+      };
+      this.primaryBuddy = {
+        fullName: `${matchedUser.firstName} ${matchedUser.lastName}`.trim(),
+        relationship: this.primaryRelationship,
+        contactNumber: matchedUser.phone || '',
+        email: matchedUser.email
+      };
+      await this.showToast(`Found ${this.primaryBuddy.fullName}. Select relationship and continue.`, 'success');
+    } else {
+      // User not on AllerAid — show external invite section
+      this.isExternalBuddy = true;
+      this.externalInvite.email = email;
+      await this.showToast('This email isn\'t on AllerAid yet. We\'ll send them an invite.', 'warning');
+    }
+
+  } catch (error) {
+    console.error('Error searching buddy by email:', error);
+    await this.showToast('Could not search for buddy. Try again.', 'danger');
+  } finally {
+    this.isSearchingBuddy = false;
   }
+}
+
+async sendPrimaryInvite(): Promise<void> {
+  if (!this.foundBuddy) {
+    await this.showToast('Please enter a buddy email first.', 'warning');
+    return;
+  }
+
+  if (!this.primaryRelationship) {
+    await this.showToast('Please select your relationship.', 'warning');
+    return;
+  }
+
+  try {
+    this.isSendingPrimaryInvite = true;
+
+    const currentUser = await this.authService.waitForAuthInit();
+    if (!currentUser) {
+      await this.showToast('You must be logged in.', 'danger');
+      return;
+    }
+
+    // Get the current user's full profile for the invitation
+    const currentUserProfile = await this.userService.getUserProfile(currentUser.uid);
+    if (!currentUserProfile) {
+      await this.showToast('Could not load your profile.', 'danger');
+      return;
+    }
+
+    if (this.foundBuddy.uid) {
+      // Buddy is on AllerAid — send a proper invitation via BuddyService
+      await this.buddyService.sendBuddyInvitationWithUser(
+        currentUserProfile,
+        this.foundBuddy,
+        `${currentUserProfile.firstName} wants you as their emergency buddy on AllerAid.`
+      );
+    } else {
+      // Buddy is NOT on AllerAid — store external invite
+      await this.buddyService.sendBuddyInvitation(
+        this.foundBuddy.email,
+        this.foundBuddy.firstName,
+        `${currentUserProfile.firstName} wants you as their emergency buddy on AllerAid.`
+      );
+    }
+
+    // Update profile emergency contact with buddy info
+    await this.userService.updateProfileDetails(currentUser.uid, {
+      emergencyContactName: this.primaryBuddy.fullName,
+      emergencyContactPhone: this.primaryBuddy.contactNumber || null
+    });
+
+    this.primaryInviteStatus = 'sent';
+    await this.showToast('Buddy request sent successfully.', 'success');
+
+  } catch (error: any) {
+    console.error('Error sending primary buddy invite:', error);
+    this.primaryInviteStatus = 'failed';
+
+    // Surface meaningful errors to the user
+    const msg = error?.message?.includes('maximum')
+      ? error.message
+      : 'Could not send buddy request. Please try again.';
+
+    await this.showToast(msg, 'danger');
+  } finally {
+    this.isSendingPrimaryInvite = false;
+  }
+}
 
   async sendExternalInviteLink(): Promise<void> {
     const email = this.externalInvite.email.trim().toLowerCase();
@@ -531,4 +629,23 @@ export class BuddySetupOnboardingPage implements OnInit {
 
     await toast.present();
   }
+
+  skipBuddySetup(): void {
+  this.showFallback = true;
+  // Scroll to fallback card after render
+  setTimeout(() => {
+    const el = document.querySelector('.fallback-card');
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+toggleHotline(index: number): void {
+  this.hotlines[index].enabled = !this.hotlines[index].enabled;
+}
+
+hasFallback(): boolean {
+  const hasContact = !!(this.fallbackContact.name?.trim() && this.fallbackContact.phone?.trim());
+  const hasHotline = this.hotlines.some(h => h.enabled) || !!this.fallbackContact.customHotline?.trim();
+  return hasContact || hasHotline;
+}
 }
