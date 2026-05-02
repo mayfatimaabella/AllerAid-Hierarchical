@@ -45,7 +45,7 @@
 
       <p class="state-text">
         Enter your buddy's email and tap <strong>Search</strong>.
-        Then select your relationship and tap <strong>Finish Setup</strong>.
+        Then select your relationship and tap <strong>Add Buddy & Continue</strong>.
       </p>
 
       <!-- Email + Search Button -->
@@ -99,20 +99,6 @@
       </p>
     </div>
 
-    <!-- Send Invite Button — shown after buddy is found and relationship is selected -->
-<div class="invite-row" *ngIf="foundBuddy && primaryRelationship">
-  <ion-button
-    class="invite-btn"
-    fill="outline"
-    size="small"
-    (click)="sendPrimaryInvite()"
-    [disabled]="isInviteButtonDisabled(primaryInviteStatus, isSendingPrimaryInvite)">
-    <ion-spinner *ngIf="isSendingPrimaryInvite" name="crescent" slot="start"></ion-spinner>
-    {{ getInviteButtonLabel(primaryInviteStatus) }}
-  </ion-button>
-</div>
-
-
     <!-- NOT ON ALLERAID -->
     <div *ngIf="isExternalBuddy" class="buddy-card secondary-card">
       <div class="buddy-header">
@@ -154,9 +140,6 @@
         Invitation link will be sent to their email or phone number.
       </p>
 
-      <ion-button class="btn-main" expand="block" (click)="sendExternalInviteLink()">
-        Send invite link
-      </ion-button>
     </div>
 
     <!-- SECONDARY BUDDY TOGGLE -->
@@ -236,6 +219,22 @@
     </div>
 
   </div>
+
+<ion-button
+  *ngIf="(foundBuddy && primaryRelationship) || isExternalBuddy"
+  class="btn-main"
+  expand="block"
+  (click)="saveAndContinue()"
+  [disabled]="isSaving || isSendingPrimaryInvite">
+
+  <ion-spinner
+    *ngIf="isSaving || isSendingPrimaryInvite"
+    name="crescent"
+    slot="start">
+  </ion-spinner>
+
+  {{ isExternalBuddy ? 'Save Invite & Continue' : 'Add Buddy & Continue' }}
+</ion-button>
 
 <!-- SKIP BUTTON — sits below the buddy card, above fallback -->
 <div class="skip-row" *ngIf="!foundBuddy && !isExternalBuddy">

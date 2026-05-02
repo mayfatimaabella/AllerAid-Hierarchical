@@ -324,50 +324,40 @@ async searchBuddyByEmail(): Promise<void> {
   }
 }
 
-async sendPrimaryInvite(): Promise<void> {
+async sendPrimaryInvite(): Promise<boolean> {
   if (!this.foundBuddy) {
     await this.showToast('Please enter a buddy email first.', 'warning');
-    return;
+    return false;
   }
 
   if (!this.primaryRelationship) {
     await this.showToast('Please select your relationship.', 'warning');
-    return;
+    return false;
   }
 
   try {
     this.isSendingPrimaryInvite = true;
 
     const currentUser = await this.authService.waitForAuthInit();
+
     if (!currentUser) {
       await this.showToast('You must be logged in.', 'danger');
-      return;
+      return false;
     }
 
-    // Get the current user's full profile for the invitation
     const currentUserProfile = await this.userService.getUserProfile(currentUser.uid);
+
     if (!currentUserProfile) {
       await this.showToast('Could not load your profile.', 'danger');
-      return;
+      return false;
     }
 
-    if (this.foundBuddy.uid) {
-      // Buddy is on AllerAid — send a proper invitation via BuddyService
-      await this.buddyService.sendBuddyInvitationWithUser(
-        currentUserProfile,
-        this.foundBuddy,
-        `${currentUserProfile.firstName} wants you as their emergency buddy on AllerAid.`
-      );
-    } else {
-      // Buddy is NOT on AllerAid — store external invite
-      await this.buddyService.sendBuddyInvitation(
-        this.foundBuddy.email,
-        this.foundBuddy.firstName,
-        `${currentUserProfile.firstName} wants you as their emergency buddy on AllerAid.`
-      );
-    }
+    await this.buddyService.sendBuddyInvitationWithUser(
+      currentUserProfile,
+      this.foundBuddy,
+      `${currentUserProfile.firstName} wants you as their emergency buddy on AllerAid.`
+    );
 
-    // Update profile emergency contact with buddy info
     await this.userService.updateProfileDetails(currentUser.uid, {
       emergencyContactName: this.primaryBuddy.fullName,
       emergencyContactPhone: this.primaryBuddy.contactNumber || null
@@ -375,17 +365,19 @@ async sendPrimaryInvite(): Promise<void> {
 
     this.primaryInviteStatus = 'sent';
     await this.showToast('Buddy request sent successfully.', 'success');
+    return true;
 
   } catch (error: any) {
     console.error('Error sending primary buddy invite:', error);
     this.primaryInviteStatus = 'failed';
 
-    // Surface meaningful errors to the user
     const msg = error?.message?.includes('maximum')
       ? error.message
       : 'Could not send buddy request. Please try again.';
 
     await this.showToast(msg, 'danger');
+    return false;
+
   } finally {
     this.isSendingPrimaryInvite = false;
   }
@@ -431,89 +423,110 @@ async sendPrimaryInvite(): Promise<void> {
     }
   }
 
-  async saveAndContinue(): Promise<void> {
-    if (!this.foundBuddy && !this.isExternalBuddy) {
-      await this.showToast('Please enter a buddy email first.', 'warning');
+ async saveAndContinue(): Promise<void> {
+  if (!this.foundBuddy && !this.isExternalBuddy) {
+    await this.showToast('Please search for a buddy first.', 'warning');
+    return;
+  }
+
+  if (this.foundBuddy && !this.primaryRelationship) {
+    await this.showToast('Please select your relationship.', 'warning');
+    return;
+  }
+
+   if (!this.foundBuddy && !this.isExternalBuddy && !this.hasFallback()) {
+    await this.showToast(
+      'Please add at least one emergency contact or hotline.',
+      'warning'
+    );
+    return;
+  }
+
+  try {
+    this.isSaving = true;
+
+    const currentUser = await this.authService.waitForAuthInit();
+
+    if (!currentUser) {
+      await this.showToast('You must be logged in to continue.', 'danger');
       return;
     }
 
     if (this.foundBuddy && this.primaryInviteStatus !== 'sent') {
-      await this.sendPrimaryInvite();
-
-      const inviteWasSent = this.primaryInviteStatus as InviteStatus;
-
-      if (inviteWasSent !== 'sent') {
+      const inviteSent = await this.sendPrimaryInvite();
+      
+      if (!inviteSent) {
         return;
       }
-    }
+}
 
-    if (this.isExternalBuddy) {
-      await this.sendExternalInviteLink();
-    }
+if (this.isExternalBuddy) {
+  const email = this.externalInvite.email.trim().toLowerCase();
+  const phone = this.externalInvite.phone.trim();
 
-    try {
-      this.isSaving = true;
-
-      const currentUser = await this.authService.waitForAuthInit();
-
-      if (!currentUser) {
-        await this.showToast('You must be logged in to continue.', 'danger');
-        return;
-      }
-
-      await setDoc(
-        doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
-        {
-          buddySetupOnboarding: {
-            primaryBuddy: this.foundBuddy
-              ? {
-                  ...this.primaryBuddy,
-                  relationship: this.primaryRelationship,
-                  buddyUid: this.foundBuddy?.uid || '',
-                  status: 'pending',
-                  inviteStatus: this.primaryInviteStatus
-                }
-              : null,
-
-            externalInvite: this.isExternalBuddy
-              ? {
-                  email: this.externalInvite.email.trim().toLowerCase(),
-                  phone: this.externalInvite.phone.trim(),
-                  status: 'pending_signup'
-                }
-              : null,
-
-            secondaryBuddy: this.includeSecondary
-              ? {
-                  ...this.secondaryBuddy,
-                  inviteStatus: this.secondaryInviteStatus || 'skipped'
-                }
-              : null,
-
-            updatedAt: new Date()
-          }
-        },
-        { merge: true }
-      );
-
-      if (this.foundBuddy) {
-        await this.userService.updateProfileDetails(currentUser.uid, {
-          emergencyContactName: this.primaryBuddy.fullName,
-          emergencyContactPhone: this.primaryBuddy.contactNumber
-        });
-      }
-
-      await this.userService.markAllergyOnboardingCompleted(currentUser.uid);
-
-      await this.showToast('Buddy setup complete.', 'success');
-      await this.router.navigate(['/tabs/home'], { replaceUrl: true });
-    } catch (error) {
-      console.error('Error saving buddy setup onboarding:', error);
-      await this.showToast('Failed to save buddy setup. Please try again.', 'danger');
-    } finally {
-      this.isSaving = false;
-    }
+  if (!this.isValidEmail(email) && !phone) {
+    await this.showToast('Enter an email or phone number for the invite.', 'warning');
+    return;
   }
+
+  await this.sendExternalInviteLink();
+}
+
+
+    await setDoc(
+      doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
+      {
+        buddySetupOnboarding: {
+          primaryBuddy: this.foundBuddy
+            ? {
+                ...this.primaryBuddy,
+                relationship: this.primaryRelationship,
+                buddyUid: this.foundBuddy?.uid || '',
+                status: 'pending',
+                inviteStatus: this.primaryInviteStatus,
+              }
+            : null,
+
+          externalInvite: this.isExternalBuddy
+            ? {
+                email: this.externalInvite.email.trim().toLowerCase(),
+                phone: this.externalInvite.phone.trim(),
+                status: 'pending_signup',
+              }
+            : null,
+
+          secondaryBuddy: this.includeSecondary
+            ? {
+                ...this.secondaryBuddy,
+                inviteStatus: this.secondaryInviteStatus || 'skipped',
+              }
+            : null,
+
+          updatedAt: new Date(),
+        },
+      },
+      { merge: true }
+    );
+
+    if (this.foundBuddy) {
+      await this.userService.updateProfileDetails(currentUser.uid, {
+        emergencyContactName: this.primaryBuddy.fullName,
+        emergencyContactPhone: this.primaryBuddy.contactNumber || null,
+      });
+    }
+
+    await this.userService.markAllergyOnboardingCompleted(currentUser.uid);
+
+    await this.showToast('Buddy setup complete.', 'success');
+    await this.router.navigate(['/tabs/home'], { replaceUrl: true });
+
+  } catch (error) {
+    console.error('Error saving buddy setup onboarding:', error);
+    await this.showToast('Failed to save buddy setup. Please try again.', 'danger');
+  } finally {
+    this.isSaving = false;
+  }
+}
 
   async sendSecondaryInvite(): Promise<void> {
     if (!this.hasRequiredValues(this.secondaryBuddy)) {

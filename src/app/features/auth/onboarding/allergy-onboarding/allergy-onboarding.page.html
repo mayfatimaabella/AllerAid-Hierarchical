@@ -32,19 +32,25 @@
     <p class="state-text">Please add allergy options to the Firebase database.</p>
   </div>
 
-  <!-- Allergy chip list -->
-  <div *ngIf="!isLoading && allergyOptions.length > 0" class="body-content">
-    <p class="section-label">Select all that apply</p>
+ <!-- Allergy chip list -->
+<div *ngIf="!isLoading && (commonAllergens.length > 0 || otherAllergens.length > 0)" class="body-content">
+
+  <!-- Common Allergens -->
+  <div *ngIf="commonAllergens.length > 0">
+    <p class="section-label">Common Allergens</p>
 
     <div
-      *ngFor="let allergy of allergyOptions"
+      *ngFor="let allergy of commonAllergens"
       class="allergy-chip"
       [class.selected]="allergy.checked"
       (click)="allergy.checked = !allergy.checked">
+
       <div class="chip-check">
         <ion-icon *ngIf="allergy.checked" name="checkmark-outline"></ion-icon>
       </div>
+
       <span class="chip-label">{{ allergy.label }}</span>
+
       <ion-input
         *ngIf="allergy.hasInput && allergy.checked"
         class="chip-input"
@@ -56,8 +62,37 @@
     </div>
   </div>
 
+  <!-- Other Allergens -->
+  <div *ngIf="otherAllergens.length > 0">
+    <p class="section-label other-label">Other Allergens</p>
+
+    <div
+      *ngFor="let allergy of otherAllergens"
+      class="allergy-chip"
+      [class.selected]="allergy.checked"
+      (click)="allergy.checked = !allergy.checked">
+
+      <div class="chip-check">
+        <ion-icon *ngIf="allergy.checked" name="checkmark-outline"></ion-icon>
+      </div>
+
+      <span class="chip-label">{{ allergy.label }}</span>
+
+      <ion-input
+        *ngIf="allergy.hasInput && allergy.checked"
+        class="chip-input"
+        placeholder="Please specify…"
+        [(ngModel)]="allergy.value"
+        [name]="allergy.name + 'Value'"
+        (click)="$event.stopPropagation()">
+      </ion-input>
+    </div>
+  </div>
+
+</div>
+
   <!-- Footer CTA -->
-  <div class="onboarding-footer" *ngIf="!isLoading && allergyOptions.length > 0">
+  <div class="onboarding-footer" *ngIf="!isLoading && (commonAllergens.length > 0 || otherAllergens.length > 0)">
     <ion-button class="btn-main" expand="block" (click)="submitAllergies()" [disabled]="isSaving">
       <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
       <span *ngIf="!isSaving">Save &amp; Continue</span>

@@ -21,6 +21,7 @@ export interface AllergyOption {
   label: string;
   hasInput: boolean;
   order: number;
+  isApproved?: boolean;
 }
 
 export interface UserAllergy {
@@ -127,19 +128,19 @@ export class AllergyService {
       }
 
       const allergyOptions: AllergyOption[] = [
-        { name: 'peanuts', label: 'Peanuts/Nuts', hasInput: false, order: 1 },
-        { name: 'dairy', label: 'Dairy/Milk', hasInput: false, order: 2 },
-        { name: 'eggs', label: 'Eggs', hasInput: false, order: 3 },
-        { name: 'wheat', label: 'Wheat/Gluten', hasInput: false, order: 4 },
-        { name: 'fish', label: 'Fish', hasInput: false, order: 5 },
-        { name: 'shellfish', label: 'Shellfish', hasInput: false, order: 6 },
-        { name: 'soy', label: 'Soy', hasInput: false, order: 7 },
-        { name: 'pollen', label: 'Pollen', hasInput: false, order: 8 },
-        { name: 'latex', label: 'Latex', hasInput: false, order: 9 },
-        { name: 'animalDander', label: 'Animal Dander', hasInput: false, order: 10 },
-        { name: 'insectStings', label: 'Insect Stings', hasInput: false, order: 11 },
-        { name: 'medication', label: 'Medication', hasInput: true, order: 12 },
-        { name: 'others', label: 'Others', hasInput: true, order: 13 }
+        { name: 'peanuts', label: 'Peanuts/Nuts', hasInput: false, order: 1, isApproved: true },
+        { name: 'dairy', label: 'Dairy/Milk', hasInput: false, order: 2, isApproved: true },
+        { name: 'eggs', label: 'Eggs', hasInput: false, order: 3, isApproved: true },
+        { name: 'wheat', label: 'Wheat/Gluten', hasInput: false, order: 4, isApproved: true },
+        { name: 'fish', label: 'Fish', hasInput: false, order: 5, isApproved: true },
+        { name: 'shellfish', label: 'Shellfish', hasInput: false, order: 6, isApproved: true },
+        { name: 'soy', label: 'Soy', hasInput: false, order: 7, isApproved: true },
+        { name: 'pollen', label: 'Pollen', hasInput: false, order: 8, isApproved: true },
+        { name: 'latex', label: 'Latex', hasInput: false, order: 9, isApproved: true },
+        { name: 'animalDander', label: 'Animal Dander', hasInput: false, order: 10, isApproved: true },
+        { name: 'insectStings', label: 'Insect Stings', hasInput: false, order: 11, isApproved: true },
+        { name: 'medication', label: 'Medication', hasInput: true, order: 12, isApproved: true },
+        { name: 'others', label: 'Others', hasInput: true, order: 13, isApproved: true }
       ];
 
       for (const option of allergyOptions) {
@@ -161,10 +162,15 @@ export class AllergyService {
       const q = query(allergyOptionsRef, orderBy('order'));
       const querySnapshot = await getDocs(q);
 
-      const options = querySnapshot.docs.map(docSnap => ({
+      let options = querySnapshot.docs.map(docSnap => ({
         id: docSnap.id,
         ...docSnap.data()
       })) as AllergyOption[];
+
+      // Exclude any options explicitly marked as not approved. If the
+      // document doesn't include `isApproved`, treat it as approved to
+      // preserve backward compatibility.
+      options = options.filter(opt => opt.isApproved !== false);
 
       const uniqueByName: Record<string, AllergyOption> = {};
       options.forEach(option => {
@@ -191,5 +197,31 @@ export class AllergyService {
     await Promise.all(deletePromises);
     await this.createAllergyOptions();
   }
+
+  async addAllergyOptionIfMissing(allergy: {
+  name: string;
+  label: string;
+  hasInput: boolean;
+  category?: string;
+}) {
+   const { query, where, getDocs } = await import('firebase/firestore');
+   
+   const allergyOptionsRef = collection(this.db, 'allergyOptions');
+   const q = query(allergyOptionsRef, where('name', '==', allergy.name));
+
+  const snapshot = await getDocs(q);
+
+   if (snapshot.empty) {
+    await addDoc(allergyOptionsRef, {
+      ...allergy,
+      order: 999,
+      createdAt: serverTimestamp(),
+      source: 'user_suggested',
+      isApproved: false
+    });
+    console.log('Added new allergy option:', allergy.label);
+
+    }
+}
 }
 

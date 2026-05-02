@@ -88,7 +88,7 @@ export class AllergyOnboardingPage implements OnInit {
       const currentUser = await this.authService.waitForAuthInit();
       const userId = currentUser ? currentUser.uid : 'test-user-123';
       
-      console.log('Loading allergy onboarding for user:', currentUser?.email || 'no user'); // Debug log
+      console.log('Loading allergy onboarding for user:', currentUser?.email || 'no user');
       
       // Get user's existing allergy data (if any)
       const userAllergies = await this.allergyService.getUserAllergies(userId);
@@ -164,6 +164,22 @@ export class AllergyOnboardingPage implements OnInit {
   }
 
 
+  async presentToast(
+  message: string,
+  color: string = 'medium',
+  duration: number = 3000
+) {
+  const toast = await this.toastController.create({
+    message,
+    duration,
+    color,
+    position: 'top'
+  });
+
+  await toast.present();
+}
+
+
 
   async submitAllergies() {
     this.isSaving = true;
@@ -172,29 +188,49 @@ export class AllergyOnboardingPage implements OnInit {
     const hasSelectedAllergies = this.allergyOptions.some(allergy => allergy.checked);
     
     if (!hasSelectedAllergies) {
-      const toast = await this.toastController.create({
-        message: 'Please select at least one allergy or tap "No Allergies"',
-        duration: 3000,
-        color: 'warning'
-      });
-      await toast.present();
+      
+      await this.presentToast('Please select at least one allergy or add "No Allergies"..', 'warning');
       this.isSaving = false;
       return;
     }
+    
+    const missingInput = this.allergyOptions.find(allergy =>
+      allergy.checked && allergy.hasInput && !allergy.value?.trim()
+  );
+
+  if (missingInput) {
+    await this.presentToast(`Please specify your ${missingInput.label}.`,'warning');
+    this.isSaving = false;
+    return;
+  }
+
 
     try {
       // First, save allergies (reusing the saveAllergies method)
       await this.saveAllergies();
 
+
       // Continue onboarding flow: collect emergency instructions per selected allergy.
       const selectedAllergies = this.allergyOptions
         .filter(allergy => allergy.checked)
-        .map(allergy => ({
-          name: allergy.name,
-          label: allergy.label,
-          checked: allergy.checked,
-          value: allergy.value
-        }));
+        .map(allergy => {
+          const inputValue = allergy.value?.trim();
+
+          if (allergy.hasInput && inputValue) {
+            return {
+              name: allergy.name,
+              label: inputValue,
+              checked: true,
+              value: inputValue
+            };
+          }
+          return { 
+            name: allergy.name,
+            label: allergy.label,
+            checked: true,
+            value: allergy.value
+           };
+        });
 
       this.router.navigate(['/emergency-instructions-onboarding'], {
         state: { allergies: selectedAllergies },
@@ -203,76 +239,74 @@ export class AllergyOnboardingPage implements OnInit {
       
     } catch (error) {
       console.error('Error during submission:', error);
-      const toast = await this.toastController.create({
-        message: 'Failed to complete the process. Please try again.',
-        duration: 3000,
-        color: 'danger'
-      });
-      await toast.present();
+      await this.presentToast('Failed to complete the process. Please try again.','danger');
     } finally {
       this.isSaving = false;
     }
   }
+ 
 
-  // Save allergies to Firebase for the current user
-  async saveAllergies() {
-    try {
-      // Wait for auth to be initialized
-      const currentUser = await this.authService.waitForAuthInit();
-      const userId = currentUser ? currentUser.uid : 'test-user-123';
-      
-      console.log('Saving allergies for user:', currentUser?.email || 'no user'); // Debug log
-      
-      // Prepare allergies for Firebase - ensure no undefined values
-      const sanitizedAllergies = this.allergyOptions
+async saveAllergies() {
+  try {
+    const currentUser = await this.authService.waitForAuthInit();
+    const userId = currentUser ? currentUser.uid : 'test-user-123';
+
+    console.log('Saving allergies for user:', currentUser?.email || 'no user');
+
+
+    const sanitizedAllergies = this.allergyOptions
       .filter(allergy => allergy.checked)
       .map(allergy => {
-        const cleanAllergy: {
-          name: string;
-          label: string;
-          checked: boolean;
-          value?: string;
-        } = {
-          name: allergy.name,
-          label: allergy.label,
-          checked: allergy.checked
-        };
-        
-        // Only include input value if it's not empty
-       if (allergy.hasInput) {
         const inputValue = allergy.value?.trim();
 
-       if (inputValue) {
-            cleanAllergy.value = inputValue;
+        if (allergy.hasInput && inputValue) {
+          return {
+            name: allergy.name,
+            label: inputValue,
+            checked: true,
+            value: inputValue
+          };
+        }
 
-            // Replace "Others" label with user input
-            cleanAllergy.label = inputValue;
+        return {
+          name: allergy.name,
+          label: allergy.label,
+          checked: true
+        };
+      });
+
+      const customAllergies = sanitizedAllergies.filter(allergy =>
+  allergy.value && ['others', 'other'].includes(allergy.name.toLowerCase())
+);
+
+for (const allergy of customAllergies) {
+  await this.allergyService.addAllergyOptionIfMissing({
+    name: allergy.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '_'),
+    label: allergy.value,
+    hasInput: false,
+    category: 'other'
+  });
+}
+
+    await this.allergyService.saveUserAllergies(userId, sanitizedAllergies);
+
+    console.log('Saved user allergies');
+
+    await this.presentToast(
+      'Allergies saved successfully!',
+      'success',
+      2000
+    );
+
+  } catch (error) {
+    console.error('Error saving allergies:', error);
+
+    await this.presentToast(
+      'Failed to save allergies. Please try again.',
+      'danger'
+    );
   }
 }
-        return cleanAllergy;
-      });
-
-        await this.allergyService.saveUserAllergies(userId, sanitizedAllergies);
-        console.log('Saved user allergies');
-      
-      // Show success toast
-      const toast = await this.toastController.create({
-        message: 'Allergies saved successfully!',
-        duration: 2000,
-        color: 'success'
-      });
-      await toast.present();
-      
-    } catch (error) {
-      console.error('Error saving allergies:', error);
-      const toast = await this.toastController.create({
-        message: 'Failed to save allergies. Please try again.',
-        duration: 3000,
-        color: 'danger'
-      });
-      await toast.present();
-    }
-  }
 }
 
 

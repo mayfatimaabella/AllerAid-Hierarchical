@@ -61,7 +61,7 @@ export class RegistrationPage {
       // Validate file type
       const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
       if (!allowedTypes.includes(file.type)) {
-        this.presentToast('Invalid file type. Please upload an image (PNG, JPG) or PDF.');
+        this.presentToast('Invalid file type. Please upload an image (PNG, JPG) or PDF.','danger');
         this.fileInput.nativeElement.value = ''; // Clear the input
         return;
       }
@@ -70,7 +70,7 @@ export class RegistrationPage {
       const maxSizeMB = 10;
       const maxSizeBytes = maxSizeMB * 1024 * 1024;
       if (file.size > maxSizeBytes) {
-        this.presentToast(`File is too large. Maximum size is ${maxSizeMB}MB.`);
+        this.presentToast(`File is too large. Maximum size is ${maxSizeMB}MB.`,'danger');
         this.fileInput.nativeElement.value = '';
         return;
       }
@@ -78,28 +78,28 @@ export class RegistrationPage {
       this.selectedFile = file;
       this.selectedFileName = file.name;
       console.log('Selected license file:', this.selectedFileName);
-      this.presentToast(`Selected file: ${this.selectedFileName}`);
+      this.presentToast(`Selected file: ${this.selectedFileName}`, 'success');
     }
   }
 
   async register() {
     if (!this.email || !this.password || !this.confirmPassword || !this.firstName || !this.lastName || !this.role) {
-      this.presentToast('All fields are required.');
+      this.presentToast('All fields are required.', 'warning');
       return;
     }
 
     if (this.password !== this.confirmPassword) {
-      this.presentToast('Passwords do not match.');
+      this.presentToast('Passwords do not match.', 'danger');
       return;
     }
 
     if (!this.isPasswordStrong(this.password)) {
-      this.presentToast('Password must be at least 8 characters long and include at least one uppercase letter, one number, and one special character.');
+      this.presentToast('Password must be at least 8 characters long and include at least one uppercase letter, one number, and one special character.', 'warning');
       return;
     }
 
     if (this.role === 'doctor' && !this.selectedFile) {
-      this.presentToast('Please upload your medical license.');
+      this.presentToast('Please upload your medical license.', 'warning');
       return;
     }
 
