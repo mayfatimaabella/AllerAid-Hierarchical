@@ -58,19 +58,6 @@
           <ion-chip [color]="getStatusColor(medication)" size="small">
             <ion-label>{{ getStatusLabel(medication) }}</ion-label>
           </ion-chip>
-
-          <div class="action-buttons">
-            <ion-button
-              fill="outline"
-              color="medium"
-              size="small"
-              *ngIf="medication.id"
-              (click)="$event.stopPropagation(); toggleStatus.emit(medication.id)"
-              [attr.aria-label]="getToggleStatusLabel(medication)"
-            >
-              {{ medication.isActive ? 'Deactivate' : 'Activate' }}
-            </ion-button>
-          </div>
         </div>
       </div>
     </div>

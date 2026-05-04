@@ -16,13 +16,25 @@ export class MedicationDetailsModal {
   @Output() close = new EventEmitter<void>();
   @Output() edit = new EventEmitter<any>();
   @Output() delete = new EventEmitter<string | undefined>();
+  // Added an output to inform the parent component that the status changed
+  @Output() statusChange = new EventEmitter<any>();
 
   constructor(private actionSheetController: ActionSheetController) {}
 
+  /**
+   * Checks if the physical medicine has expired (shelf-life).
+   * This is used for the "Medicine Expiry" field in the UI.
+   */
+  isMedicineExpired(): boolean {
+    if (!this.medication?.medicineExpiryDate) return false;
+    const expiry = new Date(this.medication.medicineExpiryDate);
+    return expiry < new Date();
+  }
 
   getStatusLabel(): string {
     if (!this.medication) return '';
 
+    // Treatment schedule expiry
     const isExpired = this.medication.expiryDate && new Date(this.medication.expiryDate) < new Date();
     if (isExpired) return 'Expired';
 
@@ -85,6 +97,14 @@ export class MedicationDetailsModal {
             this.edit.emit(med);
           }
         },
+        // ADDED: Deactivate/Activate Toggle
+        {
+          text: med.isActive ? 'Deactivate Medication' : 'Activate Medication',
+          icon: med.isActive ? 'pause-circle-outline' : 'play-circle-outline',
+          handler: () => {
+            this.toggleStatus(med);
+          }
+        },
         {
           text: 'Delete Medication',
           role: 'destructive',
@@ -102,5 +122,11 @@ export class MedicationDetailsModal {
     });
 
     await actionSheet.present();
+  }
+
+  // Added logic to handle the deactivation
+  private toggleStatus(med: any) {
+    med.isActive = !med.isActive;
+    this.statusChange.emit(med);
   }
 }

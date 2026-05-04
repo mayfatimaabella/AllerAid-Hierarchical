@@ -23,11 +23,16 @@
         </div>
         <div class="title-text">
           <h2 class="title">{{ medication.name }}</h2>
+          <!-- ADDED: Brand Name -->
+          <p class="brand-name" *ngIf="medication.brandName">
+            <strong>Brand:</strong> {{ medication.brandName }}
+          </p>
           <p class="subtitle" *ngIf="medication.frequency">
             {{ medication.frequency }}
           </p>
         </div>
       </div>
+      
       <div class="chips">
         <ion-chip [color]="getStatusColor()" outline>
           <ion-icon [name]="getStatusLabel() === 'Active' ? 'checkmark-circle' : 'close-circle'"></ion-icon>
@@ -76,14 +81,14 @@
         <h3 class="section-label">Treatment Dates</h3>
         <div class="row">
           <ion-icon name="calendar-outline"></ion-icon>
-          <b>Start:</b>
+          <b>Start Treatment:</b>
           <span>
             {{ medication?.startDate ? (medication.startDate | date:'mediumDate') : 'Not set' }}
           </span>
         </div>
         <div class="row">
-          <ion-icon name="warning-outline"></ion-icon>
-          <b>Ends:</b>
+          <ion-icon name="flag-outline"></ion-icon>
+          <b>End Treatment:</b>
           <span>
             {{ medication?.expiryDate ? (medication.expiryDate | date:'mediumDate') : 'Not set' }}
           </span>
@@ -92,6 +97,15 @@
 
       <div class="section">
         <h3 class="section-label">Additional Info</h3>
+        <!-- ADDED: Medication Expiration (Shelf Life) -->
+        <div class="row">
+          <ion-icon name="calendar-clear-outline"></ion-icon>
+          <b>Medicine Expiry:</b>
+          <span [class.text-danger]="isMedicineExpired()">
+            {{ medication?.medicineExpiryDate ? (medication.medicineExpiryDate | date:'mediumDate') : 'Not provided' }}
+          </span>
+        </div>
+
         <div class="row">
           <ion-icon name="chatbubble-outline"></ion-icon>
           <b>Notes:</b>
