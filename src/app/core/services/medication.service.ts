@@ -11,33 +11,29 @@ import {
   orderBy,
   Timestamp 
 } from 'firebase/firestore';
-import { 
-  ref, 
-  uploadBytes, 
-  getDownloadURL, 
-} from 'firebase/storage';
 import { FirebaseService } from './firebase.service';
 import { AuthService } from './auth.service';
 
 /**
  * Enhanced Medication Interface
- * Includes calculation helpers and metadata for the UI modals.
  */
 export interface Medication {
   id?: string;
   name: string;
+  brandName?: string;          
   dosage: string; 
   dosageAmount?: number; 
-  dosageUnit?: string; 
+  dosageUnit?: string;         // e.g., 'tablet(s)', 'ml', 'puff(s)'
   frequency: string; 
   
   // Calculation & Scheduling Fields
-  intervalHours?: number;
-  pillsPerDose: number;      
-  durationDays: number;      
-  startDate: string;
-  endDate?: string;          
-  expiryDate?: string;       
+  intervalHours?: number;      
+  pillsPerDose: number;        
+  durationDays: number;        
+  startDate: string;           // ISO String
+  endDate?: string;            
+  expiryDate?: string;         // Treatment End Date (Auto-calculated)
+  medicineExpiryDate: string;  // Physical shelf life of the medicine
   
   notes: string;
   category: 'allergy' | 'emergency' | 'daily' | 'asNeeded' | 'other';
@@ -46,15 +42,16 @@ export interface Medication {
   sideEffects?: string;
   instructions?: string;
   refillDate?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: any;             
+  updatedAt?: any;
 
   // Inventory & Type
-  medicationType?: 'tablet' | 'capsule' | 'liquid' | 'injection' | 'inhaler' | 'cream' | 'drops' | 'patch' | 'other';
-  quantity: number; 
+  medicationType: 'tablet' | 'capsule' | 'liquid' | 'injection' | 'inhaler' | 'cream' | 'drops' | 'patch' | 'other';
+  customMedicationType?: string; 
+  quantity: number;            
   unitCost?: number;
   totalCost?: number;
-  refillsRemaining?: number;
+  refillsRemaining?: number;   // Primary field for "Live" inventory tracking
   
   // Images
   prescriptionImageUrl?: string;
@@ -74,14 +71,12 @@ export interface Medication {
 })
 export class MedicationService {
   private db;
-  private storage;
 
   constructor(
     private firebaseService: FirebaseService,
     private authService: AuthService
   ) {
     this.db = this.firebaseService.getDb();
-    this.storage = this.firebaseService.getStorage();
   }
 
   /**
@@ -92,12 +87,14 @@ export class MedicationService {
     if (!currentUser) throw new Error('User not logged in');
 
     try {
-      if (prescriptionImageData) medication.prescriptionImageUrl = prescriptionImageData;
-      if (medicationImageData) medication.medicationImageUrl = medicationImageData;
+      const medToSave = { ...medication };
+
+      if (prescriptionImageData) medToSave.prescriptionImageUrl = prescriptionImageData;
+      if (medicationImageData) medToSave.medicationImageUrl = medicationImageData;
 
       const medsRef = collection(this.db, `users/${currentUser.uid}/medications`);
       await addDoc(medsRef, {
-        ...medication,
+        ...medToSave,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       });
@@ -108,7 +105,7 @@ export class MedicationService {
   }
 
   /**
-   * Toggle medication active status (Fixes TS2339)
+   * Toggle medication active status.
    */
   async toggleMedicationStatus(medicationId: string): Promise<void> {
     const currentUser = await this.authService.waitForAuthInit();
@@ -176,11 +173,12 @@ export class MedicationService {
 
   /**
    * Record result of a medication reminder interaction.
+   * Logic updated to sync both 'quantity' and 'refillsRemaining'.
    */
   async recordReminderAction(
     medicationId: string,
     action: 'taken' | 'skipped' | 'opened'
-  ): Promise<{ newQuantity?: number } | void> {
+  ): Promise<{ newQuantity?: number, newRefills?: number } | void> {
     const currentUser = await this.authService.waitForAuthInit();
     if (!currentUser) throw new Error('User not logged in');
 
@@ -194,20 +192,31 @@ export class MedicationService {
         updatedAt: Timestamp.now()
       };
 
-      if (action === 'taken') {
+      if (action === 'taken' && medData) {
         updateData.lastTakenAt = new Date();
-        if (medData && typeof medData.quantity === 'number') {
-          const doseSize = medData.pillsPerDose || 1;
+        const doseSize = medData.pillsPerDose || 1;
+
+        // 1. Update the total stock quantity
+        if (typeof medData.quantity === 'number') {
           const newQuantity = Math.max(medData.quantity - doseSize, 0);
           updateData.quantity = newQuantity;
           if (newQuantity <= 0) updateData.isActive = false;
+        }
+
+        // 2. Update the "Live" refillsRemaining count
+        if (typeof medData.refillsRemaining === 'number') {
+          updateData.refillsRemaining = Math.max(medData.refillsRemaining - doseSize, 0);
         }
       } else if (action === 'skipped') {
         updateData.lastSkippedAt = new Date();
       }
 
       await updateDoc(medRef, updateData);
-      return { newQuantity: updateData.quantity };
+      
+      return { 
+        newQuantity: updateData.quantity,
+        newRefills: updateData.refillsRemaining
+      };
     } catch (error) {
       console.error('Error recording reminder action:', error);
       throw error;

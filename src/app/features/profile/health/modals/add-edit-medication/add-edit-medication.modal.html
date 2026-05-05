@@ -14,7 +14,7 @@
   <form (ngSubmit)="saveMedication()">
     <div class="form-fields">
       
-      <!-- Medication Name -->
+      <!-- Medication Name (Generic) -->
       <ion-item class="medication-field" lines="none">
         <ion-label position="stacked">Name of Medication *</ion-label>
         <ion-input 
@@ -25,17 +25,68 @@
         </ion-input>
       </ion-item>
 
-      <!-- Dosage Per Dose -->
-      <div class="dosage-input-group">
+      <!-- Brand Name -->
+      <ion-item class="medication-field" lines="none">
+        <ion-label position="stacked">Brand Name *</ion-label>
+        <ion-input 
+          [(ngModel)]="med.brandName" 
+          name="brandName" 
+          placeholder="e.g., Advil, Biogesic"
+          required>
+        </ion-input>
+      </ion-item>
+
+      <!-- Medication Type with Inline 'Other' -->
+      <ion-item class="medication-field" lines="none">
+        <ion-label position="stacked">Medication Type *</ion-label>
+        <ion-grid class="ion-no-padding">
+          <ion-row class="ion-align-items-center">
+            <!-- Dropdown: Shrinks if 'other' is selected -->
+            <ion-col [size]="med.medicationType === 'other' ? 5 : 12">
+              <ion-select 
+                [(ngModel)]="med.medicationType" 
+                name="medicationType"
+                interface="popover"
+                (ionChange)="onTypeChange()"
+                placeholder="Select type"
+                required>
+                <ion-select-option value="tablet">Tablet</ion-select-option>
+                <ion-select-option value="capsule">Capsule</ion-select-option>
+                <ion-select-option value="liquid">Liquid / Syrup</ion-select-option>
+                <ion-select-option value="injection">Injection</ion-select-option>
+                <ion-select-option value="inhaler">Inhaler</ion-select-option>
+                <ion-select-option value="drops">Drops</ion-select-option>
+                <ion-select-option value="cream">Cream / Ointment</ion-select-option>
+                <ion-select-option value="other">Other</ion-select-option>
+              </ion-select>
+            </ion-col>
+
+            <!-- Inline Custom Input for 'Other' -->
+            <ion-col size="7" *ngIf="med.medicationType === 'other'" class="animate__animated animate__fadeIn">
+              <ion-input 
+                [(ngModel)]="med.customMedicationType" 
+                name="customType" 
+                placeholder="Specify (e.g. Patch)"
+                class="custom-inline-input"
+                required>
+              </ion-input>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-item>
+
+      <!-- Dosage Section -->
+      <div class="dosage-input-group animate__animated animate__fadeIn" *ngIf="med.medicationType">
         <ion-item class="medication-field dosage-amount-field" lines="none">
-          <ion-label position="stacked">Pills Per Dose *</ion-label>
+          <!-- Dynamically updates via the amountLabel getter -->
+          <ion-label position="stacked">{{ amountLabel }} *</ion-label>
           <ion-input  
             type="number" 
             [(ngModel)]="med.pillsPerDose" 
             name="pillsPerDose"
-            placeholder="1"
-            min="0.5"
-            step="0.5"
+            placeholder="0"
+            min="0.1"
+            step="0.1"
             inputmode="decimal"
             (ionChange)="onDateOrIntervalChange()"
             required>
@@ -47,20 +98,34 @@
           <ion-select 
             [(ngModel)]="med.dosageUnit" 
             name="dosageUnit"
-            placeholder="Select unit"
             interface="popover"
+            (ionChange)="onDateOrIntervalChange()"
             required>
-            <ion-select-option value="tablet">tablet(s)</ion-select-option>
-            <ion-select-option value="capsule">capsule(s)</ion-select-option>
-            <ion-select-option value="pill">pill(s)</ion-select-option>
+            <ion-select-option value="tablet(s)">tablet(s)</ion-select-option>
+            <ion-select-option value="capsule(s)">capsule(s)</ion-select-option>
+            <ion-select-option value="ml">ml</ion-select-option>
+            <ion-select-option value="unit(s)">unit(s)</ion-select-option>
+            <ion-select-option value="puff(s)">puff(s)</ion-select-option>
+            <ion-select-option value="drop(s)">drop(s)</ion-select-option>
+            <ion-select-option value="application(s)">application(s)</ion-select-option>
           </ion-select>
         </ion-item>
       </div>
 
-      <!-- Start Date: The anchor for all calculations -->
+      <!-- Start Date & Time Row -->
       <ion-item class="medication-field date-field" lines="none">
-        <ion-label position="stacked">Start Date *</ion-label>
-        <ion-datetime-button datetime="startDate"></ion-datetime-button>
+        <ion-label position="stacked">Start Date & Time *</ion-label>
+        <ion-grid class="ion-no-padding">
+          <ion-row>
+            <ion-col size="6">
+              <ion-datetime-button datetime="startDate"></ion-datetime-button>
+            </ion-col>
+            <ion-col size="6">
+              <ion-datetime-button datetime="startTime"></ion-datetime-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
             <ion-datetime 
@@ -74,9 +139,23 @@
             </ion-datetime>
           </ng-template>
         </ion-modal>
+
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime 
+              id="startTime"
+              [(ngModel)]="med.startDate"
+              name="startTime"
+              presentation="time"
+              [showDefaultButtons]="true"
+              (ionChange)="onDateOrIntervalChange()"
+              required>
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
       </ion-item>
 
-      <!-- Interval: Logic depends on 24hr cycle -->
+      <!-- Interval -->
       <ion-item class="medication-field interval-field" lines="none">
         <ion-label position="stacked">Interval (How often?) *</ion-label>
         <ion-select
@@ -86,13 +165,13 @@
           placeholder="Select interval"
           interface="popover"
           required>
-          <ion-select-option *ngFor="let h of [1,2,3,4,5,6,7,8,9,10,11,12,24]" [value]="h">
+          <ion-select-option *ngFor="let h of [1,2,3,4,6,8,12,24]" [value]="h">
             Every {{ h }} hour{{ h > 1 ? 's' : '' }}
           </ion-select-option>
         </ion-select>
       </ion-item>
 
-      <!-- Duration in Days -->
+      <!-- Duration -->
       <ion-item class="medication-field duration-field" lines="none">
         <ion-label position="stacked">Duration (Number of Days) *</ion-label>
         <ion-input 
@@ -106,9 +185,9 @@
         </ion-input>
       </ion-item>
 
-      <!-- Auto-calculated Quantity Section -->
+      <!-- Total Quantity (Auto-calculated) -->
       <ion-item class="medication-field quantity-field readonly-field" lines="none">
-        <ion-label position="stacked">Total Pills Required</ion-label>
+        <ion-label position="stacked">Total Inventory Required</ion-label>
         <ion-input 
           [(ngModel)]="med.quantity" 
           name="quantity"
@@ -117,7 +196,7 @@
         </ion-input>
       </ion-item>
 
-      <!-- Projection Display -->
+      <!-- Ends On Projection -->
       <div class="pill-projection" *ngIf="med.expiryDate">
         <ion-icon name="calendar-clear-outline"></ion-icon>
         <span>
@@ -125,13 +204,33 @@
         </span>
       </div>
 
+      <!-- Physical Medicine Expiration -->
+      <ion-item class="medication-field date-field" lines="none">
+        <ion-label position="stacked">Medicine Expiry (Shelf Life) *</ion-label>
+        <ion-datetime-button datetime="medicineExpiryDate"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime 
+              id="medicineExpiryDate"
+              [(ngModel)]="med.medicineExpiryDate"
+              name="medicineExpiryDate"
+              presentation="date"
+              [showDefaultButtons]="true"
+              min="2024" 
+              max="2040" 
+              required>
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+
       <ion-item class="medication-field notes-field" lines="none">
         <ion-label position="stacked">Notes</ion-label> 
         <ion-textarea 
           [(ngModel)]="med.notes" 
           name="notes"
           rows="3"
-          placeholder="Additional notes about the medication">
+          placeholder="Additional notes...">
         </ion-textarea>
       </ion-item>
 
@@ -145,13 +244,13 @@
       </ion-item>
     </div>
 
-    <!-- Prescription Image Section -->
+    <!-- Image Section -->
     <div class="image-section">
       <div class="section-header">
         <ion-icon name="image-outline" class="section-icon"></ion-icon>
         <div class="section-info">
           <h3>Prescription Image</h3>
-          <p>Add a photo of your prescription for reference</p>
+          <p>Add a photo of your prescription</p>
         </div>
       </div>
       
@@ -161,7 +260,7 @@
         (click)="selectPrescriptionImage()"
         class="teal-modal-btn">
         <ion-icon name="camera-outline" slot="start"></ion-icon>
-        Add Prescription Photo
+        Add Photo
       </ion-button>
       
       <div *ngIf="prescriptionImage" class="image-preview">

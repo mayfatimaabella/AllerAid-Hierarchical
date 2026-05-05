@@ -48,8 +48,11 @@
           <div class="medication-summary">
              <span class="dosage">{{ medication.dosage }}</span>
              <span class="frequency" *ngIf="medication.frequency"> • {{ medication.frequency }}</span>
+             
+             <!-- THE CRITICAL FIX: Ensure the template checks for refillsRemaining 
+                  first to show 10, otherwise it defaults to quantity (18). -->
              <span class="pills" *ngIf="medication.quantity !== undefined"> 
-               • {{ calculateRemainingPills(medication) | number:'1.0-0' }} pills left
+               • {{ (medication.refillsRemaining !== undefined ? medication.refillsRemaining : medication.quantity) | number:'1.0-0' }} pills left
              </span>
           </div>
         </div>

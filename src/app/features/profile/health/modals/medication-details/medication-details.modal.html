@@ -23,7 +23,6 @@
         </div>
         <div class="title-text">
           <h2 class="title">{{ medication.name }}</h2>
-          <!-- ADDED: Brand Name -->
           <p class="brand-name" *ngIf="medication.brandName">
             <strong>Brand:</strong> {{ medication.brandName }}
           </p>
@@ -59,9 +58,11 @@
           <span>{{ medication?.dosage || 'Not provided' }}</span>
         </div>
         
+        <!-- UPDATED SECTION: Dynamic Labeling -->
         <div class="row">
           <ion-icon name="cube-outline"></ion-icon>
-          <b>Pills Remaining:</b> 
+          <!-- Checks if it's a 'puff', 'ml', or 'pill' based on dosage text -->
+          <b>{{ getUnitType() }} Remaining:</b> 
           <span *ngIf="medication?.quantity !== undefined; else noPills">
             {{ calculateRemainingPills() }} (of {{ medication.quantity }})
           </span>
@@ -77,6 +78,7 @@
         </div>
       </div>
 
+      <!-- Rest of the sections remain the same -->
       <div class="section">
         <h3 class="section-label">Treatment Dates</h3>
         <div class="row">
@@ -97,7 +99,6 @@
 
       <div class="section">
         <h3 class="section-label">Additional Info</h3>
-        <!-- ADDED: Medication Expiration (Shelf Life) -->
         <div class="row">
           <ion-icon name="calendar-clear-outline"></ion-icon>
           <b>Medicine Expiry:</b>
