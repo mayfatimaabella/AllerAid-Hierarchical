@@ -7,8 +7,13 @@
       </ion-card-header>
       <ion-card-content>
         <div class="verify-message">A verification email has been sent to:</div>
+
         <div class="verify-email">{{ email }}</div>
+
         <div class="verify-instructions">Please click the link in your email to activate your account.</div>
+
+        <div class="spam-note"> Didn’t receive the email? Check your Spam or Junk folder.</div>
+
         <ion-button expand="block" class="registerBtn" shape="round" (click)="resendVerificationEmail()" [disabled]="resendDisabled">
           Resend Verification Email
           <span *ngIf="resendDisabled"> (Wait {{resendCountdown}}s)</span>

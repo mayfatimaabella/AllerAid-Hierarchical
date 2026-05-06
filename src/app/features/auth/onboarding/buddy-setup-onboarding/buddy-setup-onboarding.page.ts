@@ -32,7 +32,7 @@ interface Hotline {
   enabled: boolean;
 }
 
-type InviteStatus = 'sent' | 'already_exists' | 'failed' | 'skipped';
+type InviteStatus = 'sent' | 'already_exists' | 'failed' | 'skipped' | 'accepted';
 
 @Component({
   selector: 'app-buddy-setup-onboarding',
@@ -94,6 +94,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
   private backButtonSubscription?: Subscription;
   private invitationUnsubscribe?: () => void;
   private db;
+  private buddyRelationsSubscription?: Subscription;
 
   constructor(
     private router: Router,
@@ -128,6 +129,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.disableBackNavigationBlock();
     this.invitationUnsubscribe?.();
+    this.buddyRelationsSubscription?.unsubscribe();
   }
 
   private onPopState = (): void => {
@@ -225,20 +227,25 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
     }
   }
 
-  private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<void> {
-    const currentUserProfile = await this.userService.getUserProfile(currentUserUid);
-    if (!currentUserProfile?.email) return;
+private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<void> {
+  const currentUserProfile = await this.userService.getUserProfile(currentUserUid);
+  if (!currentUserProfile?.email) return;
 
-    this.invitationUnsubscribe?.();
+  this.invitationUnsubscribe?.();
+  this.buddyRelationsSubscription?.unsubscribe();
 
-    this.invitationUnsubscribe = this.buddyService.listenForBuddyInvitations(currentUserUid);
+  this.invitationUnsubscribe = this.buddyService.listenForBuddyInvitations(currentUserUid);
 
+  this.buddyRelationsSubscription =
     this.buddyService.buddyRelations$.subscribe(relations => {
-      if (relations.length > 0) {
-        this.primaryInviteStatus = 'accepted' as any;
+      if (
+        this.foundBuddy &&
+        relations.some((r: any) => r.buddyUid === this.foundBuddy.uid)
+      ) {
+        this.primaryInviteStatus = 'accepted';
       }
     });
-  }
+}
 
   async searchBuddyByEmail(): Promise<void> {
     const email = this.buddySearchEmail.trim().toLowerCase();
@@ -656,4 +663,53 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
     const hasHotline = this.hotlines.some(h => h.enabled) || !!this.fallbackContact.customHotline?.trim();
     return hasContact || hasHotline;
   }
+
+async saveFallbackAndContinue(): Promise<void> {
+  if (!this.hasFallback()) {
+    await this.showToast('Please add at least one trusted contact or hotline.', 'warning');
+    return;
+  }
+
+  try {
+    this.isSaving = true;
+
+    const currentUser = await this.authService.waitForAuthInit();
+
+    if (!currentUser) {
+      await this.showToast('You must be logged in.', 'danger');
+      return;
+    }
+
+    await setDoc(
+      doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
+      {
+        fallbackEmergencySetup: {
+          trustedContact: {
+            name: this.fallbackContact.name.trim(),
+            phone: this.fallbackContact.phone.trim(),
+          },
+          enabledHotlines: this.hotlines.filter(h => h.enabled),
+          customHotline: this.fallbackContact.customHotline.trim(),
+          updatedAt: new Date(),
+        },
+        buddySetupOnboarding: {
+          skippedBuddySetup: true,
+          fallbackUsed: true,
+          updatedAt: new Date(),
+        },
+      },
+      { merge: true }
+    );
+
+    await this.userService.markAllergyOnboardingCompleted(currentUser.uid);
+    await this.showToast('Fallback emergency setup saved.', 'success');
+    await this.router.navigate(['/tabs/home'], { replaceUrl: true });
+
+  } catch (error) {
+    console.error('Error saving fallback setup:', error);
+    await this.showToast('Failed to save fallback setup.', 'danger');
+  } finally {
+    this.isSaving = false;
+  }
+}
 }

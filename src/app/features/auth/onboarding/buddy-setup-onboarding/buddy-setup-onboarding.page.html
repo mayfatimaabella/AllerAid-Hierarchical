@@ -245,7 +245,8 @@
   <p class="skip-hint">You can always add a buddy later from your profile.</p>
 </div>
 
-<!-- FALLBACK SECTION — shown when skipping OR after search, no buddy found -->
+<!-- FALLBACK SECTION -->
+
 <div class="buddy-card fallback-card" *ngIf="showFallback">
   <div class="buddy-header">
     <div class="buddy-avatar fallback">!</div>
@@ -256,10 +257,9 @@
   </div>
 
   <p class="state-text">
-    No buddy yet? Add a trusted contact or a local hotline so you're never without help.
+    Add at least one trusted contact or emergency hotline so you still have help even without a buddy.
   </p>
 
-  <!-- Trusted Contact -->
   <div class="fallback-section">
     <p class="fallback-label">Trusted contact</p>
 
@@ -278,6 +278,7 @@
       <ion-input
         class="field-input"
         type="tel"
+        inputmode="numeric"
         placeholder="09XXXXXXXXX"
         [(ngModel)]="fallbackContact.phone"
         name="fallbackContactPhone">
@@ -285,7 +286,6 @@
     </div>
   </div>
 
-  <!-- Emergency Hotlines -->
   <div class="fallback-section">
     <p class="fallback-label">Emergency hotlines</p>
 
@@ -295,7 +295,9 @@
           <span class="hotline-name">{{ h.name }}</span>
           <span class="hotline-number">{{ h.number }}</span>
         </div>
+
         <button
+          type="button"
           class="hotline-toggle"
           [class.active]="h.enabled"
           (click)="toggleHotline(i)">
@@ -304,8 +306,8 @@
       </div>
     </div>
 
-    <div class="field" style="margin-top: 10px;">
-      <label class="field-label">Custom hotline (optional)</label>
+    <div class="field custom-hotline-field">
+      <label class="field-label">Custom hotline optional</label>
       <ion-input
         class="field-input"
         type="tel"
@@ -315,5 +317,15 @@
       </ion-input>
     </div>
   </div>
+
+  <ion-button
+    class="btn-main fallback-continue-btn"
+    expand="block"
+    (click)="saveFallbackAndContinue()"
+    [disabled]="isSaving">
+    <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
+    <span *ngIf="!isSaving">Continue with Fallback</span>
+  </ion-button>
 </div>
+
 </ion-content>

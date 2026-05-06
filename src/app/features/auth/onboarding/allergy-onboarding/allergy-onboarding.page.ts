@@ -19,6 +19,8 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
   isLoading = true;
   isSaving = false;
 
+  readonly MAX_CUSTOM_ALLERGENS = 3;
+
   private backButtonSubscription?: Subscription;
 
   constructor(
@@ -135,18 +137,37 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       'soy',
     ]);
 
-    this.commonAllergens = this.allergyOptions.filter(option =>
-      commonNames.has(option.name)
+    // Exclude reserved generic names — the Add button handles custom entries
+    const reservedOtherNames = new Set(['other', 'others']);
+
+    this.commonAllergens = this.allergyOptions.filter(o =>
+      commonNames.has(o.name)
     );
 
-    this.otherAllergens = this.allergyOptions.filter(option =>
-      !commonNames.has(option.name)
+    this.otherAllergens = this.allergyOptions.filter(o =>
+      !commonNames.has(o.name) && !reservedOtherNames.has(o.name)
     );
   }
 
+  get customAllergenCount(): number {
+    return this.allergyOptions.filter(a => a.category === 'other' && a.hasInput).length;
+  }
+
+  get canAddMoreAllergens(): boolean {
+    return this.customAllergenCount < this.MAX_CUSTOM_ALLERGENS;
+  }
+
   addOtherOption() {
+    if (!this.canAddMoreAllergens) {
+      this.presentToast(
+        `You can only add up to ${this.MAX_CUSTOM_ALLERGENS} custom allergens.`,
+        'warning'
+      );
+      return;
+    }
+
     const newOption = {
-      name: 'others',
+      name: `other_${Date.now()}`,
       label: 'Other',
       checked: true,
       hasInput: true,
@@ -156,6 +177,11 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
 
     this.allergyOptions.push(newOption);
     this.otherAllergens.push(newOption);
+  }
+
+  removeOtherOption(option: any) {
+    this.allergyOptions = this.allergyOptions.filter(a => a !== option);
+    this.otherAllergens = this.otherAllergens.filter(a => a !== option);
   }
 
   async presentToast(
@@ -232,22 +258,14 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       if (!currentUser) {
         throw new Error('No authenticated user found. Cannot save allergies.');
       }
+      
+      const checkedAllergies = this.allergyOptions.filter(allergy => allergy.checked);
 
-      const sanitizedAllergies = this.allergyOptions
-        .filter(allergy => allergy.checked)
-        .map(allergy => {
-          const inputValue = allergy.value?.trim();
-
-          return {
-            name: allergy.name,
-            label: allergy.hasInput && inputValue ? inputValue : allergy.label,
-            checked: true,
-            value: inputValue,
-          };
-        });
-
-      const customAllergies = sanitizedAllergies.filter(allergy =>
-        allergy.value && ['others', 'other'].includes(allergy.name.toLowerCase())
+      // Catch all user-added custom chips by category + hasInput
+      const customAllergies = checkedAllergies.filter(allergy =>
+        allergy.value &&
+        allergy.hasInput &&
+        allergy.category === 'other'
       );
 
       for (const allergy of customAllergies) {
@@ -261,12 +279,18 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
           category: 'other',
         });
       }
+      
+      const sanitizedAllergies = checkedAllergies.map(allergy => {
+      const inputValue = allergy.value?.trim();
+      return {
+        name: allergy.name,
+        label: allergy.hasInput && inputValue ? inputValue : allergy.label,
+        checked: true,
+        value: inputValue,
+      };
+    });
 
-      await this.allergyService.saveUserAllergies(
-        currentUser.uid,
-        sanitizedAllergies
-      );
-
+    await this.allergyService.saveUserAllergies(currentUser.uid, sanitizedAllergies);
       await this.presentToast('Allergies saved successfully!', 'success', 2000);
     } catch (error) {
       console.error('Error saving allergies:', error);

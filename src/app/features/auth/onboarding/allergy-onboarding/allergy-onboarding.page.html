@@ -42,26 +42,46 @@
       class="allergy-chip"
       [class.selected]="allergy.checked"
       (click)="allergy.checked = !allergy.checked">
+
       <div class="chip-check">
         <ion-icon *ngIf="allergy.checked" name="checkmark-outline"></ion-icon>
       </div>
+
       <span class="chip-label">{{ allergy.label }}</span>
+
       <ion-input
         *ngIf="allergy.hasInput && allergy.checked"
         class="chip-input"
-        placeholder="Please specify…"
+        placeholder="Please specify"
         [(ngModel)]="allergy.value"
         [name]="allergy.name + 'Value'"
-        (click)="$event.stopPropagation()"
-        (ionInput)="allergy.label = allergy.value || 'Others'">
+        (click)="$event.stopPropagation()">
       </ion-input>
+
+      <!-- Remove button — inside the loop so 'allergy' is in scope -->
+      <ion-button
+        *ngIf="allergy.category === 'other' && allergy.hasInput"
+        fill="clear"
+        size="small"
+        color="medium"
+        (click)="$event.stopPropagation(); removeOtherOption(allergy)">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+
     </div>
 
     <!-- Add Another Option Button -->
-    <ion-button fill="clear" size="small" (click)="addOtherOption()" class="add-other-btn">
+    <ion-button
+      fill="clear"
+      size="small"
+      (click)="addOtherOption()"
+      class="add-other-btn"
+      [disabled]="!canAddMoreAllergens">
       <ion-icon name="add-circle-outline" slot="start"></ion-icon>
       Add another allergen
+      <span *ngIf="customAllergenCount > 0">({{ customAllergenCount }}/{{ MAX_CUSTOM_ALLERGENS }})</span>
     </ion-button>
+
   </div>
 
   <!-- Footer CTA -->
