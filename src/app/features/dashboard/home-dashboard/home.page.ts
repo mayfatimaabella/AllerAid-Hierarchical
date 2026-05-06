@@ -8,6 +8,7 @@ import { EmergencyNotificationService } from '../../../core/services/emergency-n
 import { UserService } from '../../../core/services/user.service';
 import { AllergyService } from '../../../core/services/allergy.service';
 import { Subscription } from 'rxjs';
+import { doc, getDoc } from 'firebase/firestore';
 
 @Component({
   selector: 'app-home',
@@ -36,11 +37,16 @@ export class HomePage implements OnInit, OnDestroy {
   // Notification status tracking
   notificationStatus: { [buddyId: string]: 'sending' | 'sent' | 'failed' | 'pending' } = {};
   
+  //Banner reminder if theres no buddy added just emergency contact 
+  hasBuddy: boolean = true;
+  showBuddyBanner: boolean = false;
+
   // Emergency confirmation timer
   private emergencyConfirmationTimer: any = null;
   emergencyConfirmationTimeLeft: number = 5;
   
   private subscriptions: Subscription[] = [];
+  private db: any;
 
   constructor(
     private alertController: AlertController,
@@ -94,6 +100,7 @@ export class HomePage implements OnInit, OnDestroy {
 
         // Load user buddies
         this.userBuddies = await this.buddyService.getUserBuddies(currentUser.uid);
+        await this.checkBuddyStatus();
         
 const medicalInfo = await this.userService.getUserMedicalInfo(currentUser.uid);
 
@@ -700,7 +707,39 @@ console.log('Allergy count:', this.userAllergies.length);
 getBuddiesCount(): number {
   return this.userBuddies?.length || 0;
 }
+
+async checkBuddyStatus() {
+  try {
+    const currentUser = await this.authService.waitForAuthInit();
+    if (!currentUser) return;
+
+    const ref = doc(this.db, 'users', currentUser.uid, 'medical', 'info');
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      // No medical info yet — treat as no buddy
+      this.hasBuddy = false;
+      this.showBuddyBanner = false;
+      return;
+    }
+
+    const data = snap.data();
+    const setup = data?.['buddySetupOnboarding'];
+
+    const hasRealBuddy = !!(setup?.primaryBuddy?.buddyUid) &&
+                         setup?.primaryBuddy?.inviteStatus !== 'skipped';
+    const usedFallback = setup?.fallbackUsed === true;
+    const skipped = setup?.skippedBuddySetup === true;
+
+    this.hasBuddy = hasRealBuddy;
+    this.showBuddyBanner = (usedFallback || skipped) && !hasRealBuddy;
+  } catch (error) {
+    console.error('Error checking buddy status:', error);
+  }
 }
+}
+
+
 
 
 

@@ -60,7 +60,7 @@ export class ForgotPasswordModal implements OnInit {
       // Close the modal after 2 seconds
       setTimeout(() => {
         this.dismiss();
-      }, 2000);
+      }, 5000);
     } catch (error: any) {
       console.error('Password reset error:', error);
       this.handlePasswordResetError(error);

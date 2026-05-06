@@ -7,6 +7,16 @@
     <ion-title>AllerAid</ion-title>
 
     <ion-buttons slot="end">
+      <ion-chip
+        *ngIf="!hasBuddy"
+        color="warning"
+        class="no-buddy-chip"
+        [routerLink]="['/tabs/buddy']"
+        outline="true">
+        <ion-icon name="person-outline" color="warning"></ion-icon>
+        <ion-label>No buddy</ion-label>
+      </ion-chip>
+
       <ion-button fill="clear" [routerLink]="['/tabs/alerts']">
         <ion-icon name="warning"></ion-icon>
       </ion-button>
@@ -21,6 +31,33 @@
 <ion-content class="ion-padding">
   <div class="wrapper scrollable-content">
     <h2 class="page-title">Welcome, {{ userName }}!</h2>
+
+        <div *ngIf="showBuddyBanner" class="buddy-banner">
+      <div class="buddy-banner-content">
+        <ion-icon name="person-circle-outline" class="buddy-banner-icon"></ion-icon>
+        <div class="buddy-banner-text">
+          <p class="buddy-banner-title">You don't have a buddy yet</p>
+          <p class="buddy-banner-sub">
+            Your fallback contact is set, but a buddy can alert someone instantly during an emergency.
+          </p>
+          <ion-button
+            size="small"
+            fill="solid"
+            color="warning"
+            [routerLink]="['/tabs/buddy']">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            Add a buddy
+          </ion-button>
+        </div>
+      </div>
+      <ion-button
+        fill="clear"
+        size="small"
+        class="buddy-banner-close"
+        (click)="showBuddyBanner = false">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
 
     <div class="emergency-wrapper">
       <div class="circle-button" (click)="triggerEmergency()">

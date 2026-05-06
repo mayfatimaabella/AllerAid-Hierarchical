@@ -217,3 +217,59 @@ ion-toolbar .ion-buttons[slot="end"] ion-button:hover {
 
 /* Spacing utilities */
 .mt-16 { margin-top: 16px; }
+
+.no-buddy-chip {
+  font-size: 11px;
+  height: 26px;
+  margin-right: 4px;
+}
+
+.buddy-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  background: #fff8ec;
+  border-left: 3px solid #ba7517;
+  border-radius: 8px;
+  padding: 12px 8px 12px 14px;
+  margin-bottom: 16px;
+  gap: 8px;
+
+  .buddy-banner-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .buddy-banner-icon {
+    font-size: 26px;
+    color: #ba7517;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .buddy-banner-text {
+    flex: 1;
+
+    p { margin: 0; line-height: 1.4; }
+  }
+
+  .buddy-banner-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #633806;
+    margin-bottom: 3px !important;
+  }
+
+  .buddy-banner-sub {
+    font-size: 12px;
+    color: #854f0b;
+    margin-bottom: 8px !important;
+  }
+
+  .buddy-banner-close {
+    --color: #854f0b;
+    flex-shrink: 0;
+  }
+}

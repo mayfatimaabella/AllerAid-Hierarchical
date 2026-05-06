@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,67 +12,79 @@ import { ToastController, NavController } from '@ionic/angular';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule],
 })
-export class VerifyEmailPage {
+export class VerifyEmailPage implements OnInit, OnDestroy {
   email: string | null = null;
-  now = new Date();
   resendDisabled = false;
   resendCountdown = 0;
   resendInterval: any;
+
+  // Poll for verification so the user gets auto-redirected once they click the link
+  private pollInterval: any;
+  private readonly POLL_INTERVAL_MS = 4000;
 
   constructor(
     private authService: AuthService,
     private toastController: ToastController,
     private navCtrl: NavController
   ) {}
-  goToRegistration() {
-    this.navCtrl.navigateBack('/registration');
-  }
-
-  goToLogin() {
-    this.navCtrl.navigateBack('/login');
-  }
 
   ngOnInit() {
     this.email = this.authService.getCurrentUserEmail();
-    this.checkEmailVerification(); // Check email verification status
+    // Don't check immediately — user just registered and the email is never
+    // verified at this point. Start polling silently instead.
+    this.startVerificationPolling();
   }
 
-  async checkEmailVerification() {
-    try {
-      const user = await this.authService.getCurrentUser();
-      if (user && user.emailVerified) {
-        console.log('Email verified:', user.emailVerified);
-        this.presentToast('Your email has been verified successfully!');
-        this.navCtrl.navigateRoot('/dashboard'); // Redirect to dashboard or next page
-      } else if (user) {
-        console.log('Email not verified:', user.emailVerified);
-        this.presentToast('Your email is not verified yet. Please check your inbox and click the verification link.');
-      } else {
-        console.error('No user found while checking email verification.');
-        this.presentToast('No user is currently logged in. Please log in and try again.');
+  ngOnDestroy() {
+    this.stopVerificationPolling();
+    if (this.resendInterval) {
+      clearInterval(this.resendInterval);
+    }
+  }
+
+  /**
+   * Poll Firebase every few seconds. Once the user clicks the link in their
+   * inbox and we detect verification, redirect them automatically.
+   */
+  private startVerificationPolling(): void {
+    this.pollInterval = setInterval(async () => {
+      try {
+        const user = await this.authService.getCurrentUser();
+        // Force-reload the token so Firebase reflects the latest verified state
+        if (user) {
+          await user.reload();
+        }
+        if (user?.emailVerified) {
+          this.stopVerificationPolling();
+          await this.presentToast('Email verified! Redirecting…', 'success');
+          this.navCtrl.navigateRoot('/login');
+        }
+      } catch (error) {
+        // Silently ignore polling errors — user can still manually proceed
+        console.error('Verification poll error:', error);
       }
-    } catch (error) {
-      console.error('Error checking email verification:', error);
-      this.presentToast('An error occurred while verifying your email. Please try again.');
+    }, this.POLL_INTERVAL_MS);
+  }
+
+  private stopVerificationPolling(): void {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
     }
   }
 
   async resendVerificationEmail() {
-    if (this.resendDisabled) {
-      console.log('Resend disabled due to cooldown.');
-      return;
-    }
+    if (this.resendDisabled) return;
     try {
-      console.log('Resending verification email...');
       await this.authService.resendVerificationEmail();
-      this.presentToast('Verification email resent. Please check your inbox.');
-      this.startResendCooldown(60); // 60 seconds cooldown
+      await this.presentToast('Verification email resent. Please check your inbox.');
+      this.startResendCooldown(60);
     } catch (error: any) {
       console.error('Error resending verification email:', error);
       if (error.code === 'auth/too-many-requests') {
-        this.presentToast('Too many requests. Please wait and try again later.');
+        await this.presentToast('Too many requests. Please wait and try again later.');
       } else {
-        this.presentToast('Failed to resend verification email.');
+        await this.presentToast('Failed to resend verification email.');
       }
     }
   }
@@ -85,18 +97,25 @@ export class VerifyEmailPage {
       if (this.resendCountdown <= 0) {
         this.resendDisabled = false;
         clearInterval(this.resendInterval);
-        console.log('Cooldown ended. Resend enabled.');
       }
     }, 1000);
   }
 
-  async presentToast(message: string) {
+  goToRegistration() {
+    this.navCtrl.navigateBack('/registration');
+  }
+
+  goToLogin() {
+    this.navCtrl.navigateBack('/login');
+  }
+
+  async presentToast(message: string, color: string = 'medium') {
     const toast = await this.toastController.create({
       message,
       duration: 3000,
       position: 'bottom',
-      color: 'medium',
+      color,
     });
-    toast.present();
+    await toast.present();
   }
 }

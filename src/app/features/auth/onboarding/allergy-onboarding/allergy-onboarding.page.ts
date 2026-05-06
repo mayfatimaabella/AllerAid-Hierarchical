@@ -113,7 +113,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
         this.allergyOptions = options.map((option: any) => ({
           ...option,
           checked: false,
-          value: option.hasInput ? '' : undefined,
+          value: option.hasInput ? '' : null,
         }));
       }
 
@@ -229,13 +229,13 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       const selectedAllergies = this.allergyOptions
         .filter(allergy => allergy.checked)
         .map(allergy => {
-          const inputValue = allergy.value?.trim();
+          const inputValue = allergy.value?.trim() ?? null;
 
           return {
             name: allergy.name,
             label: allergy.hasInput && inputValue ? inputValue : allergy.label,
             checked: true,
-            value: inputValue,
+            value: inputValue ?? null,
           };
         });
 
@@ -281,12 +281,12 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       }
       
       const sanitizedAllergies = checkedAllergies.map(allergy => {
-      const inputValue = allergy.value?.trim();
+      const inputValue = allergy.value?.trim() ?? null;
       return {
         name: allergy.name,
         label: allergy.hasInput && inputValue ? inputValue : allergy.label,
         checked: true,
-        value: inputValue,
+        value: inputValue ?? null,
       };
     });
 
