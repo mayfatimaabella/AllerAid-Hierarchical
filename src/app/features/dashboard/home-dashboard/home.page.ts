@@ -95,18 +95,14 @@ export class HomePage implements OnInit, OnDestroy {
         // Load user buddies
         this.userBuddies = await this.buddyService.getUserBuddies(currentUser.uid);
         
-        // Load user allergies using the same logic as profile page
-        const userAllergyDocs = await this.allergyService.getUserAllergies(currentUser.uid);
-        this.userAllergies = [];
-        
-        // Flatten the allergies from documents and filter only checked ones
-        userAllergyDocs.forEach((allergyDoc: any) => {
-          if (allergyDoc.allergies && Array.isArray(allergyDoc.allergies)) {
-            // Only include allergies that are checked
-            const checkedAllergies = allergyDoc.allergies.filter((allergy: any) => allergy.checked);
-            this.userAllergies.push(...checkedAllergies);
-          }
-        });
+const medicalInfo = await this.userService.getUserMedicalInfo(currentUser.uid);
+
+this.userAllergies = Array.isArray(medicalInfo?.allergies)
+  ? medicalInfo.allergies.filter((allergy: any) => allergy.checked)
+  : [];
+
+console.log('Loaded allergies:', this.userAllergies);
+console.log('Allergy count:', this.userAllergies.length);
 
         // Listen for emergency responses
         this.listenForEmergencyResponses();
@@ -461,10 +457,6 @@ export class HomePage implements OnInit, OnDestroy {
     return this.userAllergies.map((a: any) => a.label || a.name).join(', ');
   }
   
-  getBuddiesCount(): string {
-    return `${this.userBuddies.length}`;
-  }
-  
   /**
    * Listen for notification status updates
    */
@@ -690,30 +682,7 @@ export class HomePage implements OnInit, OnDestroy {
 
     await alert.present();
   }
-  
-  /**
-   * Test emergency notification system
-   */
-  // async testEmergencyNotifications() {
-  //   try {
-  //     const currentUser = await this.authService.waitForAuthInit();
-  //     if (!currentUser) {
-  //       throw new Error('User not authenticated');
-  //     }
 
-  //     const userProfile = await this.userService.getUserProfile(currentUser.uid);
-  //     if (!userProfile) {
-  //       throw new Error('User profile not found');
-  //     }
-
-  //     await this.emergencyNotificationService.testNotificationSystem(userProfile);
-  //     await this.presentToast('Test notification sent! Check console for details.');
-      
-  //   } catch (error) {
-  //     console.error('Test notification failed:', error);
-  //     await this.presentToast('Test notification failed. Check console for details.');
-  //   }
-  // }
   
   async presentToast(message: string) {
     const toast = await this.toastController.create({
@@ -723,6 +692,14 @@ export class HomePage implements OnInit, OnDestroy {
     });
     await toast.present();
   }
+
+  getAllergensCount(): number {
+  return this.userAllergies?.length || 0;
+}
+
+getBuddiesCount(): number {
+  return this.userBuddies?.length || 0;
+}
 }
 
 

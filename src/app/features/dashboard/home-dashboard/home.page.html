@@ -128,8 +128,7 @@
         </ion-card-header>
         <ion-card-content>
           <div class="count-display">
-            <span class="count-number" *ngIf="userAllergies.length > 0">{{ userAllergies.length }}</span>
-            <span class="count-number" *ngIf="userAllergies.length === 0">0</span>
+            <span class="count-number">{{ getAllergensCount() }}</span>
           </div>
           <p class="count-label">recorded</p>
         </ion-card-content>

@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Platform, ToastController } from '@ionic/angular';
+import { Platform, ToastController, AlertController } from '@ionic/angular';
 import { AuthService } from '../../../../core/services/auth.service';
 import { MedicalService } from '../../../../core/services/medical.service';
 import { AllergyService } from '../../../../core/services/allergy.service';
@@ -19,7 +19,7 @@ interface SelectedAllergy {
   styleUrls: ['./emergency-instructions-onboarding.page.scss'],
   standalone: false,
 })
-export class EmergencyInstructionsOnboardingPage implements OnInit {
+export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
   selectedAllergies: SelectedAllergy[] = [];
   instructionsByAllergy: Record<string, string> = {};
   isLoading = true;
@@ -32,7 +32,8 @@ export class EmergencyInstructionsOnboardingPage implements OnInit {
     private authService: AuthService,
     private medicalService: MedicalService,
     private allergyService: AllergyService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private alertController: AlertController
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -80,16 +81,20 @@ export class EmergencyInstructionsOnboardingPage implements OnInit {
         return;
       }
 
+      // Try history.state first (normal forward navigation).
+      // Fall back to Firestore so a page refresh doesn't strand the user.
       const routeStateAllergies = (history.state?.allergies || []) as SelectedAllergy[];
-      const fromRoute = routeStateAllergies.filter(allergy => allergy?.checked);
+      const fromRoute = routeStateAllergies.filter(a => a?.checked);
 
       if (fromRoute.length > 0) {
         this.selectedAllergies = fromRoute;
       } else {
+        // Firestore fallback — works after refresh or deep-link
         const storedAllergies = await this.allergyService.getUserAllergies(currentUser.uid);
-        this.selectedAllergies = storedAllergies.filter(allergy => allergy?.checked);
+        this.selectedAllergies = (storedAllergies || []).filter(a => a?.checked);
       }
 
+      // Load any previously saved instructions
       const existingInstructions = await this.medicalService.getEmergencyInstructions(currentUser.uid);
       const byId: Record<string, string> = {};
       existingInstructions.forEach((item: any) => {
@@ -115,6 +120,16 @@ export class EmergencyInstructionsOnboardingPage implements OnInit {
   }
 
   async saveAndContinue(): Promise<void> {
+    // Warn if any allergy has no instruction filled in
+    const emptyInstructions = this.selectedAllergies.filter(
+      a => !(this.instructionsByAllergy[a.name] || '').trim()
+    );
+
+    if (emptyInstructions.length > 0) {
+      const confirmed = await this.confirmSkipInstructions(emptyInstructions);
+      if (!confirmed) return;
+    }
+
     try {
       this.isSaving = true;
 
@@ -151,7 +166,37 @@ export class EmergencyInstructionsOnboardingPage implements OnInit {
     }
   }
 
+  /**
+   * Show a confirmation alert when the user tries to continue
+   * without filling in instructions for one or more allergies.
+   * Returns true if the user confirms they want to skip.
+   */
+  private async confirmSkipInstructions(missing: SelectedAllergy[]): Promise<boolean> {
+    const names = missing.map(a => a.label).join(', ');
+    return new Promise(async resolve => {
+      const alert = await this.alertController.create({
+        header: 'Missing instructions',
+        message: `You haven't added emergency instructions for: ${names}. Your buddy won't know what to do during an emergency for these allergies. Continue anyway?`,
+        buttons: [
+          {
+            text: 'Go back',
+            role: 'cancel',
+            handler: () => resolve(false)
+          },
+          {
+            text: 'Continue anyway',
+            handler: () => resolve(true)
+          }
+        ]
+      });
+      await alert.present();
+    });
+  }
+
   async skipForNow(): Promise<void> {
+    const confirmed = await this.confirmSkipInstructions(this.selectedAllergies);
+    if (!confirmed) return;
+
     try {
       await this.router.navigate(['/buddy-setup-onboarding'], { replaceUrl: true });
     } catch (error) {
@@ -165,6 +210,7 @@ export class EmergencyInstructionsOnboardingPage implements OnInit {
       message,
       duration: 2500,
       color,
+      position: 'bottom'
     });
     await toast.present();
   }
