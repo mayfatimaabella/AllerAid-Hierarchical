@@ -18,6 +18,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
   otherAllergens: any[] = [];
   isLoading = true;
   isSaving = false;
+
   private backButtonSubscription?: Subscription;
 
   constructor(
@@ -27,7 +28,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private platform: Platform,
     private toastController: ToastController
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.loadAllergyOptions();
@@ -51,9 +52,11 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
 
   private enableBackNavigationBlock(): void {
     this.disableBackNavigationBlock();
+
     this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(9999, () => {
-      // Intentionally noop: lock onboarding to forward-only navigation
+      // Forward-only navigation lock
     });
+
     history.pushState(null, '', window.location.href);
     window.addEventListener('popstate', this.onPopState);
   }
@@ -68,68 +71,54 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
     try {
       this.isLoading = true;
 
-      // Load allergy options from Firebase
-      let options = await this.allergyService.getAllergyOptions();
+      const options = await this.allergyService.getAllergyOptions();
 
-      console.log('Loaded options from Firebase:', options);
-
-      // If no options exist in Firebase, show empty state
       if (!options || options.length === 0) {
-        console.log('No options in Firebase, showing empty state');
         this.allergyOptions = [];
         this.commonAllergens = [];
         this.otherAllergens = [];
         return;
       }
 
-      // Wait for auth to be initialized — no fallback to fake UIDs
       const currentUser = await this.authService.waitForAuthInit();
 
       if (!currentUser) {
-        console.error('No authenticated user found during allergy onboarding load');
         await this.presentToast('Session expired. Please log in again.', 'danger');
         this.router.navigate(['/login'], { replaceUrl: true });
         return;
       }
 
-      console.log('Loading allergy onboarding for user:', currentUser.email);
-
-      // Get user's existing allergy data (if any)
       const userAllergies = await this.allergyService.getUserAllergies(currentUser.uid);
-      console.log('Loaded user allergies:', userAllergies);
 
       if (userAllergies && userAllergies.length > 0) {
         const userAllergiesMap = new Map();
+
         userAllergies.forEach((allergy: any) => {
           userAllergiesMap.set(allergy.name, allergy);
         });
 
-        this.allergyOptions = options.map(option => {
+        this.allergyOptions = options.map((option: any) => {
           const userAllergy = userAllergiesMap.get(option.name);
+
           return {
             ...option,
             checked: userAllergy ? userAllergy.checked : false,
             value: userAllergy?.value || (option.hasInput ? '' : undefined),
-            label: userAllergy?.customValue || option.label
+            label: userAllergy?.customValue || option.label,
           };
         });
-
-        console.log('Merged allergies with user data:', this.allergyOptions);
       } else {
-        this.allergyOptions = options.map(option => ({
+        this.allergyOptions = options.map((option: any) => ({
           ...option,
           checked: false,
-          value: option.hasInput ? '' : undefined
+          value: option.hasInput ? '' : undefined,
         }));
       }
 
       this.groupAllergyOptions();
-
     } catch (error) {
       console.error('Error loading allergy options:', error);
-      this.allergyOptions = [];
-      this.commonAllergens = [];
-      this.otherAllergens = [];
+      await this.presentToast('Failed to load allergy options.', 'danger');
     } finally {
       this.isLoading = false;
     }
@@ -143,20 +132,30 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       'wheat',
       'fish',
       'eggs',
-      'soy'
+      'soy',
     ]);
 
-    this.commonAllergens = this.allergyOptions.filter(option => commonNames.has(option.name));
-    this.otherAllergens = this.allergyOptions.filter(option => !commonNames.has(option.name));
+    this.commonAllergens = this.allergyOptions.filter(option =>
+      commonNames.has(option.name)
+    );
+
+    this.otherAllergens = this.allergyOptions.filter(option =>
+      !commonNames.has(option.name)
+    );
   }
 
-  hasSelectedAllergies(): boolean {
-    return this.allergyOptions.some(allergy => allergy.checked);
-  }
+  addOtherOption() {
+    const newOption = {
+      name: 'others',
+      label: 'Other',
+      checked: true,
+      hasInput: true,
+      value: '',
+      category: 'other',
+    };
 
-  async goBackToLogin(): Promise<void> {
-    this.disableBackNavigationBlock();
-    await this.router.navigate(['/login']);
+    this.allergyOptions.push(newOption);
+    this.otherAllergens.push(newOption);
   }
 
   async presentToast(
@@ -168,7 +167,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       message,
       duration,
       color,
-      position: 'bottom'
+      position: 'bottom',
     });
 
     await toast.present();
@@ -180,7 +179,10 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
     const hasSelectedAllergies = this.allergyOptions.some(allergy => allergy.checked);
 
     if (!hasSelectedAllergies) {
-      await this.presentToast('Please select at least one allergy or add "No Allergies".', 'warning');
+      await this.presentToast(
+        'Please select at least one allergy or add "No Allergies".',
+        'warning'
+      );
       this.isSaving = false;
       return;
     }
@@ -203,27 +205,18 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
         .map(allergy => {
           const inputValue = allergy.value?.trim();
 
-          if (allergy.hasInput && inputValue) {
-            return {
-              name: allergy.name,
-              label: inputValue,
-              checked: true,
-              value: inputValue
-            };
-          }
           return {
             name: allergy.name,
-            label: allergy.label,
+            label: allergy.hasInput && inputValue ? inputValue : allergy.label,
             checked: true,
-            value: allergy.value
+            value: inputValue,
           };
         });
 
       this.router.navigate(['/emergency-instructions-onboarding'], {
         state: { allergies: selectedAllergies },
-        replaceUrl: true
+        replaceUrl: true,
       });
-
     } catch (error) {
       console.error('Error during submission:', error);
       await this.presentToast('Failed to complete the process. Please try again.', 'danger');
@@ -233,53 +226,52 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
   }
 
   async saveAllergies() {
-    // Wait for auth — no fake UID fallback
-    const currentUser = await this.authService.waitForAuthInit();
+    try {
+      const currentUser = await this.authService.waitForAuthInit();
 
-    if (!currentUser) {
-      throw new Error('No authenticated user found. Cannot save allergies.');
-    }
+      if (!currentUser) {
+        throw new Error('No authenticated user found. Cannot save allergies.');
+      }
 
-    console.log('Saving allergies for user:', currentUser.email);
+      const sanitizedAllergies = this.allergyOptions
+        .filter(allergy => allergy.checked)
+        .map(allergy => {
+          const inputValue = allergy.value?.trim();
 
-    const sanitizedAllergies = this.allergyOptions
-      .filter(allergy => allergy.checked)
-      .map(allergy => {
-        const inputValue = allergy.value?.trim();
-
-        if (allergy.hasInput && inputValue) {
           return {
             name: allergy.name,
-            label: inputValue,
+            label: allergy.hasInput && inputValue ? inputValue : allergy.label,
             checked: true,
-            value: inputValue
+            value: inputValue,
           };
-        }
+        });
 
-        return {
-          name: allergy.name,
-          label: allergy.label,
-          checked: true
-        };
-      });
+      const customAllergies = sanitizedAllergies.filter(allergy =>
+        allergy.value && ['others', 'other'].includes(allergy.name.toLowerCase())
+      );
 
-    const customAllergies = sanitizedAllergies.filter(allergy =>
-      allergy.value && ['others', 'other'].includes(allergy.name.toLowerCase())
-    );
+      for (const allergy of customAllergies) {
+        await this.allergyService.addAllergyOptionIfMissing({
+          name: allergy.value
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/\s+/g, '_'),
+          label: allergy.value,
+          hasInput: false,
+          category: 'other',
+        });
+      }
 
-    for (const allergy of customAllergies) {
-      await this.allergyService.addAllergyOptionIfMissing({
-        name: allergy.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '_'),
-        label: allergy.value,
-        hasInput: false,
-        category: 'other'
-      });
+      await this.allergyService.saveUserAllergies(
+        currentUser.uid,
+        sanitizedAllergies
+      );
+
+      await this.presentToast('Allergies saved successfully!', 'success', 2000);
+    } catch (error) {
+      console.error('Error saving allergies:', error);
+      await this.presentToast('Failed to save allergies.', 'danger');
+      throw error;
     }
-
-    await this.allergyService.saveUserAllergies(currentUser.uid, sanitizedAllergies);
-
-    console.log('Saved user allergies');
-
-    await this.presentToast('Allergies saved successfully!', 'success', 2000);
   }
 }
