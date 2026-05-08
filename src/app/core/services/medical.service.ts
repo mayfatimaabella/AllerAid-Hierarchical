@@ -54,9 +54,12 @@ export class MedicalService {
    * Set emergency instruction for a user
    */
   async setEmergencyInstruction(uid: string, instruction: string): Promise<void> {
+
+    
+
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      await setDoc(userRef, { 
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      await setDoc(medicalRef, { 
         emergencyInstruction: instruction,
         updatedAt: new Date()
       }, { merge: true });
@@ -73,8 +76,8 @@ export class MedicalService {
    */
   async getEmergencyInstruction(uid: string): Promise<any> {
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      const userDoc = await getDoc(userRef);
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      const userDoc = await getDoc(medicalRef);
       
       if (userDoc.exists()) {
         return userDoc.data();
@@ -93,8 +96,8 @@ export class MedicalService {
    */
   async updateEmergencyMessage(uid: string, emergencyMessage: EmergencyMessage): Promise<void> {
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      await updateDoc(userRef, {
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      await updateDoc(medicalRef, {
         emergencyMessage: emergencyMessage,
         updatedAt: new Date()
       });
@@ -111,8 +114,8 @@ export class MedicalService {
    */
   async setEmergencyInstructionForAllergy(uid: string, allergyId: string, allergyName: string, instruction: string): Promise<void> {
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      const userDoc = await getDoc(userRef);
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      const userDoc = await getDoc(medicalRef);
       
       let emergencyInstructions: EmergencyInstruction[] = [];
       
@@ -130,7 +133,7 @@ export class MedicalService {
         instruction
       });
       
-      await updateDoc(userRef, {
+      await updateDoc(medicalRef, {
         emergencyInstructions,
         updatedAt: new Date()
       });
@@ -147,8 +150,8 @@ export class MedicalService {
    */
   async getEmergencyInstructions(uid: string): Promise<EmergencyInstruction[]> {
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      const userDoc = await getDoc(userRef);
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      const userDoc = await getDoc(medicalRef);
       
       if (userDoc.exists() && userDoc.data()['emergencyInstructions']) {
         return userDoc.data()['emergencyInstructions'];
@@ -166,14 +169,14 @@ export class MedicalService {
    */
   async removeEmergencyInstructionForAllergy(uid: string, allergyId: string): Promise<void> {
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      const userDoc = await getDoc(userRef);
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      const userDoc = await getDoc(medicalRef);
       
       if (userDoc.exists() && userDoc.data()['emergencyInstructions']) {
         let emergencyInstructions: EmergencyInstruction[] = userDoc.data()['emergencyInstructions'];
         emergencyInstructions = emergencyInstructions.filter(ei => ei.allergyId !== allergyId);
         
-        await updateDoc(userRef, {
+        await updateDoc(medicalRef, {
           emergencyInstructions,
           updatedAt: new Date()
         });
@@ -191,8 +194,8 @@ export class MedicalService {
    */
   async getUserMedicalProfile(uid: string): Promise<any> {
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      const userDoc = await getDoc(userRef);
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      const userDoc = await getDoc(medicalRef);
       
       if (userDoc.exists()) {
         return userDoc.data();
@@ -206,104 +209,14 @@ export class MedicalService {
     }
   }
 
-  /**
-   * Add medication to user's profile
-   */
-  async addMedication(uid: string, medication: any): Promise<void> {
-    try {
-      const userRef = doc(this.db, `users/${uid}`);
-      const userDoc = await getDoc(userRef);
-      
-      let medications = [];
-      if (userDoc.exists() && userDoc.data()['medications']) {
-        medications = userDoc.data()['medications'];
-      }
-      
-      medications.push({
-        ...medication,
-        id: Date.now().toString(),
-        createdAt: new Date()
-      });
-      
-      await updateDoc(userRef, {
-        medications: medications,
-        updatedAt: new Date()
-      });
-      
-      console.log('Medication added successfully');
-    } catch (error) {
-      console.error('Error adding medication:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update medication in user's profile
-   */
-  async updateMedication(uid: string, medicationId: string, updatedMedication: any): Promise<void> {
-    try {
-      const userRef = doc(this.db, `users/${uid}`);
-      const userDoc = await getDoc(userRef);
-      
-      if (userDoc.exists() && userDoc.data()['medications']) {
-        let medications = userDoc.data()['medications'];
-        const medicationIndex = medications.findIndex((med: any) => med.id === medicationId);
-        
-        if (medicationIndex !== -1) {
-          medications[medicationIndex] = {
-            ...medications[medicationIndex],
-            ...updatedMedication,
-            updatedAt: new Date()
-          };
-          
-          await updateDoc(userRef, {
-            medications: medications,
-            updatedAt: new Date()
-          });
-          
-          console.log('Medication updated successfully');
-        } else {
-          throw new Error('Medication not found');
-        }
-      }
-    } catch (error) {
-      console.error('Error updating medication:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Remove medication from user's profile
-   */
-  async removeMedication(uid: string, medicationId: string): Promise<void> {
-    try {
-      const userRef = doc(this.db, `users/${uid}`);
-      const userDoc = await getDoc(userRef);
-      
-      if (userDoc.exists() && userDoc.data()['medications']) {
-        let medications = userDoc.data()['medications'];
-        medications = medications.filter((med: any) => med.id !== medicationId);
-        
-        await updateDoc(userRef, {
-          medications: medications,
-          updatedAt: new Date()
-        });
-        
-        console.log('Medication removed successfully');
-      }
-    } catch (error) {
-      console.error('Error removing medication:', error);
-      throw error;
-    }
-  }
 
   /**
    * Save complete emergency settings
    */
   async saveEmergencySettings(uid: string, settings: any): Promise<void> {
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      await updateDoc(userRef, {
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      await updateDoc(medicalRef, {
         emergencySettings: settings,
         updatedAt: new Date()
       });
@@ -320,8 +233,8 @@ export class MedicalService {
    */
   async getEmergencyData(uid: string): Promise<any> {
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      const userDoc = await getDoc(userRef);
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      const userDoc = await getDoc(medicalRef);
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
@@ -348,8 +261,8 @@ export class MedicalService {
    */
   async updateEmergencyLocation(uid: string, location: any): Promise<void> {
     try {
-      const userRef = doc(this.db, `users/${uid}`);
-      await updateDoc(userRef, {
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      await updateDoc(medicalRef, {
         emergencyLocation: {
           ...location,
           timestamp: new Date()

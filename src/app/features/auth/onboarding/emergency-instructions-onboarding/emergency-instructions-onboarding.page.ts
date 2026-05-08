@@ -104,7 +104,8 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
       });
 
       this.selectedAllergies.forEach(allergy => {
-        this.instructionsByAllergy[allergy.name] = byId[allergy.name] || '';
+        this.instructionsByAllergy[this.getAllergyKey(allergy)] =
+        byId[this.getAllergyKey(allergy)] || '';
       });
     } catch (error) {
       console.error('Error loading emergency instructions onboarding data:', error);
@@ -121,9 +122,9 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
 
   async saveAndContinue(): Promise<void> {
     // Warn if any allergy has no instruction filled in
-    const emptyInstructions = this.selectedAllergies.filter(
-      a => !(this.instructionsByAllergy[a.name] || '').trim()
-    );
+  const emptyInstructions = this.selectedAllergies.filter(
+  allergy => !(this.instructionsByAllergy[this.getAllergyKey(allergy)] || '').trim()
+);
 
     if (emptyInstructions.length > 0) {
       const confirmed = await this.confirmSkipInstructions(emptyInstructions);
@@ -142,14 +143,14 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
       const tasks = this.selectedAllergies
         .map(allergy => ({
           allergy,
-          instruction: (this.instructionsByAllergy[allergy.name] || '').trim()
+          instruction: (this.instructionsByAllergy[this.getAllergyKey(allergy)] || '').trim()
         }))
         .filter(item => item.instruction.length > 0)
         .map(item =>
           this.medicalService.setEmergencyInstructionForAllergy(
             currentUser.uid,
-            item.allergy.name,
-            item.allergy.label,
+            this.getAllergyKey(item.allergy),
+            item.allergy.value || item.allergy.label,
             item.instruction
           )
         );
@@ -214,4 +215,8 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
     });
     await toast.present();
   }
+
+  getAllergyKey(allergy: SelectedAllergy): string {
+  return `${allergy.name}-${allergy.value || allergy.label}`;
+}
 }

@@ -174,6 +174,10 @@ export class BuddyService {
       throw new Error('Target user data is invalid.');
     }
 
+    if (currentUser.uid === targetUser.uid) {
+      throw new Error('You cannot invite yourself as a buddy.')
+    }
+
     const hasReachedLimit = await this.hasReachedBuddyLimit(currentUser.uid);
 
     if (hasReachedLimit) {
@@ -291,6 +295,11 @@ export class BuddyService {
 
     const senderUid = invitation.fromUserId;
     const receiverUid = currentUserId;
+    
+    if (senderUid === receiverUid) {
+      throw new Error('Invalid buddy relation.');
+    }
+    
     const acceptedAt = new Date();
 
     await updateDoc(receivedInviteRef, {
@@ -441,12 +450,15 @@ export class BuddyService {
     );
 
     const snap = await getDocs(q);
-
-    return snap.docs.map(docSnap => ({
+    
+    return snap.docs
+      .map(docSnap => ({
       id: docSnap.id,
       ...docSnap.data(),
       isFromRelation: true
-    }));
+  }))
+  .filter((buddy: any) => buddy.buddyUid !== userId);
+
   }
 
   async getConnectedBuddies(userId: string): Promise<any[]> {

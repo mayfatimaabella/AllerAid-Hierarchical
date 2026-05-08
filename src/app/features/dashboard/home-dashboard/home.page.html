@@ -7,15 +7,6 @@
     <ion-title>AllerAid</ion-title>
 
     <ion-buttons slot="end">
-      <ion-chip
-        *ngIf="!hasBuddy"
-        color="warning"
-        class="no-buddy-chip"
-        [routerLink]="['/tabs/buddy']"
-        outline="true">
-        <ion-icon name="person-outline" color="warning"></ion-icon>
-        <ion-label>No buddy</ion-label>
-      </ion-chip>
 
       <ion-button fill="clear" [routerLink]="['/tabs/alerts']">
         <ion-icon name="warning"></ion-icon>

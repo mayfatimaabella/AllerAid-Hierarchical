@@ -50,8 +50,9 @@
         [autoGrow]="true"
         rows="3"
         placeholder="e.g. Use EpiPen immediately, call 911, go to nearest hospital…"
-        [(ngModel)]="instructionsByAllergy[allergy.name]"
-        [name]="'instruction-' + allergy.name">
+        [(ngModel)]="instructionsByAllergy[getAllergyKey(allergy)]"
+        [name]="'instruction-' + getAllergyKey(allergy)"
+        >
       </ion-textarea>
       <p class="instr-hint">Your buddy will see this during an emergency.</p>
     </div>

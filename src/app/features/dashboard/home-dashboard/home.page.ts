@@ -9,6 +9,7 @@ import { UserService } from '../../../core/services/user.service';
 import { AllergyService } from '../../../core/services/allergy.service';
 import { Subscription } from 'rxjs';
 import { doc, getDoc } from 'firebase/firestore';
+import { FirebaseService } from '../../../core/services/firebase.service';
 
 @Component({
   selector: 'app-home',
@@ -46,7 +47,7 @@ export class HomePage implements OnInit, OnDestroy {
   emergencyConfirmationTimeLeft: number = 5;
   
   private subscriptions: Subscription[] = [];
-  private db: any;
+ private db: any;
 
   constructor(
     private alertController: AlertController,
@@ -61,7 +62,10 @@ export class HomePage implements OnInit, OnDestroy {
     private userService: UserService,
     private allergyService: AllergyService,
   // private ehrService: EHRService
-  ) {}
+  private firebaseService: FirebaseService
+  ) {
+    this.db = this.firebaseService.getDb(); 
+  }
 
   async ngOnInit() {
     await this.loadUserData();
