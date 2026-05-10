@@ -121,6 +121,16 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
   }
 
   async saveAndContinue(): Promise<void> {
+    
+    console.log('instructionsByAllergy', this.instructionsByAllergy);
+    
+    this.selectedAllergies.forEach(allergy => {
+      const key = this.getAllergyKey(allergy);
+      console.log({allergy,generatedKey: key,storedValue: this.instructionsByAllergy[key]});
+    });
+
+
+
     // Warn if any allergy has no instruction filled in
   const emptyInstructions = this.selectedAllergies.filter(
   allergy => !(this.instructionsByAllergy[this.getAllergyKey(allergy)] || '').trim()
@@ -140,22 +150,23 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
         return;
       }
 
-      const tasks = this.selectedAllergies
-        .map(allergy => ({
-          allergy,
-          instruction: (this.instructionsByAllergy[this.getAllergyKey(allergy)] || '').trim()
-        }))
-        .filter(item => item.instruction.length > 0)
-        .map(item =>
-          this.medicalService.setEmergencyInstructionForAllergy(
-            currentUser.uid,
-            this.getAllergyKey(item.allergy),
-            item.allergy.value || item.allergy.label,
-            item.instruction
-          )
-        );
+const emergencyInstructions = this.selectedAllergies
+  .map(allergy => {
+    const allergyId = this.getAllergyKey(allergy);
+    const instruction =
+      (this.instructionsByAllergy[allergyId] || '').trim();
 
-      await Promise.all(tasks);
+    return {
+      allergyId,
+      allergyName: allergy.value || allergy.label,
+      instruction
+    };
+  })
+  .filter(item => item.instruction.length > 0);
+
+await this.medicalService.saveEmergencySettings(currentUser.uid, {
+  emergencyInstructions
+});
 
       await this.showToast('Emergency instructions saved.', 'success');
       await this.router.navigate(['/buddy-setup-onboarding'], { replaceUrl: true });
@@ -195,8 +206,16 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
   }
 
   async skipForNow(): Promise<void> {
-    const confirmed = await this.confirmSkipInstructions(this.selectedAllergies);
+  const emptyInstructions = this.selectedAllergies.filter(
+    allergy => !(this.instructionsByAllergy[this.getAllergyKey(allergy)] || '').trim()
+  );
+
+
+  if (emptyInstructions.length > 0) {
+    const confirmed = await this.confirmSkipInstructions(emptyInstructions);
     if (!confirmed) return;
+  }
+
 
     try {
       await this.router.navigate(['/buddy-setup-onboarding'], { replaceUrl: true });

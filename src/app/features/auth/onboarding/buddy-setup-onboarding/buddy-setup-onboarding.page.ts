@@ -579,7 +579,7 @@ private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<
   getInviteButtonLabel(status: InviteStatus | null): string {
     if (status === 'sent') return 'Saved';
     if (status === 'already_exists') return 'Already Connected';
-    return 'Save Request';
+    return 'Save Secondary Buddy';
   }
 
   isInviteButtonDisabled(status: InviteStatus | null, isSending: boolean): boolean {

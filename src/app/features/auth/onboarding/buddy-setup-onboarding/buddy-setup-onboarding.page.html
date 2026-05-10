@@ -143,12 +143,18 @@
     </div>
 
     <!-- SECONDARY BUDDY TOGGLE -->
-    <button class="add-secondary" (click)="includeSecondary = !includeSecondary">
+    <button class="add-secondary" [disabled]="!foundBuddy || !primaryRelationship" (click)="includeSecondary = !includeSecondary">
       <div class="add-icon">
         <ion-icon [name]="includeSecondary ? 'remove-outline' : 'add-outline'"></ion-icon>
       </div>
       <span>{{ includeSecondary ? 'Remove secondary buddy' : 'Add secondary buddy instead' }}</span>
     </button>
+
+    <p
+  class="skip-hint"
+  *ngIf="!foundBuddy || !primaryRelationship">
+  Add a primary buddy first before adding a secondary buddy.
+</p>
 
     <!-- SECONDARY BUDDY -->
     <div *ngIf="includeSecondary" class="buddy-card secondary-card">
@@ -251,7 +257,7 @@
   <div class="buddy-header">
     <div class="buddy-avatar fallback">!</div>
     <div class="buddy-header-text">
-      <span class="buddy-type">Emergency fallback</span>
+      <span class="buddy-type">Emergency Backup</span>
       <span class="buddy-badge optional">Recommended</span>
     </div>
   </div>
@@ -307,7 +313,7 @@
     </div>
 
     <div class="field custom-hotline-field">
-      <label class="field-label">Custom hotline optional</label>
+      <label class="field-label">Other Hotline (Optional)l</label>
       <ion-input
         class="field-input"
         type="tel"
@@ -324,7 +330,7 @@
     (click)="saveFallbackAndContinue()"
     [disabled]="isSaving">
     <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
-    <span *ngIf="!isSaving">Continue with Fallback</span>
+    <span *ngIf="!isSaving">Save & Continue</span>
   </ion-button>
 </div>
 

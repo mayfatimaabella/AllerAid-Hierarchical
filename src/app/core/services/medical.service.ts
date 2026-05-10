@@ -210,23 +210,32 @@ export class MedicalService {
   }
 
 
-  /**
-   * Save complete emergency settings
-   */
-  async saveEmergencySettings(uid: string, settings: any): Promise<void> {
-    try {
-      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
-      await updateDoc(medicalRef, {
+/**
+ * Save complete emergency settings
+ */
+async saveEmergencySettings(uid: string, settings: any): Promise<void> {
+  try {
+    const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+
+    await setDoc(
+      medicalRef,
+      {
         emergencySettings: settings,
+
+        // Save emergency instructions together
+        emergencyInstructions: settings.emergencyInstructions || [],
+
         updatedAt: new Date()
-      });
-      
-      console.log('Emergency settings saved successfully');
-    } catch (error) {
-      console.error('Error saving emergency settings:', error);
-      throw error;
-    }
+      },
+      { merge: true }
+    );
+
+    console.log('Emergency settings saved successfully');
+  } catch (error) {
+    console.error('Error saving emergency settings:', error);
+    throw error;
   }
+}
 
   /**
    * Get complete emergency data for alerts (instruction + message + location)
