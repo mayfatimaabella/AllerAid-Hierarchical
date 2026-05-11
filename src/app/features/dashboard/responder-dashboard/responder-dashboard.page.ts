@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, Input } from '@angular/core';
 import { ModalController, NavController, AlertController, ToastController } from '@ionic/angular';
 import { AllergyService } from '../../../core/services/allergy.service';
-import { MedicalService } from '../../../core/services/medical.service';
+import { MedicalService } from '../../../core/services/medical.profile.service';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
 import { Router } from '@angular/router';

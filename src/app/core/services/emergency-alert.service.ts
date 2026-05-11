@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { MedicalService } from './medical.service';
+import { MedicalService } from './medical.profile.service';
 import { BuddyService } from './buddy.service';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';

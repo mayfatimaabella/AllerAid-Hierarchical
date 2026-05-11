@@ -38,21 +38,22 @@ export class BuddyEditModalComponent implements OnInit {
   }
 
   async populateBuddyProfileContact() {
-    try {
-      this.isLoadingContact = true;
-      const buddyProfile = await this.userService.getUserProfile(this.buddy.connectedUserId);
-      
-      if (buddyProfile && buddyProfile.emergencyContactPhone) {
-        this.buddyProfileContact = buddyProfile.emergencyContactPhone;
-        this.editContact = buddyProfile.emergencyContactPhone;
-        this.contactAutoPopulated = true;
-      }
-    } catch (error) {
-      console.error('Error fetching buddy profile contact:', error);
-      // Silently fail - contact field just stays empty
-    } finally {
-      this.isLoadingContact = false;
+  try {
+    this.isLoadingContact = true;
+
+    const buddyProfileDetails =
+      await this.userService.getUserProfileDetails(this.buddy.connectedUserId);
+
+    if (buddyProfileDetails?.phone) {
+      this.buddyProfileContact = buddyProfileDetails.phone;
+      this.editContact = buddyProfileDetails.phone;
+      this.contactAutoPopulated = true;
     }
+  } catch (error) {
+    console.error('Error fetching buddy profile contact:', error);
+  } finally {
+    this.isLoadingContact = false;
+  }
   }
 
   saveEdit() {

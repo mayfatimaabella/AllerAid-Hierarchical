@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService, UserProfile } from '../../../core/services/user.service';
 import { AllergyService } from '../../../core/services/allergy.service';
-import { MedicalService } from '../../../core/services/medical.service';
+import { MedicalService } from '../../../core/services/medical.profile.service';
 import { EHRService } from '../../../core/services/ehr.service';
 import { AllergyManagerService } from '../../../core/services/allergy-manager.service';
 
@@ -67,25 +67,50 @@ export class ProfileDataLoaderService {
   /**
    * Load user profile and allergies
    */
-  async loadUserProfile(): Promise<{
-    userProfile: UserProfile | null;
-    userAllergies: any[];
-  }> {
-    try {
-      const currentUser = await this.authService.waitForAuthInit();
-      if (!currentUser) return { userProfile: null, userAllergies: [] };
+async loadUserProfile(): Promise<{
+  userProfile: UserProfile | null;
+  userAllergies: any[];
+}> {
+  try {
+    const currentUser = await this.authService.waitForAuthInit();
 
-      const userProfile = await this.userService.getUserProfile(currentUser.uid);
-      if (!userProfile) return { userProfile: null, userAllergies: [] };
-
-      const userAllergies = await this.allergyManager.loadUserAllergies();
-      return { userProfile, userAllergies };
-    } catch (error) {
-      console.error('Error loading user profile:', error);
-      return { userProfile: null, userAllergies: [] };
+    if (!currentUser) {
+      return {
+        userProfile: null,
+        userAllergies: []
+      };
     }
-  }
 
+    const userProfile = await this.userService.getUserProfile(currentUser.uid);
+
+    if (!userProfile) {
+      return {
+        userProfile: null,
+        userAllergies: []
+      };
+    }
+
+    const medicalInfo =
+      await this.userService.getUserMedicalInfo(currentUser.uid);
+
+    const userAllergies = Array.isArray(medicalInfo?.allergies)
+      ? medicalInfo.allergies.filter((a: any) => a.checked)
+      : [];
+
+    return {
+      userProfile,
+      userAllergies
+    };
+
+  } catch (error) {
+    console.error('Error loading user profile:', error);
+
+    return {
+      userProfile: null,
+      userAllergies: []
+    };
+  }
+}
   /**
    * Load medical data (doctor visits, medical history, EHR)
    */

@@ -220,6 +220,11 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
           this.secondaryInviteStatus = existing.secondaryBuddy.inviteStatus as InviteStatus;
         }
       }
+
+      // Restore fallback visibility if the user previously skipped buddy setup
+      if (existing.skippedBuddySetup) {
+        this.showFallback = true;
+      }
     } catch (error) {
       console.error('Error loading buddy setup onboarding:', error);
     } finally {
@@ -227,25 +232,25 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
     }
   }
 
-private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<void> {
-  const currentUserProfile = await this.userService.getUserProfile(currentUserUid);
-  if (!currentUserProfile?.email) return;
+  private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<void> {
+    const currentUserProfile = await this.userService.getUserProfile(currentUserUid);
+    if (!currentUserProfile?.email) return;
 
-  this.invitationUnsubscribe?.();
-  this.buddyRelationsSubscription?.unsubscribe();
+    this.invitationUnsubscribe?.();
+    this.buddyRelationsSubscription?.unsubscribe();
 
-  this.invitationUnsubscribe = this.buddyService.listenForBuddyInvitations(currentUserUid);
+    this.invitationUnsubscribe = this.buddyService.listenForBuddyInvitations(currentUserUid);
 
-  this.buddyRelationsSubscription =
-    this.buddyService.buddyRelations$.subscribe(relations => {
-      if (
-        this.foundBuddy &&
-        relations.some((r: any) => r.buddyUid === this.foundBuddy.uid)
-      ) {
-        this.primaryInviteStatus = 'accepted';
-      }
-    });
-}
+    this.buddyRelationsSubscription =
+      this.buddyService.buddyRelations$.subscribe(relations => {
+        if (
+          this.foundBuddy &&
+          relations.some((r: any) => r.buddyUid === this.foundBuddy.uid)
+        ) {
+          this.primaryInviteStatus = 'accepted';
+        }
+      });
+  }
 
   async searchBuddyByEmail(): Promise<void> {
     const email = this.buddySearchEmail.trim().toLowerCase();
@@ -352,11 +357,6 @@ private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<
         `${currentUserProfile.firstName} wants you as their emergency buddy on AllerAid.`
       );
 
-      await this.userService.updateProfileDetails(currentUser.uid, {
-        emergencyContactName: this.primaryBuddy.fullName,
-        emergencyContactPhone: this.primaryBuddy.contactNumber || null
-      });
-
       this.primaryInviteStatus = 'sent';
       await this.showToast('Buddy request sent successfully.', 'success');
       return true;
@@ -446,13 +446,11 @@ private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<
         return;
       }
 
-      // Send invite for a found (registered) buddy if not already sent
       if (this.foundBuddy && this.primaryInviteStatus !== 'sent') {
         const inviteSent = await this.sendPrimaryInvite();
         if (!inviteSent) return;
       }
 
-      // Save external invite data if applicable
       if (this.isExternalBuddy) {
         const email = this.externalInvite.email.trim().toLowerCase();
         const phone = this.externalInvite.phone.trim();
@@ -465,7 +463,6 @@ private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<
         await this.sendExternalInviteLink();
       }
 
-      // Persist buddy setup data
       await setDoc(
         doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
         {
@@ -501,20 +498,9 @@ private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<
         { merge: true }
       );
 
-      // Update emergency contact on the user profile
-      if (this.foundBuddy) {
-        await this.userService.updateProfileDetails(currentUser.uid, {
-          emergencyContactName: this.primaryBuddy.fullName,
-          emergencyContactPhone: this.primaryBuddy.contactNumber || null,
-        });
-      }
-
-      // Only mark onboarding complete when a real buddy invite was sent
-      // (not for pending external invites — those are unconfirmed)
       if (this.foundBuddy && this.primaryInviteStatus === 'sent') {
         await this.userService.markAllergyOnboardingCompleted(currentUser.uid);
       } else if (this.isExternalBuddy) {
-        // Mark completed so the user isn't trapped, but log the pending state
         console.log('Marking onboarding complete with pending external invite');
         await this.userService.markAllergyOnboardingCompleted(currentUser.uid);
       }
@@ -646,8 +632,13 @@ private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<
     await toast.present();
   }
 
+  /**
+   * Reveals the fallback section and persists skippedBuddySetup flag.
+   * Scrolls to the fallback card so the user sees it immediately.
+   */
   skipBuddySetup(): void {
     this.showFallback = true;
+
     setTimeout(() => {
       const el = document.querySelector('.fallback-card');
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -664,52 +655,93 @@ private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<
     return hasContact || hasHotline;
   }
 
-async saveFallbackAndContinue(): Promise<void> {
-  if (!this.hasFallback()) {
-    await this.showToast('Please add at least one trusted contact or hotline.', 'warning');
-    return;
-  }
-
-  try {
-    this.isSaving = true;
-
-    const currentUser = await this.authService.waitForAuthInit();
-
-    if (!currentUser) {
-      await this.showToast('You must be logged in.', 'danger');
+  async saveFallbackAndContinue(): Promise<void> {
+    if (!this.hasFallback()) {
+      await this.showToast('Please add at least one trusted contact or hotline.', 'warning');
       return;
     }
 
-    await setDoc(
-      doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
-      {
-        fallbackEmergencySetup: {
-          trustedContact: {
-            name: this.fallbackContact.name.trim(),
-            phone: this.fallbackContact.phone.trim(),
+    try {
+      this.isSaving = true;
+
+      const currentUser = await this.authService.waitForAuthInit();
+
+      if (!currentUser) {
+        await this.showToast('You must be logged in.', 'danger');
+        return;
+      }
+
+      await setDoc(
+        doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
+        {
+          fallbackEmergencySetup: {
+            trustedContact: {
+              name: this.fallbackContact.name.trim(),
+              phone: this.fallbackContact.phone.trim(),
+            },
+            enabledHotlines: this.hotlines.filter(h => h.enabled),
+            customHotline: this.fallbackContact.customHotline.trim(),
+            updatedAt: new Date(),
           },
-          enabledHotlines: this.hotlines.filter(h => h.enabled),
-          customHotline: this.fallbackContact.customHotline.trim(),
-          updatedAt: new Date(),
+          buddySetupOnboarding: {
+            skippedBuddySetup: true,
+            fallbackUsed: true,
+            skippedAt: new Date(),
+            updatedAt: new Date(),
+          },
         },
-        buddySetupOnboarding: {
-          skippedBuddySetup: true,
-          fallbackUsed: true,
-          updatedAt: new Date(),
-        },
-      },
-      { merge: true }
-    );
+        { merge: true }
+      );
 
-    await this.userService.markAllergyOnboardingCompleted(currentUser.uid);
-    await this.showToast('Fallback emergency setup saved.', 'success');
-    await this.router.navigate(['/tabs/home'], { replaceUrl: true });
+      await this.userService.markAllergyOnboardingCompleted(currentUser.uid);
+      await this.showToast('Fallback emergency setup saved.', 'success');
+      await this.router.navigate(['/tabs/home'], { replaceUrl: true });
 
-  } catch (error) {
-    console.error('Error saving fallback setup:', error);
-    await this.showToast('Failed to save fallback setup.', 'danger');
-  } finally {
-    this.isSaving = false;
+    } catch (error) {
+      console.error('Error saving fallback setup:', error);
+      await this.showToast('Failed to save fallback setup.', 'danger');
+    } finally {
+      this.isSaving = false;
+    }
   }
-}
+
+  /**
+   * Last-resort skip: user completes onboarding without any buddy or fallback.
+   * Persists a flag so the home screen / profile can nudge them later.
+   */
+  async finishWithoutBuddy(): Promise<void> {
+    try {
+      this.isSaving = true;
+
+      const currentUser = await this.authService.waitForAuthInit();
+
+      if (!currentUser) {
+        await this.showToast('You must be logged in.', 'danger');
+        return;
+      }
+
+      await setDoc(
+        doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
+        {
+          buddySetupOnboarding: {
+            skippedBuddySetup: true,
+            fallbackUsed: false,
+            skippedAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+        { merge: true }
+      );
+
+      await this.userService.markAllergyOnboardingCompleted(currentUser.uid);
+      await this.showToast('Setup complete. Add a buddy anytime from your profile.', 'success');
+      await this.router.navigate(['/tabs/home'], { replaceUrl: true });
+
+    } catch (error) {
+      console.error('Error finishing without buddy:', error);
+      await this.showToast('Something went wrong. Please try again.', 'danger');
+    } finally {
+      this.isSaving = false;
+    }
+  }
 }

@@ -36,7 +36,6 @@
   <div *ngIf="!isLoading && allergyOptions.length > 0" class="body-content">
     <p class="section-label">Select all that apply</p>
 
-    <!-- Unified loop for all options -->
     <div
       *ngFor="let allergy of allergyOptions"
       class="allergy-chip"
@@ -58,7 +57,6 @@
         (click)="$event.stopPropagation()">
       </ion-input>
 
-      <!-- Remove button — inside the loop so 'allergy' is in scope -->
       <ion-button
         *ngIf="allergy.category === 'other' && allergy.hasInput"
         fill="clear"
@@ -86,11 +84,28 @@
 
   <!-- Footer CTA -->
   <div class="onboarding-footer" *ngIf="!isLoading && allergyOptions.length > 0">
-    <ion-button class="btn-main" expand="block" (click)="submitAllergies()" [disabled]="isSaving">
+
+    <ion-button
+      class="btn-main"
+      expand="block"
+      (click)="submitAllergies()"
+      [disabled]="isSaving">
       <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
       <span *ngIf="!isSaving">Save &amp; Continue</span>
       <ion-icon *ngIf="!isSaving" name="arrow-forward-outline" slot="end"></ion-icon>
     </ion-button>
+
+    <!-- Skip: only shown when nothing is selected -->
+    <div *ngIf="!hasAnySelected" class="skip-area">
+      <button class="btn-skip-subtle" (click)="confirmNoAllergies()" [disabled]="isSaving">
+        <ion-icon name="shield-checkmark-outline" class="skip-icon"></ion-icon>
+        I have no known allergies
+      </button>
+      <p class="skip-hint">
+        You can always add allergies later from your profile.
+      </p>
+    </div>
+
   </div>
 
 </ion-content>

@@ -271,10 +271,10 @@ export class BuddyDetailsModalComponent implements OnInit {
   async populateBuddyProfileContact() {
     try {
       this.isLoadingContact = true;
-      const buddyProfile = await this.userService.getUserProfile(this.buddy.connectedUserId);
+      const buddyProfileDetails = await this.userService.getUserProfileDetails(this.buddy.connectedUserId);
       
-      if (buddyProfile && buddyProfile.emergencyContactPhone) {
-        this.displayedContact = buddyProfile.emergencyContactPhone;
+      if (buddyProfileDetails?.phone) {
+        this.displayedContact = buddyProfileDetails.phone;
         this.contactAutoPopulated = true;
       }
     } catch (error) {

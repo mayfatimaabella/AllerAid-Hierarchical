@@ -40,19 +40,20 @@
         <ion-avatar class="profile-avatar">
           <!-- kuha avatar sa firebase or default avatar -->
           <img alt="person-avatar"
-               [src]="vm.profile?.avatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
+               [src]="vm.profile?.profile_picture || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
         </ion-avatar>
         
         <!-- if naa profile kay i name siya as profile para di na sige ug vm.profile -->
         <ng-container *ngIf="vm.profile as profile">
-
           <div class="profile-info">
             <!-- kuha name sa emergency message, profile or default -->
-            <div class="profile-name">
+             <div class="profile-name">
               {{ (vm.emergencyMessage?.name || profile.fullName || 'User') }}
             </div>
+            <div class="profile-email">
+              {{ profile.email || '' }}
+            </div>
           </div>
-
         </ng-container>
 
       </div>
@@ -156,8 +157,6 @@
             [userAllergies]="vm.allergies || []"
             [instructionEntries]="getEmergencyInstructionEntries()"
             [emergencyLocation]="(vm.emergencyMessage?.location || 'Map Location')"
-            [emergencyContactName]="vm.profile?.emergencyContactName || ''"
-            [emergencyContactPhone]="vm.profile?.emergencyContactPhone || ''"
             [dateOfBirth]="vm.profile?.dateOfBirth || ''"
             [bloodType]="vm.profile?.bloodType || ''"
             [openEditEmergencyMessageModal]="openEditProfileModal"

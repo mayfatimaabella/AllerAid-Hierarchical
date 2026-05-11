@@ -9,7 +9,7 @@ import {
 } from '@ionic/angular';
 
 import { UserProfile } from '../../core/services/user.service';
-import { EmergencyMessage } from '../../core/services/medical.service';
+import { EmergencyMessage } from '../../core/services/medical.profile.service';
 import { Medication } from '../../core/services/medication.service';
 
 import { AllergyManagerService } from '../../core/services/allergy-manager.service';
@@ -428,4 +428,9 @@ export class ProfilePage implements OnInit, OnDestroy {
 
     this.activeModal = null;
   }
+
+    getAllergensCount(): number {
+  return this.userAllergies?.length || 0;
+}
+
 }

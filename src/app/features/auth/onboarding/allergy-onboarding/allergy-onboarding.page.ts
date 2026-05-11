@@ -3,8 +3,10 @@ import { Router } from '@angular/router';
 import { AllergyService } from '../../../../core/services/allergy.service';
 import { UserService } from '../../../../core/services/user.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { Platform, ToastController } from '@ionic/angular';
+import { Platform, ToastController, AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { doc, setDoc } from 'firebase/firestore';
+import { FirebaseService } from '../../../../core/services/firebase.service';
 
 @Component({
   selector: 'app-allergy-onboarding',
@@ -22,6 +24,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
   readonly MAX_CUSTOM_ALLERGENS = 3;
 
   private backButtonSubscription?: Subscription;
+  private db;
 
   constructor(
     private router: Router,
@@ -29,8 +32,12 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
     private userService: UserService,
     private authService: AuthService,
     private platform: Platform,
-    private toastController: ToastController
-  ) {}
+    private toastController: ToastController,
+    private alertController: AlertController,
+    private firebaseService: FirebaseService,
+  ) {
+    this.db = this.firebaseService.getDb();
+  }
 
   ngOnInit() {
     this.loadAllergyOptions();
@@ -137,7 +144,6 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       'soy',
     ]);
 
-    // Exclude reserved generic names — the Add button handles custom entries
     const reservedOtherNames = new Set(['other', 'others']);
 
     this.commonAllergens = this.allergyOptions.filter(o =>
@@ -155,6 +161,11 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
 
   get canAddMoreAllergens(): boolean {
     return this.customAllergenCount < this.MAX_CUSTOM_ALLERGENS;
+  }
+
+  /** True when at least one allergy chip is checked — controls skip visibility */
+  get hasAnySelected(): boolean {
+    return this.allergyOptions.some(a => a.checked);
   }
 
   addOtherOption() {
@@ -206,7 +217,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
 
     if (!hasSelectedAllergies) {
       await this.presentToast(
-        'Please select at least one allergy or add "No Allergies".',
+        'Please select at least one allergy or use "I have no known allergies".',
         'warning'
       );
       this.isSaving = false;
@@ -235,7 +246,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
             name: allergy.name,
             label: allergy.hasInput && inputValue ? inputValue : allergy.label,
             checked: true,
-            value: inputValue ?? null,
+            ...(inputValue ? { value: inputValue } : {})
           };
         });
 
@@ -258,10 +269,9 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       if (!currentUser) {
         throw new Error('No authenticated user found. Cannot save allergies.');
       }
-      
+
       const checkedAllergies = this.allergyOptions.filter(allergy => allergy.checked);
 
-      // Catch all user-added custom chips by category + hasInput
       const customAllergies = checkedAllergies.filter(allergy =>
         allergy.value &&
         allergy.hasInput &&
@@ -279,23 +289,77 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
           category: 'other',
         });
       }
-      
-      const sanitizedAllergies = checkedAllergies.map(allergy => {
-      const inputValue = allergy.value?.trim() ?? null;
-      return {
-        name: allergy.name,
-        label: allergy.hasInput && inputValue ? inputValue : allergy.label,
-        checked: true,
-        value: inputValue ?? null,
-      };
-    });
 
-    await this.allergyService.saveUserAllergies(currentUser.uid, sanitizedAllergies);
+      const sanitizedAllergies = checkedAllergies.map(allergy => {
+        const inputValue = allergy.value?.trim() ?? null;
+        return {
+          name: allergy.name,
+          label: allergy.hasInput && inputValue ? inputValue : allergy.label,
+          checked: true,
+          ...(inputValue ? { value: inputValue } : {})
+        };
+      });
+
+      await this.allergyService.saveUserAllergies(currentUser.uid, sanitizedAllergies);
       await this.presentToast('Allergies saved successfully!', 'success', 2000);
     } catch (error) {
       console.error('Error saving allergies:', error);
       await this.presentToast('Failed to save allergies.', 'danger');
       throw error;
+    }
+  }
+
+  /**
+   * Shown when no allergy chips are selected.
+   * Confirms the user genuinely has no known allergies,
+   * persists a skip flag, then moves forward.
+   */
+  async confirmNoAllergies(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'No known allergies?',
+      message:
+        'We\'ll mark this step as complete. You can always add allergies later from your profile.',
+      backdropDismiss: false,
+      buttons: [
+        { text: 'Go back', role: 'cancel' },
+        { text: 'Yes, continue', role: 'confirm' },
+      ],
+    });
+
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    if (role !== 'confirm') return;
+
+    try {
+      this.isSaving = true;
+
+      const currentUser = await this.authService.waitForAuthInit();
+      if (!currentUser) {
+        await this.presentToast('Session expired. Please log in again.', 'danger');
+        return;
+      }
+
+      // Persist skip intent so the profile screen can surface a nudge later
+      await setDoc(
+        doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
+        {
+          allergyOnboarding: {
+            skipped: true,
+            skippedAt: new Date(),
+            reason: 'no_known_allergies',
+          },
+        },
+        { merge: true }
+      );
+
+      await this.router.navigate(['/emergency-instructions-onboarding'], {
+        replaceUrl: true,
+      });
+    } catch (error) {
+      console.error('Error persisting no-allergy skip:', error);
+      await this.presentToast('Something went wrong. Please try again.', 'danger');
+    } finally {
+      this.isSaving = false;
     }
   }
 }

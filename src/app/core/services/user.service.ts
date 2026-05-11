@@ -22,10 +22,8 @@ export interface UserProfile {
   lastName: string;
   fullName: string;
   role: string;
-  avatar?: string;
+  profile_picture?: string;
   phone?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
   dateOfBirth?: string;
   bloodType?: string;
   
@@ -68,11 +66,10 @@ export interface UserProfile {
 
 export interface ProfileDetails {
   phone: string | null;
-  avatar: string | null;
+  profile_picture: string | null;
   dateOfBirth: string | null;
   bloodType: string | null;
-  emergencyContactName: string | null;
-  emergencyContactPhone: string | null;
+
 }
 
 export interface MedicalInfo {
@@ -124,18 +121,15 @@ export class UserService {
       // Profile subcollection
       await setDoc(doc(this.db, 'users', uid, 'profile', 'details'), {
         phone: userData.phone ?? null,
-        avatar: null,
+        profile_picture: null,
         dateOfBirth: null,
         bloodType: null,
         gender: null,
-        emergencyContactName: null,
-        emergencyContactPhone: null
       });
 
       // Medical subcollection
       await setDoc(doc(this.db, 'users', uid, 'medical', 'info'), {
         allergies: [],
-        emergencyMessage: null,
         allergyOnboardingCompleted: false
       });
 
@@ -253,7 +247,7 @@ export class UserService {
       const settingsUpdates: any = {};
 
       const baseFields = ['email', 'firstName', 'lastName', 'fullName', 'role', 'isActive'];
-      const profileFields = ['phone', 'avatar', 'dateOfBirth', 'bloodType', 'emergencyContactName', 'emergencyContactPhone'];
+      const profileFields = ['phone', 'profile_picture', 'dateOfBirth', 'bloodType'];
       const professionalFields = ['license', 'specialty', 'hospital', 'licenseURL'];
 
       for (const [key, value] of Object.entries(updates)) {
@@ -498,12 +492,9 @@ export class UserService {
       if (medicalInfo?.allergyOnboardingCompleted) {
         return true;
       }
-      
-  // Fallback: check if user has any allergies saved
-  // TODO: Implement getUserAllergies or remove this check
-  // const userAllergies = await this.getUserAllergies(uid);
-  // return userAllergies.length > 0;
-  return false;
+
+      const allergies = Array.isArray(medicalInfo?.allergies) ? medicalInfo.allergies : [];
+      return allergies.length > 0;
     } catch (error) {
       console.error('Error checking allergy onboarding status:', error);
       return false;
@@ -524,25 +515,25 @@ export class UserService {
   }
 
 
-  // Update user avatar
-  async updateUserAvatar(uid: string, avatarUrl: string): Promise<void> {
+  // Update user profile_picture
+  async updateUserprofile_picture(uid: string, profile_pictureUrl: string): Promise<void> {
     try {
       await setDoc(doc(this.db, 'users', uid, 'profile', 'details'), {
-        avatar: avatarUrl
+        profile_picture: profile_pictureUrl
       }, { merge: true });
-      console.log('User avatar updated successfully');
+      console.log('User profile_picture updated successfully');
     } catch (error) {
-      console.error('Error updating user avatar:', error);
+      console.error('Error updating user profile_picture:', error);
       throw error;
     }
   }
 
-  // Upload user avatar to storage and update profile
-  async uploadUserAvatar(uid: string, file: File): Promise<string> {
+  // Upload user profile_picture to storage and update profile
+  async uploadUserprofile_picture(uid: string, file: File): Promise<string> {
     try {
       console.log('UserService: Starting upload', { uid, fileName: file.name, size: file.size });
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '_');
-      const storagePath = `avatars/${uid}/${Date.now()}_${safeName}`;
+      const storagePath = `profile_pictures/${uid}/${Date.now()}_${safeName}`;
       console.log('UserService: Storage path:', storagePath);
       
       const storageRef = ref(this.storage, storagePath);
@@ -557,12 +548,12 @@ export class UserService {
       const downloadUrl = await getDownloadURL(snapshot.ref);
       console.log('UserService: Download URL obtained:', downloadUrl);
       
-      await this.updateUserAvatar(uid, downloadUrl);
+      await this.updateUserprofile_picture(uid, downloadUrl);
       console.log('UserService: Profile updated successfully');
       return downloadUrl;
     } catch (error) {
       console.error('UserService: Upload failed:', error);
-      console.error('Error uploading user avatar:', error);
+      console.error('Error uploading user profile_picture:', error);
       throw error;
     }
   }
@@ -584,4 +575,3 @@ export class UserService {
     }
   }
 }
-

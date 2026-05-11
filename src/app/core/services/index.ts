@@ -9,7 +9,7 @@ export { EmergencyAlertService } from './emergency-alert.service';
 export { EmergencyDetectorService } from './emergency-detector.service';
 export { EmergencyNotificationService } from './emergency-notification.service';
 export { VoiceRecordingService, VoiceRecording, AudioSettings } from './voice-recording.service';
-export { MedicalService, EmergencyMessage } from './medical.service';
+export { MedicalService, EmergencyMessage } from './medical.profile.service';
 export { MedicationService, Medication } from './medication.service';
 export { ProductService } from './product.service';
 export { EHRService, DoctorVisit, MedicalHistory, HealthcareProvider, AccessRequest, DoctorPatient, AllergicReaction, TreatmentOutcome } from './ehr.service';

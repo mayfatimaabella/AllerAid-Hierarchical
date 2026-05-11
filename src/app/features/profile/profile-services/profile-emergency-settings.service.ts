@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
-import { MedicalService, EmergencyMessage } from '../../../core/services/medical.service';
+import { MedicalService, EmergencyMessage } from '../../../core/services/medical.profile.service';
 import { UserService, UserProfile } from '../../../core/services/user.service';
 import { EditEmergencyProfileModalComponent } from '../overview/modals/edit-profile-message/edit-emergency-profile-modal.component';
 import { EmergencyDetectorService } from '../../../core/services/emergency-detector.service';
@@ -152,9 +152,9 @@ export class ProfileEmergencySettingsService {
       location: message?.location || ''
     };
 
-    const avatarValue = typeof message?.avatar === 'string'
+    const profileValue = typeof message?.avatar === 'string'
       ? message.avatar
-      : (userProfile?.avatar || '');
+      : (userProfile?.profile_picture || '');
 
     // Optimistic UI update
     onEmergencyMessageUpdate(emergencyMessage);
@@ -165,11 +165,9 @@ export class ProfileEmergencySettingsService {
         ...(parsedName.fullName ? { fullName: parsedName.fullName } : {}),
         ...(parsedName.firstName ? { firstName: parsedName.firstName } : {}),
         ...(parsedName.lastName ? { lastName: parsedName.lastName } : {}),
-        emergencyContactName: message?.emergencyContactName || '',
-        emergencyContactPhone: message?.emergencyContactPhone || '',
         dateOfBirth: message?.dateOfBirth || '',
         bloodType: message?.bloodType || '',
-        avatar: avatarValue
+        profile_picture: profileValue
       });
     }
     
@@ -183,11 +181,9 @@ export class ProfileEmergencySettingsService {
           ...(parsedName.fullName ? { fullName: parsedName.fullName } : {}),
           ...(parsedName.firstName ? { firstName: parsedName.firstName } : {}),
           ...(parsedName.lastName ? { lastName: parsedName.lastName } : {}),
-          emergencyContactName: message?.emergencyContactName || '',
-          emergencyContactPhone: message?.emergencyContactPhone || '',
           dateOfBirth: message?.dateOfBirth || '',
           bloodType: message?.bloodType || '',
-          avatar: avatarValue
+          profile_picture: profileValue
         });
         await loadMedicalData();
         this.showEditEmergencyMessageModal = false;
@@ -229,10 +225,8 @@ export class ProfileEmergencySettingsService {
         ...(parsedName.fullName ? { fullName: parsedName.fullName } : {}),
         ...(parsedName.firstName ? { firstName: parsedName.firstName } : {}),
         ...(parsedName.lastName ? { lastName: parsedName.lastName } : {}),
-        emergencyContactName: message?.emergencyContactName || '',
-        emergencyContactPhone: message?.emergencyContactPhone || '',
         dateOfBirth: message?.dateOfBirth || '',
-        bloodType: message?.bloodType || ''
+        bloodType: message?.bloodType || '',
       });
       await loadMedicalData();
       await presentToast('Emergency message saved successfully');

@@ -13,7 +13,11 @@
       <div class="emergency-section">
         <div class="emergency-label">EMERGENCY INFORMATION</div>
         <div class="emergency-value">
-          {{ userProfile?.emergencyContactPhone || 'Not specified' }}
+           <ng-container *ngIf="userProfile?.phone; else noPhone">
+            {{ userProfile?.phone }}
+           </ng-container>
+           <ng-template #noPhone><i>No phone number added </i></ng-template>
+
         </div>
       </div>
 
