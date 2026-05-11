@@ -31,6 +31,7 @@ export interface Medication {
   pillsPerDose: number;        
   durationDays: number;        
   startDate: string;           // ISO String
+  startTime?: string;
   endDate?: string;            
   expiryDate?: string;         // Treatment End Date (Auto-calculated)
   medicineExpiryDate: string;  // Physical shelf life of the medicine

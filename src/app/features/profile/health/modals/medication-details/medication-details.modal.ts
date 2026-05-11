@@ -13,67 +13,40 @@ export class MedicationDetailsModal {
   @Input() medication: any;
   @Input() isEmergencyMedicationFn?: (m: any) => boolean;
   @Input() isExpiringSoonFn?: (date?: string) => boolean;
+
   @Output() close = new EventEmitter<void>();
   @Output() edit = new EventEmitter<any>();
   @Output() delete = new EventEmitter<string | undefined>();
   @Output() statusChange = new EventEmitter<any>();
+  @Output() viewImage = new EventEmitter<string>(); 
 
   constructor(private actionSheetController: ActionSheetController) {}
 
   /**
-   * Checks if the physical medicine has expired (shelf-life).
+   * Helper to retrieve the Start Time for display beside the date.
    */
-  isMedicineExpired(): boolean {
-    if (!this.medication?.medicineExpiryDate) return false;
-    const expiry = new Date(this.medication.medicineExpiryDate);
-    return expiry < new Date();
+  getFormattedStartTime(): string {
+    return this.medication?.startTime || '';
   }
 
   /**
-   * Returns the current status label of the medication.
-   * Logic: If refillsRemaining is 0, it is 'Finished'.
+   * Returns a friendly unit label for the supply tracker.
    */
-  getStatusLabel(): string {
-    if (!this.medication) return '';
-
-    // 1. Check for treatment schedule expiry (End Date)
-    const isExpired = this.medication.expiryDate && new Date(this.medication.expiryDate) < new Date();
-    if (isExpired) return 'Expired';
-
-    // 2. Check current inventory (Live count)
-    const currentInventory = Number(this.medication.refillsRemaining ?? this.medication.quantity);
-
-    if (this.medication.isActive) {
-      if (!isNaN(currentInventory) && currentInventory <= 0) {
-        return 'Finished';
-      }
-      return 'Active';
-    }
-
-    return 'Inactive';
-  }
   getUnitType(): string {
-  const dosage = this.medication?.dosage?.toLowerCase() || '';
-  if (dosage.includes('puff')) return 'Puffs';
-  if (dosage.includes('ml')) return 'Amount (mL)';
-  if (dosage.includes('mg')) return 'Supply';
-  return 'Inventory'; // Fallback if it's not clear
-}
-
-  getStatusColor(): string {
-    const label = this.getStatusLabel();
-    return (label === 'Active') ? 'success' : 'danger';
+    const dosage = this.medication?.dosage?.toLowerCase() || '';
+    if (dosage.includes('puff')) return 'puffs';
+    if (dosage.includes('ml')) return 'ml';
+    if (dosage.includes('mg') || dosage.includes('tablet') || dosage.includes('pill')) return 'tablets';
+    return 'units'; 
   }
 
   /**
-   * This is the critical fix for your "Stuck at 18" issue.
-   * It prioritizes the 'refillsRemaining' value which holds the deducted count.
+   * Calculates the remaining supply based on quantity and refills.
    */
   calculateRemainingPills(): number {
     const med = this.medication;
     if (!med) return 0;
 
-    // Use refillsRemaining (the live deducted count) first
     const remainingValue = med.refillsRemaining !== undefined ? med.refillsRemaining : med.quantity;
 
     if (remainingValue === undefined || remainingValue === null) {
@@ -84,7 +57,41 @@ export class MedicationDetailsModal {
     return isNaN(amount) ? 0 : Math.max(Math.floor(amount), 0);
   }
 
-  // --- Helpers ---
+  /**
+   * Determines the status of the medication (Active, Finished, or Expired).
+   */
+  getStatusLabel(): string {
+    if (!this.medication) return '';
+
+    const currentInventory = this.calculateRemainingPills();
+    if (!isNaN(currentInventory) && currentInventory <= 0) {
+      return 'Finished';
+    }
+
+    const isExpired = this.medication.expiryDate && new Date(this.medication.expiryDate) < new Date();
+    if (isExpired) return 'Expired';
+
+    return this.medication.isActive ? 'Active' : 'Inactive';
+  }
+
+  getStatusColor(): string {
+    const label = this.getStatusLabel();
+    switch (label) {
+      case 'Active': return 'success';
+      case 'Finished':
+      case 'Expired': return 'danger';
+      default: return 'medium';
+    }
+  }
+
+  /**
+   * Checks if the medicine shelf-life date has passed.
+   */
+  isMedicineExpired(): boolean {
+    if (!this.medication?.medicineExpiryDate) return false;
+    const expiry = new Date(this.medication.medicineExpiryDate);
+    return expiry < new Date();
+  }
 
   isEmergency(): boolean {
     return this.isEmergencyMedicationFn ? !!this.isEmergencyMedicationFn(this.medication) : false;
@@ -94,34 +101,31 @@ export class MedicationDetailsModal {
     return this.isExpiringSoonFn ? !!this.isExpiringSoonFn(this.medication?.expiryDate) : false;
   }
 
+  /**
+   * Displays the action sheet for editing, toggling, or deleting.
+   */
   async presentMedicationActions(medication?: any): Promise<void> {
     const med = medication || this.medication;
     if (!med?.id) return;
 
     const actionSheet = await this.actionSheetController.create({
-      header: med.name || 'Medication',
+      header: med.name || 'Medication Options',
       buttons: [
         {
           text: 'Edit Medication',
           icon: 'create-outline',
-          handler: () => {
-            this.edit.emit(med);
-          }
+          handler: () => { this.edit.emit(med); }
         },
         {
-          text: med.isActive ? 'Deactivate Medication' : 'Activate Medication',
+          text: med.isActive ? 'Deactivate' : 'Activate',
           icon: med.isActive ? 'pause-circle-outline' : 'play-circle-outline',
-          handler: () => {
-            this.toggleStatus(med);
-          }
+          handler: () => { this.toggleStatus(med); }
         },
         {
-          text: 'Delete Medication',
+          text: 'Delete',
           role: 'destructive',
           icon: 'trash-outline',
-          handler: () => {
-            this.delete.emit(med.id);
-          }
+          handler: () => { this.delete.emit(med.id); }
         },
         {
           text: 'Cancel',
