@@ -20,6 +20,7 @@ export class AddMedicationModal implements OnInit {
     quantity: 0,
     refillsRemaining: 0,
     startDate: new Date().toISOString(),
+    startTime: '', 
     medicineExpiryDate: new Date().toISOString(), 
     notes: '',
     category: 'other',
@@ -49,6 +50,11 @@ export class AddMedicationModal implements OnInit {
       if (this.med.startDate) {
         this.med.startDate = new Date(this.med.startDate).toISOString();
       }
+      
+      if (!this.med.startTime && this.med.startDate) {
+         this.extractStartTimeFromDate();
+      }
+
       if (this.med.medicineExpiryDate) {
         this.med.medicineExpiryDate = new Date(this.med.medicineExpiryDate).toISOString();
       }
@@ -61,10 +67,14 @@ export class AddMedicationModal implements OnInit {
     } else {
       this.med.startDate = this.todayISO;
       this.med.medicineExpiryDate = this.todayISO;
+      this.extractStartTimeFromDate(); 
       this.onDateOrIntervalChange();
     }
   }
 
+  /**
+   * Getter for Dynamic Input Labels (Fixes TS2339: amountLabel)
+   */
   get amountLabel(): string {
     switch (this.med.medicationType) {
       case 'liquid': return 'Amount (ml)';
@@ -76,6 +86,9 @@ export class AddMedicationModal implements OnInit {
     }
   }
 
+  /**
+   * Handles unit updates when type changes (Fixes TS2339: onTypeChange)
+   */
   onTypeChange() {
     const unitMap: Record<string, string> = {
       tablet: 'tablet(s)',
@@ -95,11 +108,15 @@ export class AddMedicationModal implements OnInit {
     this.onDateOrIntervalChange();
   }
 
+  /**
+   * Core logic for recalculating dates and frequencies
+   */
   onDateOrIntervalChange() {
     if (this.med.startDate && this.med.durationDays) {
       const start = new Date(this.med.startDate);
-      const days = parseInt(this.med.durationDays.toString(), 10);
+      this.extractStartTimeFromDate();
 
+      const days = parseInt(this.med.durationDays.toString(), 10);
       const end = new Date(start);
       end.setDate(start.getDate() + days);
       this.med.expiryDate = end.toISOString();
@@ -111,6 +128,9 @@ export class AddMedicationModal implements OnInit {
     }
   }
 
+  /**
+   * Fixes TS2339: calculateTotalPills
+   */
   private calculateTotalPills() {
     const interval = Number(this.med.intervalHours);
     const duration = Number(this.med.durationDays);
@@ -123,6 +143,9 @@ export class AddMedicationModal implements OnInit {
     }
   }
 
+  /**
+   * Fixes TS2339: getIntervalLabel
+   */
   getIntervalLabel(hours: number): string {
     const labels: Record<number, string> = {
       1: 'Every hour', 2: 'Every 2 hours', 3: 'Every 3 hours', 
@@ -132,6 +155,9 @@ export class AddMedicationModal implements OnInit {
     return labels[hours] || `Every ${hours} hours`;
   }
 
+  /**
+   * Fixes TS2339: isFormValid
+   */
   get isFormValid(): boolean {
     return !!(
       this.med.name?.trim() &&
@@ -143,7 +169,17 @@ export class AddMedicationModal implements OnInit {
     );
   }
 
-  // --- Image Handling ---
+  /**
+   * Extract startTime for display in details modal
+   */
+  private extractStartTimeFromDate() {
+    if (this.med.startDate) {
+      const date = new Date(this.med.startDate);
+      this.med.startTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+  }
+
+  // --- Image Handling (Fixes TS2551 errors) ---
 
   async selectPrescriptionImage() {
     const actionSheet = await this.actionSheetController.create({
@@ -181,14 +217,17 @@ export class AddMedicationModal implements OnInit {
     this.med.prescriptionImageUrl = undefined;
   }
 
-  // --- SAVE LOGIC WITH CATCH-UP DEDUCTION ---
+  // --- SAVE LOGIC ---
 
   async saveMedication() {
     if (!this.isFormValid) return;
 
     this.med.dosage = `${this.med.pillsPerDose} ${this.med.dosageUnit}`;
 
-    // 1. Force convert inputs to Numbers to prevent math errors
+    if (!this.med.startTime) {
+      this.extractStartTimeFromDate();
+    }
+
     const now = new Date().getTime();
     const start = new Date(this.med.startDate).getTime();
     const intervalHrs = Number(this.med.intervalHours) || 24;
@@ -196,26 +235,15 @@ export class AddMedicationModal implements OnInit {
     const pillsPerDose = Number(this.med.pillsPerDose);
     const initialTotal = Number(this.med.quantity);
 
-    // 2. Logic to deduct pills if treatment started in the past
     if (now >= start) {
       const diffInMs = now - start;
-      
-      // Calculate how many intervals have passed
-      // Example: If 24 hours passed and interval is 4, intervalsPassed = 6
       const intervalsPassed = Math.floor(diffInMs / intervalMs);
-      
-      // Total doses = the 1st dose (at hour 0) + all subsequent intervals passed
       const totalDosesToDeduct = 1 + intervalsPassed; 
-      
       const consumedAmount = totalDosesToDeduct * pillsPerDose;
 
-      // Update the live count
       const remaining = initialTotal - consumedAmount;
       this.med.refillsRemaining = remaining > 0 ? remaining : 0;
-
-      console.log(`[Deduction] Started in past. Deducting ${totalDosesToDeduct} doses.`);
     } else {
-      // Treatment starts in the future, all pills are still available
       this.med.refillsRemaining = initialTotal;
     }
     

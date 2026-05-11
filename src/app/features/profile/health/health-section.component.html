@@ -17,12 +17,15 @@
 </div>
 
 <div class="medication-filters">
-  <ion-segment [ngModel]="medicationFilter" (ionChange)="onFilterChange($event)">
+  <ion-segment [ngModel]="medicationFilter" (ionChange)="onFilterChange($event)" mode="md">
     <ion-segment-button value="all">
-      <ion-icon name="list-outline"></ion-icon>
+      <ion-label>All</ion-label>
     </ion-segment-button>
     <ion-segment-button value="active">
-      <ion-icon name="medkit-outline"></ion-icon>
+      <ion-label>Active</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="finished">
+      <ion-label>Finished</ion-label>
     </ion-segment-button>
   </ion-segment>
 </div>
@@ -37,7 +40,10 @@
   <ng-container *ngIf="!isLoading">
     <div *ngFor="let medication of filteredMedications; trackBy: trackByMedication" 
       class="medication-card" 
-      [ngClass]="{ 'emergency-medication': isEmergencyMedication(medication) }"
+      [ngClass]="{ 
+        'emergency-medication': isEmergencyMedication(medication),
+        'finished-medication': !medication.isActive || calculateRemainingPills(medication) <= 0 
+      }"
       (click)="viewDetails.emit(medication)"
       style="cursor: pointer;">
           
@@ -49,11 +55,14 @@
              <span class="dosage">{{ medication.dosage }}</span>
              <span class="frequency" *ngIf="medication.frequency"> • {{ medication.frequency }}</span>
              
-             <!-- THE CRITICAL FIX: Ensure the template checks for refillsRemaining 
-                  first to show 10, otherwise it defaults to quantity (18). -->
              <span class="pills" *ngIf="medication.quantity !== undefined"> 
-               • {{ (medication.refillsRemaining !== undefined ? medication.refillsRemaining : medication.quantity) | number:'1.0-0' }} pills left
+               • {{ calculateRemainingPills(medication) | number:'1.0-0' }} {{ getUnitLabel(medication) }} left
              </span>
+          </div>
+
+          <div *ngIf="getLowStockWarning(medication) && calculateRemainingPills(medication) > 0" class="low-stock-text">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <small>{{ getLowStockWarning(medication) }}</small>
           </div>
         </div>
 
@@ -73,7 +82,7 @@
             No medications found matching "{{ medicationSearchTerm }}"
           </ng-container>
           <ng-template #noMedicationsAtAll>
-            No medications recorded
+            No {{ medicationFilter !== 'all' ? medicationFilter : '' }} medications recorded
           </ng-template>
         </p>
       </div>
