@@ -1,29 +1,31 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="toolbar--teal">
-    <ion-title>{{ mode === 'add' ? 'Add Emergency Profile' : 'Edit Emergency Profile' }}</ion-title>
+    <ion-title>
+      {{ mode === 'add' ? 'Add Emergency Profile' : 'Edit Emergency Profile' }}
+    </ion-title>
 
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="close()" aria-label="Close modal">
-        <ion-icon name="close"></ion-icon>
+      <ion-button fill="clear" (click)="close()" aria-label="Close">
+        <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="edit-profile-content">
+<ion-content class="edit-profile-content" [scrollY]="true" [scrollEvents]="false">
   <form [formGroup]="form" (ngSubmit)="save()">
 
+    <!-- Intro -->
     <div class="form-intro">
       <h2>Emergency Profile</h2>
-      <p>Keep this information updated so buddies and responders know what to do during emergencies.</p>
+      <p>Keep this updated so responders know how to help you quickly.</p>
     </div>
 
+    <!-- Avatar -->
     <section class="form-card avatar-section" aria-label="Profile picture">
       <div class="card-header">
-        <div>
-          <h3>Profile Picture</h3>
-          <p>Helps responders identify you quickly.</p>
-        </div>
+        <h3>Profile Picture</h3>
+        <p>Helps responders identify you at a glance.</p>
       </div>
 
       <div class="avatar-body">
@@ -31,7 +33,7 @@
           <img
             class="avatar-preview"
             [src]="avatarPreview || defaultAvatarUrl"
-            alt="Profile picture preview">
+            alt="Profile picture preview" />
 
           <button
             *ngIf="avatarPreview"
@@ -39,11 +41,15 @@
             (click)="removeAvatar()"
             type="button"
             aria-label="Remove profile picture">
-            <ion-icon name="close-circle"></ion-icon>
+            <ion-icon name="close-outline"></ion-icon>
           </button>
         </div>
 
-        <ion-spinner *ngIf="isUploadingAvatar" name="crescent" class="avatar-spinner"></ion-spinner>
+        <ion-spinner
+          *ngIf="isUploadingAvatar"
+          name="crescent"
+          class="avatar-spinner">
+        </ion-spinner>
 
         <input
           #avatarInput
@@ -53,87 +59,108 @@
           class="avatar-input" />
       </div>
 
-      <ion-button fill="outline" size="small" class="avatar-action" type="button" (click)="avatarInput.click()">
+      <ion-button
+        fill="outline"
+        size="small"
+        class="avatar-action"
+        type="button"
+        (click)="avatarInput.click()">
         <ion-icon name="camera-outline" slot="start"></ion-icon>
         Change Photo
       </ion-button>
     </section>
 
-    <section class="form-card">
+    <!-- Basic Information -->
+    <section class="form-card" aria-label="Basic information">
       <div class="card-header">
-        <div>
-          <h3>Basic Information</h3>
-          <p>This appears in your emergency details.</p>
-        </div>
+        <h3>Basic Information</h3>
+        <p>Shown in your emergency details.</p>
       </div>
 
-      <ion-item>
-        <ion-label position="stacked">Full Name</ion-label>
-        <ion-input formControlName="name" placeholder="Enter your full name"></ion-input>
-      </ion-item>
+      <div class="fields-stack">
+        <ion-item lines="none">
+          <ion-label position="stacked">Full Name</ion-label>
+          <ion-input
+            formControlName="name"
+            placeholder="Your full name"
+            autocomplete="name">
+          </ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Contact Phone</ion-label>
-        <ion-input
-          formControlName="emergencyContactPhone"
-          type="text"
-          inputmode="numeric"
-          pattern="[0-9]*"
-          maxlength="11"
-          placeholder="09XXXXXXXXX"
-          (ionInput)="onPhoneInput($event)">
-        </ion-input>
-      </ion-item>
+        <ion-item lines="none">
+          <ion-label position="stacked">Contact Phone</ion-label>
+          <ion-input
+            formControlName="emergencyContactPhone"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="11"
+            placeholder="09XXXXXXXXX"
+            (ionInput)="onPhoneInput($event)"
+            autocomplete="tel">
+          </ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Date of Birth</ion-label>
-        <ion-input formControlName="dateOfBirth" type="date" [min]="minDate" [max]="maxDate"></ion-input>
-      </ion-item>
+        <ion-item lines="none">
+          <ion-label position="stacked">Date of Birth</ion-label>
+          <ion-input
+            formControlName="dateOfBirth"
+            type="date"
+            [min]="minDate"
+            [max]="maxDate">
+          </ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Blood Type</ion-label>
-        <ion-input formControlName="bloodType" placeholder="Example: O+"></ion-input>
-      </ion-item>
+        <ion-item lines="none">
+          <ion-label position="stacked">Blood Type</ion-label>
+          <ion-input
+            formControlName="bloodType"
+            placeholder="e.g. O+">
+          </ion-input>
+        </ion-item>
+      </div>
     </section>
 
-    <section class="form-card buddy-card">
-      <div class="buddy-icon">
+    <!-- Emergency Contacts -->
+    <section class="form-card buddy-card" aria-label="Emergency contacts">
+      <div class="buddy-icon" aria-hidden="true">
         <ion-icon name="people-outline"></ion-icon>
       </div>
 
       <div class="buddy-content">
         <h3>Emergency Contacts</h3>
-        <p>Buddies are your primary emergency contacts during alerts.</p>
-
+        <p>Buddies are your primary contacts during alerts.</p>
         <ion-button fill="outline" size="small" type="button" (click)="goToBuddyTab()">
           Manage Contacts
         </ion-button>
       </div>
     </section>
 
-    <section class="form-card">
+    <!-- Emergency Action Plan -->
+    <section class="form-card" aria-label="Emergency action plan">
       <div class="card-header">
-        <div>
-          <h3>Emergency Action Plan</h3>
-          <p>Write clear steps responders should follow.</p>
-        </div>
+        <h3>Emergency Action Plan</h3>
+        <p>Clear steps for responders to follow.</p>
       </div>
 
-      <ion-item class="textarea-item">
+      <ion-item lines="none" class="textarea-item">
         <ion-label position="stacked">Instructions</ion-label>
         <ion-textarea
           formControlName="instructions"
-          placeholder="Example: Use EpiPen immediately, call emergency services, and bring me to the nearest hospital.">
+          placeholder="e.g. Use EpiPen first, then call emergency services and take me to the nearest hospital.">
         </ion-textarea>
       </ion-item>
     </section>
 
+    <!-- Save -->
     <div class="save-area">
       <ion-button
         expand="block"
         type="submit"
         [disabled]="form.invalid || isUploadingAvatar || isSaving">
-        <span *ngIf="!isSaving">{{ mode === 'add' ? 'Create Emergency Profile' : 'Save Changes' }}</span>
+        <span *ngIf="!isSaving">
+          {{ mode === 'add' ? 'Create Profile' : 'Save Changes' }}
+        </span>
         <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
       </ion-button>
     </div>
