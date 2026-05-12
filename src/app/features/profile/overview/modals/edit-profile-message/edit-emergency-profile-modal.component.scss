@@ -44,7 +44,7 @@
 /* ─── Page ────────────────────────────────────────────────── */
 .edit-profile-content {
   --background: var(--bg-page);
-  --padding-bottom: 0px;
+  --padding-bottom: 80px;
 }
 
 form {
@@ -326,7 +326,7 @@ ion-button[fill='outline'] {
 /* ─── Save area ───────────────────────────────────────────── */
 .save-area {
   margin-top: 4px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 0 14px calc(32px + env(safe-area-inset-bottom, 0px));
 }
 
 .save-area ion-button {

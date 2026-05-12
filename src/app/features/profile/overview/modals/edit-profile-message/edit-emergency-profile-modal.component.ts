@@ -1,6 +1,6 @@
-import { Component, Input, OnInit, Output, EventEmitter, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ModalController, IonicModule, AlertController, LoadingController, ToastController, IonTextarea } from '@ionic/angular';
+import { ModalController, IonicModule, AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [IonicModule, CommonModule, ReactiveFormsModule]
 })
-export class EditEmergencyProfileModalComponent implements OnInit, AfterViewInit {
+export class EditEmergencyProfileModalComponent implements OnInit {
   @Input() emergencyMessage: any;
   @Input() userProfile: any;
   @Input() mode: 'add' | 'edit' = 'edit';
@@ -25,8 +25,6 @@ export class EditEmergencyProfileModalComponent implements OnInit, AfterViewInit
   isUploadingAvatar: boolean = false;
   isSaving: boolean = false;
   private initialFormValue: any | null = null;
-
-  @ViewChild('instructionsTextarea') instructionsTextarea?: IonTextarea;
 
   constructor(
     private modalCtrl: ModalController,
@@ -58,13 +56,6 @@ export class EditEmergencyProfileModalComponent implements OnInit, AfterViewInit
     this.initialFormValue = this.form.getRawValue();
   }
 
-  ngAfterViewInit(): void {
-    // Small delay to ensure the modal and textarea are fully rendered before focusing
-    setTimeout(() => {
-      this.instructionsTextarea?.setFocus();
-    }, 0);
-  }
-
   close() {
     this.closeModal.emit();
     this.modalCtrl.dismiss();
@@ -72,7 +63,7 @@ export class EditEmergencyProfileModalComponent implements OnInit, AfterViewInit
 
   async save() {
     const phoneValue = (this.form.get('emergencyContactPhone')?.value || '').toString();
-    if (phoneValue.length !== 11) {
+    if ( phoneValue.length > 0 && phoneValue.length !== 11) {
       await this.presentToast('Emergency Contact Phone must be exactly 11 digits.', 'danger');
       return;
     }
@@ -113,6 +104,8 @@ export class EditEmergencyProfileModalComponent implements OnInit, AfterViewInit
 
       // Check against initial snapshot so we only save when something actually changed
       if (this.initialFormValue && this.areFormValuesEqual(this.initialFormValue, formValues)) {
+        await loading.dismiss(); 
+        this.isSaving = false;
         await this.presentToast('You have not made any changes to your profile.', 'warning');
         return;
       }
@@ -123,7 +116,11 @@ export class EditEmergencyProfileModalComponent implements OnInit, AfterViewInit
       };
       this.saveModal.emit(updated);
       this.modalCtrl.dismiss(updated);
-    } finally {
+    }  catch (err) {
+    console.error('Save failed:', err);
+    await this.presentToast('Failed to save. Please try again.', 'danger');
+    }
+    finally {
       this.isSaving = false;
       await loading.dismiss();
     }
