@@ -62,7 +62,10 @@ export class ProfilePage implements OnInit, OnDestroy {
   activeModal: ActiveModal = null;
   allergyOptions: AllergyOption[] = [];
   allergiesCount: number = 0;
-  readonly doctorStats: DoctorStats = {
+
+  emergencySettings: any = {};
+
+   doctorStats: DoctorStats = {
     activePatients: 0,
     pendingRequests: 0,
     recentConsultations: 0,
@@ -70,9 +73,9 @@ export class ProfilePage implements OnInit, OnDestroy {
     highRiskPatients: 0,
     upcomingAppointments: 0
   };
-  readonly recentActivity: Activity[] = [];
-  readonly professionalCredentials: ProfessionalCredential[] = [];
-  readonly professionalSettings: ProfessionalSettings = {
+ recentActivity: Activity[] = [];
+   professionalCredentials: ProfessionalCredential[] = [];
+   professionalSettings: ProfessionalSettings = {
     accessRequestNotifications: true,
     patientUpdateNotifications: true,
     emergencyAlerts: true,
@@ -82,7 +85,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   public profileVoiceFacade!: VoiceSettingsManagerService;
   
-  readonly vm$ = combineLatest({
+   vm$ = combineLatest({
     profile: this.profileDataLoader.userProfile$,
     allergies: this.profileDataLoader.userAllergies$,
     emergencyMessage: this.profileDataLoader.emergencyMessage$
@@ -124,9 +127,9 @@ export class ProfilePage implements OnInit, OnDestroy {
     return modal;
   }
 
-  readonly loadMedicalDataFn = (): Promise<void> => this.loadMedicalData();
-  readonly presentToastFn = (message: string): Promise<void> => this.presentToast(message);
-  public readonly refreshAccessRequests = (): Promise<void> => this.profileAccessRequest.loadAccessRequests();
+   loadMedicalDataFn = (): Promise<void> => this.loadMedicalData();
+   presentToastFn = (message: string): Promise<void> => this.presentToast(message);
+  public  refreshAccessRequests = (): Promise<void> => this.profileAccessRequest.loadAccessRequests();
   
   // 3) Allergy Management
   // Open edit allergies modal
@@ -242,9 +245,14 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   getEmergencyInstructionEntries(): { label: string; text: string }[] {
+
+    console.log('emergencySettings:', this.emergencySettings);
+  console.log('emergencyInstructions:', this.emergencyInstructionsManager.emergencyInstructions);
+  
     return this.profileEmergencySettings.getEmergencyInstructionEntries(
       this.emergencyInstructionsManager.emergencyInstructions,
-      this.profileDataLoader.emergencyMessageValue ?? EMPTY_EMERGENCY_MESSAGE
+      this.profileDataLoader.emergencyMessageValue ?? EMPTY_EMERGENCY_MESSAGE,
+      this.emergencySettings
     );
   }
 
@@ -310,6 +318,8 @@ export class ProfilePage implements OnInit, OnDestroy {
           this.profileEmergencySettings.emergencySettings,
           data.emergencySettings || {}
         );
+
+        this.emergencySettings = data.emergencySettings || {};
 
         this.profileEHRManager.doctorVisits = data.doctorVisits;
         this.profileEHRManager.medicalHistory = data.medicalHistory;
@@ -414,7 +424,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.emergencyInstructionsManager.openManageInstructionsModal();
   };
   
-  readonly openAddEmergencyMessageModal = (): void => {
+   openAddEmergencyMessageModal = (): void => {
     this.activeModal = 'emergencyMessage';
   };
 

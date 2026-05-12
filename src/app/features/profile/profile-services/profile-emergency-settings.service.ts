@@ -239,27 +239,28 @@ export class ProfileEmergencySettingsService {
   /**
    * Get normalized emergency instruction entries for display
    */
-  getEmergencyInstructionEntries(
-    emergencyInstructions: any[],
-    emergencyMessage: EmergencyMessage
-  ): { label: string; text: string }[] {
-    const entries: { label: string; text: string }[] = [];
-    
-    const general = (emergencyMessage?.instructions || '').trim();
-    if (general) {
-      entries.push({ label: 'General', text: general });
-    }
-    
-    if (Array.isArray(emergencyInstructions) && emergencyInstructions.length) {
-      emergencyInstructions.forEach((instr: any) => {
-        const label = instr?.allergyName;
-        const text = instr?.instruction;
-        if (label && text) entries.push({ label, text });
-      });
-    }
-    
-    return entries;
+getEmergencyInstructionEntries(
+  emergencyInstructions: any[],
+  emergencyMessage: EmergencyMessage,
+  emergencySettings?: any
+): { label: string; text: string }[] {
+  const entries: { label: string; text: string }[] = [];
+
+  const general = (emergencySettings?.generalInstruction || emergencyMessage?.instructions || '').trim();
+  if (general) {
+    entries.push({ label: 'General', text: general });
   }
+
+  if (Array.isArray(emergencyInstructions) && emergencyInstructions.length) {
+    emergencyInstructions.forEach((instr: any) => {
+      const label = instr?.allergyName;
+      const text = instr?.instruction;
+      if (label && text) entries.push({ label, text });
+    });
+  }
+
+  return entries;
+}
 
   /**
    * Toggle voice recording modal

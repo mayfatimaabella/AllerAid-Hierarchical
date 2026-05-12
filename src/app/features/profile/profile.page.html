@@ -138,7 +138,7 @@
           [userProfile]="vm.profile"
           [emergencyInstructions]="emergencyInstructionsManager.emergencyInstructions"
           [emergencyMessageName]="(vm.emergencyMessage?.name || vm.profile?.fullName || 'User')"
-          [emergencyInstructionsCombined]="(vm.emergencyMessage?.instructions || '')"
+          [emergencyInstructionsCombined]="(emergencySettings?.generalInstruction || vm.emergencyMessage?.instructions || '')"
           [emergencyLocation]="(vm.emergencyMessage?.location || 'Map Location')"
           [openEditEmergencyMessageModal]="openEditProfileModal"
 

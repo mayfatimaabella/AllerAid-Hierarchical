@@ -19,7 +19,7 @@ export class OverviewSectionComponent {
   // Inputs from parent
   @Input() userAllergies: any[] = [];
   @Input() emergencyMessageName = '';
-  @Input() emergencyInstructionsCombined = ''; //allergy included  
+  @Input() emergencyInstructionsCombined = '';
   @Input() emergencyLocation = '';
   @Input() emergencyMessage: any = {};
   @Input() userProfile: UserProfile | null = null;
