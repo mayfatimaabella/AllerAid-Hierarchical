@@ -246,9 +246,6 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   getEmergencyInstructionEntries(): { label: string; text: string }[] {
 
-    console.log('emergencySettings:', this.emergencySettings);
-  console.log('emergencyInstructions:', this.emergencyInstructionsManager.emergencyInstructions);
-  
     return this.profileEmergencySettings.getEmergencyInstructionEntries(
       this.emergencyInstructionsManager.emergencyInstructions,
       this.profileDataLoader.emergencyMessageValue ?? EMPTY_EMERGENCY_MESSAGE,

@@ -45,7 +45,8 @@ export class MedicalService {
   }
 
   /**
-   * Set emergency instruction for a user
+   * Set the general emergency instruction string for a user.
+   * Writes to medical/info.emergencyInstruction (root field).
    */
   async setEmergencyInstruction(uid: string, instruction: string): Promise<void> {
     try {
@@ -59,8 +60,6 @@ export class MedicalService {
         },
         { merge: true }
       );
-
-      console.log('Emergency instruction saved successfully');
     } catch (error) {
       console.error('Error saving emergency instruction:', error);
       throw error;
@@ -68,19 +67,13 @@ export class MedicalService {
   }
 
   /**
-   * Get emergency instruction for a user
+   * Get the full medical/info document for a user.
    */
   async getEmergencyInstruction(uid: string): Promise<any> {
     try {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);
       const userDoc = await getDoc(medicalRef);
-
-      if (userDoc.exists()) {
-        return userDoc.data();
-      }
-
-      console.log('No emergency instruction found for user');
-      return null;
+      return userDoc.exists() ? userDoc.data() : null;
     } catch (error) {
       console.error('Error getting emergency instruction:', error);
       throw error;
@@ -88,7 +81,8 @@ export class MedicalService {
   }
 
   /**
-   * Update emergency message details
+   * Update emergency message details.
+   * Writes to medical/info.emergencyMessage.
    */
   async updateEmergencyMessage(
     uid: string,
@@ -101,8 +95,6 @@ export class MedicalService {
         emergencyMessage,
         updatedAt: new Date()
       });
-
-      console.log('Emergency message updated successfully');
     } catch (error) {
       console.error('Error updating emergency message:', error);
       throw error;
@@ -110,7 +102,10 @@ export class MedicalService {
   }
 
   /**
-   * Add or update emergency instruction for specific allergy
+   * Add or update the per-allergy emergency instruction.
+   * Canonical path: medical/info.emergencyInstructions[] (root array — NOT nested
+   * under emergencySettings). This replaces the old
+   * emergencySettings.emergencyInstructions write path.
    */
   async setEmergencyInstructionForAllergy(
     uid: string,
@@ -126,29 +121,21 @@ export class MedicalService {
 
       if (userDoc.exists()) {
         const data = userDoc.data();
-
-        emergencyInstructions =
-          data['emergencySettings']?.['emergencyInstructions']
-          ?? data['emergencyInstructions']
-          ?? [];
+        // Read from canonical root path only.
+        // Legacy fallback removed — migrate any old data with migrateEmergencyInstructions().
+        emergencyInstructions = data['emergencyInstructions'] ?? [];
       }
 
+      // Replace the entry for this allergy (upsert by allergyId)
       emergencyInstructions = emergencyInstructions.filter(
         ei => ei.allergyId !== allergyId
       );
-
-      emergencyInstructions.push({
-        allergyId,
-        allergyName,
-        instruction
-      });
+      emergencyInstructions.push({ allergyId, allergyName, instruction });
 
       await updateDoc(medicalRef, {
-        'emergencySettings.emergencyInstructions': emergencyInstructions,
+        emergencyInstructions,   // root field — canonical location
         updatedAt: new Date()
       });
-
-      console.log('Emergency instruction added/updated for allergy:', allergyName);
     } catch (error) {
       console.error('Error setting emergency instruction for allergy:', error);
       throw error;
@@ -156,7 +143,8 @@ export class MedicalService {
   }
 
   /**
-   * Get emergency instructions for all allergies
+   * Get per-allergy emergency instructions.
+   * Reads from canonical root path: medical/info.emergencyInstructions[].
    */
   async getEmergencyInstructions(uid: string): Promise<EmergencyInstruction[]> {
     try {
@@ -165,12 +153,7 @@ export class MedicalService {
 
       if (userDoc.exists()) {
         const data = userDoc.data();
-
-        return (
-          data['emergencySettings']?.['emergencyInstructions']
-          ?? data['emergencyInstructions']
-          ?? []
-        );
+        return data['emergencyInstructions'] ?? [];
       }
 
       return [];
@@ -181,7 +164,7 @@ export class MedicalService {
   }
 
   /**
-   * Remove emergency instruction for specific allergy
+   * Remove per-allergy emergency instruction by allergyId.
    */
   async removeEmergencyInstructionForAllergy(
     uid: string,
@@ -193,22 +176,13 @@ export class MedicalService {
 
       if (userDoc.exists()) {
         const data = userDoc.data();
-
-        let emergencyInstructions: EmergencyInstruction[] =
-          data['emergencySettings']?.['emergencyInstructions']
-          ?? data['emergencyInstructions']
-          ?? [];
-
-        emergencyInstructions = emergencyInstructions.filter(
-          ei => ei.allergyId !== allergyId
-        );
+        const filtered = (data['emergencyInstructions'] ?? [] as EmergencyInstruction[])
+          .filter((ei: EmergencyInstruction) => ei.allergyId !== allergyId);
 
         await updateDoc(medicalRef, {
-          'emergencySettings.emergencyInstructions': emergencyInstructions,
+          emergencyInstructions: filtered,
           updatedAt: new Date()
         });
-
-        console.log('Emergency instruction removed for allergy ID:', allergyId);
       }
     } catch (error) {
       console.error('Error removing emergency instruction for allergy:', error);
@@ -217,19 +191,13 @@ export class MedicalService {
   }
 
   /**
-   * Get user's complete medical profile
+   * Get the user's complete medical/info document.
    */
   async getUserMedicalProfile(uid: string): Promise<any> {
     try {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);
       const userDoc = await getDoc(medicalRef);
-
-      if (userDoc.exists()) {
-        return userDoc.data();
-      }
-
-      console.log('No medical profile found for user');
-      return null;
+      return userDoc.exists() ? userDoc.data() : null;
     } catch (error) {
       console.error('Error getting medical profile:', error);
       throw error;
@@ -237,69 +205,59 @@ export class MedicalService {
   }
 
   /**
-   * Save complete emergency settings
+   * REMOVED: saveEmergencySettings() previously wrote an emergencySettings
+   * object to medical/info, conflicting with settings/preferences.emergencySettings
+   * (which owns the toggle booleans shakeToAlert, powerButtonAlert,
+   * audioInstructions). Use UserService.updateUserProfile({ emergencySettings })
+   * to update those toggles instead.
+   *
+   * If you need to persist a generalInstruction string, use
+   * setEmergencyInstruction() which writes to medical/info.emergencyInstruction.
    */
-  async saveEmergencySettings(uid: string, settings: any): Promise<void> {
+
+  /**
+   * Get all emergency-relevant data for alert display.
+   * Reads from canonical paths only — no more emergencySettings fallback.
+   */
+  async getEmergencyData(uid: string): Promise<any> {
     try {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      const userDoc = await getDoc(medicalRef);
 
-      await setDoc(
-        medicalRef,
-        {
-          emergencySettings: settings,
-          updatedAt: new Date()
-        },
-        { merge: true }
-      );
+      if (userDoc.exists()) {
+        const data = userDoc.data();
 
-      console.log('Emergency settings saved successfully');
+        const emergencyMessage = data['emergencyMessage'] ?? {};
+        const emergencyInstruction = data['emergencyInstruction'] ?? '';
+        const emergencyInstructions: EmergencyInstruction[] = data['emergencyInstructions'] ?? [];
+
+        return {
+          emergencyInstruction,
+          emergencyInstructions,
+          emergencyMessage: {
+            ...emergencyMessage,
+            instructions: emergencyInstruction,
+            location: emergencyMessage['location'] ?? ''
+          },
+          emergencyLocation: data['emergencyLocation'] ?? null,
+          name: emergencyMessage['name'] ?? '',
+          allergies: emergencyMessage['allergies'] ?? '',
+          uid
+        };
+      }
+
+      return null;
     } catch (error) {
-      console.error('Error saving emergency settings:', error);
+      console.error('Error getting emergency data:', error);
       throw error;
     }
   }
 
   /**
-   * Get complete emergency data for alerts
-   */
-async getEmergencyData(uid: string): Promise<any> {
-  try {
-    const medicalRef = doc(this.db, `users/${uid}/medical/info`);
-    const userDoc = await getDoc(medicalRef);
-
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-
-      const emergencySettings = userData['emergencySettings'] || {};
-      const emergencyMessage = userData['emergencyMessage'] || {};
-
-      return {
-        emergencyInstruction: emergencySettings['generalInstruction'] || '',
-        emergencyInstructions: emergencySettings['emergencyInstructions'] || [],
-        generalInstruction: emergencySettings['generalInstruction'] || '',
-
-        emergencyMessage: {
-          ...emergencyMessage,
-          instructions: emergencySettings['generalInstruction'] || '',
-          location: emergencyMessage['location'] || ''
-        },
-
-        emergencyLocation: userData['emergencyLocation'] || null,
-        name: emergencyMessage['name'] || '',
-        allergies: emergencyMessage['allergies'] || '',
-        uid
-      };
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error getting emergency data:', error);
-    throw error;
-  }
-} 
-
-  /**
-   * Update emergency location for current alert
+   * Update the emergency location stored inside medical/info.
+   * Note: UserService.updateEmergencyLocation() writes to the dedicated
+   * emergency/active subcollection for frequent live updates. This method
+   * is for persisting the last-known location inside the medical record.
    */
   async updateEmergencyLocation(uid: string, location: any): Promise<void> {
     try {
@@ -312,28 +270,65 @@ async getEmergencyData(uid: string): Promise<any> {
         },
         updatedAt: new Date()
       });
-
-      console.log('Emergency location updated successfully');
     } catch (error) {
       console.error('Error updating emergency location:', error);
       throw error;
     }
   }
 
-  //for testing purposes - to remove location data
-  async removeEmergencyMessageLocation(uid: string): Promise<void> {
-  try {
-    const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+  /**
+   * One-time migration: moves any instructions previously written to the
+   * old emergencySettings.emergencyInstructions nested path up to the
+   * canonical root emergencyInstructions[] field, then deletes the
+   * stale nested key. Safe to call multiple times (idempotent).
+   */
+  async migrateEmergencyInstructions(uid: string): Promise<void> {
+    try {
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+      const userDoc = await getDoc(medicalRef);
 
-    await updateDoc(medicalRef, {
-      'emergencyMessage.location': deleteField(),
-      updatedAt: new Date()
-    });
+      if (!userDoc.exists()) return;
 
-    console.log('Emergency message location removed successfully');
-  } catch (error) {
-    console.error('Error removing emergency message location:', error);
-    throw error;
+      const data = userDoc.data();
+      const nested: EmergencyInstruction[] =
+        data['emergencySettings']?.['emergencyInstructions'] ?? [];
+
+      if (nested.length === 0) return; // nothing to migrate
+
+      const existing: EmergencyInstruction[] = data['emergencyInstructions'] ?? [];
+
+      // Merge: root entries win on collision (they are newer writes)
+      const existingIds = new Set(existing.map(e => e.allergyId));
+      const merged = [
+        ...existing,
+        ...nested.filter(n => !existingIds.has(n.allergyId))
+      ];
+
+      await updateDoc(medicalRef, {
+        emergencyInstructions: merged,
+        'emergencySettings.emergencyInstructions': deleteField(),
+        updatedAt: new Date()
+      });
+
+      console.log(`Migrated ${nested.length} legacy instruction(s) for uid: ${uid}`);
+    } catch (error) {
+      console.error('Error migrating emergency instructions:', error);
+      throw error;
+    }
   }
-}
+
+  /** Testing utility — removes the location field from emergencyMessage. */
+  async removeEmergencyMessageLocation(uid: string): Promise<void> {
+    try {
+      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
+
+      await updateDoc(medicalRef, {
+        'emergencyMessage.location': deleteField(),
+        updatedAt: new Date()
+      });
+    } catch (error) {
+      console.error('Error removing emergency message location:', error);
+      throw error;
+    }
+  }
 }

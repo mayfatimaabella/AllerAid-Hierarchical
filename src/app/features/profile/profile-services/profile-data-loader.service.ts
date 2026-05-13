@@ -6,7 +6,8 @@ import { UserService, UserProfile } from '../../../core/services/user.service';
 import { AllergyService } from '../../../core/services/allergy.service';
 import { MedicalService } from '../../../core/services/medical.profile.service';
 import { EHRService } from '../../../core/services/ehr.service';
-import { AllergyManagerService } from '../../../core/services/allergy-manager.service';
+
+import { EmergencyInstructionsManagerService } from './emergency-instructions-manager.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,9 +27,9 @@ export class ProfileDataLoaderService {
     private authService: AuthService,
     private userService: UserService,
     private allergyService: AllergyService,
-    private allergyManager: AllergyManagerService,
     private medicalService: MedicalService,
-    private ehrService: EHRService
+    private ehrService: EHRService,
+    private emergencyInstructionsManager: EmergencyInstructionsManagerService
   ) {}
 
   // Current values getters
@@ -40,10 +41,6 @@ export class ProfileDataLoaderService {
   setEmergencyMessage(message: any): void { this.emergencyMessageSubject.next(message); }
   setUserAllergies(allergies: any[]): void { this.userAllergiesSubject.next(allergies); }
 
-  /**
-   * Orchestrated loader: loads user profile, allergies, and medical data,
-   * and publishes into subjects with sensible defaults.
-   */
   async loadAllData(): Promise<void> {
     const { userProfile, userAllergies } = await this.loadUserProfile();
     this.userProfileSubject.next(userProfile);

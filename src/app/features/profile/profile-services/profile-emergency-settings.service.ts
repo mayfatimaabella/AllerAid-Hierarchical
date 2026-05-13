@@ -20,7 +20,6 @@ interface EmergencyMessageFormData {
   providedIn: 'root'
 })
 export class ProfileEmergencySettingsService {
-  // State properties
   emergencySettings: any = {};
   showVoiceSettings: boolean = true;
   showEditEmergencyMessageModal: boolean = false;
@@ -35,50 +34,37 @@ export class ProfileEmergencySettingsService {
 
   private parseName(name?: string): { firstName?: string; lastName?: string; fullName?: string } {
     const raw = (name || '').trim();
-    if (!raw) {
-      return {};
-    }
-
+    if (!raw) return {};
     const parts = raw.split(/\s+/);
     const firstName = parts[0];
     const lastName = parts.slice(1).join(' ');
-
-    return {
-      fullName: raw,
-      firstName,
-      lastName: lastName || undefined
-    };
+    return { fullName: raw, firstName, lastName: lastName || undefined };
   }
 
   /**
-   * Save emergency settings
+   * Save emergency toggle settings (shakeToAlert, powerButtonAlert, audioInstructions).
+   * These booleans live exclusively in settings/preferences.emergencySettings.
+   * MedicalService is not involved here.
    */
   async saveEmergencySettings(): Promise<void> {
     try {
       const profile = await this.userService.getCurrentUserProfile();
-      if (!profile?.uid) {
-        return;
-      }
+      if (!profile?.uid) return;
 
       const uid = profile.uid;
 
-      // Normalize settings payload
       const settings = {
         shakeToAlert: !!this.emergencySettings?.shakeToAlert,
         powerButtonAlert: !!this.emergencySettings?.powerButtonAlert,
-        // Default to true unless explicitly turned off
         audioInstructions: this.emergencySettings?.audioInstructions !== false
       };
 
-      // Persist to Firestore via medical service
-      await this.medicalService.saveEmergencySettings(uid, settings);
-
-      // Also store on the user profile document so other services see it
+      // Single source of truth: settings/preferences.emergencySettings via UserService
       await this.userService.updateUserProfile(uid, {
         emergencySettings: settings
       } as Partial<UserProfile>);
 
-      // Immediately notify the detector service so current session uses new settings
+      // Notify detector service so current session picks up new settings immediately
       await this.emergencyDetectorService.updateEmergencySettings(settings as any);
 
       await this.presentToast('Emergency settings saved');
@@ -99,10 +85,7 @@ export class ProfileEmergencySettingsService {
   ): Promise<void> {
     const modal = await this.modalController.create({
       component: EditEmergencyProfileModalComponent,
-      componentProps: {
-        emergencyMessage,
-        userProfile
-      },
+      componentProps: { emergencyMessage, userProfile },
       cssClass: 'force-white-modal',
       handle: false,
       breakpoints: [0, 1],
@@ -110,7 +93,7 @@ export class ProfileEmergencySettingsService {
     });
 
     modal.onDidDismiss().then(async (result: any) => {
-      if (result && result.data) {
+      if (result?.data) {
         await onSave(result.data);
         await onRefresh();
       }
@@ -156,7 +139,6 @@ export class ProfileEmergencySettingsService {
       ? message.avatar
       : (userProfile?.profile_picture || '');
 
-    // Optimistic UI update
     onEmergencyMessageUpdate(emergencyMessage);
     if (userProfile) {
       const parsedName = this.parseName(message?.name);
@@ -170,7 +152,7 @@ export class ProfileEmergencySettingsService {
         profile_picture: profileValue
       });
     }
-    
+
     if (userProfile?.uid) {
       const uid = userProfile.uid;
       try {
@@ -211,9 +193,7 @@ export class ProfileEmergencySettingsService {
       location: message?.location || ''
     };
 
-    if (!userProfile?.uid) {
-      return;
-    }
+    if (!userProfile?.uid) return;
 
     const uid = userProfile.uid;
 
@@ -237,61 +217,50 @@ export class ProfileEmergencySettingsService {
   }
 
   /**
-   * Get normalized emergency instruction entries for display
+   * Get normalized emergency instruction entries for display.
+   * Reads generalInstruction from medical/info.emergencyInstruction (root field).
    */
-getEmergencyInstructionEntries(
-  emergencyInstructions: any[],
-  emergencyMessage: EmergencyMessage,
-  emergencySettings?: any
-): { label: string; text: string }[] {
-  const entries: { label: string; text: string }[] = [];
+  getEmergencyInstructionEntries(
+    emergencyInstructions: any[],
+    emergencyMessage: EmergencyMessage,
+    emergencySettings?: any
+  ): { label: string; text: string }[] {
+    const entries: { label: string; text: string }[] = [];
 
-  const general = (emergencySettings?.generalInstruction || emergencyMessage?.instructions || '').trim();
-  if (general) {
-    entries.push({ label: 'General', text: general });
+    // emergencySettings.generalInstruction was the old nested path — no longer written.
+    // Fall back to emergencyMessage.instructions which mirrors emergencyInstruction on save.
+    const general = (emergencyMessage?.instructions || '').trim();
+    if (general) {
+      entries.push({ label: 'General', text: general });
+    }
+
+    if (Array.isArray(emergencyInstructions) && emergencyInstructions.length) {
+      emergencyInstructions.forEach((instr: any) => {
+        const label = instr?.allergyName;
+        const text = instr?.instruction;
+        if (label && text) entries.push({ label, text });
+      });
+    }
+
+    return entries;
   }
 
-  if (Array.isArray(emergencyInstructions) && emergencyInstructions.length) {
-    emergencyInstructions.forEach((instr: any) => {
-      const label = instr?.allergyName;
-      const text = instr?.instruction;
-      if (label && text) entries.push({ label, text });
-    });
-  }
-
-  return entries;
-}
-
-  /**
-   * Toggle voice recording modal
-   */
   toggleVoiceRecordingModal(): void {
     this.showVoiceSettings = !this.showVoiceSettings;
   }
 
-  /**
-   * Centralized emergency feature test runner.
-   * Delegates all test logic from the page to this service.
-   */
   async runTest(
     type: 'alert' | 'shake' | 'power' | 'audio',
     notify: (message: string) => Promise<void> | void
   ): Promise<void> {
     try {
-      switch (type) {
-        case 'alert':
-          await notify('Emergency alert test triggered');
-          break;
-        case 'shake':
-          await notify('Shake detection test triggered');
-          break;
-        case 'power':
-          await notify('Power button detection test triggered');
-          break;
-        case 'audio':
-          await notify('Audio instructions test triggered');
-          break;
-      }
+      const messages: Record<typeof type, string> = {
+        alert: 'Emergency alert test triggered',
+        shake: 'Shake detection test triggered',
+        power: 'Power button detection test triggered',
+        audio: 'Audio instructions test triggered'
+      };
+      await notify(messages[type]);
     } catch (e) {
       console.error('Emergency test error:', e);
       await this.presentToast('Emergency test failed');

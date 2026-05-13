@@ -139,7 +139,7 @@
           [emergencyInstructions]="emergencyInstructionsManager.emergencyInstructions"
           [emergencyMessageName]="(vm.emergencyMessage?.name || vm.profile?.fullName || 'User')"
           [emergencyInstructionsCombined]="(emergencySettings?.generalInstruction || vm.emergencyMessage?.instructions || '')"
-          [emergencyLocation]="(vm.emergencyMessage?.location || 'Map Location')"
+          [emergencyLocation]="(vm.emergencyMessage?.location || '')"
           [openEditEmergencyMessageModal]="openEditProfileModal"
 
           (openEditAllergies)="openEditAllergiesModal()"

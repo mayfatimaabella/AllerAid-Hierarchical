@@ -29,10 +29,7 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
   isSaving = false;
   showTips = false;
 
-  /** Controls the inline warning banner after the user first taps "Set up later" */
   showSkipNudge = false;
-
-  /** Tracks whether the user has already seen the nudge and still wants to skip */
   private skipNudgeAcknowledged = false;
 
   private backButtonSubscription?: Subscription;
@@ -101,9 +98,7 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
 
   private enableBackNavigationBlock(): void {
     this.disableBackNavigationBlock();
-    this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(9999, () => {
-      // Intentionally noop: lock onboarding to forward-only navigation
-    });
+    this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(9999, () => {});
     history.pushState(null, '', window.location.href);
     window.addEventListener('popstate', this.onPopState);
   }
@@ -134,6 +129,7 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
         this.selectedAllergies = (storedAllergies || []).filter(a => a?.checked);
       }
 
+      // Load existing per-allergy instructions from canonical root path
       const existingInstructions = await this.medicalService.getEmergencyInstructions(currentUser.uid);
       const byId: Record<string, string> = {};
       existingInstructions.forEach((item: any) => {
@@ -147,11 +143,9 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
           byId[this.getAllergyKey(allergy)] || '';
       });
 
+      // Load general instruction from canonical root path
       const medicalData = await this.medicalService.getUserMedicalProfile(currentUser.uid);
-      this.generalInstruction =
-        medicalData?.emergencySettings?.generalInstruction ||
-        medicalData?.generalInstruction ||
-        '';
+      this.generalInstruction = medicalData?.emergencyInstruction || '';
 
     } catch (error) {
       console.error('Error loading emergency instructions onboarding data:', error);
@@ -175,10 +169,6 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
     this.skipNudgeAcknowledged = true;
   }
 
-  /**
-   * First tap: show inline nudge banner so the user understands the consequence.
-   * Second tap (after dismissing the nudge): skip with flag persisted.
-   */
   async requestSkip(): Promise<void> {
     const hasAnyInstruction =
       !!this.generalInstruction.trim() ||
@@ -186,16 +176,12 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
         a => !!(this.instructionsByAllergy[this.getAllergyKey(a)] || '').trim()
       );
 
-    // If they already filled something, skip the nudge entirely
     if (hasAnyInstruction || this.skipNudgeAcknowledged) {
       await this.skipForNow();
       return;
     }
 
-    // First time: show the inline nudge instead of navigating
     this.showSkipNudge = true;
-
-    // Scroll to nudge so it's visible on small screens
     setTimeout(() => {
       const el = document.querySelector('.skip-nudge-banner');
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -208,9 +194,7 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
       allergy => !(this.instructionsByAllergy[this.getAllergyKey(allergy)] || '').trim()
     );
 
-    const hasAnythingMissing = hasEmptyGeneral || emptyPerAllergy.length > 0;
-
-    if (hasAnythingMissing) {
+    if (hasEmptyGeneral || emptyPerAllergy.length > 0) {
       const confirmed = await this.confirmSkipInstructions(emptyPerAllergy, hasEmptyGeneral);
       if (!confirmed) return;
     }
@@ -224,18 +208,30 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
         return;
       }
 
-      const emergencyInstructions = this.selectedAllergies
-        .map(allergy => {
-          const allergyId = this.getAllergyKey(allergy);
-          const instruction = (this.instructionsByAllergy[allergyId] || '').trim();
-          return { allergyId, allergyName: allergy.value || allergy.label, instruction };
-        })
+      const uid = currentUser.uid;
+
+      // 1. Save general instruction to medical/info.emergencyInstruction (root field)
+      await this.medicalService.setEmergencyInstruction(uid, this.generalInstruction.trim());
+
+      // 2. Save each per-allergy instruction to medical/info.emergencyInstructions[] (root array)
+      //    Build and write the full array in one pass for efficiency.
+      const instructions = this.selectedAllergies
+        .map(allergy => ({
+          allergyId: this.getAllergyKey(allergy),
+          allergyName: allergy.value || allergy.label,
+          instruction: (this.instructionsByAllergy[this.getAllergyKey(allergy)] || '').trim()
+        }))
         .filter(item => item.instruction.length > 0);
 
-      await this.medicalService.saveEmergencySettings(currentUser.uid, {
-        emergencyInstructions,
-        generalInstruction: this.generalInstruction.trim()
-      });
+      // Upsert each entry via the service so dedup logic is centralised
+      for (const item of instructions) {
+        await this.medicalService.setEmergencyInstructionForAllergy(
+          uid,
+          item.allergyId,
+          item.allergyName,
+          item.instruction
+        );
+      }
 
       await this.showToast('Emergency instructions saved.', 'success');
       await this.router.navigate(['/buddy-setup-onboarding'], { replaceUrl: true });
@@ -252,20 +248,14 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
     missingGeneral: boolean
   ): Promise<boolean> {
     const parts: string[] = [];
-
-    if (missingGeneral) {
-      parts.push('a general emergency instruction');
-    }
-
+    if (missingGeneral) parts.push('a general emergency instruction');
     if (missingPerAllergy.length > 0) {
       parts.push(`instructions for: ${missingPerAllergy.map(a => a.label).join(', ')}`);
     }
 
-    const message = `You haven't added ${parts.join(' and ')}. Your buddy won't know what to do during an emergency. Continue anyway?`;
-
     const alert = await this.alertController.create({
       header: 'Missing instructions',
-      message,
+      message: `You haven't added ${parts.join(' and ')}. Your buddy won't know what to do during an emergency. Continue anyway?`,
       backdropDismiss: false,
       buttons: [
         { text: 'Go back', role: 'cancel' },
@@ -278,10 +268,6 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
     return result.role === 'confirm';
   }
 
-  /**
-   * Persists the skip intent to Firestore so the profile screen
-   * can surface a nudge like "You haven't set up emergency instructions yet."
-   */
   async skipForNow(): Promise<void> {
     try {
       const currentUser = await this.authService.waitForAuthInit();
