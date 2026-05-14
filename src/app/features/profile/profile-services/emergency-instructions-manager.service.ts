@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { MedicalService } from '../../../core/services/medical.profile.service';
 import { AlertController, ToastController } from '@ionic/angular';
+import { ProfileDataLoaderService } from './profile-data-loader.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,8 @@ export class EmergencyInstructionsManagerService {
     private authService: AuthService,
     private medicalService: MedicalService,
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private profileDataLoader: ProfileDataLoaderService
   ) {}
 
   /**
@@ -33,6 +35,7 @@ export class EmergencyInstructionsManagerService {
 
     try {
       this.emergencyInstructions = await this.medicalService.getEmergencyInstructions(userProfile.uid);
+
     } catch (error) {
       console.error('Error loading emergency instructions:', error);
     }
@@ -42,6 +45,7 @@ export class EmergencyInstructionsManagerService {
    * Open the manage instructions modal and reset state
    */
   openManageInstructionsModal(): void {
+    
     this.showInstructionDetailsModal = false;
     this.selectedInstructionDetails = null;
     this.editingInstruction = null;
@@ -182,7 +186,7 @@ export class EmergencyInstructionsManagerService {
       this.manageInstructionsModal.newInstructionText = '';
     }
 
-    await this.loadEmergencyInstructions({ uid });
+    await this.profileDataLoader.loadAllData();
     await this.presentToast('Instruction saved successfully!');
   }
 

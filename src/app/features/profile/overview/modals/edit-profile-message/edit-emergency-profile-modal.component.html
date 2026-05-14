@@ -17,7 +17,7 @@
 
     <!-- Intro -->
     <div class="form-intro">
-      <h2>Emergency Profile</h2>
+      <!-- <h2>Emergency Profile</h2> -->
       <p>Keep this updated so responders know how to help you quickly.</p>
     </div>
 
@@ -103,12 +103,20 @@
 
         <ion-item lines="none">
           <ion-label position="stacked">Date of Birth</ion-label>
-          <ion-input
-            formControlName="dateOfBirth"
-            type="date"
-            [min]="minDate"
-            [max]="maxDate">
-          </ion-input>
+
+          <ion-datetime-button datetime="dobPicker"></ion-datetime-button>
+
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="dobPicker"
+                presentation="date"
+                formControlName="dateOfBirth"
+                [min]="minDate"
+                [max]="maxDate">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
         </ion-item>
 
         <ion-item lines="none">

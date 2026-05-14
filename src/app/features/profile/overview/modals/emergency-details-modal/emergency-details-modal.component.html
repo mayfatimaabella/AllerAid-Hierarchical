@@ -45,35 +45,42 @@
 
     </div>
 
-    <!-- INFO -->
-    <div class="modal-info-card">
+      <!-- INFO -->
+      <div class="modal-info-card">
 
-      <div class="section-header">
-        <h3>Emergency Information</h3>
-      </div>
-
-      <div class="info-row">
-        <div class="info-label">Contact</div>
-        <div class="info-data">
-          {{ emergencyContactPhone || 'Not specified' }}
+        <div class="section-header">
+          <h3>Emergency Information</h3>
+          <ion-button
+            class="contact-action-btn"
+            fill="clear"
+            size="small"
+            (click)="openEditEmergencyMessageModal && openEditEmergencyMessageModal()">
+            <ion-icon name="create-outline"></ion-icon>
+          </ion-button>
         </div>
-      </div>
 
-      <div class="info-row">
-        <div class="info-label">Date of Birth</div>
-        <div class="info-data">
-          {{ formattedDateOfBirth }}
+        <div class="info-row">
+          <div class="info-label">Contact</div>
+          <div class="info-data">
+            {{ emergencyContactPhone || '—' }}
+          </div>
         </div>
-      </div>
 
-      <div class="info-row">
-        <div class="info-label">Blood Type</div>
-        <div class="info-data">
-          {{ bloodType || 'Not specified' }}
+        <div class="info-row">
+          <div class="info-label">Date of Birth</div>
+          <div class="info-data">
+            {{ formattedDateOfBirth }}
+          </div>
         </div>
-      </div>
 
-    </div>
+        <div class="info-row">
+          <div class="info-label">Blood Type</div>
+          <div class="info-data">
+            {{ bloodType || '—' }}
+          </div>
+        </div>
+
+      </div>
 
     <!-- ALLERGIES -->
     <div class="modal-info-card allergies-card">

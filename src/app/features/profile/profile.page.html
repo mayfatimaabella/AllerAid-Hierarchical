@@ -131,20 +131,20 @@
     <section *ngIf="vm.profile?.role === 'user'">
         
         <ng-container *ngIf="profileNavigation.selectedTab === 'overview'">
+
           <app-profile-overview-section
-
-          [userAllergies]="vm.allergies || []"
-          [emergencyMessage]="vm.emergencyMessage"
-          [userProfile]="vm.profile"
-          [emergencyInstructions]="emergencyInstructionsManager.emergencyInstructions"
-          [emergencyMessageName]="(vm.emergencyMessage?.name || vm.profile?.fullName || 'User')"
-          [emergencyInstructionsCombined]="(emergencySettings?.generalInstruction || vm.emergencyMessage?.instructions || '')"
-          [emergencyLocation]="(vm.emergencyMessage?.location || '')"
-          [openEditEmergencyMessageModal]="openEditProfileModal"
-
-          (openEditAllergies)="openEditAllergiesModal()"
-          (openEmergencyInfo)="activeModal = 'emergencyInfo'"
-          ></app-profile-overview-section>
+            [userAllergies]="vm.allergies || []"
+            [emergencyMessage]="vm.emergencyMessage"
+            [userProfile]="vm.profile"
+            [emergencyInstructions]="vm.emergencyInstructions || []"
+            [emergencyMessageName]="(vm.emergencyMessage?.name || vm.profile?.fullName || 'User')"
+            [emergencyInstructionsCombined]="vm.emergencyMessage?.instructions || ''"
+            [emergencyLocation]="vm.emergencyMessage?.location || ''"
+            [emergencyContactPhone]="vm.profile?.phone || ''"
+            [openEditEmergencyMessageModal]="openEditProfileModal"
+            (openEditAllergies)="openEditAllergiesModal()"
+            (openEmergencyInfo)="activeModal = 'emergencyInfo'">
+          </app-profile-overview-section>
           
         </ng-container>
         
@@ -153,20 +153,20 @@
          <ion-modal [isOpen]="activeModal === 'emergencyInfo'" (didDismiss)="activeModal = null" [initialBreakpoint]="1" [breakpoints]="[0, 1]" [handle]="false">
           <ng-template>
             <app-emergency-details-modal
-            [emergencyMessageName]="(vm.emergencyMessage?.name || vm.profile?.fullName || 'User')"
-            [userAllergies]="vm.allergies || []"
-            [instructionEntries]="getEmergencyInstructionEntries()"
-            [emergencyLocation]="(vm.emergencyMessage?.location || 'Map Location')"
-            [dateOfBirth]="vm.profile?.dateOfBirth || ''"
-            [bloodType]="vm.profile?.bloodType || ''"
-            [openEditEmergencyMessageModal]="openEditProfileModal"
-            [openManageInstructionsModal]="openAddInstructionModal"
-            (close)="activeModal = null"
-            (testAudio)="testAudioInstructions()"
-            (addInstruction)="openAddInstructionModal()"
-            (editInstruction)="openEditProfileModal()"
-            (openEditAllergies)="openEditAllergiesModal()"
-            >
+              [emergencyMessageName]="(vm.emergencyMessage?.name || vm.profile?.fullName || 'User')"
+              [userAllergies]="vm.allergies || []"
+              [instructionEntries]="getEmergencyInstructionEntries()"
+              [emergencyContactPhone]="vm.profile?.phone || ''"
+              [emergencyLocation]="vm.emergencyMessage?.location || ''"
+              [dateOfBirth]="vm.profile?.dateOfBirth || ''"
+              [bloodType]="vm.profile?.bloodType || ''"
+              [openEditEmergencyMessageModal]="openEditProfileModal"
+              [openManageInstructionsModal]="openAddInstructionModal"
+              (close)="activeModal = null"
+              (testAudio)="testAudioInstructions()"
+              (addInstruction)="openAddInstructionModal()"
+              (editInstruction)="openEditProfileModal()"
+              (openEditAllergies)="openEditAllergiesModal()"> 
           </app-emergency-details-modal>
           </ng-template>
         </ion-modal>

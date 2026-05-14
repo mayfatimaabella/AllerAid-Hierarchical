@@ -36,7 +36,6 @@ export interface UserProfile {
   emergencyMessage?: {
     name: string;
     allergies: string;
-    instructions: string;
     location: string;
     audioUrl?: string; // Optional audio instruction URL
   };
@@ -178,11 +177,20 @@ export class UserService {
       const userDoc = await getDoc(doc(this.db, 'users', uid));
       
       if (userDoc.exists()) {
-        const profile = userDoc.data() as UserProfile;
+            const baseProfile = userDoc.data() as UserProfile;
+            const profileDetails = await this.getUserProfileDetails(uid);
 
-        // Cache the profile
-        this.userProfileCache.set(uid, profile);
-        return profile;
+            const profile = {
+              ...baseProfile,
+              phone: profileDetails?.phone ?? null,
+              profile_picture: profileDetails?.profile_picture ?? null,
+              dateOfBirth: profileDetails?.dateOfBirth ?? null,
+              bloodType: profileDetails?.bloodType ?? null
+            } as UserProfile;
+
+            this.userProfileCache.set(uid, profile);
+            return profile;
+
       } else {
         console.log('No user profile found');
         return null;

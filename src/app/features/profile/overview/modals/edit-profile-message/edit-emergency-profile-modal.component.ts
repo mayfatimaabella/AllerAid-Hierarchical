@@ -35,26 +35,24 @@ export class EditEmergencyProfileModalComponent implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
-    this.maxDate = new Date().toISOString().split('T')[0];
+    ngOnInit() {
+      this.maxDate = new Date().toISOString().split('T')[0];
 
-    this.form = this.fb.group({
-      name: [this.emergencyMessage?.name || this.userProfile?.fullName || ''],
-      allergies: [this.emergencyMessage?.allergies || ''],
-      instructions: [this.emergencyMessage?.instructions || ''],
-      location: [this.emergencyMessage?.location || ''],
-      emergencyContactPhone: [this.userProfile?.emergencyContactPhone || ''],
-      dateOfBirth: [this.userProfile?.dateOfBirth || ''],
-      bloodType: [this.userProfile?.bloodType || ''],
-      avatar: [this.userProfile?.avatar || '']
-    });
-    // Allergies are managed elsewhere; make field read-only in the editor
-    this.form.get('allergies')?.disable({ emitEvent: false });
-    this.avatarPreview = this.form.get('avatar')?.value || null;
+      this.form = this.fb.group({
+        name: [this.emergencyMessage?.name || this.userProfile?.fullName || ''],
+        allergies: [this.emergencyMessage?.allergies || ''],
+        instructions: [this.emergencyMessage?.instructions || ''],
+        location: [this.emergencyMessage?.location || ''],
+        emergencyContactPhone: [this.emergencyMessage?.emergencyContactPhone || ''],
+        dateOfBirth: [this.userProfile?.dateOfBirth? new Date(this.userProfile.dateOfBirth).toISOString(): ''],
+        bloodType: [this.userProfile?.bloodType || ''],
+        profile_picture: [this.userProfile?.profile_picture || '']
+      });
 
-    // Snapshot initial values for precise change detection (beyond Angular's pristine/dirty flags)
-    this.initialFormValue = this.form.getRawValue();
-  }
+      this.form.get('allergies')?.disable({ emitEvent: false });
+      this.avatarPreview = this.form.get('profile_picture')?.value || null;
+      this.initialFormValue = this.form.getRawValue();
+    }
 
   close() {
     this.closeModal.emit();
@@ -110,12 +108,20 @@ export class EditEmergencyProfileModalComponent implements OnInit {
         return;
       }
 
+      const rawDob = formValues.dateOfBirth;
+
+      if (rawDob) {
+        formValues.dateOfBirth = new Date(rawDob)
+          .toISOString()
+          .split('T')[0];
+      }
+
       const updated = {
         ...this.emergencyMessage,
         ...formValues
       };
-      this.saveModal.emit(updated);
-      this.modalCtrl.dismiss(updated);
+        this.saveModal.emit(updated);
+        await this.modalCtrl.dismiss(updated);
     }  catch (err) {
     console.error('Save failed:', err);
     await this.presentToast('Failed to save. Please try again.', 'danger');
@@ -181,50 +187,60 @@ export class EditEmergencyProfileModalComponent implements OnInit {
     }
   }
 
-  async onAvatarSelected(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const file = input?.files?.[0];
-    if (!file) {
-      return;
-    }
+async onAvatarSelected(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement;
+  const file = input?.files?.[0];
 
-    if (!this.userProfile?.uid) {
-      const profileAlert = await this.alertController.create({
-        header: 'Profile Missing',
-        message: 'Unable to upload photo without a user profile.',
-        cssClass: 'fixed-dark-alert',
-        buttons: ['OK']
-      });
-      await profileAlert.present();
-      input.value = '';
-      return;
-    }
+  if (!file) return;
 
-    this.isUploadingAvatar = true;
-    try {
-      // Compress and store as data URL 
-      const compressedDataUrl = await this.compressImageToDataUrl(file, 600, 0.75);
-      this.avatarPreview = compressedDataUrl;
-      this.form.get('avatar')?.setValue(compressedDataUrl, { emitEvent: false });
-    } catch (error) {
-      console.error('Avatar compression error:', error);
-      const uploadAlert = await this.alertController.create({
-        header: 'Processing Failed',
-        message: 'Unable to process the photo. Please try again.',
-        cssClass: 'fixed-dark-alert',
-        buttons: ['OK']
-      });
-      await uploadAlert.present();
-      this.avatarPreview = this.form.get('avatar')?.value || null;
-    } finally {
-      this.isUploadingAvatar = false;
-      input.value = '';
-    }
+  if (!this.userProfile?.uid) {
+    const profileAlert = await this.alertController.create({
+      header: 'Profile Missing',
+      message: 'Unable to upload photo without a user profile.',
+      cssClass: 'fixed-dark-alert',
+      buttons: ['OK']
+    });
+
+    await profileAlert.present();
+    input.value = '';
+    return;
   }
+
+  this.isUploadingAvatar = true;
+
+  try {
+    const compressedDataUrl = await this.compressImageToDataUrl(file, 600, 0.75);
+
+    this.avatarPreview = compressedDataUrl;
+
+    this.form.get('profile_picture')?.setValue(compressedDataUrl, {
+      emitEvent: false
+    });
+
+  } catch (error) {
+    console.error('Avatar compression error:', error);
+
+    const uploadAlert = await this.alertController.create({
+      header: 'Processing Failed',
+      message: 'Unable to process the photo. Please try again.',
+      cssClass: 'fixed-dark-alert',
+      buttons: ['OK']
+    });
+
+    await uploadAlert.present();
+
+    this.avatarPreview =
+      this.form.get('profile_picture')?.value || null;
+
+  } finally {
+    this.isUploadingAvatar = false;
+    input.value = '';
+  }
+}
 
   removeAvatar(): void {
     this.avatarPreview = null;
-    this.form.get('avatar')?.setValue('', { emitEvent: false });
+    this.form.get('profile_picture')?.setValue('', { emitEvent: false });
   }
 
   async goToBuddyTab(): Promise<void> {

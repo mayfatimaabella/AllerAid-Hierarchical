@@ -10,14 +10,13 @@
       </div>
     </ion-card-header>
     <ion-card-content>
+
       <div class="emergency-section">
         <div class="emergency-label">EMERGENCY INFORMATION</div>
-        <div class="emergency-value">
-           <ng-container *ngIf="userProfile?.phone; else noPhone">
-            {{ userProfile?.phone }}
-           </ng-container>
-           <ng-template #noPhone><i>No phone number added </i></ng-template>
 
+        <div class="emergency-value">
+          <ng-container *ngIf="emergencyContactPhone; else noPhone">{{ emergencyContactPhone }}</ng-container>
+          <ng-template #noPhone><i>No phone number added</i></ng-template>
         </div>
       </div>
 

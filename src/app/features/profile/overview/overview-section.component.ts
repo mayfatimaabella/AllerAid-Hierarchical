@@ -21,6 +21,7 @@ export class OverviewSectionComponent {
   @Input() emergencyMessageName = '';
   @Input() emergencyInstructionsCombined = '';
   @Input() emergencyLocation = '';
+  @Input() emergencyContactPhone: string = '';
   @Input() emergencyMessage: any = {};
   @Input() userProfile: UserProfile | null = null;
   @Input() openEditEmergencyMessageModal!: () => void;
@@ -35,8 +36,6 @@ export class OverviewSectionComponent {
 
   // Inputs for the instructions modal
   @Input() emergencyInstructions: any[] = [];
-
-
 
 
   // Add this method to help Angular track changes

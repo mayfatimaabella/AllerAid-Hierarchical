@@ -17,7 +17,6 @@ export interface EmergencyInstruction {
 export interface EmergencyMessage {
   name: string;
   allergies: string;
-  instructions: string;
   location: string;
 }
 
@@ -91,10 +90,8 @@ export class MedicalService {
     try {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);
 
-      await updateDoc(medicalRef, {
-        emergencyMessage,
-        updatedAt: new Date()
-      });
+      await updateDoc(medicalRef, {emergencyMessage,updatedAt: new Date()});
+      
     } catch (error) {
       console.error('Error updating emergency message:', error);
       throw error;
@@ -236,7 +233,6 @@ export class MedicalService {
           emergencyInstructions,
           emergencyMessage: {
             ...emergencyMessage,
-            instructions: emergencyInstruction,
             location: emergencyMessage['location'] ?? ''
           },
           emergencyLocation: data['emergencyLocation'] ?? null,

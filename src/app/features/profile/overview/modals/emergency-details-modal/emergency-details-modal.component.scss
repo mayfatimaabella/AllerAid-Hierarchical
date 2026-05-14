@@ -40,10 +40,12 @@
     #f5faf8 0%,
     #ffffff 45%
   );
+  --padding-bottom: env(safe-area-inset-bottom, 16px);
+
 }
 
 .content-wrapper {
-  padding: 18px 16px 34px;
+   padding: 18px 16px 80px;
 }
 
 /* HERO */
@@ -378,7 +380,7 @@
 
 @media (max-width: 480px) {
   .content-wrapper {
-    padding: 16px 14px 28px;
+    padding: 16px 14px 80px;
   }
 
   .emergency-hero {

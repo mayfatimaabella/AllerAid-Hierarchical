@@ -7,8 +7,6 @@ import { AllergyService } from '../../../core/services/allergy.service';
 import { MedicalService } from '../../../core/services/medical.profile.service';
 import { EHRService } from '../../../core/services/ehr.service';
 
-import { EmergencyInstructionsManagerService } from './emergency-instructions-manager.service';
-
 @Injectable({
   providedIn: 'root'
 })
@@ -17,159 +15,95 @@ export class ProfileDataLoaderService {
   private userProfileSubject = new BehaviorSubject<UserProfile | null>(null);
   private userAllergiesSubject = new BehaviorSubject<any[]>([]);
   private emergencyMessageSubject = new BehaviorSubject<any | null>(null);
+  private emergencyInstructionsSubject = new BehaviorSubject<any[]>([]);
 
-  // Public observables
   userProfile$: Observable<UserProfile | null> = this.userProfileSubject.asObservable();
   userAllergies$: Observable<any[]> = this.userAllergiesSubject.asObservable();
   emergencyMessage$: Observable<any | null> = this.emergencyMessageSubject.asObservable();
+  emergencyInstructions$: Observable<any[]> = this.emergencyInstructionsSubject.asObservable();
 
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private allergyService: AllergyService,
     private medicalService: MedicalService,
-    private ehrService: EHRService,
-    private emergencyInstructionsManager: EmergencyInstructionsManagerService
+    private ehrService: EHRService
   ) {}
 
-  // Current values getters
   get userProfileValue(): UserProfile | null { return this.userProfileSubject.value; }
   get userAllergiesValue(): any[] { return this.userAllergiesSubject.value; }
   get emergencyMessageValue(): any | null { return this.emergencyMessageSubject.value; }
+  get emergencyInstructionsValue(): any[] { return this.emergencyInstructionsSubject.value; }
 
   setUserProfile(profile: UserProfile | null): void { this.userProfileSubject.next(profile); }
   setEmergencyMessage(message: any): void { this.emergencyMessageSubject.next(message); }
   setUserAllergies(allergies: any[]): void { this.userAllergiesSubject.next(allergies); }
 
   async loadAllData(): Promise<void> {
-    const { userProfile, userAllergies } = await this.loadUserProfile();
-    this.userProfileSubject.next(userProfile);
-    this.userAllergiesSubject.next(userAllergies || []);
+    const user = await this.authService.waitForAuthInit();
+    if (!user) return;
 
-    const medical = await this.loadMedicalData();
-    let emergencyMessage = medical.emergencyMessage;
+    const [profile, medicalInfo, emergencyData, instructions] = await Promise.all([
+      this.userService.getUserProfile(user.uid),
+      this.userService.getUserMedicalInfo(user.uid),
+      this.medicalService.getEmergencyData(user.uid),
+      this.medicalService.getEmergencyInstructions(user.uid)
+    ]);
 
-    // Default emergency message if missing
-    if (!emergencyMessage && userProfile) {
-      emergencyMessage = {
-        name: userProfile.fullName || '',
-        allergies: (userAllergies || []).map((a: any) => a.label || a.name).join(', '),
-        instructions: '',
-        location: 'Map Location'
-      };
-    }
-    this.emergencyMessageSubject.next(emergencyMessage || null);
+    this.userProfileSubject.next(profile);
+    this.userAllergiesSubject.next(
+      (medicalInfo?.allergies || []).filter((a: any) => a.checked)
+    );
+    this.emergencyMessageSubject.next({
+      name: emergencyData?.name || profile?.fullName || '',
+      allergies: emergencyData?.allergies || '',
+      instructions: emergencyData?.emergencyMessage?.instructions || '',
+      location: emergencyData?.emergencyMessage?.location || '',
+      emergencyContactPhone: emergencyData?.emergencyMessage?.emergencyContactPhone || ''
+    });
+    this.emergencyInstructionsSubject.next(instructions || []);
   }
 
-  /**
-   * Load user profile and allergies
-   */
-async loadUserProfile(): Promise<{
-  userProfile: UserProfile | null;
-  userAllergies: any[];
-}> {
-  try {
-    const currentUser = await this.authService.waitForAuthInit();
-
-    if (!currentUser) {
-      return {
-        userProfile: null,
-        userAllergies: []
-      };
-    }
-
-    const userProfile = await this.userService.getUserProfile(currentUser.uid);
-
-    if (!userProfile) {
-      return {
-        userProfile: null,
-        userAllergies: []
-      };
-    }
-
-    const medicalInfo =
-      await this.userService.getUserMedicalInfo(currentUser.uid);
-
-    const userAllergies = Array.isArray(medicalInfo?.allergies)
-      ? medicalInfo.allergies.filter((a: any) => a.checked)
-      : [];
-
-    return {
-      userProfile,
-      userAllergies
-    };
-
-  } catch (error) {
-    console.error('Error loading user profile:', error);
-
-    return {
-      userProfile: null,
-      userAllergies: []
-    };
-  }
-}
-  /**
-   * Load medical data (doctor visits, medical history, EHR)
-   */
   async loadMedicalData(): Promise<{
-    emergencyMessage: any;
     emergencySettings: any;
     doctorVisits: any[];
     medicalHistory: any[];
     ehrAccessList: any[];
   }> {
     try {
-      const currentUser = await this.authService.waitForAuthInit();
-      if (!currentUser) {
-        return {
-          emergencyMessage: null,
-          emergencySettings: null,
-          doctorVisits: [],
-          medicalHistory: [],
-          ehrAccessList: []
-        };
-      }
+      const user = await this.authService.waitForAuthInit();
+      if (!user) return { emergencySettings: null, doctorVisits: [], medicalHistory: [], ehrAccessList: [] };
 
-      const medicalProfile = await this.medicalService.getUserMedicalProfile(currentUser.uid);
-      const doctorVisits = await this.ehrService.getDoctorVisits();
-      const medicalHistory = await this.ehrService.getMedicalHistory();
-      const ehrRecord = await this.ehrService.getEHRRecord();
+      const [emergencySettings, doctorVisits, medicalHistory, ehrRecord] = await Promise.all([
+        this.userService.getEmergencySettings(user.uid),
+        this.ehrService.getDoctorVisits(),
+        this.ehrService.getMedicalHistory(),
+        this.ehrService.getEHRRecord()
+      ]);
 
       return {
-        emergencyMessage: medicalProfile?.emergencyMessage,
-        emergencySettings: medicalProfile?.emergencySettings,
+        emergencySettings: emergencySettings || {},
         doctorVisits,
         medicalHistory,
         ehrAccessList: ehrRecord?.accessibleBy || []
       };
     } catch (error) {
       console.error('Error loading medical data:', error);
-      return {
-        emergencyMessage: null,
-        emergencySettings: null,
-        doctorVisits: [],
-        medicalHistory: [],
-        ehrAccessList: []
-      };
+      return { emergencySettings: null, doctorVisits: [], medicalHistory: [], ehrAccessList: [] };
     }
   }
 
-  /**
-   * Refresh allergies from database
-   */
   async refreshAllergies(currentUid: string): Promise<any[]> {
     try {
       const userAllergyDocs = await this.allergyService.getUserAllergies(currentUid);
       const allergies: any[] = [];
-      
+
       userAllergyDocs.forEach((allergyDoc: any) => {
         if (allergyDoc.allergies && Array.isArray(allergyDoc.allergies)) {
-          const checkedAllergies = allergyDoc.allergies.filter((allergy: any) => allergy.checked);
-          allergies.push(...checkedAllergies);
+          allergies.push(...allergyDoc.allergies.filter((a: any) => a.checked));
         }
       });
 
-      // Publish and update emergency message allergies text
       this.userAllergiesSubject.next(allergies);
       const currentMsg = this.emergencyMessageSubject.value;
       if (currentMsg) {
