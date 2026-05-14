@@ -57,7 +57,7 @@ export class ProfileDataLoaderService {
     this.emergencyMessageSubject.next({
       name: emergencyData?.name || profile?.fullName || '',
       allergies: emergencyData?.allergies || '',
-      instructions: emergencyData?.emergencyMessage?.instructions || '',
+      instructions: emergencyData?.emergencyInstruction || emergencyData?.emergencyMessage?.instructions || '',
       location: emergencyData?.emergencyMessage?.location || '',
       emergencyContactPhone: emergencyData?.emergencyMessage?.emergencyContactPhone || ''
     });
