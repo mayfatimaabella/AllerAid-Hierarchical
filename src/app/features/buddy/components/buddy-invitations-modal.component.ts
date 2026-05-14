@@ -17,11 +17,18 @@ export class BuddyInvitationsModal implements OnInit {
   inviteEmail: string = '';
   inviteMessage: string = 'Hi! I\'d like you to be my emergency buddy. This will help us stay connected during allergy emergencies.';
   
+  // Search functionality
+  searchResults: any[] = [];
+  selectedUser: any = null;
+  isSearching: boolean = false;
+  showSearchDropdown: boolean = false;
+  
   // Invitations lists
   receivedInvitations: BuddyInvitation[] = [];
   sentInvitations: BuddyInvitation[] = [];
   
   isLoading: boolean = false;
+  currentUserId: string = '';
 
   constructor(
     private modalController: ModalController,
@@ -32,6 +39,10 @@ export class BuddyInvitationsModal implements OnInit {
   ) { }
 
   async ngOnInit() {
+    const currentUser = await this.userService.getCurrentUserProfile();
+    if (currentUser) {
+      this.currentUserId = currentUser.uid;
+    }
     await this.loadInvitations();
   }
 
@@ -55,8 +66,8 @@ export class BuddyInvitationsModal implements OnInit {
   }
 
   async sendInvitation() {
-    if (!this.inviteEmail) {
-      this.showToast('Please enter an email address', 'warning');
+    if (!this.selectedUser) {
+      this.showToast('Please select a user from the dropdown', 'warning');
       return;
     }
 
@@ -72,7 +83,7 @@ export class BuddyInvitationsModal implements OnInit {
       }
 
       // Check for duplicate buddy relationships FIRST
-      const duplicateCheck = await this.buddyService.checkDuplicateBuddyByEmail(currentUser.uid, this.inviteEmail.trim());
+      const duplicateCheck = await this.buddyService.checkDuplicateBuddyByEmail(currentUser.uid, this.selectedUser.email.trim());
       
       if (duplicateCheck.isDuplicate) {
         let alertMessage = '';
@@ -83,7 +94,7 @@ export class BuddyInvitationsModal implements OnInit {
             alertMessage = `You already have ${duplicateCheck.details?.name || 'this person'} as a buddy.`;
             break;
           case 'pending_sent_invitation':
-            alertMessage = `You have already sent a buddy invitation to ${duplicateCheck.details?.name || this.inviteEmail}. Please wait for them to respond.`;
+            alertMessage = `You have already sent a buddy invitation to ${duplicateCheck.details?.name || this.selectedUser.email}. Please wait for them to respond.`;
             break;
           case 'pending_received_invitation':
             alertMessage = `${duplicateCheck.details?.name || 'This person'} has already sent you a buddy invitation. Please check your invitations.`;
@@ -106,19 +117,10 @@ export class BuddyInvitationsModal implements OnInit {
         return; // Block the invitation
       }
 
-      // First, search for the user by email
-      const targetUser = await this.userService.getUserByEmail(this.inviteEmail);
-      
-      if (!targetUser) {
-        this.showToast('User with this email not found. They need to register first.', 'warning');
-        this.isLoading = false;
-        return;
-      }
-
       // Send the invitation with current user data
       await this.buddyService.sendBuddyInvitationWithUser(
         currentUser,
-        targetUser,
+        this.selectedUser,
         this.inviteMessage
       );
 
@@ -126,6 +128,9 @@ export class BuddyInvitationsModal implements OnInit {
       
       // Clear form
       this.inviteEmail = '';
+      this.selectedUser = null;
+      this.searchResults = [];
+      this.showSearchDropdown = false;
       this.inviteMessage = 'Hi! I\'d like you to be my emergency buddy. This will help us stay connected during allergy emergencies.';
       
       // Refresh sent invitations
@@ -256,6 +261,42 @@ export class BuddyInvitationsModal implements OnInit {
 
   getPendingSentCount(): number {
     return this.sentInvitations.filter(inv => inv.status === 'pending').length;
+  }
+
+  async searchForUsers(searchTerm: string) {
+    this.inviteEmail = searchTerm;
+    
+    if (!searchTerm || searchTerm.trim().length < 2) {
+      this.searchResults = [];
+      this.showSearchDropdown = false;
+      return;
+    }
+
+    try {
+      this.isSearching = true;
+      const results = await this.userService.searchUsers(searchTerm, this.currentUserId);
+      this.searchResults = results;
+      this.showSearchDropdown = results.length > 0;
+    } catch (error) {
+      console.error('Error searching users:', error);
+      this.searchResults = [];
+      this.showSearchDropdown = false;
+    } finally {
+      this.isSearching = false;
+    }
+  }
+
+  selectUserFromDropdown(user: any) {
+    this.selectedUser = user;
+    this.inviteEmail = user.email;
+    this.showSearchDropdown = false;
+  }
+
+  clearSearch() {
+    this.inviteEmail = '';
+    this.selectedUser = null;
+    this.searchResults = [];
+    this.showSearchDropdown = false;
   }
 
   async showToast(message: string, color: string = 'medium') {

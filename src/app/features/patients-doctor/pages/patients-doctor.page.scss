@@ -1,0 +1,85 @@
+.search-bar-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  margin-bottom: 16px;
+}
+
+.search-bar-input {
+  --padding-start: 16px;
+  --padding-end: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 0;
+}
+
+.search-bar-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+ion-card {
+  margin: 0 0 16px 0;
+}
+
+ion-card-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+ion-card-title {
+  font-weight: 600;
+  color: #036a5d;
+}
+
+ion-list {
+  padding: 0;
+}
+
+ion-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 8px;
+}
+
+ion-item h2 {
+  font-weight: 600;
+  color: #036a5d;
+}
+
+ion-item p {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.no-doctors-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.no-doctors-card {
+  width: 100%;
+  max-width: 300px;
+}
+
+.no-doctors-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.no-doctors-icon {
+  font-size: 64px;
+  color: #036a5d;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.no-doctors-text {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}

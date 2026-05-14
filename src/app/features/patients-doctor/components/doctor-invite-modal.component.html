@@ -1,0 +1,143 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Doctor Invitations</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange()" color="primary">
+    <ion-segment-button value="invite">
+      <ion-label>Invite</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="received">
+      <ion-label>Received</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="sent">
+      <ion-label>Sent</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Invite Tab -->
+  <div *ngIf="selectedSegment === 'invite'" class="ion-padding">
+    <div class="search-container">
+      <ion-input
+        placeholder="Search doctor by email..."
+        [(ngModel)]="inviteEmail"
+        (ionInput)="searchUsers(inviteEmail)"
+        clearInput="true">
+      </ion-input>
+      
+      <div *ngIf="showSearchDropdown && searchResults.length > 0" class="search-dropdown">
+        <ion-list>
+          <ion-item *ngFor="let user of searchResults" 
+            button 
+            (click)="selectUser(user)"
+            detail>
+            <ion-label>
+              <h2>{{ user.firstName }} {{ user.lastName }}</h2>
+              <p>{{ user.email }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
+    </div>
+
+    <div *ngIf="selectedUser" class="selected-doctor-card">
+      <ion-card>
+        <ion-card-content>
+          <h2>{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h2>
+          <p>{{ selectedUser.email }}</p>
+          <p *ngIf="selectedUser.specialty" class="specialty">{{ selectedUser.specialty }}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <div class="message-container">
+      <ion-label>Invitation Message (Optional)</ion-label>
+      <ion-textarea
+        [(ngModel)]="inviteMessage"
+        placeholder="Enter your message..."
+        rows="4">
+      </ion-textarea>
+    </div>
+
+    <ion-button 
+      expand="block" 
+      color="primary"
+      (click)="sendInvitation()"
+      [disabled]="!selectedUser || isLoading">
+      <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+      {{ isLoading ? 'Sending...' : 'Send Invitation' }}
+    </ion-button>
+
+    <ion-button 
+      expand="block" 
+      fill="outline"
+      (click)="resetForm()">
+      Clear
+    </ion-button>
+  </div>
+
+  <!-- Received Tab -->
+  <div *ngIf="selectedSegment === 'received'" class="ion-padding">
+    <div *ngIf="receivedInvitations.length > 0">
+      <ion-card *ngFor="let invitation of receivedInvitations">
+        <ion-card-content>
+          <h2>{{ invitation.fromUserName }}</h2>
+          <p>{{ invitation.fromUserEmail }}</p>
+          <p class="message-preview">{{ invitation.message }}</p>
+          <ion-buttons>
+            <ion-button 
+              color="primary"
+              (click)="acceptInvitation(invitation)"
+              [disabled]="isLoading">
+              Accept
+            </ion-button>
+            <ion-button 
+              color="danger"
+              fill="outline"
+              (click)="rejectInvitation(invitation)"
+              [disabled]="isLoading">
+              Reject
+            </ion-button>
+          </ion-buttons>
+        </ion-card-content>
+      </ion-card>
+    </div>
+    <div *ngIf="receivedInvitations.length === 0" class="no-invitations">
+      <p>No received invitations</p>
+    </div>
+  </div>
+
+  <!-- Sent Tab -->
+  <div *ngIf="selectedSegment === 'sent'" class="ion-padding">
+    <div *ngIf="sentInvitations.length > 0">
+      <ion-card *ngFor="let invitation of sentInvitations">
+        <ion-card-content>
+          <h2>{{ invitation.toUserName }}</h2>
+          <p>{{ invitation.toUserEmail }}</p>
+          <p class="status" [ngClass]="'status-' + invitation.status">
+            {{ invitation.status | titlecase }}
+          </p>
+          <ion-button 
+            *ngIf="invitation.status === 'pending'"
+            color="danger"
+            fill="outline"
+            size="small"
+            (click)="cancelInvitation(invitation)"
+            [disabled]="isLoading">
+            Cancel
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+    <div *ngIf="sentInvitations.length === 0" class="no-invitations">
+      <p>No sent invitations</p>
+    </div>
+  </div>
+</ion-content>

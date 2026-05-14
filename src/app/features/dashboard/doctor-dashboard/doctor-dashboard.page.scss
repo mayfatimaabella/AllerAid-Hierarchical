@@ -43,16 +43,8 @@
     font-weight: 500;
   }
   
-  &.critical .stat-number {
+  &.emergency .stat-number {
     color: #eb445a;
-  }
-  
-  &.high-risk .stat-number {
-    color: #ffc409;
-  }
-  
-  &.pending .stat-number {
-    color: #3dc2ff;
   }
 }
 
@@ -369,6 +361,23 @@ ion-toolbar {
       font-weight: 700;
       z-index: 15;
       animation: bounce 1s ease-in-out infinite;
+    }
+  }
+}
+
+// Invite Patient Floating Action Button
+ion-fab {
+  ion-fab-button {
+    --box-shadow: 0 4px 16px rgba(56, 128, 255, 0.3);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      --box-shadow: 0 6px 20px rgba(56, 128, 255, 0.5);
+      transform: scale(1.1);
+    }
+    
+    &:active {
+      transform: scale(0.95);
     }
   }
 }

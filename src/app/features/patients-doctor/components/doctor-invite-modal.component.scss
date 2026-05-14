@@ -1,0 +1,89 @@
+.search-container {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+  margin-top: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.selected-doctor-card {
+  margin-bottom: 16px;
+}
+
+ion-card {
+  margin: 0 0 16px 0;
+}
+
+.message-container {
+  margin-bottom: 16px;
+}
+
+.message-container ion-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.message-preview {
+  color: #666;
+  font-size: 0.875rem;
+  margin: 8px 0;
+  font-style: italic;
+}
+
+.status {
+  margin: 8px 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-accepted {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-declined {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-cancelled {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.no-invitations {
+  text-align: center;
+  padding: 32px 16px;
+  color: #999;
+}
+
+ion-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+ion-button {
+  flex: 1;
+}

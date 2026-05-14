@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIf, NgFor, DatePipe, SlicePipe } from '@angular/common';
 import { DoctorVisit, MedicalHistory, HealthcareProvider } from '../../../core/services/ehr.service';
-import { EhrAccessManagementCardComponent } from './access-management/ehr-access-management-card.component';
 
 @Component({
   selector: 'app-ehr-section-cards',
@@ -18,8 +17,7 @@ import { EhrAccessManagementCardComponent } from './access-management/ehr-access
     NgIf,
     NgFor,
     DatePipe,
-    SlicePipe,
-    EhrAccessManagementCardComponent
+    SlicePipe
   ]
 })
 export class EHRSectionCardsComponent {

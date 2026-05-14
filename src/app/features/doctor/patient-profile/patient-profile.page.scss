@@ -1,0 +1,185 @@
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #3880ff;
+}
+
+.patient-header-card {
+  margin: 16px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #3880ff 0%, #2d5aa0 100%);
+
+  ion-card-content {
+    color: white;
+    padding: 24px;
+  }
+
+  .patient-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 16px;
+
+    .patient-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .patient-info {
+      flex: 1;
+
+      h1 {
+        margin: 0 0 4px;
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .patient-id {
+        margin: 0 0 8px;
+        opacity: 0.9;
+        font-size: 13px;
+      }
+    }
+  }
+
+  .quick-contact {
+    display: flex;
+    gap: 8px;
+
+    ion-button {
+      flex: 1;
+      --color: white;
+      ion-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+}
+
+.profile-segments {
+  --background: white;
+  margin: 0 16px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  ion-segment-button {
+    --color: #666;
+    --color-checked: white;
+    --background-checked: #3880ff;
+    border-radius: 10px;
+    margin: 4px;
+
+    ion-icon {
+      margin-bottom: 4px;
+    }
+
+    ion-label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+  }
+}
+
+.info-card {
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  ion-card-header {
+    background: linear-gradient(135deg, #f5f5f5 0%, #efefef 100%);
+    border-radius: 12px 12px 0 0;
+    padding: 16px;
+
+    ion-card-title {
+      color: #333;
+      font-weight: 600;
+      font-size: 16px;
+    }
+  }
+
+  ion-card-content {
+    padding: 0;
+
+    ion-item {
+      --padding-start: 16px;
+      --padding-end: 16px;
+      --inner-padding-end: 0;
+
+      ion-label {
+        color: #666;
+        font-weight: 500;
+      }
+
+      ion-text {
+        color: #333;
+        font-weight: 400;
+      }
+    }
+
+    .empty-message {
+      text-align: center;
+      color: #999;
+      padding: 24px;
+      font-size: 14px;
+    }
+  }
+}
+
+ion-badge {
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  padding-bottom: 32px;
+
+  ion-button {
+    --border-radius: 25px;
+    --padding-start: 20px;
+    --padding-end: 20px;
+    min-height: 44px;
+    font-weight: 500;
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .info-card {
+    ion-card-header {
+      background: rgba(0, 0, 0, 0.2);
+
+      ion-card-title {
+        color: #fff;
+      }
+    }
+
+    ion-card-content {
+      ion-item {
+        ion-label {
+          color: #ccc;
+        }
+
+        ion-text {
+          color: #fff;
+        }
+      }
+
+      .empty-message {
+        color: #999;
+      }
+    }
+  }
+}

@@ -1,0 +1,174 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/doctor"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Doctor Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Doctor Profile</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <section class="profile-header">
+    <div class="profile-header-card">
+      <div class="profile-header-content">
+        <ion-avatar class="profile-avatar">
+          <img alt="doctor-avatar"
+               [src]="doctorProfile?.profilePhoto || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
+        </ion-avatar>
+        
+        <div class="profile-info">
+          <div class="profile-name">
+            {{ doctorProfileForm.get('firstName')?.value }} {{ doctorProfileForm.get('lastName')?.value }}
+          </div>
+          <div class="profile-email">
+            {{ doctorProfileForm.get('email')?.value || '' }}
+          </div>
+        </div>
+      </div>
+      <!-- ellipsis menu -->
+      <button class="profile-menu-btn" id="doctorProfileMenuBtn" aria-label="Menu">
+        <ion-icon name="ellipsis-vertical"></ion-icon>
+      </button>
+    </div>
+  </section>
+
+    <ion-popover trigger="doctorProfileMenuBtn" [dismissOnSelect]="true">
+    <ng-template>
+
+      <ion-content>
+
+        <ion-list>
+          <ion-item button (click)="toggleEditMode()">
+            <ion-icon name="pencil-outline" slot="start"></ion-icon>
+            <ion-label>{{ isEditing ? 'Cancel Edit' : 'Edit Profile' }}</ion-label>
+          </ion-item>
+        </ion-list>
+
+      </ion-content>
+      
+    </ng-template>
+  </ion-popover>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+  </div>
+
+  <div class="doctor-profile-content" *ngIf="!isLoading && !isEditing">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Professional Information</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="info-row">
+          <span class="label">Name:</span>
+          <span class="value">{{ doctorProfileForm.get('firstName')?.value }} {{ doctorProfileForm.get('lastName')?.value }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Specialization:</span>
+          <span class="value">{{ doctorProfileForm.get('specialization')?.value }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">License Number:</span>
+          <span class="value">{{ doctorProfileForm.get('licenseNumber')?.value }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Hospital:</span>
+          <span class="value">{{ doctorProfileForm.get('hospital')?.value }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Contact Information</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="info-row">
+          <span class="label">Email:</span>
+          <span class="value">{{ doctorProfileForm.get('email')?.value }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Phone:</span>
+          <span class="value">{{ doctorProfileForm.get('phoneNumber')?.value }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="doctor-profile-edit" *ngIf="!isLoading && isEditing">
+    <form [formGroup]="doctorProfileForm">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Professional Information</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="stacked">First Name</ion-label>
+            <ion-input type="text" formControlName="firstName" placeholder="Enter first name"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Last Name</ion-label>
+            <ion-input type="text" formControlName="lastName" placeholder="Enter last name"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Specialization</ion-label>
+            <ion-input type="text" formControlName="specialization" placeholder="Enter specialization"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">License Number</ion-label>
+            <ion-input type="text" formControlName="licenseNumber" placeholder="Enter license number"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Hospital</ion-label>
+            <ion-input type="text" formControlName="hospital" placeholder="Enter hospital name"></ion-input>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Contact Information</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="stacked">Email</ion-label>
+            <ion-input type="email" formControlName="email" placeholder="Enter email"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Phone Number</ion-label>
+            <ion-input type="tel" formControlName="phoneNumber" placeholder="Enter phone number"></ion-input>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Additional Information</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="stacked">Bio</ion-label>
+            <ion-textarea formControlName="bio" placeholder="Enter your bio"></ion-textarea>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <div class="edit-actions">
+        <ion-button expand="block" fill="solid" color="success" (click)="saveDoctorProfile()">
+          <ion-icon name="checkmark" slot="start"></ion-icon>
+          Save Changes
+        </ion-button>
+        <ion-button expand="block" fill="outline" color="medium" (click)="toggleEditMode()">
+          <ion-icon name="close" slot="start"></ion-icon>
+          Cancel
+        </ion-button>
+      </div>
+    </form>
+  </div>
+</ion-content>

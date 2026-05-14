@@ -574,4 +574,55 @@ export class UserService {
       return [];
     }
   }
+
+  // Search users by name or email (patients only)
+  async searchUsers(searchTerm: string, excludeUserId?: string): Promise<UserProfile[]> {
+    if (!searchTerm || searchTerm.trim().length < 2) {
+      return [];
+    }
+
+    try {
+      const searchTermLower = searchTerm.toLowerCase().trim();
+      const usersRef = collection(this.db, 'users');
+      const querySnapshot = await getDocs(usersRef);
+      
+      const results: UserProfile[] = [];
+      
+      querySnapshot.docs.forEach(doc => {
+        const user = doc.data() as UserProfile;
+        const userEmail = (user.email || '').toLowerCase();
+        const userFullName = (user.fullName || '').toLowerCase();
+        const userFirstName = (user.firstName || '').toLowerCase();
+        const userLastName = (user.lastName || '').toLowerCase();
+        
+        // Exclude the current user if specified
+        if (excludeUserId && user.uid === excludeUserId) {
+          return;
+        }
+
+        // Only include patients (exclude doctors and nurses)
+        if (user.role === 'doctor' || user.role === 'nurse') {
+          return;
+        }
+        
+        // Match by email, full name, first name, or last name
+        if (
+          userEmail.includes(searchTermLower) ||
+          userFullName.includes(searchTermLower) ||
+          userFirstName.includes(searchTermLower) ||
+          userLastName.includes(searchTermLower)
+        ) {
+          results.push({
+            ...user,
+            uid: user.uid || doc.id
+          });
+        }
+      });
+      
+      return results;
+    } catch (error) {
+      console.error('Error searching users:', error);
+      return [];
+    }
+  }
 }

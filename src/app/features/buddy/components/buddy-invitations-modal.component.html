@@ -33,20 +33,67 @@
   <div *ngIf="selectedSegment === 'invite'" class="invite-section">
     <h3>Invite Someone as Your Buddy</h3>
     <p style="color: #e9e9e9; font-size: 14px; margin-bottom: 20px;">
-      Search for users by email and send them a buddy request.
+      Search for users by email or name and send them a buddy request.
     </p>
 
     <form (ngSubmit)="sendInvitation()">
-      <ion-item lines="none">
-        <ion-label position="stacked">Recipient Email *</ion-label>
-        <ion-input 
-          [(ngModel)]="inviteEmail"
-          name="inviteEmail"
-          type="email"
-          placeholder="Enter their email address"
-          required>
-        </ion-input>
-      </ion-item>
+      <div class="search-container">
+        <ion-item lines="none" class="search-item">
+          <ion-label position="stacked">Search for Buddy *</ion-label>
+          <ion-input 
+            [(ngModel)]="inviteEmail"
+            name="inviteEmail"
+            (ionInput)="searchForUsers(inviteEmail)"
+            placeholder="Enter name or email"
+            type="text"
+            clearInput="true">
+          </ion-input>
+          <ion-icon 
+            *ngIf="inviteEmail && selectedUser" 
+            name="checkmark-circle" 
+            slot="end"
+            style="color: #4CAF50; font-size: 24px;">
+          </ion-icon>
+        </ion-item>
+
+        <!-- Search Results Dropdown -->
+        <div *ngIf="showSearchDropdown && searchResults.length > 0" class="search-dropdown">
+          <div class="search-results">
+            <div 
+              *ngFor="let user of searchResults" 
+              class="search-result-item"
+              (click)="selectUserFromDropdown(user)"
+              [class.selected]="selectedUser?.uid === user.uid">
+              <div class="user-info">
+                <h4>{{ user.fullName || user.firstName + ' ' + user.lastName }}</h4>
+                <p class="user-email">{{ user.email }}</p>
+              </div>
+              <ion-icon 
+                *ngIf="selectedUser?.uid === user.uid" 
+                name="checkmark" 
+                style="color: #4CAF50;">
+              </ion-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected User Display -->
+      <div *ngIf="selectedUser" class="selected-user-card">
+        <div class="user-card-content">
+          <ion-icon name="person-circle" class="user-avatar"></ion-icon>
+          <div class="user-details">
+            <h4>{{ selectedUser.fullName || selectedUser.firstName + ' ' + selectedUser.lastName }}</h4>
+            <p class="user-email">{{ selectedUser.email }}</p>
+          </div>
+          <ion-button 
+            fill="clear" 
+            size="small"
+            (click)="clearSearch()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
 
       <ion-item lines="none">
         <ion-label position="stacked">Personal Message</ion-label>
@@ -61,7 +108,7 @@
       <ion-button 
         expand="block" 
         type="submit"
-        [disabled]="!inviteEmail || isLoading"
+        [disabled]="!selectedUser || isLoading"
         style="margin-top: 20px;">
         <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
         {{ isLoading ? 'Sending...' : 'Send Invitation' }}
