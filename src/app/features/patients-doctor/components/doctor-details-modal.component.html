@@ -1,0 +1,56 @@
+<ng-container>
+  <div class="doctor-modal-backdrop" (click)="close()">
+    <div class="doctor-modal-content" (click)="$event.stopPropagation()">
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="end">
+            <ion-button (click)="close()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Doctor Details</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <div class="doctor-details">
+          <div class="doctor-avatar">
+            <ion-icon name="person-circle"></ion-icon>
+          </div>
+
+          <h2>{{ doctor.firstName }} {{ doctor.lastName }}</h2>
+
+          <div *ngIf="doctor.specialty" class="detail-item">
+            <ion-label>Specialty</ion-label>
+            <p>{{ doctor.specialty }}</p>
+          </div>
+
+          <div class="detail-item">
+            <ion-label>Email</ion-label>
+            <p>{{ doctor.email }}</p>
+          </div>
+
+          <div *ngIf="doctor.phone" class="detail-item">
+            <ion-label>Phone</ion-label>
+            <p>{{ doctor.phone }}</p>
+          </div>
+
+          <div *ngIf="doctor.hospital" class="detail-item">
+            <ion-label>Hospital/Clinic</ion-label>
+            <p>{{ doctor.hospital }}</p>
+          </div>
+
+          <div *ngIf="doctor.address" class="detail-item">
+            <ion-label>Address</ion-label>
+            <p>{{ doctor.address }}</p>
+          </div>
+
+          <div *ngIf="doctor.addedAt" class="detail-item">
+            <ion-label>Added On</ion-label>
+            <p>{{ doctor.addedAt | date:'short' }}</p>
+          </div>
+        </div>
+      </ion-content>
+    </div>
+  </div>
+</ng-container>

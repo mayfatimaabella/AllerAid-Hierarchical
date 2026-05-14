@@ -93,6 +93,12 @@ const routes: Routes = [
     data: { roles: ['doctor', 'nurse'] }
   },
   {
+    path: 'doctor',
+    loadChildren: () => import('./features/doctor/doctor.module').then(m => m.DoctorModule),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['doctor', 'nurse'] }
+  },
+  {
     path: 'visit-details/:id',
     loadChildren: () => import('./features/profile/ehr/pages/doctor-visit-details/doctor-visit-details.module').then( m => m.VisitDetailsPageModule),
     canActivate: [AuthGuard]
@@ -110,7 +116,10 @@ const routes: Routes = [
     path: 'pollen-map',
     loadChildren: () => import('./features/pollen-map/pollen-map.module').then( m => m.PollenMapPageModule)
   },
-
+  {
+    path: 'patients-doctor',
+    loadChildren: () => import('./features/patients-doctor/patients-doctor.module').then(m => m.PatientsDoctorPageModule),
+  }
 
 
 

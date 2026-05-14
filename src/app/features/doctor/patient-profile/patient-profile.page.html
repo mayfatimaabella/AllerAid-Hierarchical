@@ -1,0 +1,217 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/doctor-dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Patient Profile</ion-title>
+    <ion-buttons slot="end">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen>
+  <ion-spinner *ngIf="isLoading" class="loading-spinner"></ion-spinner>
+
+  <ng-container *ngIf="!isLoading && patient">
+    <!-- Patient Header Card -->
+    <ion-card class="patient-header-card">
+      <ion-card-content>
+        <div class="patient-header">
+          <img 
+            [src]="patient.avatar" 
+            alt="Patient avatar"
+            class="patient-avatar"
+          />
+          <div class="patient-info">
+            <h1>{{ patient.name }}</h1>
+            <p class="patient-id">ID: {{ patientId }}</p>
+            <ion-badge [color]="patient.status === 'active' ? 'success' : 'warning'">
+              {{ patient.status | titlecase }}
+            </ion-badge>
+          </div>
+        </div>
+
+        <div class="quick-contact">
+          <ion-button fill="clear" size="small" (click)="sendMessage()">
+            <ion-icon slot="start" name="mail-outline"></ion-icon>
+            Message
+          </ion-button>
+          <ion-button fill="clear" size="small" (click)="scheduleAppointment()">
+            <ion-icon slot="start" name="calendar-outline"></ion-icon>
+            Schedule
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Segment Tabs -->
+    <ion-segment 
+      [(ngModel)]="selectedSegment"
+      class="profile-segments"
+    >
+      <ion-segment-button value="overview">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <ion-label>Overview</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="allergies">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <ion-label>Allergies</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="medications">
+        <ion-icon name="medical-outline"></ion-icon>
+        <ion-label>Medications</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="contacts">
+        <ion-icon name="people-circle-outline"></ion-icon>
+        <ion-label>Contacts</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Overview Tab -->
+    <ng-container *ngIf="selectedSegment === 'overview'">
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Contact Information</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label>Email</ion-label>
+            <ion-text slot="end">{{ patient.email }}</ion-text>
+          </ion-item>
+          <ion-item>
+            <ion-label>Phone</ion-label>
+            <ion-text slot="end">{{ patient.phone }}</ion-text>
+          </ion-item>
+          <ion-item>
+            <ion-label>Date of Birth</ion-label>
+            <ion-text slot="end">{{ patient.dateOfBirth | date }}</ion-text>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Appointment Schedule</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label>Last Visit</ion-label>
+            <ion-text slot="end">{{ patient.lastVisit | date }}</ion-text>
+          </ion-item>
+          <ion-item>
+            <ion-label>Next Appointment</ion-label>
+            <ion-text slot="end" color="primary">{{ patient.nextAppointment | date }}</ion-text>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <!-- Allergies Tab -->
+    <ng-container *ngIf="selectedSegment === 'allergies'">
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Known Allergies</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list *ngIf="patient.allergies && patient.allergies.length > 0">
+            <ion-item *ngFor="let allergy of patient.allergies">
+              <ion-icon 
+                name="alert-circle" 
+                color="danger"
+                slot="start"
+              ></ion-icon>
+              <ion-label>{{ allergy }}</ion-label>
+            </ion-item>
+          </ion-list>
+          <p *ngIf="!patient.allergies || patient.allergies.length === 0" class="empty-message">
+            No allergies recorded
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <!-- Medications Tab -->
+    <ng-container *ngIf="selectedSegment === 'medications'">
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Current Medications</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list *ngIf="patient.medications && patient.medications.length > 0">
+            <ion-item *ngFor="let medication of patient.medications">
+              <ion-icon 
+                name="medical" 
+                color="primary"
+                slot="start"
+              ></ion-icon>
+              <ion-label>{{ medication }}</ion-label>
+            </ion-item>
+          </ion-list>
+          <p *ngIf="!patient.medications || patient.medications.length === 0" class="empty-message">
+            No medications recorded
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <!-- Emergency Contacts Tab -->
+    <ng-container *ngIf="selectedSegment === 'contacts'">
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>Emergency Contacts</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list *ngIf="patient.emergencyContacts && patient.emergencyContacts.length > 0">
+            <ion-item *ngFor="let contact of patient.emergencyContacts">
+              <ion-avatar slot="start">
+                <ion-icon name="person-circle" color="medium"></ion-icon>
+              </ion-avatar>
+              <ion-label>
+                <h2>{{ contact.name }}</h2>
+                <p>{{ contact.relationship }}</p>
+                <p class="phone">{{ contact.phone }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+          <p *ngIf="!patient.emergencyContacts || patient.emergencyContacts.length === 0" class="empty-message">
+            No emergency contacts recorded
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <ion-button 
+        expand="block" 
+        fill="outline" 
+        color="primary"
+        (click)="viewMedicalHistory()"
+      >
+        <ion-icon slot="start" name="document-outline"></ion-icon>
+        Medical History
+      </ion-button>
+
+      <ion-button 
+        expand="block" 
+        fill="outline" 
+        color="secondary"
+        (click)="editProfile()"
+      >
+        <ion-icon slot="start" name="create-outline"></ion-icon>
+        Edit Profile
+      </ion-button>
+
+      <ion-button 
+        expand="block" 
+        fill="outline" 
+        color="danger"
+        (click)="removePatient()"
+      >
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        Remove Patient
+      </ion-button>
+    </div>
+  </ng-container>
+</ion-content>

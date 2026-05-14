@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { PopoverController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-menu-popover',
@@ -22,16 +23,6 @@ import { PopoverController } from '@ionic/angular';
         <ion-item button (click)="performAction('profile')">
           <ion-icon name="person-outline" slot="start"></ion-icon>
           <ion-label>Profile Settings</ion-label>
-        </ion-item>
-        
-        <ion-item button (click)="performAction('preferences')">
-          <ion-icon name="settings-outline" slot="start"></ion-icon>
-          <ion-label>Preferences</ion-label>
-        </ion-item>
-        
-        <ion-item button (click)="performAction('help')">
-          <ion-icon name="help-circle-outline" slot="start"></ion-icon>
-          <ion-label>Help & Support</ion-label>
         </ion-item>
         
         <ion-item button (click)="performAction('logout')" class="logout-item">
@@ -98,18 +89,16 @@ export class UserMenuPopover {
   @Input() doctorEmail: string = '';
   @Input() userRole: string = '';
 
-  constructor(private popoverController: PopoverController) {}
+  constructor(private popoverController: PopoverController, private router: Router) {}
 
   async performAction(action: string) {
-    if (action === 'profile' || action === 'preferences' || action === 'help') {
-      // For now, these are placeholder actions
-      // In a full implementation, these would navigate to respective pages
-      console.log(`${action} action selected`);
-    }
-    
     await this.popoverController.dismiss({
       action: action
     });
+
+    if (action === 'profile') {
+      this.router.navigate(['/doctor/doctor-profile']);
+    }
   }
 }
 

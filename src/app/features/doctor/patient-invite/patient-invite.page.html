@@ -1,0 +1,132 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/doctor-dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Invite Patient</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen>
+  <div *ngIf="showSuccessMessage" class="success-banner">
+    <ion-icon name="checkmark-circle" color="success"></ion-icon>
+    <p>Patient invitation sent successfully!</p>
+  </div>
+
+  <ion-card class="invite-card">
+    <ion-card-header>
+      <ion-card-title>Send Patient Invitation</ion-card-title>
+      <ion-card-subtitle>Fill in the patient details to send an invitation</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <form [formGroup]="inviteForm">
+        
+        <ion-item class="form-item">
+          <ion-label position="stacked">
+            Email Address <span class="required">*</span>
+          </ion-label>
+          <ion-input
+            type="email"
+            formControlName="email"
+            placeholder="patient@example.com"
+            clearInput
+          ></ion-input>
+          <ion-note 
+            *ngIf="inviteForm.get('email')?.hasError('email') && inviteForm.get('email')?.touched"
+            slot="helper"
+            color="danger"
+          >
+            Please enter a valid email address
+          </ion-note>
+        </ion-item>
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">
+            First Name <span class="required">*</span>
+          </ion-label>
+          <ion-input
+            type="text"
+            formControlName="firstName"
+            placeholder="John"
+            clearInput
+          ></ion-input>
+        </ion-item>
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">
+            Last Name <span class="required">*</span>
+          </ion-label>
+          <ion-input
+            type="text"
+            formControlName="lastName"
+            placeholder="Doe"
+            clearInput
+          ></ion-input>
+        </ion-item>
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">
+            Phone Number
+          </ion-label>
+          <ion-input
+            type="tel"
+            inputmode="numeric"
+            formControlName="phoneNumber"
+            placeholder="+639123456789"
+            clearInput
+            (ionInput)="filterPhoneInput($event)"
+          ></ion-input>
+          <ion-note 
+            *ngIf="inviteForm.get('phoneNumber')?.hasError('pattern') && inviteForm.get('phoneNumber')?.touched"
+            slot="helper"
+            color="danger"
+          >
+            Phone number can only contain digits, +, -, (), and spaces
+          </ion-note>
+        </ion-item>
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">
+            Message (Optional)
+          </ion-label>
+          <ion-textarea
+            formControlName="message"
+            placeholder="Add a personal message to the invitation"
+            rows="3"
+          ></ion-textarea>
+        </ion-item>
+
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="button-group">
+    <ion-button
+      expand="block"
+      shape="round"
+      color="primary"
+      [disabled]="!inviteForm.valid || isSubmitting"
+      (click)="sendInvite()"
+    >
+      <ion-spinner *ngIf="isSubmitting" name="bubbles" color="light"></ion-spinner>
+      <span *ngIf="!isSubmitting">Send Invitation</span>
+    </ion-button>
+  </div>
+
+  <div class="info-section">
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title size="small">How it works</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ul>
+          <li>The patient will receive an invitation email</li>
+          <li>They can accept or decline the invitation</li>
+          <li>Once accepted, they'll appear in your patient list</li>
+          <li>You can then access their health information</li>
+        </ul>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

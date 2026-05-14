@@ -1,0 +1,255 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 400px;
+}
+
+.profile-header {
+  padding: 16px;
+  background: var(--ion-color-primary, #007bff);
+}
+
+.profile-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 12px;
+}
+
+.profile-avatar {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.profile-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ion-color-dark, #333);
+  margin: 0;
+}
+
+.profile-email {
+  font-size: 13px;
+  color: var(--ion-color-medium, #999);
+  margin: 4px 0 0 0;
+}
+
+.profile-menu-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ion-color-dark, #333);
+  flex-shrink: 0;
+  
+  ion-icon {
+    font-size: 24px;
+  }
+}
+
+.profile-container {
+  padding: 16px;
+
+  .segment-buttons {
+    margin-bottom: 20px;
+  }
+
+  .overview-section,
+  .details-section {
+    ion-card {
+      margin-bottom: 16px;
+
+      ion-card-header {
+        padding-bottom: 12px;
+
+        ion-card-title {
+          font-weight: 600;
+          font-size: 16px;
+        }
+      }
+
+      ion-card-content {
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 12px 0;
+          border-bottom: 1px solid #f0f0f0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .label {
+            font-weight: 600;
+            color: #666;
+            min-width: 120px;
+          }
+
+          .value {
+            color: #333;
+            text-align: right;
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+
+  .details-section {
+    form {
+      ion-item {
+        --padding-start: 0;
+        --padding-end: 0;
+        margin-bottom: 12px;
+        --highlight-height: 0;
+
+        ion-label {
+          color: #666;
+        }
+
+        ion-input,
+        ion-textarea {
+          --padding-start: 0;
+          --padding-end: 0;
+        }
+      }
+
+      .button-group {
+        display: flex;
+        gap: 8px;
+        margin-top: 20px;
+
+        ion-button {
+          flex: 1;
+        }
+      }
+    }
+  }
+}
+
+.doctor-profile-content {
+  padding: 16px;
+  
+  ion-card {
+    margin-bottom: 16px;
+
+    ion-card-header {
+      padding-bottom: 12px;
+
+      ion-card-title {
+        font-weight: 600;
+        font-size: 16px;
+      }
+    }
+
+    ion-card-content {
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .label {
+          font-weight: 600;
+          color: #666;
+          min-width: 120px;
+        }
+
+        .value {
+          color: #333;
+          text-align: right;
+          flex: 1;
+        }
+      }
+    }
+  }
+}
+
+.doctor-profile-edit {
+  padding: 16px;
+
+  form {
+    ion-card {
+      margin-bottom: 16px;
+
+      ion-card-header {
+        padding-bottom: 12px;
+
+        ion-card-title {
+          font-weight: 600;
+          font-size: 16px;
+        }
+      }
+
+      ion-card-content {
+        ion-item {
+          --padding-start: 0;
+          --padding-end: 0;
+          margin-bottom: 12px;
+          --highlight-height: 0;
+
+          ion-label {
+            color: #666;
+            margin-bottom: 8px;
+          }
+
+          ion-input,
+          ion-textarea {
+            --padding-start: 8px;
+            --padding-end: 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 4px;
+          }
+        }
+
+        ion-item:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  .edit-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+
+    ion-button {
+      margin: 0;
+    }
+  }
+}

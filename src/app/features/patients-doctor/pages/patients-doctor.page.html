@@ -1,0 +1,78 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      
+    <ion-title>My Doctors</ion-title>
+    
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="openInvitationsModal()">
+        <ion-icon name="person-add-outline"></ion-icon>
+        <ion-badge *ngIf="invitationCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; font-size: 10px;">
+          {{ invitationCount }}
+        </ion-badge>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+      <ion-refresher-content
+        pullingIcon="chevron-down-circle-outline"
+        pullingText="Pull to refresh"
+        refreshingSpinner="crescent"
+        refreshingText="Refreshing doctors...">
+      </ion-refresher-content>
+    </ion-refresher>
+
+    <!-- Doctor Actions Modal -->
+    <app-doctor-actions-modal *ngIf="showActionsModal" [doctor]="selectedDoctor" (edit)="onEditDoctor($event)" (delete)="onDeleteDoctor($event)" (closeModal)="closeDoctorActions()"></app-doctor-actions-modal>
+
+    <!-- Doctor Edit Modal -->
+    <app-doctor-edit-modal *ngIf="showEditModal" [doctor]="doctorToEdit" (save)="onSaveEditDoctor($event)" (closeEdit)="closeEditModal()"></app-doctor-edit-modal>
+
+    <!-- Doctor Delete Confirm Modal -->
+    <app-doctor-delete-confirm-modal *ngIf="showDeleteModal" [doctor]="doctorToEdit" (confirm)="onConfirmDeleteDoctor($event)" (cancelDelete)="closeDeleteModal()"></app-doctor-delete-confirm-modal>
+
+    <ion-item class="search-bar-item" lines="none">
+      <ion-input class="search-bar-input" placeholder="Search doctor..." [(ngModel)]="searchTerm" (ionInput)="searchDoctor()"></ion-input>
+      <ion-button class="search-bar-btn" fill="clear" (click)="searchDoctor()">
+        <ion-icon name="search"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <ion-card *ngIf="doctors.length > 0">
+      <ion-card-header style="display: flex; justify-content: space-between;">
+        <ion-card-title style="display: flex; align-items: center; gap: 8px;">
+          My Doctors
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let doctor of filteredDoctors">
+            <ion-label (click)="showDoctorDetails(doctor)" style="cursor:pointer; color:#036a5d; font-weight:500;">
+              <h2>{{ doctor.firstName }} {{ doctor.lastName }}</h2>
+              <p *ngIf="doctor.specialty">{{ doctor.specialty }}</p>
+              <p *ngIf="doctor.email">{{ doctor.email }}</p>
+            </ion-label>
+            <ion-button fill="clear" slot="end" (click)="openDoctorActions(doctor)">
+              <ion-icon name="ellipsis-vertical"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <div *ngIf="doctors.length === 0" class="no-doctors-container">
+      <ion-card class="no-doctors-card">
+        <ion-card-content class="no-doctors-content">
+          <ion-icon name="person-add-outline" class="no-doctors-icon"></ion-icon>
+          <div class="no-doctors-text">You have no doctors connected yet. Invite your healthcare providers!</div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <app-doctor-details-modal *ngIf="showDetailsModal" [doctor]="doctorToShowDetails" (closeDetails)="closeDetailsModal()"></app-doctor-details-modal>
+</ion-content>
