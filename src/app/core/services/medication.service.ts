@@ -239,4 +239,9 @@ export class MedicationService {
       throw error;
     }
   }
+  // Inside medication.service.ts
+isExpired(medication: Medication): boolean {
+  if (!medication.medicineExpiryDate) return false;
+  return new Date(medication.medicineExpiryDate) < new Date();
+}
 }

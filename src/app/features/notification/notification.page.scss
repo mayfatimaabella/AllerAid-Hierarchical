@@ -10,31 +10,31 @@ ion-toolbar {
 
 .notification-container {
     display: flex;
-    flex-direction: column; // Stack cards vertically
-    align-items: center;    // Center cards horizontally
-    padding: 20px 16px;     // Added padding at the top
-    gap: 16px;              // Space between cards
-    min-height: 100%;       // Allow scrolling instead of forcing center
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+    gap: 16px;
+    min-height: 100%;
 }
 
 .reminder-card {
-    background: #18574e;
+    background: #18574e; // Your dark teal
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     padding: 20px;
-    width: 100%;            // Take full available width
-    max-width: 450px;       // Prevents cards from getting too wide on tablets/laptops
+    width: 100%;
+    max-width: 450px;
     transition: transform 0.2s ease;
 
     &:active {
-        transform: scale(0.98); // Slight press effect for your demo
+        transform: scale(0.98);
     }
 }
 
 .reminder-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; // Align text to the top
+    align-items: flex-start;
     margin-bottom: 12px;
 
     h3 {
@@ -46,9 +46,35 @@ ion-toolbar {
     }
 }
 
+// Action button container for browser clicks
+.reminder-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    ion-button {
+        --border-radius: 8px;
+        flex: 1;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .btn-taken {
+        --background: #ffffff;
+        --color: #18574e;
+    }
+
+    .btn-skip {
+        --color: #ffffff;
+        --border-color: #ffffff;
+    }
+}
+
 .reminder-time {
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.8); // Slightly transparent for hierarchy
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
 }
 
@@ -59,7 +85,6 @@ ion-toolbar {
     margin: 0;
 }
 
-// Added style for the "No Reminders" empty state
 .no-reminders {
     display: flex;
     flex-direction: column;

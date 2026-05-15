@@ -24,9 +24,16 @@
       <h1 class="med-name">{{ medication.name }}</h1>
       <p class="brand-sub">{{ medication.brandName || 'Prescription' }}</p>
       
-      <div class="status-pill" [ngClass]="getStatusLabel().toLowerCase()">
-        <div class="pulse-dot"></div>
-        {{ getStatusLabel() }}
+      <div class="status-pill" 
+           [style.background-color]="'var(--ion-color-' + getStatusColor() + '-tint)'"
+           [style.border]="'1px solid var(--ion-color-' + getStatusColor() + ')'">
+        <div class="pulse-dot" 
+             [style.background-color]="'var(--ion-color-' + getStatusColor() + ')'">
+        </div>
+        <span [style.color]="'var(--ion-color-' + getStatusColor() + '-shade)'" 
+              style="font-weight: 600;">
+          {{ getStatusLabel() }}
+        </span>
       </div>
     </div>
 
@@ -39,7 +46,10 @@
         </div>
         
         <div class="bottle-progress">
-          <div class="liquid-fill" [style.width.%]="(calculateRemainingPills() / (medication.quantity || 1)) * 100"></div>
+          <div class="liquid-fill" 
+               [style.width.%]="(calculateRemainingPills() / (medication.quantity || 1)) * 100"
+               [style.background-color]="'var(--ion-color-' + getStatusColor() + ')'">
+          </div>
         </div>
         <p class="total-text">Started with {{ medication.quantity }} total</p>
       </div>
@@ -83,11 +93,14 @@
       </div>
     </div>
 
-    <div class="shelf-life-card" *ngIf="medication?.medicineExpiryDate">
-      <ion-icon name="calendar-clear-outline"></ion-icon>
+    <div class="shelf-life-card" *ngIf="medication?.medicineExpiryDate" 
+         [ngClass]="{'expired-warning': isMedicineExpired()}">
+      <ion-icon [name]="isMedicineExpired() ? 'warning-outline' : 'calendar-clear-outline'"></ion-icon>
       <div class="shelf-info">
         <span>Shelf Life Expiry:</span>
-        <strong>{{ medication.medicineExpiryDate | date:'MMM d, yyyy' }}</strong>
+        <strong [class.danger-text]="isMedicineExpired()">
+          {{ medication.medicineExpiryDate | date:'MMM d, yyyy' }}
+        </strong>
       </div>
     </div>
 

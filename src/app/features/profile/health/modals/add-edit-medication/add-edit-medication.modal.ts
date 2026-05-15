@@ -72,8 +72,43 @@ export class AddMedicationModal implements OnInit {
     }
   }
 
+  // --- STATUS LOGIC (Matches Health Section) ---
+
   /**
-   * Getter for Dynamic Input Labels (Fixes TS2339: amountLabel)
+   * Generates professional terminology for the status badge
+   */
+  getStatusLabel(): string {
+    if (!this.med) return '';
+
+    const now = new Date();
+    const remaining = this.med.quantity || 0;
+    const isExpired = this.med.expiryDate && new Date(this.med.expiryDate) < now;
+
+    // Logic to ensure "Active" string is replaced by professional terms
+    if (remaining <= 0) return 'Completed';
+    if (isExpired) return 'Incomplete';
+    return this.med.isActive ? 'Ongoing' : 'Inactive';
+  }
+
+  /**
+   * Returns the color variable based on the status label logic
+   */
+  getStatusColor(): string {
+    const label = this.getStatusLabel();
+    switch (label) {
+      case 'Ongoing':
+        return 'success';   // Green
+      case 'Completed':
+        return 'primary';   // Blue/Teal
+      case 'Incomplete':
+        return 'danger';    // Red/Pink
+      default:
+        return 'medium';    // Grey
+    }
+  }
+
+  /**
+   * Getter for Dynamic Input Labels
    */
   get amountLabel(): string {
     switch (this.med.medicationType) {
@@ -87,7 +122,7 @@ export class AddMedicationModal implements OnInit {
   }
 
   /**
-   * Handles unit updates when type changes (Fixes TS2339: onTypeChange)
+   * Handles unit updates when type changes
    */
   onTypeChange() {
     const unitMap: Record<string, string> = {
@@ -128,9 +163,6 @@ export class AddMedicationModal implements OnInit {
     }
   }
 
-  /**
-   * Fixes TS2339: calculateTotalPills
-   */
   private calculateTotalPills() {
     const interval = Number(this.med.intervalHours);
     const duration = Number(this.med.durationDays);
@@ -143,9 +175,6 @@ export class AddMedicationModal implements OnInit {
     }
   }
 
-  /**
-   * Fixes TS2339: getIntervalLabel
-   */
   getIntervalLabel(hours: number): string {
     const labels: Record<number, string> = {
       1: 'Every hour', 2: 'Every 2 hours', 3: 'Every 3 hours', 
@@ -155,9 +184,6 @@ export class AddMedicationModal implements OnInit {
     return labels[hours] || `Every ${hours} hours`;
   }
 
-  /**
-   * Fixes TS2339: isFormValid
-   */
   get isFormValid(): boolean {
     return !!(
       this.med.name?.trim() &&
@@ -169,17 +195,12 @@ export class AddMedicationModal implements OnInit {
     );
   }
 
-  /**
-   * Extract startTime for display in details modal
-   */
   private extractStartTimeFromDate() {
     if (this.med.startDate) {
       const date = new Date(this.med.startDate);
       this.med.startTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
     }
   }
-
-  // --- Image Handling (Fixes TS2551 errors) ---
 
   async selectPrescriptionImage() {
     const actionSheet = await this.actionSheetController.create({
@@ -216,8 +237,6 @@ export class AddMedicationModal implements OnInit {
     this.prescriptionImage = null;
     this.med.prescriptionImageUrl = undefined;
   }
-
-  // --- SAVE LOGIC ---
 
   async saveMedication() {
     if (!this.isFormValid) return;

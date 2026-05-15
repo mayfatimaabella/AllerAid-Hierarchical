@@ -1,9 +1,7 @@
-
 import { Injectable } from '@angular/core';
-import { MedicationService } from '../../../core/services/medication.service';
-import { MedicationReminderService } from '../../../core/services/medication-reminder.service';
 import { ModalController, AlertController } from '@ionic/angular';
-import type { Medication } from '../../../core/services/medication.service';
+import { MedicationService, Medication } from '../../../core/services/medication.service';
+import { MedicationReminderService } from '../../../core/services/medication-reminder.service';
 
 @Injectable({ providedIn: 'root' })
 export class MedicationManagerService {
@@ -36,6 +34,44 @@ export class MedicationManagerService {
   }
 
   /**
+   * Deduct a single pill and refresh the UI
+   * Uses Number() casting to prevent math errors and auto-deactivates at 0.
+   */
+  async markDoseAsTaken(
+    medicationId: string,
+    userMedications: Medication[],
+    loadUserMedications: () => Promise<void>,
+    presentToast: (msg: string) => void
+  ) {
+    const med = userMedications.find(m => m.id === medicationId);
+    
+    if (med) {
+      // Force quantity to a number to avoid string concatenation or NaN issues
+      const currentQuantity = Number(med.quantity) || 0;
+
+      if (currentQuantity > 0) {
+        try {
+          const newQuantity = currentQuantity - 1;
+          
+          await this.medicationService.updateMedication(medicationId, {
+            quantity: newQuantity,
+            // Automatically set to inactive only when truly out of pills
+            isActive: newQuantity > 0 
+          });
+
+          // Refresh local state so UI updates "live"
+          await loadUserMedications(); 
+          presentToast(`Dose recorded! ${newQuantity} pills remaining.`);
+        } catch (error) {
+          presentToast('Error updating pill count');
+        }
+      } else {
+        presentToast('No pills left to deduct!');
+      }
+    }
+  }
+
+  /**
    * Delete medication with confirmation
    */
   async deleteMedication(
@@ -57,11 +93,7 @@ export class MedicationManagerService {
       header: 'Delete Medication',
       message: `Are you sure you want to delete "${medicationName}"? This action cannot be undone.`,
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
+        { text: 'Cancel', role: 'cancel', cssClass: 'secondary' },
         {
           text: 'Delete',
           role: 'destructive',
@@ -72,9 +104,7 @@ export class MedicationManagerService {
               await loadUserMedications();
               try { await reminders.cancelForMedication(medicationId); } catch {}
               presentToast('Medication removed successfully');
-              if (onDeleted) {
-                onDeleted();
-              }
+              if (onDeleted) onDeleted();
             } catch (error) {
               presentToast('Error removing medication');
             }
@@ -93,6 +123,9 @@ export class MedicationManagerService {
     }
   }
 
+  /**
+   * Filter medications based on Ongoing/Completed logic
+   */
   filterMedications(
     userMedications: Medication[],
     medicationFilter: string,
@@ -105,42 +138,53 @@ export class MedicationManagerService {
       setFilteredMedications(medicationFilterCache.get(cacheKey)!);
       return;
     }
+
+    const now = new Date();
     let filtered = [...userMedications];
+
     if (medicationSearchTerm && medicationSearchTerm.trim()) {
       const term = medicationSearchTerm.toLowerCase();
       filtered = filtered.filter(med =>
         med.name.toLowerCase().includes(term) ||
         med.notes?.toLowerCase().includes(term) ||
-        med.dosage.toLowerCase().includes(term) ||
-        med.prescribedBy?.toLowerCase().includes(term) ||
-        med.frequency?.toLowerCase().includes(term)
+        med.dosage.toLowerCase().includes(term)
       );
     }
+
     switch (medicationFilter) {
       case 'active':
         filtered = filtered.filter(med => {
-          const isActive = med.isActive;
-
-          // Treat medications with no pills left or already expired as not active,
-          // even if their isActive flag is still true in the database.
-          const noPillsLeft = typeof med.quantity === 'number' && med.quantity <= 0;
-          const isExpired = med.expiryDate && new Date(med.expiryDate) < new Date();
-
-          return isActive && !noPillsLeft && !isExpired;
+          const remaining = Number(med.quantity) || 0;
+          const isExpired = med.expiryDate && new Date(med.expiryDate) < now;
+          // Ongoing: Active AND has pills AND not expired
+          return med.isActive && remaining > 0 && !isExpired;
         });
         break;
+
+      case 'finished': 
+        filtered = filtered.filter(med => {
+          const remaining = Number(med.quantity) || 0;
+          const isExpired = med.expiryDate && new Date(med.expiryDate) < now;
+          const isInactive = med.isActive === false;
+          // History: No pills left OR Expired OR Manually stopped
+          return isInactive || remaining <= 0 || isExpired;
+        });
+        break;
+
       case 'emergency':
         filtered = filtered.filter(med =>
-          med.category === 'emergency' ||
-          med.category === 'allergy' ||
-          (med as any).emergencyMedication === true
+          med.category === 'emergency' || med.category === 'allergy'
         );
         break;
     }
+
     setFilteredMedications(filtered);
     medicationFilterCache.set(cacheKey, filtered);
   }
 
+  /**
+   * Toggle medication active status manually
+   */
   async toggleMedicationStatus(
     medicationId: string | undefined,
     loadUserMedications: () => Promise<void>,
@@ -155,13 +199,10 @@ export class MedicationManagerService {
     }
 
     const med = userMedications.find((m: any) => m.id === medicationId);
-    const quantity = med && med.quantity !== undefined && med.quantity !== null
-      ? Number(med.quantity)
-      : NaN;
+    const quantity = Number(med?.quantity) || 0;
 
-    // Prevent activating a medication that has no pills left
-    if (med && med.isActive === false && !isNaN(quantity) && quantity <= 0) {
-      presentToast('Cannot activate medication with no pills remaining. Please update the quantity first.');
+    if (med && med.isActive === false && quantity <= 0) {
+      presentToast('Cannot activate medication with no pills remaining. Update quantity first.');
       return;
     }
 
@@ -169,15 +210,12 @@ export class MedicationManagerService {
       await this.medicationService.toggleMedicationStatus(medicationId);
       await loadUserMedications();
       try {
-        const med = userMedications.find((m: any) => m.id === medicationId);
-        if (med) {
-          await reminders.scheduleForMedication(med);
-        }
+        const updatedMed = userMedications.find((m: any) => m.id === medicationId);
+        if (updatedMed) await reminders.scheduleForMedication(updatedMed);
       } catch {}
       await refreshEHRData();
     } catch (error) {
-      presentToast('Error loading EHR data');
+      presentToast('Error updating status');
     }
   }
-
 }

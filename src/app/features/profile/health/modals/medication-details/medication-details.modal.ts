@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { ActionSheetController, IonicModule } from '@ionic/angular';
+// 1. Ensure the import path matches your project structure
+import { MedicationService } from 'src/app/core/services/medication.service';
 
 @Component({
   selector: 'app-medication-details-modal',
@@ -20,7 +22,11 @@ export class MedicationDetailsModal {
   @Output() statusChange = new EventEmitter<any>();
   @Output() viewImage = new EventEmitter<string>(); 
 
-  constructor(private actionSheetController: ActionSheetController) {}
+  // 2. Inject MedicationService here to fix potential "red" errors
+  constructor(
+    private actionSheetController: ActionSheetController,
+    private medService: MedicationService
+  ) {}
 
   /**
    * Helper to retrieve the Start Time for display beside the date.
@@ -58,39 +64,57 @@ export class MedicationDetailsModal {
   }
 
   /**
-   * Determines the status of the medication (Active, Finished, or Expired).
+   * Determines the status of the medication (Ongoing, Completed, Expired, etc.).
    */
   getStatusLabel(): string {
     if (!this.medication) return '';
 
-    const currentInventory = this.calculateRemainingPills();
-    if (!isNaN(currentInventory) && currentInventory <= 0) {
-      return 'Finished';
+    const now = new Date();
+    const remaining = this.calculateRemainingPills(); 
+    
+    // 3. Use the centralized service helper for physical expiry
+    if (this.medService.isExpired(this.medication)) {
+      return 'Expired';
     }
 
-    const isExpired = this.medication.expiryDate && new Date(this.medication.expiryDate) < new Date();
-    if (isExpired) return 'Expired';
+    // 4. Check for Completion (All pills taken)
+    if (!isNaN(remaining) && remaining <= 0) {
+      return 'Completed';
+    }
 
-    return this.medication.isActive ? 'Active' : 'Inactive';
+    // 5. Check for Incomplete (Treatment duration over but pills left)
+    const endDate = this.medication.expiryDate ? new Date(this.medication.expiryDate) : null;
+    if (endDate && now > endDate) {
+      return 'Incomplete';
+    }
+
+    // 6. Check for Overdue (Missed schedule)
+    // Note: nextDose is the standard property name we've used in the Health Section
+    if (this.medication.nextDose && new Date(this.medication.nextDose) < now) {
+      return 'Overdue';
+    }
+
+    // 7. Standard State
+    return this.medication.isActive ? 'Ongoing' : 'Inactive';
   }
 
   getStatusColor(): string {
     const label = this.getStatusLabel();
     switch (label) {
-      case 'Active': return 'success';
-      case 'Finished':
-      case 'Expired': return 'danger';
-      default: return 'medium';
+      case 'Ongoing': return 'success';     // Green
+      case 'Completed': return 'primary';    // Blue/Teal
+      case 'Overdue': return 'warning';      // Orange
+      case 'Incomplete': return 'danger';     // Red
+      case 'Expired': return 'danger';        // Red
+      default: return 'medium';               // Grey
     }
   }
 
   /**
-   * Checks if the medicine shelf-life date has passed.
+   * Simplified using the service helper
    */
   isMedicineExpired(): boolean {
-    if (!this.medication?.medicineExpiryDate) return false;
-    const expiry = new Date(this.medication.medicineExpiryDate);
-    return expiry < new Date();
+    return this.medService.isExpired(this.medication);
   }
 
   isEmergency(): boolean {
@@ -115,11 +139,6 @@ export class MedicationDetailsModal {
           text: 'Edit Medication',
           icon: 'create-outline',
           handler: () => { this.edit.emit(med); }
-        },
-        {
-          text: med.isActive ? 'Deactivate' : 'Activate',
-          icon: med.isActive ? 'pause-circle-outline' : 'play-circle-outline',
-          handler: () => { this.toggleStatus(med); }
         },
         {
           text: 'Delete',
