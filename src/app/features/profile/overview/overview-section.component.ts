@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { UserProfile } from '../../../core/services/user.service';
+import { UserProfile } from '../../../core/services/models/user-profile.model';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
@@ -18,11 +18,8 @@ export class OverviewSectionComponent {
 
   // Inputs from parent
   @Input() userAllergies: any[] = [];
-  @Input() emergencyMessageName = '';
-  @Input() emergencyInstructionsCombined = '';
-  @Input() emergencyLocation = '';
-  @Input() emergencyContactPhone: string = '';
   @Input() emergencyMessage: any = {};
+  @Input() profileDetails: any = {};
   @Input() userProfile: UserProfile | null = null;
   @Input() openEditEmergencyMessageModal!: () => void;
   // UI state owned by this component

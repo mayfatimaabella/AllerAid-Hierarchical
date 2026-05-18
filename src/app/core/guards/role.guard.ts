@@ -32,7 +32,7 @@ export class RoleGuard implements CanActivate {
         this.router.navigate(['/registration']);
         return false;
       }
-      if (!userProfile.role || userProfile.role === 'undefined') {
+      if (!userProfile.role) {
         console.log('RoleGuard: User role is undefined, redirecting to profile setup');
         this.presentToast('User role not set. Please complete your profile setup.');
         this.router.navigate(['/profile'], { queryParams: { tab: 'settings', setup: 'role' } });
@@ -50,11 +50,7 @@ export class RoleGuard implements CanActivate {
         this.presentToast(`Access denied. This feature requires ${requiredRoles.join(' or ')} privileges.`);
         switch (userProfile.role) {
           case 'doctor':
-          case 'nurse':
             this.router.navigate(['/tabs/doctor-dashboard']);
-            break;
-          case 'buddy':
-            this.router.navigate(['/tabs/responder-dashboard']);
             break;
           case 'user':
           default:

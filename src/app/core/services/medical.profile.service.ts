@@ -4,32 +4,11 @@ import {
   setDoc,
   getDoc,
   updateDoc,
-  deleteField,
 } from 'firebase/firestore';
 import { FirebaseService } from './firebase.service';
-
-export interface EmergencyInstruction {
-  allergyId: string;
-  allergyName: string;
-  instruction: string;
-}
-
-export interface EmergencyMessage {
-  name: string;
-  allergies: string;
-  location: string;
-}
-
-export interface MedicalRecord {
-  id?: string;
-  uid: string;
-  emergencyInstruction: string;
-  emergencyInstructions: EmergencyInstruction[];
-  emergencyMessage: EmergencyMessage;
-  medications: any[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { MedicalInfo } from './models/medical-info.model';
+import { EmergencyInstruction } from './models/emergency-instruction.model';
+import { EmergencyMessage } from './models/emergency-message.model';
 
 @Injectable({
   providedIn: 'root'
@@ -190,27 +169,18 @@ export class MedicalService {
   /**
    * Get the user's complete medical/info document.
    */
-  async getUserMedicalProfile(uid: string): Promise<any> {
+  async getUserMedicalProfile(uid: string): Promise<MedicalInfo | null> {
     try {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);
       const userDoc = await getDoc(medicalRef);
-      return userDoc.exists() ? userDoc.data() : null;
+
+      return userDoc.exists() ? userDoc.data() as MedicalInfo : null;
     } catch (error) {
       console.error('Error getting medical profile:', error);
       throw error;
     }
   }
 
-  /**
-   * REMOVED: saveEmergencySettings() previously wrote an emergencySettings
-   * object to medical/info, conflicting with settings/preferences.emergencySettings
-   * (which owns the toggle booleans shakeToAlert, powerButtonAlert,
-   * audioInstructions). Use UserService.updateUserProfile({ emergencySettings })
-   * to update those toggles instead.
-   *
-   * If you need to persist a generalInstruction string, use
-   * setEmergencyInstruction() which writes to medical/info.emergencyInstruction.
-   */
 
   /**
    * Get all emergency-relevant data for alert display.
@@ -249,82 +219,61 @@ export class MedicalService {
     }
   }
 
-  /**
-   * Update the emergency location stored inside medical/info.
-   * Note: UserService.updateEmergencyLocation() writes to the dedicated
-   * emergency/active subcollection for frequent live updates. This method
-   * is for persisting the last-known location inside the medical record.
-   */
-  async updateEmergencyLocation(uid: string, location: any): Promise<void> {
-    try {
-      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
 
-      await updateDoc(medicalRef, {
-        emergencyLocation: {
-          ...location,
-          timestamp: new Date()
-        },
+
+  async updateMedicalInfo(
+  uid: string,
+  updates: Partial<MedicalInfo>
+): Promise<void> {
+  try {
+    await updateDoc(
+      doc(this.db, 'users', uid, 'medical', 'info'),
+      {
+        ...updates,
         updatedAt: new Date()
-      });
+      }
+    );
+  } catch (error) {
+    console.error('Error updating medical info:', error);
+    throw error;
+  }
+}
+
+
+  // Check if user has completed allergy onboarding
+async hasCompletedAllergyOnboarding(uid: string): Promise<boolean> {
+  try {
+    const medicalInfo = await this.getUserMedicalProfile(uid);
+
+    if (medicalInfo?.allergyOnboardingCompleted) {
+      return true;
+    }
+
+    const allergies = Array.isArray(medicalInfo?.allergies)
+      ? medicalInfo.allergies
+      : [];
+
+    return allergies.length > 0;
+
+  } catch (error) {
+    console.error('Error checking allergy onboarding status:', error);
+    return false;
+  }
+}
+
+    // Mark allergy onboarding as completed
+  async markAllergyOnboardingCompleted(uid: string): Promise<void> {
+    try {
+      await setDoc(doc(this.db, 'users', uid, 'medical', 'info'), {
+        allergyOnboardingCompleted: true
+      }, { merge: true });
+      console.log('Allergy onboarding marked as completed');
     } catch (error) {
-      console.error('Error updating emergency location:', error);
+      console.error('Error marking allergy onboarding as completed:', error);
       throw error;
     }
   }
 
-  /**
-   * One-time migration: moves any instructions previously written to the
-   * old emergencySettings.emergencyInstructions nested path up to the
-   * canonical root emergencyInstructions[] field, then deletes the
-   * stale nested key. Safe to call multiple times (idempotent).
-   */
-  async migrateEmergencyInstructions(uid: string): Promise<void> {
-    try {
-      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
-      const userDoc = await getDoc(medicalRef);
 
-      if (!userDoc.exists()) return;
 
-      const data = userDoc.data();
-      const nested: EmergencyInstruction[] =
-        data['emergencySettings']?.['emergencyInstructions'] ?? [];
-
-      if (nested.length === 0) return; // nothing to migrate
-
-      const existing: EmergencyInstruction[] = data['emergencyInstructions'] ?? [];
-
-      // Merge: root entries win on collision (they are newer writes)
-      const existingIds = new Set(existing.map(e => e.allergyId));
-      const merged = [
-        ...existing,
-        ...nested.filter(n => !existingIds.has(n.allergyId))
-      ];
-
-      await updateDoc(medicalRef, {
-        emergencyInstructions: merged,
-        'emergencySettings.emergencyInstructions': deleteField(),
-        updatedAt: new Date()
-      });
-
-      console.log(`Migrated ${nested.length} legacy instruction(s) for uid: ${uid}`);
-    } catch (error) {
-      console.error('Error migrating emergency instructions:', error);
-      throw error;
-    }
-  }
-
-  /** Testing utility — removes the location field from emergencyMessage. */
-  async removeEmergencyMessageLocation(uid: string): Promise<void> {
-    try {
-      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
-
-      await updateDoc(medicalRef, {
-        'emergencyMessage.location': deleteField(),
-        updatedAt: new Date()
-      });
-    } catch (error) {
-      console.error('Error removing emergency message location:', error);
-      throw error;
-    }
-  }
 }

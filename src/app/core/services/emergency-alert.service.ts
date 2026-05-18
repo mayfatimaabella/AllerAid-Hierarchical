@@ -5,6 +5,7 @@ import { BuddyService } from './buddy.service';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 import { EmergencyService } from './emergency.service';
+import { EmergencySettingsService } from './emergency-settings.service';
 
 export interface EmergencyAlert {
   id: string;
@@ -28,12 +29,13 @@ export interface EmergencyAlert {
 export class EmergencyAlertService {
 
   constructor(
-    private medicalService: MedicalService,
     private buddyService: BuddyService,
     private authService: AuthService,
     private userService: UserService,
     private emergencyService: EmergencyService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private emergencySettingsService: EmergencySettingsService,
+    private medicalService: MedicalService
   ) { }
 
   /**
@@ -58,12 +60,9 @@ export class EmergencyAlertService {
       const derivedName = fullNameParts.join(' ').trim();
       const userName = (userProfile?.fullName || derivedName || currentUser.email || 'User').trim();
 
-      const latestMessageInstruction = (userProfile as any)?.emergencyMessage?.instructions;
-      const latestLegacyInstruction = userProfile?.emergencyInstruction;
-      const resolvedInstruction =
-        (typeof latestMessageInstruction === 'string' && latestMessageInstruction.trim()) ||
-        (typeof latestLegacyInstruction === 'string' && latestLegacyInstruction.trim()) ||
-        '';
+
+      const medicalData = await this.medicalService.getEmergencyData(currentUser.uid);
+      const resolvedInstruction = medicalData?.emergencyInstruction?.trim() || '';
 
       // Get patient's buddies and extract unique connected user IDs
       const buddies = await this.buddyService.getUserBuddies(currentUser.uid);
@@ -172,7 +171,7 @@ export class EmergencyAlertService {
    * Format emergency instruction for display
    */
   formatEmergencyInstructionForDisplay(emergencyData: any): string {
-    const { emergencyInstructions, emergencyInstruction, emergencyMessage, name, allergies } = emergencyData;
+    const { emergencyInstructions, generalInstruction, emergencyProfile, name, allergies } = emergencyData;
     
     let display = `<div class="emergency-instruction-box">`;
     display += `<h3>Emergency Instructions for ${name}</h3>`;
@@ -188,19 +187,13 @@ export class EmergencyAlertService {
       display += `</div>`;
     }
     // Fallback to legacy single instruction
-    else if (emergencyInstruction) {
+    else if (generalInstruction) {
       if (allergies && allergies !== 'None') {
         display += `<p><strong>Allergies:</strong> ${allergies}</p>`;
       }
-      display += `<p><strong>Instructions:</strong> ${emergencyInstruction}</p>`;
+      display += `<p><strong>Instructions:</strong> ${generalInstruction}</p>`;
     }
-    // Use emergency message if available
-    else if (emergencyMessage?.instructions) {
-      if (allergies && allergies !== 'None') {
-        display += `<p><strong>Allergies:</strong> ${allergies}</p>`;
-      }
-      display += `<p><strong>Instructions:</strong> ${emergencyMessage.instructions}</p>`;
-    }
+
     // Basic fallback
     else {
       display += `<p><strong>Instructions:</strong> Use EpiPen immediately if available. Call 911.</p>`;
@@ -218,8 +211,8 @@ export class EmergencyAlertService {
       // Check if audio instructions are enabled for this user
       const currentUser = await this.authService.waitForAuthInit();
       if (currentUser) {
-        const userProfile = await this.userService.getUserProfile(currentUser.uid);
-        const audioEnabled = userProfile?.emergencySettings?.audioInstructions !== false;
+        const settings = await this.emergencySettingsService.getEmergencySettings(currentUser.uid);
+        const audioEnabled = settings?.audioInstructions ?? true;
         
         if (!audioEnabled) {
           console.log('Audio instructions disabled by user settings');

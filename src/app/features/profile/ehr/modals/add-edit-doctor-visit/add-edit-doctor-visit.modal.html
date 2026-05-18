@@ -13,7 +13,7 @@
   <form (ngSubmit)="saveVisit()">
     <div class="form-fields">
       <!-- Registered Doctor Dropdown -->
-      <ion-item class="medication-field" lines="none" *ngIf=availableDoctors.length > 0">
+      <ion-item class="medication-field" lines="none" *ngIf=availableDoctors.length >
         <ion-label position="stacked">Doctor *</ion-label>
         <ion-select 
           [(ngModel)]="selectedDoctorEmail" 

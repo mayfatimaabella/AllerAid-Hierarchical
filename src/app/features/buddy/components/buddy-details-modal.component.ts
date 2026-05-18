@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { UserService } from '../../../core/services/user.service';
+import { ProfileDetailService } from 'src/app/core';
 
 @Component({
   selector: 'app-buddy-details-modal',
@@ -256,7 +256,7 @@ export class BuddyDetailsModalComponent implements OnInit {
   contactAutoPopulated = false;
   isLoadingContact = false;
 
-  constructor(private userService: UserService) {}
+  constructor(private profileDetailsService: ProfileDetailService) {}
 
   async ngOnInit() {
     if (this.buddy) {
@@ -271,7 +271,7 @@ export class BuddyDetailsModalComponent implements OnInit {
   async populateBuddyProfileContact() {
     try {
       this.isLoadingContact = true;
-      const buddyProfileDetails = await this.userService.getUserProfileDetails(this.buddy.connectedUserId);
+      const buddyProfileDetails = await this.profileDetailsService.getUserProfileDetails(this.buddy.connectedUserId);
       
       if (buddyProfileDetails?.phone) {
         this.displayedContact = buddyProfileDetails.phone;

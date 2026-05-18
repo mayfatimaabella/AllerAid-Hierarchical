@@ -12,11 +12,14 @@ import { Router } from '@angular/router';
   imports: [IonicModule, CommonModule, ReactiveFormsModule]
 })
 export class EditEmergencyProfileModalComponent implements OnInit {
+
   @Input() emergencyMessage: any;
   @Input() userProfile: any;
   @Input() mode: 'add' | 'edit' = 'edit';
+
   @Output() closeModal = new EventEmitter<void>();
   @Output() saveModal = new EventEmitter<any>();
+
   form!: FormGroup;
   minDate = '1900-01-01';
   maxDate = '';
@@ -41,12 +44,13 @@ export class EditEmergencyProfileModalComponent implements OnInit {
       this.form = this.fb.group({
         name: [this.emergencyMessage?.name || this.userProfile?.fullName || ''],
         allergies: [this.emergencyMessage?.allergies || ''],
-        instructions: [this.emergencyMessage?.instructions || ''],
+        instructions: [this.emergencyMessage?.instructions || ''], 
         location: [this.emergencyMessage?.location || ''],
-        emergencyContactPhone: [this.emergencyMessage?.emergencyContactPhone || ''],
+        contactNumber: [this.emergencyMessage?.contactPhone || ''],
         dateOfBirth: [this.userProfile?.dateOfBirth? new Date(this.userProfile.dateOfBirth).toISOString(): ''],
         bloodType: [this.userProfile?.bloodType || ''],
         profile_picture: [this.userProfile?.profile_picture || '']
+
       });
 
       this.form.get('allergies')?.disable({ emitEvent: false });
@@ -60,9 +64,9 @@ export class EditEmergencyProfileModalComponent implements OnInit {
   }
 
   async save() {
-    const phoneValue = (this.form.get('emergencyContactPhone')?.value || '').toString();
+    const phoneValue = (this.form.get('contactNumber')?.value || '').toString();
     if ( phoneValue.length > 0 && phoneValue.length !== 11) {
-      await this.presentToast('Emergency Contact Phone must be exactly 11 digits.', 'danger');
+      await this.presentToast('Contact Phone must be exactly 11 digits.', 'danger');
       return;
     }
 

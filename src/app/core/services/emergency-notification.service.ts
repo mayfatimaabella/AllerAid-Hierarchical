@@ -119,43 +119,12 @@ export class EmergencyNotificationService {
       throw new Error(`Buddy profile not found for ${buddy.id} (userId: ${buddyUserId})`);
     }
 
-    // Send SMS notification
-    if (buddyProfile.phone) {
-      await this.sendSMS(buddyProfile.phone, notificationData);
-    }
-
     // Send push notification (if supported)
     await this.sendPushNotification(buddyProfile, notificationData);
 
     console.log(`Notifications sent to buddy: ${buddyProfile.fullName}`);
   }
 
-  /**
-   * Send SMS notification
-   */
-  private async sendSMS(
-    phoneNumber: string,
-    notificationData: EmergencyNotificationData
-  ): Promise<void> {
-    try {
-      const smsMessage = this.formatSMSMessage(notificationData);
-      
-      // In a real implementation, you would use a service like Twilio, AWS SNS, or similar
-      // For now, we'll simulate the SMS sending
-      
-      console.log('SMS Notification Sent:');
-      console.log(`To: ${phoneNumber}`);
-      console.log(`Message: ${smsMessage}`);
-      
-      // Simulate SMS sending delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    
-      
-    } catch (error) {
-      console.error('SMS sending failed:', error);
-      throw error;
-    }
-  }
 
   /**
    * Send push notification
@@ -204,29 +173,6 @@ export class EmergencyNotificationService {
   }
 
   /**
-   * Format SMS message with all emergency information
-   */
-  private formatSMSMessage(notificationData: EmergencyNotificationData): string {
-    const allergiesText = notificationData.allergies.length > 0 
-      ? `Allergies: ${notificationData.allergies.join(', ')}`
-      : 'No known allergies';
-
-    return `EMERGENCY ALERT
-
-${notificationData.patientName} needs immediate help!
-
-${allergiesText}
-
-Instructions: ${notificationData.emergencyInstructions}
-
-Location: ${notificationData.location.locationLink}
-
-Time: ${new Date(notificationData.timestamp).toLocaleString()}
-
-Respond immediately through the AllerAid app or call emergency services if needed.`;
-  }
-
-  /**
    * Generate live location link for navigation
    */
   private generateLocationLink(latitude: number, longitude: number): string {
@@ -244,13 +190,6 @@ Respond immediately through the AllerAid app or call emergency services if neede
     });
   }
 
-  /**
-   * Get notification status for a specific buddy
-   */
-  getNotificationStatus(buddyId: string): 'sending' | 'sent' | 'failed' | 'pending' {
-    const status = this.notificationStatusSubject.value[buddyId];
-    return status || 'pending';
-  }
 
   /**
    * Clear notification status (call after emergency is resolved)
@@ -259,28 +198,4 @@ Respond immediately through the AllerAid app or call emergency services if neede
     this.notificationStatusSubject.next({});
   }
 
-  /**
-   * Test notification system (for development)
-   */
-  async testNotificationSystem(userProfile: any): Promise<void> {
-    const testData: EmergencyNotificationData = {
-      patientName: userProfile.fullName,
-      allergies: ['Peanuts', 'Shellfish'],
-      emergencyInstructions: 'Has EpiPen in bag. Administer if needed.',
-      location: {
-        latitude: 37.7749,
-        longitude: -122.4194,
-        locationLink: 'https://www.google.com/maps?q=37.7749,-122.4194'
-      },
-      emergencyId: 'test-emergency-' + Date.now(),
-      timestamp: new Date().toISOString()
-    };
-
-    console.log('Testing notification system with data:', testData);
-    
-    // Simulate sending to a test buddy
-    await this.sendSMS('+1234567890', testData);
-    
-    console.log('Test notification completed');
-  }
 }

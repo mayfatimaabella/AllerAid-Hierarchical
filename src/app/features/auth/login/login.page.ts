@@ -4,6 +4,7 @@ import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { RoleRedirectService } from '../../../core/services/role-redirect.service';
 import { ForgotPasswordModal } from './forgot-password.modal';
+import { MedicalService } from '../../../core/services/medical.profile.service';
 
 @Component({
   selector: 'app-login',
@@ -23,16 +24,15 @@ export class LoginPage implements OnInit {
     private roleRedirectService: RoleRedirectService,
     private loadingController: LoadingController,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private medicalService: MedicalService
   ) {}
 
   ngOnInit() {
-  
     this.clearForm();
   }
 
   ionViewWillEnter() {
-    
     this.clearForm();
   }
 
@@ -53,95 +53,70 @@ export class LoginPage implements OnInit {
         spinner: 'crescent'
       });
       await loading.present();
+
       console.log('Attempting to sign in...');
       const userCredential = await this.authService.signIn(this.email, this.password);
+
       if (userCredential.user) {
         console.log('User authenticated:', userCredential.user.uid);
-        
-        // Get user profile from Firestore
-        let userProfile = await this.userService.getUserProfile(userCredential.user.uid);
-        
+
+        const userProfile = await this.userService.getUserProfile(userCredential.user.uid);
+
         if (!userProfile) {
-          console.log('No user profile found, creating one...');
-          
-          // Create user profile if it doesn't exist (for migrated users)
-          await this.userService.createUserProfileFromAuth(
-            userCredential.user.uid, 
-            userCredential.user.email || this.email
-          );
-          
-          // Retrieve the newly created profile
-          userProfile = await this.userService.getUserProfile(userCredential.user.uid);
+          this.presentToast('Account setup incomplete. Please register again.');
+          await this.authService.signOut();
+          return;
         }
-        
-        if (userProfile) {
-          console.log('User profile loaded:', userProfile);
-          
-          // Update last login timestamp
-          await this.userService.updateLastLogin(userCredential.user.uid);
-          
-          // Store user data in localStorage for quick access
-          localStorage.setItem('currentUser', JSON.stringify({
-            uid: userProfile.uid,
-            email: userProfile.email,
-            firstName: userProfile.firstName,
-            lastName: userProfile.lastName,
-            fullName: userProfile.fullName,
-            role: userProfile.role
-          }));
-          
-          this.presentToast('Login successful!', 'success', 2500, 'checkmark-circle-outline');
-          
-          // Check if user needs to complete allergy onboarding (patients only)
-          if (userProfile.role === 'user') {
-            const hasCompletedOnboarding = await this.userService.hasCompletedAllergyOnboarding(userProfile.uid);
-            
-            if (!hasCompletedOnboarding) {
-              console.log('User needs to complete allergy onboarding');
-              this.navCtrl.navigateRoot('/allergy-onboarding');
-              return;
-            } else {
-              // User has completed onboarding
-              this.navCtrl.navigateRoot('/tabs/home');
-              return;
-            }
+
+        console.log('User profile loaded:', userProfile);
+
+        await this.userService.updateLastLogin(userCredential.user.uid);
+
+        localStorage.setItem('currentUser', JSON.stringify({
+          uid: userProfile.uid,
+          email: userProfile.email,
+          firstName: userProfile.firstName,
+          lastName: userProfile.lastName,
+          fullName: userProfile.fullName,
+          role: userProfile.role
+        }));
+
+        this.presentToast('Login successful!', 'success', 2500, 'checkmark-circle-outline');
+
+        if (userProfile.role === 'user') {
+          const hasCompletedOnboarding = await this.medicalService.hasCompletedAllergyOnboarding(userProfile.uid);
+
+          if (!hasCompletedOnboarding) {
+            console.log('User needs to complete allergy onboarding');
+            this.navCtrl.navigateRoot('/allergy-onboarding');
+            return;
+          } else {
+            this.navCtrl.navigateRoot('/tabs/home');
+            return;
           }
-          
-          // Navigate based on role using RoleRedirectService
-          await this.roleRedirectService.redirectBasedOnRole();
-          
-        } else {
-          console.error('Failed to create or retrieve user profile');
-          this.presentToast('Failed to load user profile. Please contact support.');
         }
- 
+
+        await this.roleRedirectService.redirectBasedOnRole();
       }
+
     } catch (error: any) {
       console.error('Login error:', error);
-      
+
       if (error.code === 'auth/email-not-verified') {
         await this.presentErrorAlert(
           'Email Not Verified',
           'Please verify your email address before logging in. Would you like us to resend the verification email?',
           [
-            {
-              text: 'Cancel',
-              role: 'cancel'
-            },
-            {
-              text: 'Resend',
-              handler: async () => {
-                await this.resendVerificationEmail();
-              }
-            }
+            { text: 'Cancel', role: 'cancel' },
+            { text: 'Resend', handler: async () => { await this.resendVerificationEmail(); } }
           ]
         );
       } else {
         const { message, color, icon, duration } = this.getErrorToastConfig(error);
         this.presentToast(message, color, duration, icon);
       }
-    }
-    finally {
+
+    } finally {
       const top = await this.loadingController.getTop();
       if (top) {
         await top.dismiss();
@@ -149,15 +124,11 @@ export class LoginPage implements OnInit {
     }
   }
 
-  /**
-   * Open forgot password modal
-   */
   async openForgotPasswordModal(): Promise<void> {
     const modal = await this.modalController.create({
       component: ForgotPasswordModal,
       cssClass: 'forgot-password-modal'
     });
-
     await modal.present();
   }
 
@@ -191,17 +162,12 @@ export class LoginPage implements OnInit {
   }
 
   async presentErrorAlert(header: string, message: string, buttons: any[] = ['OK']) {
-    const alert = await this.alertController.create({
-      header,
-      message,
-      buttons
-    });
+    const alert = await this.alertController.create({ header, message, buttons });
     await alert.present();
   }
 
   private async resendVerificationEmail() {
     try {
-      // Attempt to trigger a verification email via AuthService, if supported
       const maybeMethod: any = (this.authService as any);
       if (typeof maybeMethod.resendVerificationEmail === 'function') {
         await maybeMethod.resendVerificationEmail(this.email);

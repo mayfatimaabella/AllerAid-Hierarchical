@@ -2,13 +2,11 @@ import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from './firebase.config';
 
-import {
-  getFirestore
-} from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 
-import {
-  getStorage
-} from 'firebase/storage';
+import { getStorage } from 'firebase/storage';
+
+import { getAuth } from 'firebase/auth';
 
 @Injectable({
   providedIn: 'root'
@@ -16,16 +14,14 @@ import {
 export class FirebaseService {
   private db;
   private storage;
+  private auth;
 
   constructor() {
     const app = initializeApp(firebaseConfig);
     this.db = getFirestore(app);
     this.storage = getStorage(app);
+    this.auth = getAuth(app);
   }
-
-  // This service can be used for general Firebase operations
-  // or removed if no longer needed since functionality is now
-  // separated into AllergyService and BuddyService
   
   getDb() {
     return this.db;
@@ -34,5 +30,8 @@ export class FirebaseService {
   getStorage() {
     return this.storage;
   }
-}
 
+  getAuth() {
+  return this.auth;
+}
+}

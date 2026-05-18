@@ -32,11 +32,7 @@ export class RoleRedirectService {
 
       // Redirect based on role
       switch (userProfile.role) {
-        case 'buddy':
-          this.router.navigate(['/tabs/responder-dashboard']);
-          break;
         case 'doctor':
-        case 'nurse':
           this.router.navigate(['/tabs/doctor-dashboard']);
           break;
         case 'user':

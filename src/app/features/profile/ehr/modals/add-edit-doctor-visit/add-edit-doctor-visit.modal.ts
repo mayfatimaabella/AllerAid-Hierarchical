@@ -100,7 +100,7 @@ export class AddDoctorVisitModal implements OnInit {
   async loadAvailableDoctors() {
     try {
       // Get all users with doctor or nurse role
-      const doctors = await this.userService.getDoctorsAndNurses();
+      const doctors = await this.userService.getDoctors();
       this.availableDoctors = doctors.map(doctor => ({
         name: `${doctor.role === 'doctor' ? 'Dr.' : 'Nurse'} ${doctor.firstName} ${doctor.lastName}`,
         specialty: doctor.specialty || 'General Medicine',

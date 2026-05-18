@@ -9,7 +9,6 @@ import {
   getDocs,
   setDoc,
   getDoc,
-  updateDoc,
   deleteDoc,
   doc,
   serverTimestamp
@@ -198,30 +197,16 @@ export class AllergyService {
     await this.createAllergyOptions();
   }
 
-  async addAllergyOptionIfMissing(allergy: {
+async submitAllergySuggestion(suggestion: {
   name: string;
   label: string;
-  hasInput: boolean;
-  category?: string;
-}) {
-   const { query, where, getDocs } = await import('firebase/firestore');
-   
-   const allergyOptionsRef = collection(this.db, 'allergyOptions');
-   const q = query(allergyOptionsRef, where('name', '==', allergy.name));
+  category: string;
+  suggestedBy: string;
+  status: 'pending' | 'approved' | 'rejected';
+}): Promise<void> {
+  const suggestionsRef = collection(this.db, 'allergy_suggestions');
 
-  const snapshot = await getDocs(q);
-
-   if (snapshot.empty) {
-    await addDoc(allergyOptionsRef, {
-      ...allergy,
-      order: 999,
-      createdAt: serverTimestamp(),
-      source: 'user_suggested',
-      isApproved: false
-    });
-    console.log('Added new allergy option:', allergy.label);
-
-    }
+  await addDoc(suggestionsRef, suggestion);
 }
 }
 

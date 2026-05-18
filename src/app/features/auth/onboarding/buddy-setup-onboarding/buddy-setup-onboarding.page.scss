@@ -577,3 +577,11 @@ ion-content.onboarding-bg {
   margin-top: 8px;
   font-size: 12.5px;
 }
+
+.empty-hotlines {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.8;
+  padding: 12px 0;
+}

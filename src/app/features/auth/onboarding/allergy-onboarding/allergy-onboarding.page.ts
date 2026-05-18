@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AllergyService } from '../../../../core/services/allergy.service';
-import { UserService } from '../../../../core/services/user.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Platform, ToastController, AlertController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
@@ -29,7 +28,6 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private allergyService: AllergyService,
-    private userService: UserService,
     private authService: AuthService,
     private platform: Platform,
     private toastController: ToastController,
@@ -63,7 +61,6 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
     this.disableBackNavigationBlock();
 
     this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(9999, () => {
-      // Forward-only navigation lock
     });
 
     history.pushState(null, '', window.location.href);
@@ -275,20 +272,23 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       const customAllergies = checkedAllergies.filter(allergy =>
         allergy.value &&
         allergy.hasInput &&
-        allergy.category === 'other'
+        (allergy.category === 'other' || allergy.name === 'others')
       );
 
-      for (const allergy of customAllergies) {
-        await this.allergyService.addAllergyOptionIfMissing({
-          name: allergy.value
-            .toLowerCase()
-            .replace(/[^a-z0-9\s]/g, '')
-            .replace(/\s+/g, '_'),
-          label: allergy.value,
-          hasInput: false,
-          category: 'other',
-        });
-      }
+    for (const allergy of customAllergies) {
+      const label = allergy.value.trim();
+
+      await this.allergyService.submitAllergySuggestion({
+        name: label
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '')
+          .replace(/\s+/g, '_'),
+        label,
+        category: 'other',
+        suggestedBy: currentUser.uid,
+        status: 'pending',
+      });
+    }
 
       const sanitizedAllergies = checkedAllergies.map(allergy => {
         const inputValue = allergy.value?.trim() ?? null;

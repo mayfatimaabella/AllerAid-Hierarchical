@@ -3,8 +3,8 @@ import { Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { ToastController, ModalController } from '@ionic/angular';
 
-import { UserProfile } from '../../core/services/user.service';
-import { EmergencyMessage } from '../../core/services/medical.profile.service';
+import { UserProfile } from '../../core/services/models/user-profile.model';
+import { EmergencyMessage } from '../../core/services/models/emergency-message.model';
 import { Medication } from '../../core/services/medication.service';
 
 import { AllergyManagerService } from '../../core/services/allergy-manager.service';
@@ -34,6 +34,7 @@ import {
   ProfessionalCredential,
   ProfessionalSettings,
 } from './profile.types';
+
 
 const EMPTY_EMERGENCY_MESSAGE: EmergencyMessage = {
   name: '',
@@ -79,7 +80,9 @@ export class ProfilePage implements OnInit, OnDestroy {
     profile: this.profileDataLoader.userProfile$,
     allergies: this.profileDataLoader.userAllergies$,
     emergencyMessage: this.profileDataLoader.emergencyMessage$,
-    emergencyInstructions: this.profileDataLoader.emergencyInstructions$
+    emergencyInstructions: this.profileDataLoader.emergencyInstructions$,
+    profileDetails: this.profileDataLoader.profileDetails$
+
   });
 
   constructor(

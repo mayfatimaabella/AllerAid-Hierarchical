@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { UserService } from '../../../core/services/user.service';
-
+import { ProfileDetailService } from '../../../core/services/profile-details.service';
 @Component({
   selector: 'app-buddy-edit-modal',
   templateUrl: './buddy-edit-modal.component.html',
@@ -21,7 +21,7 @@ export class BuddyEditModalComponent implements OnInit {
   isLoadingContact = false;
   contactAutoPopulated = false; // Flag to show if contact was auto-populated
 
-  constructor(private userService: UserService) {}
+  constructor(private profileDetailsService: ProfileDetailService) {}
 
   async ngOnInit() {
     if (this.buddy) {
@@ -42,7 +42,7 @@ export class BuddyEditModalComponent implements OnInit {
     this.isLoadingContact = true;
 
     const buddyProfileDetails =
-      await this.userService.getUserProfileDetails(this.buddy.connectedUserId);
+      await this.profileDetailsService.getUserProfileDetails(this.buddy.connectedUserId);
 
     if (buddyProfileDetails?.phone) {
       this.buddyProfileContact = buddyProfileDetails.phone;
@@ -64,7 +64,7 @@ export class BuddyEditModalComponent implements OnInit {
       email: this.editEmail,
       relationship: this.editRelationship,
       contactNumber: this.editContact,
-      contact: this.editContact // Keep both for backward compatibility
+      contact: this.editContact
     });
   }
 
