@@ -18,18 +18,53 @@
     </div>
 
     <ng-container *ngIf="!isLoading">
-      <div *ngFor="let reminder of pendingReminders" class="reminder-card">
-        <div class="reminder-header">
-          <h3>{{ reminder.title }}</h3>
-          <span class="reminder-time">Now</span>
+      <div *ngFor="let reminder of pendingReminders.slice(0,1)" 
+           class="reminder-card active-reminder animate__animated animate__fadeIn">
+        
+        <div class="reminder-content-wrapper">
+          <div class="text-group">
+            <h3 class="reminder-title">{{ reminder.title }}</h3>
+            <p class="reminder-body">{{ reminder.body }}</p>
+          </div>
+          
+          <div class="badge-group">
+            <span class="status-badge">NEXT<br>DOSE</span>
+          </div>
         </div>
-        <p class="reminder-text">{{ reminder.body }}</p>
+        
+        <div class="reminder-actions">
+          <ion-button fill="solid" class="btn-taken" (click)="handleAction(reminder, 'TAKEN')">
+            <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+            Taken
+          </ion-button>
+          
+          <ion-button fill="outline" class="btn-skip" (click)="handleAction(reminder, 'SKIP')">
+            Skip
+          </ion-button>
+        </div>
+      </div>
+
+      <div *ngFor="let reminder of pendingReminders.slice(1)" 
+           class="reminder-card secondary-reminder">
+        <div class="reminder-content-wrapper">
+          <div class="text-group">
+            <h3 class="reminder-title">{{ reminder.title }}</h3>
+            <p class="reminder-body">{{ reminder.body }}</p>
+          </div>
+        </div>
+        
+        <div class="reminder-actions">
+          <ion-button fill="clear" size="small" (click)="handleAction(reminder, 'TAKEN')">Taken</ion-button>
+          <ion-button fill="clear" size="small" color="medium" (click)="handleAction(reminder, 'SKIP')">Skip</ion-button>
+        </div>
       </div>
 
       <div *ngIf="pendingReminders.length === 0" class="no-reminders">
-        <ion-icon name="notifications-off-outline"></ion-icon>
-        <p>No pending reminders at the moment.</p>
-        <ion-button fill="outline" size="small" (click)="goHome()">
+        <div class="empty-icon-wrapper">
+          <ion-icon name="notifications-off-outline"></ion-icon>
+        </div>
+        <p>You're all caught up!</p>
+        <ion-button fill="outline" size="small" (click)="goHome()" class="home-btn">
           Back to Home
         </ion-button>
       </div>

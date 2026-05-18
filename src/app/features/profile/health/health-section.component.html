@@ -24,17 +24,17 @@
     <ion-segment-button value="active">
       <ion-label>Active</ion-label>
     </ion-segment-button>
-    <ion-segment-button value="finished">
-      <ion-label>Finished</ion-label>
+    <ion-segment-button value="history">
+      <ion-label>History</ion-label>
     </ion-segment-button>
   </ion-segment>
 </div>
 
 <div class="medications-list">
   <div *ngIf="isLoading && (!userMedications || userMedications.length === 0)" class="loading-state">
-    <ion-skeleton-text animated class="medication-skeleton"></ion-skeleton-text>
-    <ion-skeleton-text animated class="medication-skeleton"></ion-skeleton-text>
-    <ion-skeleton-text animated class="medication-skeleton"></ion-skeleton-text>
+    <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
   </div>
 
   <ng-container *ngIf="!isLoading">
@@ -42,7 +42,7 @@
       class="medication-card" 
       [ngClass]="{ 
         'emergency-medication': isEmergencyMedication(medication),
-        'finished-medication': !medication.isActive || calculateRemainingPills(medication) <= 0 
+        'finished-medication': getStatusLabel(medication) === 'Completed' || getStatusLabel(medication) === 'Incomplete'
       }"
       (click)="viewDetails.emit(medication)"
       style="cursor: pointer;">
@@ -61,7 +61,7 @@
           </div>
 
           <div *ngIf="getLowStockWarning(medication) && calculateRemainingPills(medication) > 0" class="low-stock-text">
-            <ion-icon name="alert-circle-outline"></ion-icon>
+            <ion-icon name="alert-circle-outline" color="warning"></ion-icon>
             <small>{{ getLowStockWarning(medication) }}</small>
           </div>
         </div>
@@ -82,7 +82,7 @@
             No medications found matching "{{ medicationSearchTerm }}"
           </ng-container>
           <ng-template #noMedicationsAtAll>
-            No {{ medicationFilter !== 'all' ? medicationFilter : '' }} medications recorded
+            No {{ medicationFilter !== 'all' ? (medicationFilter === 'history' ? 'past' : medicationFilter) : '' }} medications recorded
           </ng-template>
         </p>
       </div>
