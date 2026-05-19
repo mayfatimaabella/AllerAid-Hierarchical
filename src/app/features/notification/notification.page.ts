@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core'; // Added OnDestroy
 import { Router } from '@angular/router';
 import { LocalNotifications, PendingResult } from '@capacitor/local-notifications';
 import { ToastController } from '@ionic/angular';
@@ -16,10 +16,11 @@ import { MedicationManagerService } from 'src/app/features/profile/profile-servi
   styleUrls: ['./notification.page.scss'],
   standalone: false
 })
-export class NotificationPage implements OnInit {
+export class NotificationPage implements OnInit, OnDestroy { // Implemented OnDestroy
   pendingReminders: any[] = [];
   userMedications: Medication[] = [];
   isLoading = true;
+  private refreshInterval: any; // Track the timer handler instance
 
   constructor(
     private router: Router,
@@ -31,6 +32,18 @@ export class NotificationPage implements OnInit {
 
   async ngOnInit() {
     await this.loadInitialData();
+
+    // Check the device clock every 30 seconds to automatically unlock buttons live
+    this.refreshInterval = setInterval(async () => {
+      await this.loadNotifications();
+    }, 30 * 1000);
+  }
+
+  // Clear memory and clean up the timer interval context upon view destruction
+  ngOnDestroy() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 
   /**
@@ -62,14 +75,46 @@ export class NotificationPage implements OnInit {
         return timeA - timeB;
       });
 
+      // Normalize notification schedules to standard ISO strings for structural UI binding
+      const normalizedReminders = sorted.map(reminder => {
+        let scheduledDateString = '';
+        if (reminder.schedule?.at) {
+          scheduledDateString = reminder.schedule.at.toISOString();
+        } else {
+          scheduledDateString = new Date().toISOString(); // Fallback structure safety
+        }
+
+        return {
+          ...reminder,
+          scheduledDateTime: scheduledDateString
+        };
+      });
+
       // Highlight the very next dose
-      this.pendingReminders = sorted.length > 0 ? [sorted[0]] : [];
+      this.pendingReminders = normalizedReminders.length > 0 ? [normalizedReminders[0]] : [];
 
     } catch (err) {
       console.error('Error fetching device notifications:', err);
     } finally {
       if (event) event.target.complete();
     }
+  }
+
+  /**
+   * Evaluates if the action buttons should unlock.
+   * Returns true ONLY if the current time matches or falls within 1 hour after the scheduled dose time.
+   */
+  isWindowOpen(scheduledTimeString: string): boolean {
+    if (!scheduledTimeString) return false;
+
+    const now = new Date();
+    const scheduledTime = new Date(scheduledTimeString);
+    
+    // Create an absolute 1-hour expiration timestamp limit boundary grace period
+    const windowEnd = new Date(scheduledTime.getTime() + (60 * 60 * 1000));
+
+    // True if now has reached the start mark, but hasn't overrun the grace period limit
+    return now >= scheduledTime && now < windowEnd;
   }
 
   /**
