@@ -25,9 +25,9 @@ export class AddMedicationModal implements OnInit {
     notes: '',
     category: 'other',
     isActive: true,
-    pillsPerDose: 0,
-    intervalHours: 0,
-    durationDays: 0,
+    pillsPerDose: null as any,  // Empty so the input shows a clean placeholder text
+    intervalHours: null as any, // Ready for selection dropdown
+    durationDays: null as any,  // Clean empty box for typing
     dosageUnit: 'tablet(s)',
     medicationType: 'tablet', 
     expiryDate: new Date().toISOString()
@@ -152,8 +152,9 @@ export class AddMedicationModal implements OnInit {
       this.extractStartTimeFromDate();
 
       const days = parseInt(this.med.durationDays.toString(), 10);
-      const end = new Date(start);
-      end.setDate(start.getDate() + days);
+      
+      // Timezone-safe date shifting
+      const end = new Date(start.getTime() + (days * 24 * 60 * 60 * 1000));
       this.med.expiryDate = end.toISOString();
 
       this.calculateTotalPills();

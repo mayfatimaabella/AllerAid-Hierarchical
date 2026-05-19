@@ -72,7 +72,7 @@ export class ScanPage {
           // Map allergy names to possible ingredient text matches
           const allergenSearchTerms: {[key: string]: string[]} = {
             'dairy': ['milk', 'dairy', 'whey', 'lactose', 'butter', 'ghee', 'cream', 'cheese', 'yogurt'],
-            'peanuts': ['peanut', 'arachid'],
+            'peanuts': ['peanut', 'arachid', 'roasted peanuts', 'peanut butter'],
             'shellfish': ['shellfish', 'shrimp', 'prawn', 'crab', 'lobster', 'oyster', 'mussel', 'clam'],
             'eggs': ['egg', 'albumin', 'lecithin'],
             'wheat': ['wheat', 'gluten', 'barley', 'rye'],
