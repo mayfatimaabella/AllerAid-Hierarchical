@@ -33,7 +33,7 @@ export class MedicalService {
       await setDoc(
         medicalRef,
         {
-          emergencyInstruction: instruction,
+          generalEmergencyInstruction: instruction,
           updatedAt: new Date()
         },
         { merge: true }
@@ -79,7 +79,7 @@ export class MedicalService {
 
   /**
    * Add or update the per-allergy emergency instruction.
-   * Canonical path: medical/info.emergencyInstructions[] (root array — NOT nested
+   * Canonical path: medical/info.allergyEmergencyInstructions[] (root array — NOT nested
    * under emergencySettings). This replaces the old
    * emergencySettings.emergencyInstructions write path.
    */
@@ -93,23 +93,22 @@ export class MedicalService {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);
       const userDoc = await getDoc(medicalRef);
 
-      let emergencyInstructions: EmergencyInstruction[] = [];
+      let allergyEmergencyInstructions: EmergencyInstruction[] = [];
 
       if (userDoc.exists()) {
         const data = userDoc.data();
         // Read from canonical root path only.
-        // Legacy fallback removed — migrate any old data with migrateEmergencyInstructions().
-        emergencyInstructions = data['emergencyInstructions'] ?? [];
+        allergyEmergencyInstructions = data['allergyEmergencyInstructions'] ?? [];
       }
 
       // Replace the entry for this allergy (upsert by allergyId)
-      emergencyInstructions = emergencyInstructions.filter(
+      allergyEmergencyInstructions = allergyEmergencyInstructions.filter(
         ei => ei.allergyId !== allergyId
       );
-      emergencyInstructions.push({ allergyId, allergyName, instruction });
+      allergyEmergencyInstructions.push({ allergyId, allergyName, instruction });
 
       await updateDoc(medicalRef, {
-        emergencyInstructions,   // root field — canonical location
+        allergyEmergencyInstructions, 
         updatedAt: new Date()
       });
     } catch (error) {
@@ -120,7 +119,7 @@ export class MedicalService {
 
   /**
    * Get per-allergy emergency instructions.
-   * Reads from canonical root path: medical/info.emergencyInstructions[].
+   * Reads from canonical root path: medical/info.allergyEmergencyInstructions[].
    */
   async getEmergencyInstructions(uid: string): Promise<EmergencyInstruction[]> {
     try {
@@ -129,7 +128,7 @@ export class MedicalService {
 
       if (userDoc.exists()) {
         const data = userDoc.data();
-        return data['emergencyInstructions'] ?? [];
+        return data['allergyEmergencyInstructions'] ?? [];
       }
 
       return [];
@@ -152,11 +151,11 @@ export class MedicalService {
 
       if (userDoc.exists()) {
         const data = userDoc.data();
-        const filtered = (data['emergencyInstructions'] ?? [] as EmergencyInstruction[])
+        const filtered = (data['allergyEmergencyInstructions'] ?? [] as EmergencyInstruction[])
           .filter((ei: EmergencyInstruction) => ei.allergyId !== allergyId);
 
         await updateDoc(medicalRef, {
-          emergencyInstructions: filtered,
+          allergyEmergencyInstructions: filtered,
           updatedAt: new Date()
         });
       }
@@ -195,12 +194,12 @@ export class MedicalService {
         const data = userDoc.data();
 
         const emergencyMessage = data['emergencyMessage'] ?? {};
-        const emergencyInstruction = data['emergencyInstruction'] ?? '';
-        const emergencyInstructions: EmergencyInstruction[] = data['emergencyInstructions'] ?? [];
+        const generalEmergencyInstruction = data['generalEmergencyInstruction'] ?? '';
+        const allergyEmergencyInstructions: EmergencyInstruction[] = data['allergyEmergencyInstructions'] ?? [];
 
         return {
-          emergencyInstruction,
-          emergencyInstructions,
+          generalEmergencyInstruction,
+          allergyEmergencyInstructions,
           emergencyMessage: {
             ...emergencyMessage,
             location: emergencyMessage['location'] ?? ''

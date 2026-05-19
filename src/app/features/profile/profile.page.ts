@@ -340,4 +340,20 @@ export class ProfilePage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     window.speechSynthesis?.cancel();
   }
+
+async loadEmergencyProfile(event?: any): Promise<void> {
+  try {
+    await this.profileDataLoader.loadAllData();
+  } catch (error) {
+    console.error('Error refreshing emergency profile:', error);
+    await this.presentToast('Error refreshing emergency profile');
+  } finally {
+    event?.target?.complete?.();
+  }
+}
+
+async onEmergencyProfileRefresh(event?: any): Promise<void> {
+  await this.loadEmergencyProfile(event);
+}
+
 }

@@ -30,6 +30,7 @@ export interface BuddyInvitation {
   toUserEmail: string;
   toUserName: string;
   message: string;
+  relationship?: string;
   status: 'pending' | 'accepted' | 'declined' | 'cancelled';
   createdAt: Date;
   respondedAt?: Date;
@@ -53,6 +54,16 @@ export class BuddyService {
 
   private buddyRelationsSubject = new BehaviorSubject<any[]>([]);
   buddyRelations$ = this.buddyRelationsSubject.asObservable();
+
+  private notifiedAcceptances = new Set<string>();
+
+  hasBeenNotified(buddyUid: string): boolean {
+  return this.notifiedAcceptances.has(buddyUid);
+}
+
+  markAsNotified(buddyUid: string): void {
+    this.notifiedAcceptances.add(buddyUid);
+  }
 
   constructor(private userService: UserService) {
     const app = initializeApp(firebaseConfig);
@@ -164,7 +175,8 @@ export class BuddyService {
   async sendBuddyInvitationWithUser(
     currentUser: any,
     targetUser: any,
-    message: string
+    message: string,
+    relationship: string = 'Emergency Buddy' 
   ): Promise<string> {
     if (!currentUser?.uid || !currentUser?.email) {
       throw new Error('Current user data is invalid.');
@@ -201,6 +213,7 @@ export class BuddyService {
         targetUser.fullName ||
         `${targetUser.firstName || ''} ${targetUser.lastName || ''}`.trim(),
       message,
+      relationship,
       status: 'pending',
       createdAt: new Date()
     };
@@ -299,6 +312,9 @@ export class BuddyService {
     if (senderUid === receiverUid) {
       throw new Error('Invalid buddy relation.');
     }
+
+    const senderRelationship = invitation.relationship || 'Emergency Buddy';
+    const receiverRelationship = this.getInverseRelationship(senderRelationship); 
     
     const acceptedAt = new Date();
 
@@ -323,7 +339,7 @@ export class BuddyService {
         buddyUid: receiverUid,
         buddyEmail: invitation.toUserEmail,
         buddyName: invitation.toUserName,
-        relationship: 'Emergency Buddy',
+        relationship: senderRelationship,
         status: 'accepted',
         invitationId,
         createdAt: invitation.createdAt,
@@ -337,7 +353,7 @@ export class BuddyService {
         buddyUid: senderUid,
         buddyEmail: invitation.fromUserEmail,
         buddyName: invitation.fromUserName,
-        relationship: 'Protected Patient',
+        relationship: receiverRelationship,
         status: 'accepted',
         invitationId,
         createdAt: invitation.createdAt,
@@ -672,4 +688,18 @@ export class BuddyService {
       console.warn('Failed to persist dismissed alert data', e);
     }
   }
+
+  private getInverseRelationship(relationship: string): string {
+  switch (relationship) {
+    case 'Caregiver':      return 'Patient';
+    case 'Doctor / Nurse': return 'Patient';
+    case 'Family':
+    case 'Family Member':  return 'Family Member';
+    case 'Friend':         return 'Friend';
+    case 'Roommate':       return 'Roommate';
+    case 'Coworker':       return 'Coworker';
+    case 'Partner':        return 'Partner';
+    default:               return 'Protected Patient';
+  }
+}
 }

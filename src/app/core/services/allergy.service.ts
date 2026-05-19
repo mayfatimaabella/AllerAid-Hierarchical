@@ -127,7 +127,7 @@ export class AllergyService {
       }
 
       const allergyOptions: AllergyOption[] = [
-        { name: 'peanuts', label: 'Peanuts/Nuts', hasInput: false, order: 1, isApproved: true },
+        { name: 'peanuts', label: 'Peanuts', hasInput: false, order: 1, isApproved: true },
         { name: 'dairy', label: 'Dairy/Milk', hasInput: false, order: 2, isApproved: true },
         { name: 'eggs', label: 'Eggs', hasInput: false, order: 3, isApproved: true },
         { name: 'wheat', label: 'Wheat/Gluten', hasInput: false, order: 4, isApproved: true },
@@ -139,7 +139,8 @@ export class AllergyService {
         { name: 'animalDander', label: 'Animal Dander', hasInput: false, order: 10, isApproved: true },
         { name: 'insectStings', label: 'Insect Stings', hasInput: false, order: 11, isApproved: true },
         { name: 'medication', label: 'Medication', hasInput: true, order: 12, isApproved: true },
-        { name: 'others', label: 'Others', hasInput: true, order: 13, isApproved: true }
+        { name: 'others', label: 'Others', hasInput: true, order: 13, isApproved: true },
+        { name: 'nuts', label: 'Nuts', hasInput: false, order: 14, isApproved: true }
       ];
 
       for (const option of allergyOptions) {
@@ -204,7 +205,7 @@ async submitAllergySuggestion(suggestion: {
   suggestedBy: string;
   status: 'pending' | 'approved' | 'rejected';
 }): Promise<void> {
-  const suggestionsRef = collection(this.db, 'allergy_suggestions');
+  const suggestionsRef = collection(this.db, 'allergySuggestions');
 
   await addDoc(suggestionsRef, suggestion);
 }

@@ -73,49 +73,55 @@ export class BuddyPage implements OnInit {
     }
   }
 
-  async loadBuddies() {
-    if (this.isLoadingBuddies) return; // Prevent multiple calls
-    this.isLoadingBuddies = true;
-    
-    try {
-      // Wait for auth to be initialized
-      const currentUser = await this.authService.waitForAuthInit();
-      
-      if (currentUser) {
-        // Only debug log in development
-        if (!environment.production) {
-          console.log('Loading buddies for current user:', currentUser.uid);
-        }
-        
-        this.buddies = await this.buddyService.getUserBuddies(currentUser.uid);
-        
-        if (!environment.production) {
-          console.log('Loaded buddies from buddy page:', this.buddies);
-        }
-      } else {
-        if (!environment.production) {
-          console.log('No current user found - redirecting to login');
-        }
-        this.buddies = [];
-        
-        // Show toast and redirect to login
-        const toast = await this.toastController.create({
-          message: 'Please log in to view your buddies',
-          duration: 3000,
-          color: 'warning'
-        });
-        await toast.present();
-        
-        // Redirect to login page after a short delay
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 1000);
+async loadBuddies() {
+  if (this.isLoadingBuddies) return;
+  this.isLoadingBuddies = true;
+
+  try {
+    const currentUser = await this.authService.waitForAuthInit();
+
+    if (currentUser) {
+      if (!environment.production) {
+        console.log('Loading buddies for current user:', currentUser.uid);
       }
-      this.filteredBuddies = this.buddies;
-    } finally {
-      this.isLoadingBuddies = false;
+
+      const raw = await this.buddyService.getUserBuddies(currentUser.uid);
+
+      // Map buddyName → firstName/lastName so the template works
+      this.buddies = raw.map(b => ({
+        ...b,
+        firstName: b.firstName || b.buddyName?.split(' ')[0] || '',
+        lastName:  b.lastName  || b.buddyName?.split(' ').slice(1).join(' ') || '',
+        email:     b.email     || b.buddyEmail || '',
+      }));
+
+      if (!environment.production) {
+        console.log('Loaded buddies from buddy page:', this.buddies);
+      }
+    } else {
+      if (!environment.production) {
+        console.log('No current user found - redirecting to login');
+      }
+
+      this.buddies = [];
+
+      const toast = await this.toastController.create({
+        message: 'Please log in to view your buddies',
+        duration: 3000,
+        color: 'warning'
+      });
+      await toast.present();
+
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 1000);
     }
+
+    this.filteredBuddies = this.buddies;
+  } finally {
+    this.isLoadingBuddies = false;
   }
+}
 
   async openInvitationsModal() {
     const modal = await this.modalController.create({

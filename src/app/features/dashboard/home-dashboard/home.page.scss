@@ -273,3 +273,8 @@ ion-toolbar .ion-buttons[slot="end"] ion-button:hover {
     flex-shrink: 0;
   }
 }
+
+.allergy-banner {
+  border-left-color: var(--ion-color-warning-shade);
+  background: #fffbeb;
+}

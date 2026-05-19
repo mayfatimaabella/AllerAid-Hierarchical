@@ -13,23 +13,45 @@ export class AllergyModalService {
 
   async openEditAllergiesModal(
     allergyOptions: any[],
-    refreshAllergiesDisplay: () => Promise<void>
-  ) {
+    refreshAllergiesDisplay: () => Promise<void>,
+    mode: 'add' | 'edit' = 'edit'
+  ): Promise<void> {
     const modal = await this.modalController.create({
-      component: (await import('../overview/modals/edit-allergies-modal/edit-allergies-modal.component')).EditAllergiesModalComponent,
+      component: (
+        await import('../overview/modals/edit-allergies-modal/edit-allergies-modal.component')
+      ).EditAllergiesModalComponent,
       componentProps: {
-        allergyOptions: allergyOptions
+        allergyOptions,
+        mode
       },
       cssClass: 'force-white-modal'
     });
 
     modal.onDidDismiss().then(async (result) => {
-      if (result.data?.refresh && result.data?.allergyOptions) {
-        const currentUser = await this.authService.waitForAuthInit();
-        if (!currentUser) return;
-        await this.allergyService.saveUserAllergies(currentUser.uid, result.data.allergyOptions);
-        await refreshAllergiesDisplay();
-      }
+      if (!result.data?.saved || !result.data?.allergyOptions) return;
+
+      const currentUser = await this.authService.waitForAuthInit();
+      if (!currentUser) return;
+
+      const selectedAllergies = result.data.allergyOptions
+        .filter((allergy: any) => allergy.checked)
+        .map((allergy: any) => {
+          const customValue = String(allergy.value || '').trim();
+
+          return {
+            name: allergy.name,
+            checked: true,
+            label: allergy.hasInput ? customValue : allergy.label,
+            value: allergy.hasInput ? customValue : (allergy.value || allergy.label)
+          };
+        });
+
+      await this.allergyService.saveUserAllergies(
+        currentUser.uid,
+        selectedAllergies
+      );
+
+      await refreshAllergiesDisplay();
     });
 
     await modal.present();

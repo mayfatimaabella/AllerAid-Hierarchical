@@ -23,13 +23,40 @@
   <div class="wrapper scrollable-content">
     <h2 class="page-title">Welcome, {{ userName }}!</h2>
 
+        <div *ngIf="showAllergyBanner" class="buddy-banner allergy-banner">
+          <div class="buddy-banner-content">
+            <ion-icon name="warning-outline" class="buddy-banner-icon"></ion-icon>
+            <div class="buddy-banner-text">
+              <p class="buddy-banner-title">No allergens recorded</p>
+              <p class="buddy-banner-sub">
+               Add allergens so responders know what to avoid.
+              </p>
+              <ion-button
+                size="small"
+                fill="solid"
+                color="warning"
+                (click)="openAddAllergiesModal()">
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                Add allergens
+              </ion-button>
+            </div>
+          </div>
+          <ion-button
+            fill="clear"
+            size="small"
+            class="buddy-banner-close"
+            (click)="showAllergyBanner = false">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>   
+
         <div *ngIf="showBuddyBanner" class="buddy-banner">
       <div class="buddy-banner-content">
         <ion-icon name="person-circle-outline" class="buddy-banner-icon"></ion-icon>
         <div class="buddy-banner-text">
           <p class="buddy-banner-title">You don't have a buddy yet</p>
           <p class="buddy-banner-sub">
-            Your emergency contact is set, but a buddy can alert someone instantly during an emergency.
+            A buddy can alert someone instantly in an emergency.
           </p>
           <ion-button
             size="small"

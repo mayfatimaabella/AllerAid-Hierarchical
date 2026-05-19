@@ -38,8 +38,8 @@
         <ion-avatar class="profile-avatar">
 
           <img alt="person-avatar"
-               [src]="vm.profileDetails?.profile_picture || 'https://ionicframework.com/docs/img/demos/avatar.svg'"
- />
+          [src]="vm.profileDetails?.profile_picture || 'https://ionicframework.com/docs/img/demos/avatar.svg'"/>
+        
         </ion-avatar>
         
       
@@ -295,6 +295,7 @@
     [emergencyMessage]="{ name: '', allergies: '', instructions: '', location: '' }"
     [userProfile]="vm.profile"
     [mode]="'add'"
+    (refresh)="onEmergencyProfileRefresh($event)"
     (saveModal)="saveNewEmergencyMessage($event)"
     (closeModal)="activeModal = null">
   </app-edit-emergency-profile-modal>

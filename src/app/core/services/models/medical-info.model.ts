@@ -6,9 +6,9 @@ export interface MedicalInfo {
 
   allergyOnboardingCompleted: boolean;
 
-  generalInstruction?: string;
+  generalEmergencyInstruction?: string;
 
-  allergyInstructions?: EmergencyInstruction[];
+  allergyEmergencyInstructions?: EmergencyInstruction[];
 
   emergencyProfile?: EmergencyInstruction;
 

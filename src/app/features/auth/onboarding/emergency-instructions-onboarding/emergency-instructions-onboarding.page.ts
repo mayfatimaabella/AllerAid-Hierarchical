@@ -145,7 +145,7 @@ export class EmergencyInstructionsOnboardingPage implements OnInit, OnDestroy {
 
       // Load general instruction from canonical root path
       const medicalData = await this.medicalService.getUserMedicalProfile(currentUser.uid);
-      this.generalInstruction = medicalData?.generalInstruction || '';
+      this.generalInstruction = medicalData?.generalEmergencyInstruction  || '';
 
     } catch (error) {
       console.error('Error loading emergency instructions onboarding data:', error);

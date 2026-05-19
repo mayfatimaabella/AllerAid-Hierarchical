@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar class="toolbar--teal">
-    <ion-title>Edit Allergies</ion-title>
+    <ion-title>{{ mode === 'add' ? 'Add Allergies' : 'Edit Allergies' }}</ion-title>
     
     <ion-buttons slot="start">
       <ion-button (click)="onClose()" fill="clear">
@@ -17,27 +17,52 @@
         Save
       </ion-button>
     </ion-buttons>
-
   </ion-toolbar>
 </ion-header>
+
 <ion-content class="ion-padding">
+
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="crescent"
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <!-- One-time hint banner -->
+  <ion-item *ngIf="showRefreshHint" lines="none" class="refresh-hint">
+    <ion-icon name="arrow-down-circle-outline" slot="start" color="primary"></ion-icon>
+    <ion-label class="ion-text-wrap">
+      <p>Pull down to reset your changes</p>
+    </ion-label>
+    <ion-button fill="clear" slot="end" (click)="dismissHint()">
+      <ion-icon name="close-outline"></ion-icon>
+    </ion-button>
+  </ion-item>
+
   <form id="allergyForm" (ngSubmit)="onSave()">
     <ion-list lines="none">
       <ion-item *ngFor="let allergy of allergyOptions; let i = index">
         <ion-checkbox
           slot="start"
-          [checked]="allergy.checked"
-          (ionChange)="allergy.checked = $event.detail.checked">
+          [(ngModel)]="allergy.checked"
+          [name]="'checked_' + i">
         </ion-checkbox>
+
         <ion-label>{{ allergy.label }}</ion-label>
+
         <ion-input
           *ngIf="allergy.hasInput"
-          placeholder="please specify"
-          [value]="allergy.value"
-          (ionChange)="allergy.value = $event.detail.value"
+          placeholder="Please specify"
+          [(ngModel)]="allergy.value"
+          [name]="'value_' + i"
+          [disabled]="!allergy.checked"
           [attr.aria-label]="'Specify ' + allergy.label">
         </ion-input>
       </ion-item>
     </ion-list>
   </form>
+
 </ion-content>

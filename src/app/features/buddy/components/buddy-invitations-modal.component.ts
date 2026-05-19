@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ModalController, ToastController, AlertController } from '@ionic/angular';
 import { BuddyService, BuddyInvitation } from '../../../core/services/buddy.service';
 import { UserService } from '../../../core/services/user.service';
@@ -9,14 +9,15 @@ import { UserService } from '../../../core/services/user.service';
   styleUrls: ['./buddy-invitations-modal.component.scss'],
   standalone: false,
 })
-export class BuddyInvitationsModal implements OnInit {
+export class BuddyInvitationsModal implements OnInit, OnDestroy {
 
   selectedSegment: 'invite' | 'received' | 'sent' = 'invite';
   
   // Send invitation form
   inviteEmail: string = '';
   inviteMessage: string = 'Hi! I\'d like you to be my emergency buddy. This will help us stay connected during allergy emergencies.';
-  
+  inviteRelationship: string = 'Emergency Buddy';
+
   // Search functionality
   searchResults: any[] = [];
   selectedUser: any = null;
@@ -30,6 +31,8 @@ export class BuddyInvitationsModal implements OnInit {
   isLoading: boolean = false;
   currentUserId: string = '';
 
+  private relationsSubscription?: any;
+
   constructor(
     private modalController: ModalController,
     private toastController: ToastController,
@@ -42,15 +45,32 @@ export class BuddyInvitationsModal implements OnInit {
     const currentUser = await this.userService.getCurrentUserProfile();
     if (currentUser) {
       this.currentUserId = currentUser.uid;
+      this.listenForAcceptedInvitations(currentUser.uid);
     }
     await this.loadInvitations();
+  }
+
+  ngOnDestroy(): void {
+    this.relationsSubscription?.unsubscribe();
+  }
+
+  listenForAcceptedInvitations(userId: string): void {
+    this.buddyService.listenForBuddyRelations(userId);
+    this.relationsSubscription = this.buddyService.buddyRelations$.subscribe(relations => {
+      relations.forEach((rel: any) => {
+        if (!this.buddyService.hasBeenNotified(rel.buddyUid)) {
+          this.showToast(`${rel.buddyName} accepted your buddy request!`, 'success');
+          this.buddyService.markAsNotified(rel.buddyUid);
+          this.loadInvitations();
+        }
+      });
+    });
   }
 
   async loadInvitations() {
     try {
       const currentUser = await this.userService.getCurrentUserProfile();
       if (currentUser) {
-        // Service already handles fallback logic (userId -> email), so just call once
         this.receivedInvitations = await this.buddyService.getReceivedInvitations(currentUser.uid);
         this.sentInvitations = await this.buddyService.getSentInvitations(currentUser.uid);
       }
@@ -60,10 +80,7 @@ export class BuddyInvitationsModal implements OnInit {
     }
   }
 
-  onSegmentChange() {
-    // Data is already loaded, no need to reload on tab switch
-    // Only refresh if explicitly needed (handled by individual action handlers)
-  }
+  onSegmentChange() {}
 
   async sendInvitation() {
     if (!this.selectedUser) {
@@ -74,7 +91,6 @@ export class BuddyInvitationsModal implements OnInit {
     try {
       this.isLoading = true;
 
-      // Get current user profile first
       const currentUser = await this.userService.getCurrentUserProfile();
       if (!currentUser) {
         this.showToast('You must be logged in to send invitations', 'danger');
@@ -82,7 +98,6 @@ export class BuddyInvitationsModal implements OnInit {
         return;
       }
 
-      // Check for duplicate buddy relationships FIRST
       const duplicateCheck = await this.buddyService.checkDuplicateBuddyByEmail(currentUser.uid, this.selectedUser.email.trim());
       
       if (duplicateCheck.isDuplicate) {
@@ -114,14 +129,14 @@ export class BuddyInvitationsModal implements OnInit {
         
         await alert.present();
         this.isLoading = false;
-        return; // Block the invitation
+        return;
       }
 
-      // Send the invitation with current user data
       await this.buddyService.sendBuddyInvitationWithUser(
         currentUser,
         this.selectedUser,
-        this.inviteMessage
+        this.inviteMessage,
+        this.inviteRelationship
       );
 
       this.showToast('Invitation sent successfully!', 'success');
@@ -132,14 +147,10 @@ export class BuddyInvitationsModal implements OnInit {
       this.searchResults = [];
       this.showSearchDropdown = false;
       this.inviteMessage = 'Hi! I\'d like you to be my emergency buddy. This will help us stay connected during allergy emergencies.';
-      
-      // Refresh sent invitations
+      this.inviteRelationship = 'Emergency Buddy';
+
       await this.loadInvitations();
-      
-      // Notify parent that invitation count may have changed
       this.dismiss(true, 'sent');
-      
-      // Switch to sent tab to show the sent invitation
       this.selectedSegment = 'sent';
 
     } catch (error) {
@@ -164,17 +175,18 @@ export class BuddyInvitationsModal implements OnInit {
           text: 'Accept',
           handler: async () => {
             try {
-              // Get current user profile first
               const currentUser = await this.userService.getCurrentUserProfile();
               if (!currentUser) {
                 throw new Error('No current user found');
               }
               
-              // Pass the current user to the accept method
+              const accepted = this.receivedInvitations.find(inv => inv.id === invitationId);
+              const buddyName = accepted?.fromUserName || 'Your buddy';
+
               await this.buddyService.acceptBuddyInvitationWithUser(invitationId, currentUser.uid);
-              this.showToast('Buddy invitation accepted!', 'success');
+              this.showToast(`${buddyName} is now your buddy!`, 'success');
               await this.loadInvitations();
-              this.dismiss(true, 'accepted'); // Close modal and refresh parent with action type
+              this.dismiss(true, 'accepted');
             } catch (error) {
               console.error('Error accepting invitation:', error);
               const errorMessage = error instanceof Error ? error.message : 'Error accepting invitation';
@@ -204,7 +216,7 @@ export class BuddyInvitationsModal implements OnInit {
               await this.buddyService.declineBuddyInvitation(invitationId);
               this.showToast('Invitation declined', 'medium');
               await this.loadInvitations();
-              this.dismiss(true, 'declined'); // Notify parent of change
+              this.dismiss(true, 'declined');
             } catch (error) {
               console.error('Error declining invitation:', error);
               this.showToast('Error declining invitation', 'danger');
@@ -312,8 +324,8 @@ export class BuddyInvitationsModal implements OnInit {
   dismiss(refreshNeeded: boolean = false, actionType?: string) {
     this.modalController.dismiss({
       refreshNeeded: refreshNeeded,
-      invitationChanged: actionType ? true : false, // Flag for parent to refresh invitation count
-      action: actionType // Type of action that occurred (accepted, declined, sent, etc.)
+      invitationChanged: actionType ? true : false,
+      action: actionType
     });
   }
 }

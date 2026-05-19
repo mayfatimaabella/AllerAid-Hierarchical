@@ -69,8 +69,7 @@ async loadAllData(): Promise<void> {
   this.emergencyMessageSubject.next({
     name: emergencyData?.name || profile?.fullName || '',
     allergies: emergencyData?.allergies || '',
-    instructions: emergencyData?.generalInstruction || emergencyData?.emergencyMessage?.instructions || '',
-    location: emergencyData?.emergencyMessage?.location || '',
+    instructions: emergencyData?.generalEmergencyInstruction || '',
     emergencyContactPhone: emergencyData?.emergencyMessage?.emergencyContactPhone || ''
   });
   this.emergencyInstructionsSubject.next(instructions || []);

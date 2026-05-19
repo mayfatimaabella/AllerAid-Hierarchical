@@ -42,7 +42,7 @@
 
         <div class="emergency-value instructions">
           <ng-container *ngIf="emergencyMessage?.instructions; else noInstructions">
-            {{ emergencyMessage?.instructions || emergencyMessage?.generalInstruction }}
+            {{  emergencyMessage?.instructions }}
           </ng-container>
           <ng-template #noInstructions><i>No instructions set</i></ng-template>
         </div>

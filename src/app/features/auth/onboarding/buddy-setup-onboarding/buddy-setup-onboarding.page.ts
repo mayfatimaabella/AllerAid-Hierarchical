@@ -368,7 +368,8 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
       await this.buddyService.sendBuddyInvitationWithUser(
         currentUserProfile,
         this.foundBuddy,
-        `${currentUserProfile.firstName} wants you as their emergency buddy on AllerAid.`
+        `${currentUserProfile.firstName} wants you as their emergency buddy on AllerAid.`,
+        this.primaryRelationship
       );
 
       this.primaryInviteStatus = 'sent';
@@ -646,7 +647,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
       );
 
       await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
-      await this.showToast('Fallback emergency setup saved.', 'success');
+      await this.showToast('Emergency setup saved.', 'success');
       await this.router.navigate(['/tabs/home'], { replaceUrl: true });
 
     } catch (error) {

@@ -10,6 +10,9 @@ import { MedicalService } from '../../../core/services/medical.profile.service';
 import { Subscription } from 'rxjs';
 import { doc, getDoc } from 'firebase/firestore';
 import { FirebaseService } from '../../../core/services/firebase.service';
+import { ModalController } from '@ionic/angular';
+import { EditAllergiesModalComponent } from '../../../features/profile/overview/modals/edit-allergies-modal/edit-allergies-modal.component'
+import { AllergyManagerService } from '../../../core/services/allergy-manager.service';
 
 @Component({
   selector: 'app-home',
@@ -38,12 +41,18 @@ export class HomePage implements OnInit, OnDestroy {
 
   hasBuddy: boolean = true;
   showBuddyBanner: boolean = false;
+  showAllergyBanner: boolean = false;
 
   private emergencyConfirmationTimer: any = null;
   emergencyConfirmationTimeLeft: number = 5;
 
   private subscriptions: Subscription[] = [];
   private db: any;
+
+  private unsubscribeAll() {
+  this.subscriptions.forEach(sub => sub.unsubscribe());
+  this.subscriptions = [];
+}
 
   constructor(
     private alertController: AlertController,
@@ -56,7 +65,9 @@ export class HomePage implements OnInit, OnDestroy {
     private emergencyNotificationService: EmergencyNotificationService,
     private userService: UserService,
     private medicalService: MedicalService,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
+    private modalController: ModalController,
+    private allergyManager: AllergyManagerService,
   ) {
     this.db = this.firebaseService.getDb();
   }
@@ -69,6 +80,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async ionViewWillEnter() {
+     this.unsubscribeAll();
     await this.loadUserData();
     this.subscribeToUserEmergency();
   }
@@ -93,12 +105,14 @@ export class HomePage implements OnInit, OnDestroy {
         const messageInstruction = (medicalInfo as any)?.emergencyMessage?.instructions;
         this.emergencyInstruction =
           (typeof messageInstruction === 'string' && messageInstruction.trim()) ||
-          medicalInfo?.generalInstruction ||
+          medicalInfo?.generalEmergencyInstruction ||
           '';
 
         this.userAllergies = Array.isArray(medicalInfo?.allergies)
           ? medicalInfo.allergies.filter((allergy: any) => allergy.checked)
           : [];
+
+        this.showAllergyBanner = this.userAllergies.length === 0;
 
         console.log('Loaded allergies:', this.userAllergies);
         console.log('Allergy count:', this.userAllergies.length);
@@ -448,7 +462,7 @@ export class HomePage implements OnInit, OnDestroy {
       const latestMessageInstruction = (latestMedical as any)?.emergencyMessage?.instructions;
       const resolvedInstruction =
         (typeof latestMessageInstruction === 'string' && latestMessageInstruction.trim()) ||
-        latestMedical?.generalInstruction?.trim() ||
+        latestMedical?.generalEmergencyInstruction?.trim() ||
         this.emergencyInstruction ||
         '';
 
@@ -550,32 +564,61 @@ export class HomePage implements OnInit, OnDestroy {
     return this.userBuddies?.length || 0;
   }
 
-  async checkBuddyStatus() {
-    try {
-      const currentUser = await this.authService.waitForAuthInit();
-      if (!currentUser) return;
+async checkBuddyStatus() {
+  try {
+    const currentUser = await this.authService.waitForAuthInit();
+    if (!currentUser) return;
 
-      const ref = doc(this.db, 'users', currentUser.uid, 'medical', 'info');
-      const snap = await getDoc(ref);
-
-      if (!snap.exists()) {
-        this.hasBuddy = false;
-        this.showBuddyBanner = false;
-        return;
-      }
-
-      const data = snap.data();
-      const setup = data?.['buddySetupOnboarding'];
-
-      const hasRealBuddy = !!(setup?.primaryBuddy?.buddyUid) &&
-                           setup?.primaryBuddy?.inviteStatus !== 'skipped';
-      const usedFallback = setup?.fallbackUsed === true;
-      const skipped = setup?.skippedBuddySetup === true;
-
-      this.hasBuddy = hasRealBuddy;
-      this.showBuddyBanner = (usedFallback || skipped) && !hasRealBuddy;
-    } catch (error) {
-      console.error('Error checking buddy status:', error);
+    // If live buddy list already has entries, trust it directly
+    if (this.userBuddies && this.userBuddies.length > 0) {
+      this.hasBuddy = true;
+      this.showBuddyBanner = false;
+      return;
     }
+
+    const ref = doc(this.db, 'users', currentUser.uid, 'medical', 'info');
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      this.hasBuddy = false;
+      this.showBuddyBanner = false;
+      return;
+    }
+
+    const data = snap.data();
+    const setup = data?.['buddySetupOnboarding'];
+
+    const hasRealBuddy = !!(setup?.primaryBuddy?.buddyUid) &&
+                         setup?.primaryBuddy?.inviteStatus !== 'skipped';
+    const usedFallback = setup?.fallbackUsed === true;
+    const skipped = setup?.skippedBuddySetup === true;
+
+    this.hasBuddy = hasRealBuddy;
+    this.showBuddyBanner = (usedFallback || skipped) && !hasRealBuddy;
+  } catch (error) {
+    console.error('Error checking buddy status:', error);
   }
+}
+
+async openAddAllergiesModal() {
+  const allergyOptions = await this.allergyManager.loadAllergyOptions();
+
+  const modal = await this.modalController.create({
+    component: EditAllergiesModalComponent,
+    componentProps: {
+      allergyOptions,
+      mode: 'add'
+    }
+  });
+
+  modal.onDidDismiss().then(async ({ data }) => {
+    if (data?.refresh) {
+      await this.loadUserData();
+    }
+  });
+
+  await modal.present();
+}
+
+
 }
