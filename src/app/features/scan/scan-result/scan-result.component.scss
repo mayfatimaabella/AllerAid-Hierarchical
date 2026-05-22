@@ -1,17 +1,40 @@
-// Root Container Styling
-ion-content {
-  --background: #ffffff !important;
-  color: #1f4a42 !important; // Deep dark teal for better readability
+// --- New Back Button Navigation ---
+.back-to-history-btn {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #036a5d;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 20px;
+  cursor: pointer;
+  
+  ion-icon {
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
 }
 
-// Modal Structure
+// --- Root Container Styling ---
+ion-content {
+  --background: #ffffff !important;
+  color: #1f4a42 !important;
+}
+
+// --- Modal Structure ---
 ion-modal {
   --background: #ffffff;
   --border-radius: 32px 32px 0 0;
   --box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
 }
 
-// Header & Drag Handle
+// --- Header & Drag Handle ---
 ion-header {
   --background: #ffffff !important;
   border: none !important;
@@ -25,7 +48,7 @@ ion-header {
   margin: 12px auto 4px;
 }
 
-// 1. Hero Section (Product Image & Title)
+// --- 1. Hero Section ---
 .product-hero {
   padding: 10px 20px 20px;
   text-align: center;
@@ -86,12 +109,11 @@ ion-header {
   }
 }
 
-// 2. Main Details Container
+// --- 2. Main Details Container ---
 .details-container {
   padding: 0 20px 40px;
 }
 
-// Common Card Styling
 .analysis-card, .ingredients-card {
   background: #ffffff;
   border-radius: 24px;
@@ -116,7 +138,7 @@ ion-header {
   }
 }
 
-// 3. Safety Analysis Layouts
+// --- 3. Safety Analysis Layouts ---
 .analysis-card {
   &.safe {
     background: #f1fbf4; 
@@ -133,7 +155,6 @@ ion-header {
   }
 }
 
-// Allergen Specific UI
 .allergen-chips {
   display: flex; 
   flex-wrap: wrap; 
@@ -165,7 +186,7 @@ ion-header {
   span { font-size: 12px; color: #6b8581; line-height: 1.5; font-weight: 500; }
 }
 
-// 4. Ingredients Body
+// --- 4. Ingredients ---
 .ingredients-body {
   font-size: 13px; 
   line-height: 1.7; 
@@ -177,7 +198,7 @@ ion-header {
   border-left: 4px solid #036a5d;
 }
 
-// 5. Nutritional Action Button
+// --- 5. Nutritional Action ---
 .nutrition-action {
   width: 100%; 
   background: #036a5d; 

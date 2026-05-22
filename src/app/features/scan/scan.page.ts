@@ -4,7 +4,6 @@ import { BarcodeService } from '../../core/services/barcode.service';
 import { AllergyManagerService } from '../../core/services/allergy-manager.service';
 import { ScanResultComponent } from './scan-result/scan-result.component';
 import { AlertController } from '@ionic/angular';
-//import { LocalStorageService } from '../../features/profile/services/local-storage.service';
 import { StorageService } from '../../core/services/storage.service';
 
 @Component({
@@ -29,7 +28,6 @@ export class ScanPage {
     private productService: ProductService,
     private barcodeService: BarcodeService,
     private allergyManagerService: AllergyManagerService,
-    //private localStorage: LocalStorageService,
     private storageService: StorageService,
     private alertCtrl: AlertController
   ) {}
@@ -66,54 +64,80 @@ export class ScanPage {
             product_name: productName,
           };
 
-          // Get user's actual allergies from Firebase (only checked ones)
-          const userAllergens: string[] = userAllergiesData.map((allergy: any) => allergy.name.toLowerCase());
-          
-          // Map allergy names to possible ingredient text matches
-          const allergenSearchTerms: {[key: string]: string[]} = {
+          // --- DATABASE FIRST UPDATE STEP 2: Pure mapping lookup dictionaries ---
+          const allergenSearchTerms: { [key: string]: string[] } = {
             'dairy': ['milk', 'dairy', 'whey', 'lactose', 'butter', 'ghee', 'cream', 'cheese', 'yogurt'],
-            'peanuts': ['peanut', 'arachid', 'roasted peanuts', 'peanut butter'],
+            'peanuts': ['peanuts', 'arachid', 'roasted peanuts', 'peanut butter'],
+            'nuts': ['nuts', 'almond', 'cashew', 'walnut', 'pecan', 'pistachio', 'macadamia', 'chestnut', 'hazelnut'],
             'shellfish': ['shellfish', 'shrimp', 'prawn', 'crab', 'lobster', 'oyster', 'mussel', 'clam'],
-            'eggs': ['egg', 'albumin', 'lecithin'],
+            'eggs': ['egg', 'albumin'],
             'wheat': ['wheat', 'gluten', 'barley', 'rye'],
             'fish': ['fish', 'anchovy', 'cod', 'salmon', 'tuna'],
-            'soy': ['soy', 'soya'],
-            'tree nut': ['nut', 'almond', 'cashew', 'walnut', 'pecan', 'pistachio', 'macadamia'],
+            'soy': ['soy', 'soya', 'lecithin'],
             'pollen': ['pollen'],
             'latex': ['latex'],
             'animaldander': ['dander', 'pet', 'animal'],
             'insectstings': ['insect'],
             'medication': [],
-            'others': ['chocolate']
+            'others': []
           };
 
-          // Extract ingredient/allergen data
+          // Extract and clean ingredients data text sets
           const ingredientsText = product.ingredients_text?.toLowerCase() || '';
           const allergensFromAPI = (product.allergens_tags || []).map((tag: string) =>
             tag.replace('en:', '').toLowerCase()
           );
 
-          // Detect allergens from ingredients or API
-          const matchedAllergens = userAllergens.filter(userAllergen => {
-            const searchTerms = allergenSearchTerms[userAllergen] || [userAllergen];
-            return searchTerms.some(term => 
-              ingredientsText.includes(term) || allergensFromAPI.includes(term)
-            );
+          // Extract clean profile lookup keys match records 
+          const userAllergens: string[] = userAllergiesData.map((allergy: any) => 
+            allergy.name.toLowerCase().trim()
+          );
+
+          const matchedAllergensLabels: string[] = [];
+
+          // Pure dynamic lookup mapping matches
+          userAllergens.forEach((userAllergen) => {
+            const searchTerms = allergenSearchTerms[userAllergen];
+            let isMatched = false;
+
+            if (searchTerms && searchTerms.length > 0) {
+              // Check if any sub-dictionary term matches our text fields safely
+              isMatched = searchTerms.some(term => 
+                ingredientsText.includes(term.toLowerCase().trim()) || 
+                allergensFromAPI.includes(term.toLowerCase().trim())
+              );
+            } else {
+              // Fallback match condition for non-dictionary custom inputs
+              isMatched = ingredientsText.includes(userAllergen) || 
+                          allergensFromAPI.includes(userAllergen);
+            }
+
+            if (isMatched) {
+              // Locate the matching allergy object to extract its readable name/label
+              const originalAllergyObj = userAllergiesData.find(a => a.name.toLowerCase().trim() === userAllergen);
+              
+              // Ironclad fallback chain: Use label -> name property -> clean string tag directly
+              const labelResult = originalAllergyObj?.label || originalAllergyObj?.name || userAllergen;
+              
+              if (!matchedAllergensLabels.includes(labelResult)) {
+                matchedAllergensLabels.push(labelResult);
+              }
+            }
           });
 
-          // Determine allergen status
-          if (matchedAllergens.length > 0) {
+          // Determine final allergen status variables
+          if (matchedAllergensLabels.length > 0) {
             this.allergenStatus = 'warning';
-            this.ingredientsToWatch = matchedAllergens;
+            this.ingredientsToWatch = matchedAllergensLabels;
           } else if (!ingredientsText && allergensFromAPI.length === 0) {
             this.allergenStatus = 'warning';
-            this.ingredientsToWatch = ['Caution: We couldnt find the ingredient list for this item. Please check the label.'];
+            this.ingredientsToWatch = ['Caution: We couldn\'t find the ingredient list for this item. Please check the label.'];
           } else {
             this.allergenStatus = 'safe';
             this.ingredientsToWatch = ['Safe to Consume'];
           }
 
-          // Add to Recent Scans
+          // Build History Record Entry
           const scanEntry = {
             code: product.code || barcode,
             product_name: productName,
@@ -124,22 +148,17 @@ export class ScanPage {
             image_url: product.image_url || 'assets/img/placeholder.png',
           };
 
-          // Add to temporary recent scans (in-memory)
-          //this.recentScans.unshift(scanEntry);
-          //this.recentScans = this.recentScans.slice(0, 10); // limit to last 10
-
           await this.storageService.addRecentScan(scanEntry);
           this.recentScans = await this.storageService.getRecentScans();
 
-          // Open the modal with the scan result
+          // Fire display window component modal
           this.openScanResultModal();
 
           // Debug logs
           console.log('Product:', productName);
           console.log('User Allergens:', userAllergens);
-          console.log('Matched Allergens:', this.ingredientsToWatch);
+          console.log('Matched Allergens labels:', this.ingredientsToWatch);
           console.log('Status:', this.allergenStatus);
-          console.log('Recent Scans:', this.recentScans);
 
         } else {
           alert('Product not found in OpenFoodFacts.');
@@ -151,18 +170,15 @@ export class ScanPage {
     });
   }
 
-  // Open the scan result modal
   openScanResultModal() {
     if (this.scanResultModal) {
       this.scanResultModal.openModal();
     }
   }
 
-  // Camera scanning
   async startCameraScan() {
     try {
       console.log('=== SCAN PAGE: Starting camera scan ===');
-
       const scannedBarcode = await this.barcodeService.scanBarcode();
 
       if (scannedBarcode) {
@@ -187,7 +203,6 @@ export class ScanPage {
     this.allergenStatus = scan.status;
     this.ingredientsToWatch = scan.allergens || [];
 
-    // Open the modal
     this.openScanResultModal();
   }
 
@@ -208,7 +223,6 @@ export class ScanPage {
 
   onRecentScanSelected(scan: any) {
     this.viewScan(scan);
-    this.recentScansModal.onDismiss();
   }
 
   async confirmDeleteScan(index: number) {
@@ -249,8 +263,7 @@ export class ScanPage {
     await alert.present();
   }
 
-async ionViewWillEnter() {
-  this.recentScans = await this.storageService.getRecentScans();
-}
-
+  async ionViewWillEnter() {
+    this.recentScans = await this.storageService.getRecentScans();
+  }
 }

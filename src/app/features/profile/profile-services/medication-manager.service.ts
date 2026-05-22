@@ -84,6 +84,7 @@ export class MedicationManagerService {
     onDeleted?: () => void
   ) {
     if (!medicationId) {
+      console.error('DEBUG: Cannot delete medication - missing ID');
       presentToast('Cannot delete medication - missing ID');
       return;
     }
@@ -100,12 +101,18 @@ export class MedicationManagerService {
           cssClass: 'danger',
           handler: async () => {
             try {
+              console.log(`DEBUG: Deleting medication ID: ${medicationId}, Name: ${medicationName}`);
               await this.medicationService.deleteMedication(medicationId);
+              console.log('DEBUG: Deletion from service completed, now reloading medications...');
               await loadUserMedications();
-              try { await reminders.cancelForMedication(medicationId); } catch {}
+              console.log('DEBUG: Medications reloaded after deletion');
+              try { await reminders.cancelForMedication(medicationId); } catch (e) {
+                console.warn('DEBUG: Could not cancel reminders:', e);
+              }
               presentToast('Medication removed successfully');
               if (onDeleted) onDeleted();
             } catch (error) {
+              console.error('DEBUG: Error during medication deletion:', error);
               presentToast('Error removing medication');
             }
           }

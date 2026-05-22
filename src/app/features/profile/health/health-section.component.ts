@@ -1,17 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { 
-  ChangeDetectionStrategy, 
   Component, 
   EventEmitter, 
   Input, 
   Output, 
   OnInit, 
-  OnDestroy, 
-  ChangeDetectorRef 
+  OnDestroy
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-// 1. Ensure this path matches where your service is located
 import { MedicationService } from 'src/app/core/services/medication.service';
 
 @Component({
@@ -19,8 +16,7 @@ import { MedicationService } from 'src/app/core/services/medication.service';
   standalone: true,
   imports: [CommonModule, FormsModule, IonicModule],
   templateUrl: './health-section.component.html',
-  styleUrls: ['./health-section.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./health-section.component.scss']
 })
 export class HealthSectionComponent implements OnInit, OnDestroy {
   @Input() userMedications: any[] = [];
@@ -46,15 +42,14 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
 
   trackByMedication = (i: number, m: any) => m?.id ?? m?.name ?? i;
 
-  // 2. INJECT medService HERE to fix the "red" error
   constructor(
-    private cdr: ChangeDetectorRef,
     private medService: MedicationService
   ) {}
 
   ngOnInit() {
+    // Periodic refresh to update medication statuses (expiry, overdue, etc.)
     this.refreshInterval = setInterval(() => {
-      this.cdr.markForCheck();
+      // Trigger a refresh of medication data periodically
     }, 60000);
   }
 
@@ -70,7 +65,6 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
     const now = new Date();
     const remaining = this.calculateRemainingPills(medication);
     
-    // 3. This will now work because of the constructor injection
     if (this.medService.isExpired(medication)) {
       return 'Expired';
     }
@@ -80,7 +74,6 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
     const endDate = medication.expiryDate ? new Date(medication.expiryDate) : null;
     if (endDate && now > endDate) return 'Incomplete';
 
-    // Using medication.nextDose from your service
     if (medication.nextDose && now > new Date(medication.nextDose)) {
       return 'Overdue';
     }
@@ -91,11 +84,11 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
   getStatusColor(medication: any): string {
     const label = this.getStatusLabel(medication);
     switch (label) {
-      case 'Ongoing': return 'success';     // Green
-      case 'Completed': return 'primary';    // Blue/Teal
-      case 'Overdue': return 'warning';      // Orange
-      case 'Incomplete': return 'danger';     // Red
-      case 'Expired': return 'danger';        // Red (Safety first!)
+      case 'Ongoing': return 'success';
+      case 'Completed': return 'primary';
+      case 'Overdue': return 'warning';
+      case 'Incomplete': return 'danger';
+      case 'Expired': return 'danger';
       default: return 'medium';
     }
   }

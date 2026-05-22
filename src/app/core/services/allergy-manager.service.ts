@@ -11,12 +11,38 @@ export class AllergyManagerService {
     private authService: AuthService
   ) {}
 
+  /**
+   * Load allergies for the current user
+   */
   async loadUserAllergies(): Promise<any[]> {
     const user = await this.authService.waitForAuthInit();
     if (!user) return [];
+    
     const docs = await this.allergyService.getUserAllergies(user.uid);
+    if (!docs || docs.length === 0) return [];
 
-  return [].concat(...docs.map((doc: any) => doc.allergies?.filter((a: any) => a.checked) || []));
+    const extractedAllergies: any[] = [];
+    
+    docs.forEach((doc: any) => {
+      // If allergies are saved directly as an array in the document field
+      if (doc.allergies && Array.isArray(doc.allergies)) {
+        doc.allergies.forEach((allergy: any) => {
+          if (allergy.checked) {
+            extractedAllergies.push(allergy);
+          }
+        });
+      } 
+      // If the document itself IS the allergy data model item
+      else if (doc.checked) {
+        extractedAllergies.push(doc);
+      }
+    });
+
+    if (!environment.production) {
+      console.log('Processed user allergens for scanner:', extractedAllergies);
+    }
+
+    return extractedAllergies;
   }
 
   /**
@@ -25,12 +51,15 @@ export class AllergyManagerService {
   async saveUserAllergies(allergyOptions: any[]): Promise<void> {
     const currentUser = await this.authService.waitForAuthInit();
     if (!currentUser) throw new Error('No authenticated user');
+    
     if (!environment.production) {
       console.log('Saving allergies for user:', currentUser.uid);
       console.log('Current allergy options:', allergyOptions);
     }
+    
     const sanitizedAllergies = this.sanitizeAllergiesForSave(allergyOptions);
     await this.allergyService.saveUserAllergies(currentUser.uid, sanitizedAllergies);
+    
     if (!environment.production) {
       console.log('Saved user allergies');
     }
@@ -50,6 +79,7 @@ export class AllergyManagerService {
     if (!environment.production) {
       console.log('Refreshing allergies display for user:', currentUser.uid);
     }
+    
     const userAllergyDocs = await this.allergyService.getUserAllergies(currentUser.uid);
     if (!environment.production) {
       console.log('Refreshed allergy docs:', userAllergyDocs);
@@ -59,6 +89,8 @@ export class AllergyManagerService {
     userAllergyDocs.forEach((doc: any) => {
       if (doc.allergies && Array.isArray(doc.allergies)) {
         checkedAllergies.push(...doc.allergies.filter((a: any) => a.checked));
+      } else if (doc.checked) {
+        checkedAllergies.push(doc);
       }
     });
     return checkedAllergies;
@@ -71,6 +103,7 @@ export class AllergyManagerService {
     if (!environment.production) {
       console.log('Updating allergy options with user allergies:', userAllergies);
     }
+    
     // Reset all options first
     allergyOptions.forEach(option => {
       option.checked = false;
@@ -78,6 +111,7 @@ export class AllergyManagerService {
         option.value = '';
       }
     });
+    
     // Update options based on user's saved allergies
     allergyOptions.forEach(option => {
       const userAllergy = userAllergies.find(allergy =>
@@ -93,6 +127,7 @@ export class AllergyManagerService {
         }
       }
     });
+    
     if (!environment.production) {
       console.log('Updated allergy options:', allergyOptions);
     }
@@ -100,25 +135,26 @@ export class AllergyManagerService {
   }
 
   /**
-   * Sanitize allergy data for saving
+   * Sanitize allergy data for saving - Only keeps checked options to keep database small
    */
   sanitizeAllergiesForSave(allergyOptions: any[]): any[] {
-    return allergyOptions.map(allergy => {
-      const cleanAllergy: Record<string, any> = {
-        id: allergy.name,
-        name: allergy.name,
-        label: allergy.label,
-        checked: allergy.checked,
-        hasInput: allergy.hasInput || false
-      };
-      if (allergy.hasInput && allergy.value) {
-        cleanAllergy['value'] = allergy.value;
-      }
-      return cleanAllergy;
-    });
+    return allergyOptions
+      .filter(allergy => allergy.checked === true)
+      .map(allergy => {
+        const cleanAllergy: Record<string, any> = {
+          id: allergy.name,
+          name: allergy.name,
+          label: allergy.label,
+          checked: true,
+          hasInput: allergy.hasInput || false
+        };
+        if (allergy.hasInput && allergy.value) {
+          cleanAllergy['value'] = allergy.value;
+        }
+        return cleanAllergy;
+      });
   }
 
-  // Add more allergy-related logic here as needed
   /**
    * Load allergy options from Firebase, remove duplicates, sort, and map to expected structure
    */
@@ -126,7 +162,6 @@ export class AllergyManagerService {
     try {
       const options = await this.allergyService.getAllergyOptions();
       if (options && options.length > 0) {
-        // Remove duplicates by name and sort by order
         const uniqueOptions = options.reduce((acc: any[], option: any) => {
           const exists = acc.find(item => item.name === option.name);
           if (!exists) {
@@ -134,6 +169,7 @@ export class AllergyManagerService {
           }
           return acc;
         }, []);
+        
         const mappedOptions = uniqueOptions
           .sort((a, b) => (a.order || 0) - (b.order || 0))
           .map(option => ({
@@ -143,6 +179,7 @@ export class AllergyManagerService {
             hasInput: option.hasInput || false,
             value: ''
           }));
+          
         if (!environment.production) {
           console.log('Loaded allergy options:', mappedOptions);
         }

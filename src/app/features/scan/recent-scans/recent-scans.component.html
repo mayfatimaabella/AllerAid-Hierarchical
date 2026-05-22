@@ -14,6 +14,7 @@
     </ion-header>
 
     <ion-content class="white-content">
+      
       <div class="scans-header">
         <h1 class="header-title">Recent Scans</h1>
         <span class="header-subtitle">{{ recentScans.length }} items saved</span>
@@ -21,6 +22,7 @@
 
       <div class="scans-container">
         <div *ngIf="recentScans.length > 0">
+          
           <div 
             class="custom-scan-card" 
             *ngFor="let scan of recentScans; let i = index"
@@ -77,6 +79,7 @@
           <p>Your history will appear here once you scan a product barcode.</p>
         </div>
       </div>
+
     </ion-content>
   </ng-template>
 </ion-modal>

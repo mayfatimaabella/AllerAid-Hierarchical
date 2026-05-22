@@ -10,7 +10,7 @@ ion-modal {
   --border-radius: 32px 32px 0 0;
 }
 
-// Header & Drag Handle
+// Header & Drag Handle Only
 ion-header {
   --background: #ffffff !important;
   border: none !important;
@@ -19,18 +19,15 @@ ion-header {
 .modal-toolbar {
   --background: #ffffff;
   padding: 10px 0;
-  .modal-drag-handle {
-    width: 36px;
-    height: 4px;
-    background: #e0e6e4;
-    border-radius: 10px;
-    margin: 0 auto;
-  }
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 // Page Titles
 .scans-header {
   padding: 0 24px 20px;
+  
   .header-title {
     font-size: 28px;
     font-weight: 800;
@@ -38,6 +35,7 @@ ion-header {
     margin: 0;
     letter-spacing: -0.5px;
   }
+  
   .header-subtitle {
     font-size: 13px;
     color: #adb5bd;
@@ -49,7 +47,7 @@ ion-header {
   padding: 0 20px 40px;
 }
 
-// 1. Modern Card Styling (Replaces .scan-item)
+// Modern Card Layout
 .custom-scan-card {
   background: #ffffff;
   border-radius: 22px;
@@ -75,7 +73,7 @@ ion-header {
   }
 }
 
-// 2. Image & Status Dot
+// Image View Box & Corner Status Dot
 .image-box {
   position: relative;
   width: 70px;
@@ -99,19 +97,24 @@ ion-header {
     height: 14px;
     border-radius: 50%;
     border: 3px solid #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    
     &.safe { background: #2ecc71; }
-    &.danger { background: #e74c3c; } // Changed to match your scan status
+    &.warning { background: #eb445a; }
   }
 }
 
-// 3. Info Layout
+// Typography Info Layout
 .info-box {
   flex: 1;
+  
   .title-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 8px;
   }
+  
   .product-name {
     font-size: 15px;
     font-weight: 700;
@@ -121,7 +124,9 @@ ion-header {
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    flex: 1;
   }
+  
   .brand-name {
     font-size: 13px;
     color: #6b8581;
@@ -130,10 +135,11 @@ ion-header {
   }
 }
 
-// Metadata Row (Date/Time)
+// Metadata History Context Rows
 .meta-row {
   display: flex;
   gap: 12px;
+  
   span {
     font-size: 10px;
     color: #adb5bd;
@@ -141,42 +147,49 @@ ion-header {
     display: flex;
     align-items: center;
     gap: 3px;
+    
     ion-icon { font-size: 12px; }
   }
 }
 
-// 4. Status Pill Label
+// High-Contrast Pill Status Badges
 .status-label {
   font-size: 9px;
   font-weight: 800;
   padding: 4px 10px;
   border-radius: 8px;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  
   &.safe { background: #ebfbee; color: #2ecc71; }
-  &.danger { background: #fff5f5; color: #e74c3c; }
+  &.warning { background: #fff5f5; color: #eb445a; }
 }
 
-// 5. Actions (Delete & Arrow)
+// Actions Operations Layout
 .card-actions {
   display: flex;
   align-items: center;
   gap: 8px;
+  
   .delete-icon-btn {
     background: transparent;
     border: none;
     padding: 8px;
-    color: #ffc9c9; // Subtle red
+    color: #ffc9c9;
     font-size: 20px;
     transition: color 0.2s;
-    &:active { color: #fa5252; } // Intense red on tap
+    
+    &:active { color: #fa5252; }
   }
+  
   .arrow-icon {
     color: #e0e6e4;
     font-size: 18px;
   }
 }
 
-// 6. Clear History Button (Dashed Style)
+// Clear History Button
 .clear-history-btn {
   width: 100%;
   padding: 18px;
@@ -199,10 +212,11 @@ ion-header {
   }
 }
 
-// 7. Empty State
+// Empty State Panel Interface View
 .empty-state {
   padding: 60px 40px;
   text-align: center;
+  
   .empty-icon-circle {
     width: 80px;
     height: 80px;
@@ -212,8 +226,71 @@ ion-header {
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
+    
     ion-icon { font-size: 40px; color: #036a5d; }
   }
+  
   h3 { color: #1f4a42; font-weight: 800; margin-bottom: 8px; font-size: 18px; }
   p { color: #6b8581; font-size: 14px; line-height: 1.5; margin: 0; }
+}
+
+// ==========================================================================
+// SINGLE-SCREEN PRODUCT DETAIL SPECIFIC MODIFIERS
+// ==========================================================================
+.inspection-hero-card {
+  padding: 20px 14px !important;
+  box-shadow: none !important;
+  border-color: #e0e6e4 !important;
+  pointer-events: none; // Disables layout press behaviors in item inspection mode
+
+  .large-view {
+    width: 85px;
+    height: 85px;
+  }
+
+  .detailed-view-title {
+    font-size: 18px !important;
+    -webkit-line-clamp: unset !important; // Unclamps constraints to display product name lengths
+    overflow: visible !important;
+  }
+
+  .detailed-view-brand {
+    font-size: 14px !important;
+    margin-top: 4px !important;
+  }
+}
+
+.details-static-card {
+  box-shadow: none !important;
+  background: #f8faf9 !important;
+  padding: 18px !important;
+  pointer-events: none;
+
+  .section-micro-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #6b8581;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .ingredient-block-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #495057;
+    margin: 0;
+  }
+}
+
+// Transforms your base history variant button into a matching theme-green navigation action
+.back-history-variant {
+  border: 2px solid #036a5d !important;
+  color: #036a5d !important;
+  margin-top: 24px !important;
+
+  &:active {
+    background: #f0f7f6 !important;
+    border-style: solid !important;
+  }
 }

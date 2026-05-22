@@ -49,13 +49,17 @@ export class ProfileMedicationManagerService {
    */
   async loadUserMedications(uid: string, onComplete?: () => void): Promise<void> {
     try {
+      console.log(`DEBUG ProfileMedicationManager: Loading medications for user: ${uid}`);
       this.isLoadingMedications = true;
       this.isLoadingMedicationsSubject.next(true);
       this.userMedications = await this.medicationService.getUserMedications(uid);
+      console.log(`DEBUG ProfileMedicationManager: Loaded ${this.userMedications.length} medications:`, 
+        this.userMedications.map(m => ({ id: m.id, name: m.name })));
       this.medicationsCount = this.userMedications.length;
       this.clearMedicationCache();
       this.filterMedications();
       this.userMedicationsSubject.next(this.userMedications);
+      console.log('DEBUG ProfileMedicationManager: Updated userMedicationsSubject');
       
       // Reschedule notifications based on current meds & intervals
       try {
