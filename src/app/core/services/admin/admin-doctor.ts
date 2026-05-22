@@ -11,18 +11,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 
-export interface AdminUser {
-  uid: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  role?: 'user' | 'doctor' | 'admin';
-  isActive?: boolean;
-  verificationStatus?: string;
-  createdAt?: any;
-  lastLogin?: any;
-}
+import { AdminUser } from './admin-user';
 
 export interface DoctorVerificationRequest extends AdminUser {
   license?: string;
@@ -35,19 +24,9 @@ export interface DoctorVerificationRequest extends AdminUser {
 @Injectable({
   providedIn: 'root'
 })
-export class AdminService {
+export class AdminDoctorService {
 
   private firestore = getFirestore();
-
-  async getAllUsers(): Promise<AdminUser[]> {
-    const usersRef = collection(this.firestore, 'users');
-    const snapshot = await getDocs(usersRef);
-
-    return snapshot.docs.map(docSnap => ({
-      uid: docSnap.id,
-      ...docSnap.data()
-    } as AdminUser));
-  }
 
   async getDoctors(): Promise<AdminUser[]> {
     const usersRef = collection(this.firestore, 'users');
@@ -67,7 +46,6 @@ export class AdminService {
 
   async getPendingDoctorVerificationRequests(): Promise<DoctorVerificationRequest[]> {
     const doctors = await this.getDoctors();
-
     const pendingDoctors: DoctorVerificationRequest[] = [];
 
     for (const doctor of doctors) {
@@ -136,24 +114,6 @@ export class AdminService {
 
     await updateDoc(userRef, {
       verificationStatus: 'rejected',
-      updatedAt: serverTimestamp()
-    });
-  }
-
-  async deactivateUser(uid: string): Promise<void> {
-    const userRef = doc(this.firestore, `users/${uid}`);
-
-    await updateDoc(userRef, {
-      isActive: false,
-      updatedAt: serverTimestamp()
-    });
-  }
-
-  async activateUser(uid: string): Promise<void> {
-    const userRef = doc(this.firestore, `users/${uid}`);
-
-    await updateDoc(userRef, {
-      isActive: true,
       updatedAt: serverTimestamp()
     });
   }

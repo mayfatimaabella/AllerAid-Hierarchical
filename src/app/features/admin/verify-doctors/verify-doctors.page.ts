@@ -7,9 +7,9 @@ import {
 } from '@ionic/angular';
 
 import {
-  AdminService,
+  AdminDoctorService,
   DoctorVerificationRequest
-} from '../../../core/services/admin';
+} from '../../../core/services/admin/admin-doctor';
 
 @Component({
   selector: 'app-verify-doctors',
@@ -24,7 +24,7 @@ export class VerifyDoctorsPage implements OnInit {
   isLoading = false;
 
   constructor(
-    private adminService: AdminService,
+    private adminDoctorService: AdminDoctorService,
     private alertController: AlertController,
     private toastController: ToastController
   ) {}
@@ -42,7 +42,7 @@ export class VerifyDoctorsPage implements OnInit {
       this.isLoading = true;
 
       this.pendingDoctors =
-        await this.adminService.getPendingDoctorVerificationRequests();
+        await this.adminDoctorService.getPendingDoctorVerificationRequests();
 
       console.log('Pending doctors:', this.pendingDoctors);
 
@@ -67,7 +67,7 @@ export class VerifyDoctorsPage implements OnInit {
           text: 'Approve',
           handler: async () => {
             try {
-              await this.adminService.approveDoctor(doctor.uid);
+              await this.adminDoctorService.approveDoctor(doctor.uid);
               await this.presentToast('Doctor approved successfully.', 'success');
               await this.loadPendingDoctors();
             } catch (error) {
@@ -102,7 +102,7 @@ export class VerifyDoctorsPage implements OnInit {
           role: 'destructive',
           handler: async (data) => {
             try {
-              await this.adminService.rejectDoctor(doctor.uid, data.reason);
+              await this.adminDoctorService.rejectDoctor(doctor.uid, data.reason);
               await this.presentToast('Doctor rejected.', 'warning');
               await this.loadPendingDoctors();
             } catch (error) {

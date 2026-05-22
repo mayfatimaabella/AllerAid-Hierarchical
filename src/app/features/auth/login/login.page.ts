@@ -59,6 +59,15 @@ export class LoginPage implements OnInit {
         console.log('User authenticated:', userCredential.user.uid);
 
         const userProfile = await this.userService.getUserProfile(userCredential.user.uid);
+        
+        if (!userCredential.user.emailVerified && userProfile?.role !== 'admin') {
+        await this.authService.signOut();
+
+        throw {
+          code: 'auth/email-not-verified',
+          message: 'Please verify your email address before logging in.'
+        };
+      }
 
         if (!userProfile) {
           this.presentToast('Account setup incomplete. Please register again.');

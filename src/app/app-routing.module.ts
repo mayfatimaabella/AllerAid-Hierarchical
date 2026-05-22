@@ -129,10 +129,11 @@ const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
-  path: 'admin-dashboard/doctors',
-  loadComponent: () => import('./features/admin/verify-doctors/verify-doctors.page').then(m => m.VerifyDoctorsPage),
-  canActivate: [AuthGuard, adminGuard]
-},
+    path: 'emergency-logs',
+    loadChildren: () => import('./features/admin/emergency-logs/emergency-logs.module').then( m => m.EmergencyLogsPageModule)
+  },
+
+
 
 
 ];

@@ -1,0 +1,125 @@
+<ion-header>
+  <ion-toolbar class="toolbar--teal">
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Emergency Logs</ion-title>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="logs-bg">
+
+  <section class="logs-hero">
+    <h1>Emergency Reports</h1>
+    <p>Monitor emergency alerts, patient incidents, and responder activity.</p>
+  </section>
+
+  <div class="empty-state" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading emergency reports...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && emergencies.length === 0">
+    <ion-icon name="warning-outline"></ion-icon>
+    <h2>No emergency reports yet</h2>
+    <p>Emergency alerts created by users will appear here.</p>
+  </div>
+
+  <section class="logs-list" *ngIf="!isLoading && emergencies.length > 0">
+
+    <ion-card *ngFor="let emergency of emergencies">
+      <ion-card-content>
+
+        <div class="log-header">
+          <div>
+            <h2>
+              {{ emergency.patientName || emergency.userName || emergency.name || 'Unknown Patient' }}
+            </h2>
+
+            <p>Status: {{ emergency.status || 'active' }}</p>
+          </div>
+
+          <ion-badge
+            [color]="
+              emergency.status === 'resolved' ? 'success' :
+              emergency.status === 'responding' ? 'warning' :
+              emergency.status === 'archived' ? 'medium' :
+              'danger'
+            ">
+            {{ emergency.status || 'active' }}
+          </ion-badge>
+        </div>
+
+<div class="log-details">
+
+  <p>
+    <strong>Emergency ID:</strong>
+    {{ emergency.id }}
+  </p>
+
+  <p>
+    <strong>Allergies:</strong>
+
+    <span *ngIf="emergency.allergies?.length > 0">
+      {{ emergency.allergies.join(', ') }}
+    </span>
+
+    <span *ngIf="!emergency.allergies?.length">
+      Not specified
+    </span>
+  </p>
+
+  <p>
+    <strong>Instruction:</strong>
+
+    {{ emergency.instruction || 'No instruction provided' }}
+  </p>
+
+  <p>
+    <strong>Location:</strong>
+
+    <span *ngIf="emergency.location">
+      {{ emergency.location.latitude }},
+      {{ emergency.location.longitude }}
+    </span>
+
+    <span *ngIf="!emergency.location">
+      Unknown location
+    </span>
+  </p>
+
+  <p>
+    <strong>Reported By:</strong>
+
+    {{ emergency.userName || 'Unknown User' }}
+  </p>
+
+</div>
+
+        <div class="actions">
+          <ion-button expand="block" fill="outline" (click)="viewDetails(emergency)">
+            View Details
+          </ion-button>
+
+          <ion-button expand="block" color="warning" (click)="updateStatus(emergency, 'responding')">
+            Mark Responding
+          </ion-button>
+
+          <ion-button expand="block" color="success" (click)="updateStatus(emergency, 'resolved')">
+            Mark Resolved
+          </ion-button>
+
+          <ion-button expand="block" color="medium" fill="outline" (click)="updateStatus(emergency, 'archived')">
+            Archive
+          </ion-button>
+        </div>
+
+      </ion-card-content>
+    </ion-card>
+
+  </section>
+
+</ion-content>

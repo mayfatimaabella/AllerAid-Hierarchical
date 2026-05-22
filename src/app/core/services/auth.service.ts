@@ -75,16 +75,8 @@ export class AuthService {
   }
 
   async signIn(email: string, password: string) {
-    const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
 
-    if (!userCredential.user.emailVerified) {
-      throw {
-        code: 'auth/email-not-verified',
-        message: 'Please verify your email address before logging in.'
-      };
-    }
-
-    return userCredential;
+    return await signInWithEmailAndPassword(this.auth, email, password);;
   }
 
   async signUp(email: string, password: string) {

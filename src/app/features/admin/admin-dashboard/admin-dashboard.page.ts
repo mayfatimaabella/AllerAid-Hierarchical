@@ -1,7 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { AdminService } from '../../../core/services/admin';
+import { RouterModule } from '@angular/router';
+
+import { AdminUserService } from '../../../core/services/admin/admin-user';
+import { AdminDoctorService } from '../../../core/services/admin/admin-doctor';
+import { AdminEmergencyService } from '../../../core/services/admin/admin-emergency';
+
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -11,6 +18,7 @@ import { AdminService } from '../../../core/services/admin';
   imports: [
     CommonModule,
     IonicModule,
+    RouterModule,
   ]
 })
 export class AdminDashboardPage implements OnInit {
@@ -19,29 +27,56 @@ export class AdminDashboardPage implements OnInit {
   pendingDoctors: number = 0;
   totalEmergencies: number = 0;
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminUserService: AdminUserService,
+    private adminDoctorService: AdminDoctorService,
+    private adminEmergencyService: AdminEmergencyService,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   async ngOnInit() {
     await this.loadDashboardData();
   }
 
-  private async loadDashboardData() {
-    try {
-      const users = await this.adminService.getAllUsers();
-      console.log('ALL USERS:', users);
-
-      this.totalUsers = users.length;
-
-      const pendingDoctors =
-        await this.adminService.getPendingDoctorVerificationRequests();
-
-      console.log('PENDING DOCTORS:', pendingDoctors);
-
-      this.pendingDoctors = pendingDoctors.length;
-      this.totalEmergencies = 0;
-
-    } catch (error) {
-      console.error('Dashboard load error:', error);
-    }
+  async ionViewWillEnter() {
+    await this.loadDashboardData();
   }
+
+private async loadDashboardData() {
+
+  try {
+
+    const users = await this.adminUserService.getAllUsers();
+    this.totalUsers = users.length;
+
+    const pendingDoctors =
+      await this.adminDoctorService.getPendingDoctorVerificationRequests();
+
+    this.pendingDoctors = pendingDoctors.length;
+
+    const emergencies =
+      await this.adminEmergencyService.getAllEmergencies();
+
+    this.totalEmergencies = emergencies.length;
+
+  } catch (error) {
+
+    console.error('Dashboard load error:', error);
+  }
+}
+
+async logout() {
+
+  try {
+
+    await this.authService.signOut();
+
+    await this.router.navigate(['/login']);
+
+  } catch (error) {
+
+    console.error('Logout error:', error);
+  }
+}
 }

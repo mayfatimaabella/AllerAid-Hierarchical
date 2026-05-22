@@ -1,0 +1,127 @@
+<ion-header>
+  <ion-toolbar class="toolbar--teal">
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Manage Allergies</ion-title>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="allergy-bg">
+
+  <section class="hero">
+    <h1>Allergy Management</h1>
+
+    <p>
+      Manage allergy options and review
+      user-submitted suggestions.
+    </p>
+  </section>
+
+  <ion-button
+    expand="block"
+    color="success"
+    (click)="addAllergy()">
+
+    Add Allergy Option
+
+  </ion-button>
+
+  <!-- LOADING -->
+  <div class="loading-box" *ngIf="isLoading">
+
+    <ion-spinner name="crescent"></ion-spinner>
+
+    <p>Loading allergy data...</p>
+
+  </div>
+
+  <!-- ALLERGY OPTIONS -->
+  <ion-list *ngIf="!isLoading">
+
+    <ion-list-header>
+      Allergy Options
+    </ion-list-header>
+
+    <ion-item *ngFor="let allergy of allergyOptions">
+
+      <ion-label>
+
+        <h2>
+          {{ allergy.label || allergy.name }}
+        </h2>
+
+        <p>
+          {{ allergy.category || 'General' }}
+        </p>
+
+      </ion-label>
+
+      <ion-button
+        fill="clear"
+        color="primary"
+        (click)="editAllergy(allergy)">
+
+        Edit
+
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        color="danger"
+        (click)="deleteAllergy(allergy)">
+
+        Delete
+
+      </ion-button>
+
+    </ion-item>
+
+  </ion-list>
+
+  <!-- SUGGESTIONS -->
+  <ion-list *ngIf="!isLoading">
+
+    <ion-list-header>
+      Pending Suggestions
+    </ion-list-header>
+
+    <ion-item *ngFor="let suggestion of suggestions">
+
+      <ion-label>
+
+        <h2>
+          {{ suggestion.name || suggestion.label }}
+        </h2>
+
+        <p>
+          Suggested by:
+          {{ suggestion.suggestedBy || 'Unknown User' }}
+        </p>
+
+      </ion-label>
+
+      <ion-button
+        color="success"
+        (click)="approveSuggestion(suggestion)">
+
+        Approve
+
+      </ion-button>
+
+      <ion-button
+        color="danger"
+        (click)="rejectSuggestion(suggestion)">
+
+        Reject
+
+      </ion-button>
+
+    </ion-item>
+
+  </ion-list>
+
+</ion-content>

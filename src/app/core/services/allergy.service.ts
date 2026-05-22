@@ -180,7 +180,17 @@ export class AllergyService {
         }
       });
 
-      return Object.values(uniqueByName).sort((a, b) => a.order - b.order);
+      return Object.values(uniqueByName).sort((a, b) => {
+        const bottomItems = ['medication', 'others'];
+
+        const aBottom = bottomItems.includes(a.name);
+        const bBottom = bottomItems.includes(b.name);
+
+        if (aBottom && !bBottom) return 1;
+        if (!aBottom && bBottom) return -1;
+
+        return (a.order || 999) - (b.order || 999);
+      });
     } catch (error) {
       console.error('Error fetching allergy options:', error);
       throw error;
@@ -188,7 +198,7 @@ export class AllergyService {
   }
 
   // RESET allergy options
-  async resetAllergyOptions(): Promise<void> {
+  async resetAllergyOptions(): Promise<void> { 
     const querySnapshot = await getDocs(collection(this.db, 'allergyOptions'));
     const deletePromises = querySnapshot.docs.map(docSnap =>
       deleteDoc(doc(this.db, 'allergyOptions', docSnap.id))

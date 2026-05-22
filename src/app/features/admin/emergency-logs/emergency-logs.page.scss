@@ -1,0 +1,50 @@
+.logs-bg {
+  --background: #f4faf8;
+}
+
+.toolbar--teal {
+  --background: #036a5d;
+  --color: #ffffff;
+}
+
+.logs-hero {
+  padding: 24px 18px 12px;
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f2a26;
+    margin-bottom: 6px;
+  }
+
+  p {
+    color: #65827c;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 70px 24px;
+
+  ion-icon {
+    font-size: 64px;
+    color: #036a5d;
+    margin-bottom: 14px;
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #163632;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #65827c;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}

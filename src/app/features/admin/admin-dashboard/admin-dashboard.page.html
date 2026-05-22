@@ -34,26 +34,42 @@
    </ion-card>
  </section>
 
- <ion-list>
-   <ion-item button routerLink="/admin/users">
-     <ion-icon name="people-outline" slot="start"></ion-icon>
-     <ion-label>Manage Users</ion-label>
-   </ion-item>
+<ion-list>
 
-   <ion-item button routerLink="/admin-dashboard/doctors">
-     <ion-icon name="medkit-outline" slot="start"></ion-icon>
-     <ion-label>Verify Doctors</ion-label>
-   </ion-item>
+  <ion-item button routerLink="/admin/users">
+    <ion-icon name="people-outline" slot="start"></ion-icon>
+    <ion-label>Manage Users</ion-label>
+  </ion-item>
 
-   <ion-item button routerLink="/admin/allergies">
-     <ion-icon name="leaf-outline" slot="start"></ion-icon>
-     <ion-label>Manage Allergy Options</ion-label>
-   </ion-item>
+  <ion-item button routerLink="/admin-dashboard/doctors">
+    <ion-icon name="medkit-outline" slot="start"></ion-icon>
+    <ion-label>Verify Doctors</ion-label>
+  </ion-item>
 
-   <ion-item button routerLink="/admin/emergencies">
-     <ion-icon name="warning-outline" slot="start"></ion-icon>
-     <ion-label>Emergency Logs</ion-label>
-   </ion-item>
- </ion-list>
+  <ion-item button routerLink="/admin-dashboard/allergies">
+    <ion-icon name="leaf-outline" slot="start"></ion-icon>
+    <ion-label>Manage Allergy Options</ion-label>
+  </ion-item>
+
+  <ion-item button routerLink="/admin-dashboard/emergencies">
+    <ion-icon name="warning-outline" slot="start"></ion-icon>
+    <ion-label>Emergency Logs</ion-label>
+  </ion-item>
+
+  <ion-item button (click)="logout()">
+
+    <ion-icon
+      name="log-out-outline"
+      slot="start"
+      color="danger">
+    </ion-icon>
+
+    <ion-label color="danger">
+      Logout
+    </ion-label>
+
+  </ion-item>
+
+</ion-list>
 
 </ion-content>
