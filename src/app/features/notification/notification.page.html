@@ -43,7 +43,7 @@
           </div>
         </div>
         
-        <div class="reminder-actions" *ngIf="isWindowOpen(reminder.scheduledDateTime)">
+        <div class="reminder-actions" *ngIf="isWindowOpen(reminder)">
           <ion-button fill="solid" class="btn-taken" (click)="handleAction(reminder, 'TAKEN')">
             <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
             Taken
@@ -54,7 +54,7 @@
           </ion-button>
         </div>
 
-        <div class="locked-actions-notice" *ngIf="!isWindowOpen(reminder.scheduledDateTime)">
+        <div class="locked-actions-notice" *ngIf="!isWindowOpen(reminder)">
           <p>
             <ion-icon name="lock-closed-outline"></ion-icon>
             Buttons unlock when the scheduled dose hour arrives.
@@ -80,12 +80,12 @@
           </div>
         </div>
         
-        <div class="reminder-actions" *ngIf="isWindowOpen(reminder.scheduledDateTime)">
+        <div class="reminder-actions" *ngIf="isWindowOpen(reminder)">
           <ion-button fill="clear" size="small" (click)="handleAction(reminder, 'TAKEN')">Taken</ion-button>
           <ion-button fill="clear" size="small" color="medium" (click)="handleAction(reminder, 'SKIP')">Skip</ion-button>
         </div>
         
-        <div class="secondary-locked-notice" *ngIf="!isWindowOpen(reminder.scheduledDateTime)">
+        <div class="secondary-locked-notice" *ngIf="!isWindowOpen(reminder)">
           <p><ion-icon name="time-outline"></ion-icon> Scheduled Upcoming Slot</p>
         </div>
       </div>

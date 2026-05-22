@@ -10,7 +10,12 @@
   <ng-template>
     <ion-header class="ion-no-border">
       <ion-toolbar class="modal-toolbar">
-
+        <ion-buttons slot="start">
+          <button class="back-to-history-btn" (click)="onBackToHistory()">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+            Back to History
+          </button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 

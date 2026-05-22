@@ -23,6 +23,9 @@ export class MedicationReminderService {
     this.registerNotificationActions();
   }
 
+  /**
+   * Registers interactive 'Taken' and 'Skip' button actions with the mobile OS engine.
+   */
   private async registerNotificationActions(): Promise<void> {
     try {
       await LocalNotifications.registerActionTypes({
@@ -37,10 +40,13 @@ export class MedicationReminderService {
         ]
       });
     } catch (error) {
-      console.error('Error registering actions:', error);
+      console.error('Error registering notification action types:', error);
     }
   }
 
+  /**
+   * Requests device permissions for local alert deliveries if not already granted.
+   */
   async ensurePermissions() {
     const perm = await LocalNotifications.checkPermissions();
     if (perm.display !== 'granted') {
@@ -48,27 +54,38 @@ export class MedicationReminderService {
     }
   }
 
+  /**
+   * Generates a stable numeric hash from a string ID to manage OS notification groups.
+   */
   private hashId(str: string): number {
+    if (!str) return Math.floor(Math.random() * 100000);
     let h = 0;
     for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
     return Math.abs(h);
   }
 
+  /**
+   * Calculates the very next future dose runtime parameters based on custom intervals.
+   */
   private nextTimes(start?: Date, end?: Date, intervalHours?: number): Date[] {
     const out: Date[] = [];
     if (!start || !intervalHours) return out;
 
     const now = new Date();
     const stepMs = intervalHours * 60 * 60 * 1000;
+    
+    const startDate = new Date(start);
+    if (isNaN(startDate.getTime())) return out;
+
     const endBoundary = end ? new Date(new Date(end).setHours(23, 59, 59, 999)) : undefined;
 
     let nextDose: Date;
-    if (now <= start) {
-      nextDose = new Date(start);
+    if (now <= startDate) {
+      nextDose = new Date(startDate);
     } else {
-      const diff = now.getTime() - start.getTime();
+      const diff = now.getTime() - startDate.getTime();
       const steps = Math.ceil(diff / stepMs);
-      nextDose = new Date(start.getTime() + steps * stepMs);
+      nextDose = new Date(startDate.getTime() + steps * stepMs);
     }
 
     if (!endBoundary || nextDose <= endBoundary) {
@@ -77,8 +94,11 @@ export class MedicationReminderService {
     return out;
   }
 
+  /**
+   * Schedules a background alert for an individual medication row config profile.
+   */
   async scheduleForMedication(med: any) {
-    if (!med?.id) return;
+    if (!med || !med.id) return;
     await this.ensurePermissions();
 
     const start = med?.startDate ? new Date(med.startDate) : new Date();
@@ -97,7 +117,7 @@ export class MedicationReminderService {
 
     const notifications: ScheduleOptions['notifications'] = times.map((at, i) => ({
       id: baseId + i,
-      title: `${med.name}: Time to take`,
+      title: `${med.name || 'Medication'}: Time to take`,
       body: `Dose due at ${at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
       schedule: { at },
       actionTypeId: 'MED_TAKE_OR_SKIP',
@@ -109,80 +129,124 @@ export class MedicationReminderService {
     }
   }
 
+  /**
+   * Cleans pending operating system notification queues for a precise target medication id.
+   */
   async cancelForMedication(medId: string) {
+    if (!medId) return;
     const base = this.hashId(medId);
     const ids = Array.from({ length: 8 }, (_, i) => base + i);
-    await LocalNotifications.cancel({ notifications: ids.map(id => ({ id })) });
-  }
-
-  async rescheduleAll(meds: any[]) {
-    for (const m of meds ?? []) {
-      await this.scheduleForMedication(m);
+    try {
+      await LocalNotifications.cancel({ notifications: ids.map(id => ({ id })) });
+    } catch (e) {
+      console.error('Error canceling notifications:', e);
     }
   }
 
+  /**
+   * Loops over a collection of medications to sync and reschedule their reminders.
+   */
+  async rescheduleAll(meds: any[]) {
+    for (const m of meds ?? []) {
+      if (m && m.id) {
+        await this.scheduleForMedication(m);
+      }
+    }
+  }
+
+  /**
+   * Queries the native OS background alarm pool to populate items on the Reminders Tab.
+   */
+  async getPendingReminders(): Promise<any[]> {
+    try {
+      const pending: PendingResult = await LocalNotifications.getPending();
+      
+      return pending.notifications.map(notif => ({
+        id: notif.id,
+        title: notif.title,
+        body: notif.body,
+        scheduledAt: notif.schedule?.at ? new Date(notif.schedule.at) : null,
+        medId: notif.extra?.medId || ''
+      })).sort((a, b) => {
+        const timeA = a.scheduledAt ? a.scheduledAt.getTime() : 0;
+        const timeB = b.scheduledAt ? b.scheduledAt.getTime() : 0;
+        return timeA - timeB;
+      });
+    } catch (error) {
+      console.error('Failed to retrieve native pending notification array:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Starts listening to system event streams when notifications are received or clicked.
+   */
   startListeningForNotifications(): void {
     if (this.isListeningToNotifications) return;
     this.isListeningToNotifications = true;
 
     LocalNotifications.addListener('localNotificationReceived', (event: any) => {
+      if (!event || !event.notification) return;
       const notification: LocalNotification = event.notification;
       const medNotif: MedicationNotification = {
         id: notification.id || 0,
         title: notification.title || '',
         body: notification.body || '',
-        medId: (notification.extra as any)?.medId || '',
-        occurrence: (notification.extra as any)?.occurrence || 0
+        medId: notification.extra?.medId || '',
+        occurrence: notification.extra?.occurrence || 0
       };
       this.medicationNotification$.next(medNotif);
     });
 
     LocalNotifications.addListener('localNotificationActionPerformed', (event: any) => {
+      if (!event || !event.notification) return;
       const notification: LocalNotification = event.notification;
-      const actionId: string | undefined = (event as any)?.actionId;
+      const actionId: string | undefined = event?.actionId;
       const medNotif: MedicationNotification = {
         id: notification.id || 0,
         title: notification.title || '',
         body: notification.body || '',
-        medId: (notification.extra as any)?.medId || '',
-        occurrence: (notification.extra as any)?.occurrence || 0
+        medId: notification.extra?.medId || '',
+        occurrence: notification.extra?.occurrence || 0
       };
       this.handleMedicationNotificationAction(medNotif, actionId);
     });
   }
 
-  // FIX FOR ERROR TS2551: Adding the missing stop function
+  /**
+   * Disables event listeners and clears system subscription hook registrations.
+   */
   stopListeningForNotifications(): void {
     if (!this.isListeningToNotifications) return;
     try {
       LocalNotifications.removeAllListeners();
       this.isListeningToNotifications = false;
     } catch (error) {
-      console.error('Error stopping listener:', error);
+      console.error('Error stopping notification listeners:', error);
     }
   }
 
-  // FIX FOR ERROR TS2339: Replaced getMedicationsOnce with standard logic
-  private async handleMedicationNotificationAction(notification: MedicationNotification, actionId?: string): Promise<void> {
+  /**
+   * Safely routes action responses ('TAKEN' / 'SKIP') without throwing property errors.
+   */
+  private async handleMedicationNotificationAction(notification: MedicationNotification | undefined | null, actionId?: string): Promise<void> {
     try {
-      if (!notification.medId) return;
+      if (!notification || !notification.medId) {
+        console.warn('Action captured, but payload metadata maps were empty.');
+        return;
+      }
 
       if (actionId === 'TAKEN') {
         const result: any = await this.medicationService.recordReminderAction(notification.medId, 'taken');
         
-        // If stock hits zero, cancel future reminders
         if (result && typeof result.newQuantity === 'number' && result.newQuantity <= 0) {
           await this.cancelForMedication(notification.medId);
         }
       } else if (actionId === 'SKIP') {
         await this.medicationService.recordReminderAction(notification.medId, 'skipped');
       }
-
-      // Instead of getMedicationsOnce, we refresh the logic by checking the inventory
-      // This will trigger the "One at a Time" logic to schedule the next dose
-      // based on the new pill count.
     } catch (error) {
-      console.error('Error handling action:', error);
+      console.error('Error processing medication action handler targets:', error);
     }
   }
 
@@ -193,7 +257,7 @@ export class MedicationReminderService {
   private setupAppStateListeners(): void {
     App.addListener('appStateChange', async (state) => {
       if (state.isActive) {
-        // Refresh logic here if needed
+        // App returned from background context fallback hook
       }
     });
   }

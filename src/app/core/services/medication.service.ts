@@ -1,41 +1,28 @@
 import { Injectable } from '@angular/core';
 import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  doc, 
-  updateDoc, 
-  deleteDoc,
-  getDoc,
-  query,
-  orderBy,
-  Timestamp 
+  collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, query, orderBy, Timestamp,
+  enableIndexedDbPersistence, disableNetwork, enableNetwork
 } from 'firebase/firestore';
 import { FirebaseService } from './firebase.service';
 import { AuthService } from './auth.service';
+import { BehaviorSubject } from 'rxjs';
 
-/**
- * Enhanced Medication Interface
- */
 export interface Medication {
   id?: string;
   name: string;
-  brandName?: string;          
-  dosage: string; 
-  dosageAmount?: number; 
-  dosageUnit?: string;         // e.g., 'tablet(s)', 'ml', 'puff(s)'
-  frequency: string; 
-  
-  // Calculation & Scheduling Fields
-  intervalHours?: number;      
-  pillsPerDose: number;        
-  durationDays: number;        
-  startDate: string;           // ISO String
+  brandName?: string;
+  dosage: string;
+  dosageAmount?: number;
+  dosageUnit?: string;
+  frequency: string;
+  intervalHours?: number;
+  pillsPerDose: number;
+  durationDays: number;
+  startDate: string;
   startTime?: string;
-  endDate?: string;            
-  expiryDate?: string;         // Treatment End Date (Auto-calculated)
-  medicineExpiryDate: string;  // Physical shelf life of the medicine
-  
+  endDate?: string;
+  expiryDate?: string;
+  medicineExpiryDate: string;
   notes: string;
   category: 'allergy' | 'emergency' | 'daily' | 'asNeeded' | 'other';
   isActive: boolean;
@@ -43,205 +30,165 @@ export interface Medication {
   sideEffects?: string;
   instructions?: string;
   refillDate?: string;
-  createdAt?: any;             
+  createdAt?: any;
   updatedAt?: any;
-
-  // Inventory & Type
   medicationType: 'tablet' | 'capsule' | 'liquid' | 'injection' | 'inhaler' | 'cream' | 'drops' | 'patch' | 'other';
-  customMedicationType?: string; 
-  quantity: number;            
+  customMedicationType?: string;
+  quantity: number;
   unitCost?: number;
   totalCost?: number;
-  refillsRemaining?: number;   // Primary field for "Live" inventory tracking
-  
-  // Images
+  refillsRemaining?: number;
   prescriptionImageUrl?: string;
   medicationImageUrl?: string;
-  
-  // Reminders & Status
   reminderEnabled?: boolean;
   reminderTimes?: string[];
   lastTakenAt?: Date;
   lastSkippedAt?: Date;
   lastReminderAction?: 'taken' | 'skipped' | 'opened';
   allergicReaction?: boolean;
+  status?: 'Ongoing' | 'Active' | 'Completed' | 'Incomplete' | 'Expired' | 'Overdue' | 'Inactive';
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class MedicationService {
   private db;
+  private medicationsSubject = new BehaviorSubject<Medication[]>([]);
+  public medications$ = this.medicationsSubject.asObservable();
 
-  constructor(
-    private firebaseService: FirebaseService,
-    private authService: AuthService
-  ) {
+  constructor(private firebaseService: FirebaseService, private authService: AuthService) {
     this.db = this.firebaseService.getDb();
   }
 
-  /**
-   * Add a new medication for the current user.
-   */
-  async addMedication(medication: Medication, prescriptionImageData?: string, medicationImageData?: string): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
+  private async getUid(): Promise<string> {
+    const user = await this.authService.waitForAuthInit();
+    if (!user) throw new Error('User not logged in');
+    return user.uid;
+  }
 
+  async refreshMedications(): Promise<void> {
+    console.log('DEBUG MedicationService: Refreshing medications from Firestore...');
     try {
-      const medToSave = { ...medication };
-
-      if (prescriptionImageData) medToSave.prescriptionImageUrl = prescriptionImageData;
-      if (medicationImageData) medToSave.medicationImageUrl = medicationImageData;
-
-      const medsRef = collection(this.db, `users/${currentUser.uid}/medications`);
-      await addDoc(medsRef, {
-        ...medToSave,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      });
+      const meds = await this.getUserMedications();
+      console.log(`DEBUG MedicationService: Found ${meds.length} medications:`, meds.map(m => ({ id: m.id, name: m.name })));
+      this.medicationsSubject.next(meds);
+      console.log('DEBUG MedicationService: BehaviorSubject updated with fresh medications');
     } catch (error) {
-      console.error('Error adding medication:', error);
-      throw error;
+      console.error('DEBUG MedicationService: Error refreshing medications:', error);
     }
   }
 
   /**
-   * Toggle medication active status.
+   * Adds medication with strict data sanitation to prevent Firestore rejection.
    */
-  async toggleMedicationStatus(medicationId: string): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    try {
-      const medRef = doc(this.db, `users/${currentUser.uid}/medications/${medicationId}`);
-      const medDoc = await getDoc(medRef);
-      
-      if (medDoc.exists()) {
-        const currentData = medDoc.data() as Medication;
-        await updateDoc(medRef, {
-          isActive: !currentData.isActive,
-          updatedAt: Timestamp.now()
-        });
-      }
-    } catch (error) {
-      console.error('Error toggling medication status:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update an existing medication.
-   */
-  async updateMedication(medicationId: string, updates: Partial<Medication>): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    try {
-      const medRef = doc(this.db, `users/${currentUser.uid}/medications/${medicationId}`);
-      await updateDoc(medRef, {
-        ...updates,
-        updatedAt: Timestamp.now()
-      });
-    } catch (error) {
-      console.error('Error updating medication:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get all medications for the current user.
-   */
-  async getUserMedications(uid?: string): Promise<Medication[]> {
-    const currentUser = await this.authService.waitForAuthInit();
-    const userId = uid || currentUser?.uid;
+  async addMedication(medication: Medication, prescriptionImageData?: string): Promise<void> {
+    const uid = await this.getUid();
+    const medsRef = collection(this.db, `users/${uid}/medications`);
     
-    if (!userId) throw new Error('User not logged in');
+    // Sanitize: Remove undefined/null values that block Firestore writes
+    const cleanData = JSON.parse(JSON.stringify(medication));
+    
+    await addDoc(medsRef, { 
+      ...cleanData, 
+      prescriptionImageUrl: prescriptionImageData || null, 
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now()
+    });
+    
+    await this.refreshMedications();
+  }
 
-    try {
-      const medsRef = collection(this.db, `users/${userId}/medications`);
-      const q = query(medsRef, orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
-      
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Medication));
-    } catch (error) {
-      console.error('Error fetching medications:', error);
-      throw error;
+  async updateMedication(medicationId: string, updates: Partial<Medication>): Promise<void> {
+    const uid = await this.getUid();
+    const medRef = doc(this.db, `users/${uid}/medications/${medicationId}`);
+    
+    // Sanitize updates
+    const cleanUpdates = JSON.parse(JSON.stringify(updates));
+    
+    await updateDoc(medRef, { ...cleanUpdates, updatedAt: Timestamp.now() });
+    await this.refreshMedications();
+  }
+
+  async toggleMedicationStatus(medicationId: string): Promise<void> {
+    const uid = await this.getUid();
+    const medRef = doc(this.db, `users/${uid}/medications/${medicationId}`);
+    const medDoc = await getDoc(medRef);
+    if (medDoc.exists()) {
+      await updateDoc(medRef, { isActive: !medDoc.data()['isActive'], updatedAt: Timestamp.now() });
+      await this.refreshMedications();
     }
   }
 
-  /**
-   * Record result of a medication reminder interaction.
-   * Logic updated to sync both 'quantity' and 'refillsRemaining'.
-   */
-  async recordReminderAction(
-    medicationId: string,
-    action: 'taken' | 'skipped' | 'opened'
-  ): Promise<{ newQuantity?: number, newRefills?: number } | void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
+  async recordReminderAction(medicationId: string, action: 'taken' | 'skipped' | 'opened'): Promise<any> {
+    const uid = await this.getUid();
+    const medRef = doc(this.db, `users/${uid}/medications/${medicationId}`);
+    const medSnap = await getDoc(medRef);
+    const medData = medSnap.data() as Medication;
 
-    try {
-      const medRef = doc(this.db, `users/${currentUser.uid}/medications/${medicationId}`);
-      const medSnap = await getDoc(medRef);
-      const medData = medSnap.exists() ? (medSnap.data() as Medication) : null;
+    const updateData: any = { 
+      lastReminderAction: action, 
+      updatedAt: Timestamp.now() 
+    };
 
-      const updateData: any = {
-        lastReminderAction: action,
-        updatedAt: Timestamp.now()
-      };
+    if (action === 'taken' && medData) {
+      const doseSize = medData.pillsPerDose || 1;
+      let updatedRefills = (medData.refillsRemaining ?? medData.quantity) - doseSize;
+      
+      updateData.refillsRemaining = Math.max(updatedRefills, 0);
 
-      if (action === 'taken' && medData) {
-        updateData.lastTakenAt = new Date();
-        const doseSize = medData.pillsPerDose || 1;
-
-        // 1. Update the total stock quantity
-        if (typeof medData.quantity === 'number') {
-          const newQuantity = Math.max(medData.quantity - doseSize, 0);
-          updateData.quantity = newQuantity;
-          if (newQuantity <= 0) updateData.isActive = false;
-        }
-
-        // 2. Update the "Live" refillsRemaining count
-        if (typeof medData.refillsRemaining === 'number') {
-          updateData.refillsRemaining = Math.max(medData.refillsRemaining - doseSize, 0);
-        }
-      } else if (action === 'skipped') {
-        updateData.lastSkippedAt = new Date();
+      if (medData.status === 'Incomplete' || !medData.status) {
+        updateData.status = 'Ongoing';
+      }
+      
+      if (updatedRefills <= 0) { 
+        updateData.isActive = false; 
+        updateData.status = 'Completed'; 
       }
 
       await updateDoc(medRef, updateData);
-      
-      return { 
-        newQuantity: updateData.quantity,
-        newRefills: updateData.refillsRemaining
-      };
-    } catch (error) {
-      console.error('Error recording reminder action:', error);
-      throw error;
+      await this.refreshMedications();
+      return { newRefills: updateData.refillsRemaining };
     }
+    
+    if (action === 'skipped') updateData.lastSkippedAt = new Date();
+    
+    await updateDoc(medRef, updateData);
+    await this.refreshMedications();
   }
 
-  /**
-   * Delete a medication.
-   */
+  async getUserMedications(uid?: string): Promise<Medication[]> {
+    const userId = uid || await this.getUid();
+    const medsRef = collection(this.db, `users/${userId}/medications`);
+    const q = query(medsRef, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Medication));
+  }
+
   async deleteMedication(medicationId: string): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
+    console.log(`DEBUG MedicationService: Starting deletion for ID: ${medicationId}`);
+    const uid = await this.getUid();
+    const docPath = `users/${uid}/medications/${medicationId}`;
+    console.log(`DEBUG MedicationService: Deleting from path: ${docPath}`);
     try {
-      const medRef = doc(this.db, `users/${currentUser.uid}/medications/${medicationId}`);
-      await deleteDoc(medRef);
+      await deleteDoc(doc(this.db, docPath));
+      console.log(`DEBUG MedicationService: Document deleted successfully from Firestore`);
+      
+      // Remove from local state immediately
+      const currentMeds = this.medicationsSubject.value;
+      const filteredMeds = currentMeds.filter(m => m.id !== medicationId);
+      console.log(`DEBUG MedicationService: Removed from local state. Before: ${currentMeds.length}, After: ${filteredMeds.length}`);
+      this.medicationsSubject.next(filteredMeds);
+      
+      // Add small delay to allow Firestore to propagate, then refresh to verify
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await this.refreshMedications();
+      console.log(`DEBUG MedicationService: Medications refreshed after deletion`);
     } catch (error) {
-      console.error('Error deleting medication:', error);
+      console.error(`DEBUG MedicationService: Error deleting document:`, error);
       throw error;
     }
   }
-  // Inside medication.service.ts
-isExpired(medication: Medication): boolean {
-  if (!medication.medicineExpiryDate) return false;
-  return new Date(medication.medicineExpiryDate) < new Date();
-}
+
+  isExpired(medication: Medication): boolean {
+    return medication.medicineExpiryDate ? new Date(medication.medicineExpiryDate) < new Date() : false;
+  }
 }
