@@ -1,0 +1,71 @@
+<ion-header>
+  <ion-toolbar class="toolbar--teal">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Verify Doctors</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="verify-bg">
+
+  <section class="page-hero">
+    <h1>Pending Doctor Verification</h1>
+    <p>Review medical professionals before allowing full access.</p>
+  </section>
+
+  <div class="loading-box" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading pending doctors...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && pendingDoctors.length === 0">
+    <ion-icon name="checkmark-circle-outline"></ion-icon>
+    <h2>No pending doctors</h2>
+    <p>All doctor verification requests are already handled.</p>
+  </div>
+
+  <section class="doctor-list" *ngIf="!isLoading && pendingDoctors.length > 0">
+
+    <ion-card *ngFor="let doctor of pendingDoctors">
+      <ion-card-content>
+
+        <div class="doctor-header">
+          <div>
+            <h2>{{ doctor.fullName || 'Unnamed Doctor' }}</h2>
+            <p>{{ doctor.email }}</p>
+          </div>
+
+          <ion-badge color="warning">
+            {{ doctor.verificationStatus || 'pending' }}
+          </ion-badge>
+        </div>
+
+        <div class="doctor-details">
+          <p><strong>Specialty:</strong> {{ doctor.specialty || 'Not provided' }}</p>
+          <p><strong>Hospital:</strong> {{ doctor.hospital || 'Not provided' }}</p>
+          <p><strong>License:</strong> {{ doctor.license || 'Not provided' }}</p>
+
+          <p *ngIf="doctor.licenseURL">
+            <strong>License File:</strong>
+            <a [href]="doctor.licenseURL" target="_blank">View document</a>
+          </p>
+        </div>
+
+        <div class="actions">
+          <ion-button color="success" expand="block" (click)="approveDoctor(doctor)">
+            Approve
+          </ion-button>
+
+          <ion-button color="danger" fill="outline" expand="block" (click)="rejectDoctor(doctor)">
+            Reject
+          </ion-button>
+        </div>
+
+      </ion-card-content>
+    </ion-card>
+
+  </section>
+
+</ion-content>

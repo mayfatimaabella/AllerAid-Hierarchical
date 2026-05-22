@@ -16,6 +16,7 @@ export class EditEmergencyProfileModalComponent implements OnInit {
   @Input() emergencyMessage: any;
   @Input() userProfile: any;
   @Input() mode: 'add' | 'edit' = 'edit';
+  @Input() profileDetails: any;
 
   @Output() closeModal = new EventEmitter<void>();
   @Output() saveModal = new EventEmitter<any>();
@@ -39,22 +40,39 @@ export class EditEmergencyProfileModalComponent implements OnInit {
   ) {}
 
     ngOnInit() {
+
       this.maxDate = new Date().toISOString().split('T')[0];
 
       this.form = this.fb.group({
+
         name: [this.emergencyMessage?.name || this.userProfile?.fullName || ''],
+
         allergies: [this.emergencyMessage?.allergies || ''],
-        instructions: [this.emergencyMessage?.instructions || ''], 
+
+        instructions: [this.emergencyMessage?.instructions || ''],
+
         location: [this.emergencyMessage?.location || ''],
-        contactNumber: [this.emergencyMessage?.contactPhone || ''],
-        dateOfBirth: [this.userProfile?.dateOfBirth? new Date(this.userProfile.dateOfBirth).toISOString(): ''],
-        bloodType: [this.userProfile?.bloodType || ''],
-        profile_picture: [this.userProfile?.profile_picture || '']
+
+        contactNumber: [this.profileDetails?.phone || this.emergencyMessage?.contactPhone ||''],
+
+        dateOfBirth: [this.profileDetails?.dateOfBirth || ''],
+
+        gender: [this.profileDetails?.gender || ''],
+
+        bloodType: [this.profileDetails?.bloodType ||''],
+
+        profile_picture: [this.profileDetails?.profile_picture || this.emergencyMessage?.profile_picture || this.userProfile?.profile_picture || '']
 
       });
 
-      this.form.get('allergies')?.disable({ emitEvent: false });
-      this.avatarPreview = this.form.get('profile_picture')?.value || null;
+      this.form.get('allergies')?.disable({
+        emitEvent: false
+      });
+
+      this.avatarPreview =
+        this.form.get('profile_picture')?.value ||
+        this.defaultAvatarUrl;
+
       this.initialFormValue = this.form.getRawValue();
     }
 
@@ -187,9 +205,34 @@ export class EditEmergencyProfileModalComponent implements OnInit {
     const rawValue = (event?.detail?.value || '').toString();
     const digitsOnly = rawValue.replace(/\D+/g, '').slice(0, 11);
     if (digitsOnly !== rawValue) {
-      this.form.get('emergencyContactPhone')?.setValue(digitsOnly, { emitEvent: false });
+      this.form.get('contactNumber')?.setValue(digitsOnly, { emitEvent: false });
     }
   }
+
+onBloodTypeInput(event: any): void {
+
+  let value = (event?.detail?.value || '')
+    .toUpperCase()
+    .replace(/[^ABO+-]/g, '');
+
+  // Limit length first
+  value = value.slice(0, 3);
+
+  // Allow only valid blood types
+  const validRegex =
+    /^(A|B|AB|O)?([+-])?$/;
+
+  if (!validRegex.test(value)) {
+
+    value = value.slice(0, -1);
+
+  }
+
+  this.form.get('bloodType')?.setValue(
+    value,
+    { emitEvent: false }
+  );
+}
 
 async onAvatarSelected(event: Event): Promise<void> {
   const input = event.target as HTMLInputElement;

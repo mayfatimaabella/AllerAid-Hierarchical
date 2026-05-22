@@ -8,73 +8,127 @@ import { ToastController } from '@ionic/angular';
   providedIn: 'root'
 })
 export class RoleGuard implements CanActivate {
-  
+
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
     private toastController: ToastController
   ) {}
-  
+
   async canActivate(route: ActivatedRouteSnapshot): Promise<boolean> {
-    // Uncommented role guard logic for production
+
     try {
+
       const user = await this.authService.waitForAuthInit();
+
       if (!user) {
-        console.log('RoleGuard: User not authenticated, redirecting to login');
+        console.log('RoleGuard: User not authenticated');
         this.router.navigate(['/login']);
         return false;
       }
+
       const userProfile = await this.userService.getUserProfile(user.uid);
+
       if (!userProfile) {
-        console.log('RoleGuard: User profile not found, redirecting to profile creation');
-        this.presentToast('User profile not found. Redirecting to complete setup.');
+        console.log('RoleGuard: User profile not found');
+
+        await this.presentToast(
+          'User profile not found. Redirecting to complete setup.'
+        );
+
         this.router.navigate(['/registration']);
         return false;
       }
+
       if (!userProfile.role) {
-        console.log('RoleGuard: User role is undefined, redirecting to profile setup');
-        this.presentToast('User role not set. Please complete your profile setup.');
-        this.router.navigate(['/profile'], { queryParams: { tab: 'settings', setup: 'role' } });
+
+        console.log('RoleGuard: User role is undefined');
+
+        await this.presentToast(
+          'User role not set. Please complete your profile setup.'
+        );
+
+        this.router.navigate([
+          '/profile'
+        ], {
+          queryParams: {
+            tab: 'settings',
+            setup: 'role'
+          }
+        });
+
         return false;
       }
+
       const requiredRoles = route.data['roles'] as string[];
+
       if (!requiredRoles || requiredRoles.length === 0) {
         return true;
       }
-      const hasRequiredRole = requiredRoles.includes(userProfile.role);
+
+      const hasRequiredRole =
+        requiredRoles.includes(userProfile.role);
+
       if (hasRequiredRole) {
         return true;
-      } else {
-        console.log(`RoleGuard: User role '${userProfile.role}' not authorized for this page. Required: ${requiredRoles.join(', ')}`);
-        this.presentToast(`Access denied. This feature requires ${requiredRoles.join(' or ')} privileges.`);
-        switch (userProfile.role) {
-          case 'doctor':
-            this.router.navigate(['/tabs/doctor-dashboard']);
-            break;
-          case 'user':
-          default:
-            this.router.navigate(['/tabs/home']);
-            break;
-        }
-        return false;
       }
+
+      console.log(
+        `RoleGuard: User role '${userProfile.role}' not authorized for this page. Required: ${requiredRoles.join(', ')}`
+      );
+
+      if (userProfile.role !== 'admin') {
+
+        await this.presentToast(
+          `Access denied. This feature requires ${requiredRoles.join(' or ')} privileges.`
+        );
+      }
+
+      switch (userProfile.role) {
+
+        case 'admin':
+          this.router.navigate(['/admin-dashboard']);
+          break;
+
+        case 'doctor':
+          this.router.navigate(['/tabs/doctor-dashboard']);
+          break;
+
+        case 'user':
+          this.router.navigate(['/tabs/home']);
+          break;
+
+        default:
+          this.router.navigate(['/login']);
+          break;
+      }
+
+      return false;
+
     } catch (error) {
+
       console.error('RoleGuard error:', error);
-      this.presentToast('Error checking permissions. Please try again.');
+
+      await this.presentToast(
+        'Error checking permissions. Please try again.'
+      );
+
       this.router.navigate(['/login']);
+
       return false;
     }
   }
 
   private async presentToast(message: string) {
+
     const toast = await this.toastController.create({
       message,
       duration: 4000,
       position: 'bottom',
       color: 'warning'
     });
+
     await toast.present();
   }
 }
-

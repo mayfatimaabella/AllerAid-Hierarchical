@@ -78,12 +78,17 @@ export class ProfileEmergencySettingsService {
   async openEditProfileModal(
     emergencyMessage: EmergencyMessage,
     userProfile: UserProfile | null,
+    profileDetails: any,
     onSave: (message: any) => Promise<void>,
     onRefresh: () => Promise<void>
   ): Promise<void> {
     const modal = await this.modalController.create({
       component: EditEmergencyProfileModalComponent,
-      componentProps: { emergencyMessage, userProfile },
+      componentProps: {
+        emergencyMessage,
+        userProfile,
+        profileDetails
+      },
       cssClass: 'force-white-modal',
       handle: false,
       breakpoints: [0, 1],
@@ -119,36 +124,107 @@ export class ProfileEmergencySettingsService {
     reload: () => Promise<void>,
     presentToast: (msg: string) => Promise<void>
   ): Promise<void> {
+
     if (!userProfile?.uid) {
       await presentToast('User profile not found.');
       return;
     }
 
-    const uid = userProfile.uid;
+    try {
 
-    const emergencyMessage: EmergencyMessage = {
-      name: message.name || '',
-      allergies: message.allergies || '',
-      location: message.location || '',
-    };
+      const uid = userProfile.uid;
 
-    const updatedFullName = message.name || userProfile.fullName || '';
+      // Get current profile details first
+      const currentDetails =
+        await this.profileDetailService.getUserProfileDetails(uid);
 
-    await this.userService.updateUserProfile(uid, { fullName: updatedFullName });
+      const emergencyMessage: EmergencyMessage = {
+        name: message.name || '',
+        allergies: message.allergies || '',
+        location: message.location || '',
+      };
 
-    await this.profileDetailService.updateProfileDetails(uid, {
-      dateOfBirth: message.dateOfBirth || null,
-      bloodType: message.bloodType || null,
-      profile_picture: message.profile_picture || null
-    });
+      const updatedFullName =
+        message.name || userProfile.fullName || '';
 
-    await this.medicalService.updateEmergencyMessage(uid, emergencyMessage);
-    await this.medicalService.setEmergencyInstruction(uid, message.instructions || '');
+      // Update base profile
+      await this.userService.updateUserProfile(uid, {
+        fullName: updatedFullName
+      });
 
-    setEmergencyMessage({ ...emergencyMessage, instructions: message.instructions || '' });
-    setUserProfile({ ...userProfile, fullName: updatedFullName });
+      // Update profile/details safely
+      await this.profileDetailService.updateProfileDetails(uid, {
 
-    await presentToast('Emergency profile updated successfully.');
+        phone:
+          message.contactNumber ||
+          message.contactPhone ||
+          message.emergencyContactPhone ||
+          currentDetails?.phone ||
+          null,
+
+        dateOfBirth:
+          message.dateOfBirth ||
+          currentDetails?.dateOfBirth ||
+          null,
+
+        gender:
+          message.gender ||
+          currentDetails?.gender ||
+          null,
+
+        bloodType:
+          message.bloodType ||
+          currentDetails?.bloodType ||
+          null,
+
+        profile_picture:
+          message.profile_picture ||
+          currentDetails?.profile_picture ||
+          null
+
+      });
+
+      // Update emergency message
+      await this.medicalService.updateEmergencyMessage(
+        uid,
+        emergencyMessage
+      );
+
+      // Update emergency instructions
+      await this.medicalService.setEmergencyInstruction(
+        uid,
+        message.instructions || ''
+      );
+
+      // Update local state
+      setEmergencyMessage({
+        ...emergencyMessage,
+        instructions: message.instructions || ''
+      });
+
+      setUserProfile({
+        ...userProfile,
+        fullName: updatedFullName
+      });
+
+      // Reload fresh Firestore data
+      await reload();
+
+      await presentToast(
+        'Emergency profile updated successfully.'
+      );
+
+    } catch (error) {
+
+      console.error(
+        'Error saving emergency profile:',
+        error
+      );
+
+      await presentToast(
+        'Failed to update emergency profile.'
+      );
+    }
   }
 
   async saveNewEmergencyMessage(
@@ -181,6 +257,7 @@ export class ProfileEmergencySettingsService {
       await this.profileDetailService.updateProfileDetails(uid, {
         dateOfBirth: message?.dateOfBirth || null,
         bloodType: message?.bloodType || null,
+        
       });
 
       await loadMedicalData();

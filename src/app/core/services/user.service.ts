@@ -36,7 +36,6 @@ export class UserService {
       lastName: string;
       role: string;
 
-      // phone?: string;
 
       licenseURL?: string;
       license?: string;

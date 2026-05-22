@@ -4,7 +4,6 @@ import { ToastController, AlertController, ModalController } from '@ionic/angula
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BuddyService } from '../../core/services/buddy.service';
-import { RoleRedirectService } from '../../core/services/role-redirect.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -33,7 +32,6 @@ export class TabsPage implements OnInit, OnDestroy {
     private userService: UserService,
     private authService: AuthService,
     private buddyService: BuddyService,
-    private roleRedirectService: RoleRedirectService,
     private router: Router,
     private toastController: ToastController,
     private alertController: AlertController,
@@ -294,13 +292,23 @@ export class TabsPage implements OnInit, OnDestroy {
     }
   }
 
-  private async handleInitialNavigation() {
-    // If we're on the default tabs route, redirect based on role
-    if (this.router.url === '/tabs' || this.router.url === '/tabs/home') {
-      const defaultRoute = this.roleRedirectService.getDefaultTabForRole(this.userRole);
-      if (this.router.url !== defaultRoute) {
-        this.router.navigate([defaultRoute]);
-      }
-    }
+private async handleInitialNavigation() {
+
+  if (this.userRole === 'admin') {
+    this.router.navigate(['/admin-dashboard']);
+    return;
   }
+
+  if (
+    this.userRole === 'doctor'
+  ) {
+    this.router.navigate(['/tabs/doctor-dashboard']);
+    return;
+  }
+
+  if (this.userRole === 'user') {
+    this.router.navigate(['/tabs/home']);
+    return;
+  }
+}
 }

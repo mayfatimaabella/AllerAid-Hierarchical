@@ -103,29 +103,40 @@
 
         <ion-item lines="none">
           <ion-label position="stacked">Date of Birth</ion-label>
+          <ion-input
+            formControlName="dateOfBirth"
+            type="date"
+            [min]="minDate"
+            [max]="maxDate"
+            placeholder="Select date of birth">
+          </ion-input>
 
-          <ion-datetime-button datetime="dobPicker"></ion-datetime-button>
+        </ion-item> 
 
-          <ion-modal [keepContentsMounted]="true">
-            <ng-template>
-              <ion-datetime
-                id="dobPicker"
-                presentation="date"
-                formControlName="dateOfBirth"
-                [min]="minDate"
-                [max]="maxDate">
-              </ion-datetime>
-            </ng-template>
-          </ion-modal>
+        <ion-item lines="none">
+          <ion-label position="stacked">Gender</ion-label>
+
+          <ion-select
+            formControlName="gender"
+            placeholder="Select gender">
+            <ion-select-option value="Male">Male</ion-select-option>
+            <ion-select-option value="Female">Female</ion-select-option>
+            <ion-select-option value="Other">Other</ion-select-option>
+            <ion-select-option value="Prefer not to say">Prefer not to say</ion-select-option>
+          </ion-select>
         </ion-item>
 
         <ion-item lines="none">
           <ion-label position="stacked">Blood Type</ion-label>
+
           <ion-input
             formControlName="bloodType"
-            placeholder="e.g. O+">
+            placeholder="e.g. O+"
+            maxlength="3"
+            (ionInput)="onBloodTypeInput($event)">
           </ion-input>
         </ion-item>
+
       </div>
     </section>
 

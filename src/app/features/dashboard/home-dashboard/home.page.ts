@@ -11,8 +11,8 @@ import { Subscription } from 'rxjs';
 import { doc, getDoc } from 'firebase/firestore';
 import { FirebaseService } from '../../../core/services/firebase.service';
 import { ModalController } from '@ionic/angular';
-import { EditAllergiesModalComponent } from '../../../features/profile/overview/modals/edit-allergies-modal/edit-allergies-modal.component'
 import { AllergyManagerService } from '../../../core/services/allergy-manager.service';
+import { AllergyModalService } from '../../profile/profile-services/allergy-modal.service';
 
 @Component({
   selector: 'app-home',
@@ -68,6 +68,7 @@ export class HomePage implements OnInit, OnDestroy {
     private firebaseService: FirebaseService,
     private modalController: ModalController,
     private allergyManager: AllergyManagerService,
+    private allergyModalService: AllergyModalService
   ) {
     this.db = this.firebaseService.getDb();
   }
@@ -602,23 +603,11 @@ async checkBuddyStatus() {
 
 async openAddAllergiesModal() {
   const allergyOptions = await this.allergyManager.loadAllergyOptions();
-
-  const modal = await this.modalController.create({
-    component: EditAllergiesModalComponent,
-    componentProps: {
-      allergyOptions,
-      mode: 'add'
-    }
-  });
-
-  modal.onDidDismiss().then(async ({ data }) => {
-    if (data?.refresh) {
-      await this.loadUserData();
-    }
-  });
-
-  await modal.present();
+  await this.allergyModalService.openEditAllergiesModal(
+    allergyOptions,
+    () => this.loadUserData(),
+    'add'
+  );
 }
-
 
 }

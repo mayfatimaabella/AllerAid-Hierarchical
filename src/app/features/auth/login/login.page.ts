@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ToastController, NavController, LoadingController, AlertController, ModalController } from '@ionic/angular';
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { RoleRedirectService } from '../../../core/services/role-redirect.service';
 import { ForgotPasswordModal } from './forgot-password.modal';
 import { MedicalService } from '../../../core/services/medical.profile.service';
 
@@ -21,7 +20,6 @@ export class LoginPage implements OnInit {
     private navCtrl: NavController,
     private userService: UserService,
     private authService: AuthService,
-    private roleRedirectService: RoleRedirectService,
     private loadingController: LoadingController,
     private alertController: AlertController,
     private modalController: ModalController,
@@ -83,21 +81,31 @@ export class LoginPage implements OnInit {
 
         this.presentToast('Login successful!', 'success', 2500, 'checkmark-circle-outline');
 
-        if (userProfile.role === 'user') {
-          const hasCompletedOnboarding = await this.medicalService.hasCompletedAllergyOnboarding(userProfile.uid);
-
-          if (!hasCompletedOnboarding) {
-            console.log('User needs to complete allergy onboarding');
-            this.navCtrl.navigateRoot('/allergy-onboarding');
-            return;
-          } else {
-            this.navCtrl.navigateRoot('/tabs/home');
+        if (userProfile.role === 'admin') {
+            this.navCtrl.navigateRoot('/admin-dashboard');
             return;
           }
+
+        if (userProfile.role === 'user') {
+          const hasCompletedOnboarding =
+            await this.medicalService.hasCompletedAllergyOnboarding(userProfile.uid);
+
+          if (!hasCompletedOnboarding) {
+            this.navCtrl.navigateRoot('/allergy-onboarding');
+            return;
+          }
+
+          this.navCtrl.navigateRoot('/tabs/home');
+          return;
         }
 
-        await this.roleRedirectService.redirectBasedOnRole();
+        if (userProfile.role === 'doctor') {
+          this.navCtrl.navigateRoot('/tabs/doctor-dashboard');
+          return;
+        }
+        this.navCtrl.navigateRoot('/login');
       }
+      
 
     } catch (error: any) {
       console.error('Login error:', error);

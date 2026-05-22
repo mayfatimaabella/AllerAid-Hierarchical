@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
+import { adminGuard } from './core/guards/admin-guard';
 
 
 const routes: Routes = [
@@ -119,8 +120,19 @@ const routes: Routes = [
   {
     path: 'patients-doctor',
     loadChildren: () => import('./features/patients-doctor/patients-doctor.module').then(m => m.PatientsDoctorPageModule),
-  }
+  },
 
+  {
+    path: 'admin-dashboard',
+    loadChildren: () =>import('./features/admin/admin-dashboard/admin-dashboard.module').then(m => m.AdminDashboardPageModule),
+    canActivate: [AuthGuard, adminGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+  path: 'admin-dashboard/doctors',
+  loadComponent: () => import('./features/admin/verify-doctors/verify-doctors.page').then(m => m.VerifyDoctorsPage),
+  canActivate: [AuthGuard, adminGuard]
+},
 
 
 ];

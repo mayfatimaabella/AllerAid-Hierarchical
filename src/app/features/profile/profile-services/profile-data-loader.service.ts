@@ -44,6 +44,7 @@ export class ProfileDataLoaderService {
   get userAllergiesValue(): any[] { return this.userAllergiesSubject.value; }
   get emergencyMessageValue(): any | null { return this.emergencyMessageSubject.value; }
   get emergencyInstructionsValue(): any[] { return this.emergencyInstructionsSubject.value; }
+  get profileDetailsValue(): any | null { return this.profileDetailsSubject.value;}
 
   setUserProfile(profile: UserProfile | null): void { this.userProfileSubject.next(profile); }
   setEmergencyMessage(message: any): void { this.emergencyMessageSubject.next(message); }
@@ -104,29 +105,24 @@ async loadAllData(): Promise<void> {
     }
   }
 
-  async refreshAllergies(currentUid: string): Promise<any[]> {
-    try {
-      const userAllergyDocs = await this.allergyService.getUserAllergies(currentUid);
-      const allergies: any[] = [];
+async refreshAllergies(currentUid: string): Promise<any[]> {
+  try {
+    const userAllergyDocs = await this.allergyService.getUserAllergies(currentUid);
 
-      userAllergyDocs.forEach((allergyDoc: any) => {
-        if (allergyDoc.allergies && Array.isArray(allergyDoc.allergies)) {
-          allergies.push(...allergyDoc.allergies.filter((a: any) => a.checked));
-        }
+    const allergies = userAllergyDocs.filter((a: any) => a.checked);
+
+    this.userAllergiesSubject.next(allergies);
+    const currentMsg = this.emergencyMessageSubject.value;
+    if (currentMsg) {
+      this.emergencyMessageSubject.next({
+        ...currentMsg,
+        allergies: allergies.map(a => a.label || a.name).join(', ')
       });
-
-      this.userAllergiesSubject.next(allergies);
-      const currentMsg = this.emergencyMessageSubject.value;
-      if (currentMsg) {
-        this.emergencyMessageSubject.next({
-          ...currentMsg,
-          allergies: allergies.map(a => a.label || a.name).join(', ')
-        });
-      }
-      return allergies;
-    } catch (error) {
-      console.error('Error refreshing allergies:', error);
-      return [];
     }
+    return allergies;
+  } catch (error) {
+    console.error('Error refreshing allergies:', error);
+    return [];
   }
+}
 }

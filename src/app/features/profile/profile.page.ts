@@ -202,6 +202,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     await this.profileEmergencySettings.openEditProfileModal(
       this.profileDataLoader.emergencyMessageValue || EMPTY_EMERGENCY_MESSAGE,
       this.profileDataLoader.userProfileValue,
+      this.profileDataLoader.profileDetailsValue,
       (message: EmergencyMessageFormData) => this.saveEditedEmergencyMessage(message),
       () => this.profileDataLoader.loadAllData()
     );

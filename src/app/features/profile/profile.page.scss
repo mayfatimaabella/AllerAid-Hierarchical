@@ -332,54 +332,6 @@ ion-modal {
   font-style: italic;
 }
 
-/* Emergency info */
-.emergency-info-card {
-  background: #ffffff;
-  border-radius: 18px;
-  border: 1px solid var(--profile-border);
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-  margin: 16px 0;
-}
-
-.allergies-section,
-.location-section {
-  background: #ffffff;
-  border: 1px solid #e8f2f0;
-  border-radius: 14px;
-  margin: 14px 0;
-  padding: 14px;
-}
-
-.emergency-label {
-  color: var(--profile-teal);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.emergency-value {
-  color: #1f4a42;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.allergy-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.allergy-chip {
-  background: var(--profile-teal);
-  color: #ffffff;
-  border-radius: 999px;
-  padding: 6px 13px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
 /* Responsive */
 @media (max-width: 480px) {
   ion-content.profile-page-bg {

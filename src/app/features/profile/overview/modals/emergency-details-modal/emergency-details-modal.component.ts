@@ -23,6 +23,7 @@ export class EmergencyDetailsModalComponent implements OnInit {
   @Input() emergencyContactPhone: string = '';
   @Input() dateOfBirth: string = '';
   @Input() bloodType: string = '';
+  @Input() gender: string = '';
   @Input() openEditEmergencyMessageModal?: () => void;
   @Input() openManageInstructionsModal?: () => void;
 
@@ -31,6 +32,8 @@ export class EmergencyDetailsModalComponent implements OnInit {
   @Output() testAudio = new EventEmitter<void>();
   @Output() addInstruction = new EventEmitter<void>();
   @Output() openEditAllergies = new EventEmitter<void>();
+
+  activeTab: 'overview' | 'instructions' = 'overview'; 
 
   ngOnInit() {}
 
@@ -87,4 +90,8 @@ export class EmergencyDetailsModalComponent implements OnInit {
       this.openManageInstructionsModal();
     }
   }
+
+  setTab(tab: 'overview' | 'instructions' ) {
+  this.activeTab = tab;
+}
 }

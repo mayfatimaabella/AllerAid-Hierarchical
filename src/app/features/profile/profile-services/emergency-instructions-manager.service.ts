@@ -11,9 +11,7 @@ export class EmergencyInstructionsManagerService {
 
   emergencyInstructions: any[] = [];
   showManageInstructionsModal: boolean = false;
-  showInstructionDetailsModal: boolean = false;
   editingInstruction: any = null;
-  selectedInstructionDetails: any = null;
   selectedAllergyForInstruction: any = null;
   newInstructionText: string = '';
   userAllergies: any[] = [];
@@ -46,8 +44,6 @@ export class EmergencyInstructionsManagerService {
    */
   openManageInstructionsModal(): void {
     
-    this.showInstructionDetailsModal = false;
-    this.selectedInstructionDetails = null;
     this.editingInstruction = null;
 
     if (this.manageInstructionsModal) {
@@ -63,11 +59,7 @@ export class EmergencyInstructionsManagerService {
    */
   onManageInstructionsDismiss(): void {
     this.showManageInstructionsModal = false;
-    this.showInstructionDetailsModal = false;
-    this.selectedInstructionDetails = null;
     this.editingInstruction = null;
-    this.selectedAllergyForInstruction = null;
-    this.newInstructionText = '';
 
     if (this.manageInstructionsModal) {
       this.manageInstructionsModal.selectedAllergyForInstruction = null;
@@ -75,28 +67,6 @@ export class EmergencyInstructionsManagerService {
     }
   }
 
-  /**
-   * Show details for a specific instruction
-   */
-  onShowDetails(instruction: any): void {
-    if (!instruction) {
-      this.showInstructionDetailsModal = false;
-      this.selectedInstructionDetails = null;
-      return;
-    }
-
-    this.selectedInstructionDetails = instruction;
-
-    if (!this.showManageInstructionsModal) {
-      this.showManageInstructionsModal = true;
-    }
-
-    // Force detail view to refresh
-    this.showInstructionDetailsModal = false;
-    setTimeout(() => {
-      this.showInstructionDetailsModal = true;
-    });
-  }
 
   /**
    * Add a new emergency instruction for an allergy
@@ -291,8 +261,6 @@ export class EmergencyInstructionsManagerService {
       return;
     }
 
-    this.showInstructionDetailsModal = false;
-    this.selectedInstructionDetails = null;
 
     const resolvedAllergy = this.userAllergies?.find(a =>
       a.id === instruction.allergyId ||

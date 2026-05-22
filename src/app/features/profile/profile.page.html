@@ -130,16 +130,16 @@
         
         <ng-container *ngIf="profileNavigation.selectedTab === 'overview'">
 
-          <app-profile-overview-section
-            [userAllergies]="vm.allergies || []"
-            [emergencyMessage]="vm.emergencyMessage"
-            [profileDetails]="vm.profileDetails"
-            [userProfile]="vm.profile"
-            [emergencyInstructions]="vm.emergencyInstructions || []"
-            [openEditEmergencyMessageModal]="openEditProfileModal"
-            (openEditAllergies)="openEditAllergiesModal()"
-            (openEmergencyInfo)="activeModal = 'emergencyInfo'">
-          </app-profile-overview-section>
+        <app-profile-overview-section
+          [userAllergies]="vm.allergies || []"
+          [emergencyMessage]="vm.emergencyMessage"
+          [profileDetails]="vm.profileDetails"
+          [userProfile]="vm.profile"
+          [emergencyInstructions]="vm.emergencyInstructions || []"
+          [openEditEmergencyMessageModal]="openEditProfileModal"
+          (openEditAllergies)="openEditAllergiesModal()"
+          (openEmergencyInfo)="activeModal = 'emergencyInfo'">
+        </app-profile-overview-section>
           
         </ng-container>
         
@@ -154,6 +154,7 @@
               [emergencyContactPhone]="vm.profileDetails?.phone || ''"
               [emergencyLocation]="vm.emergencyMessage?.location || ''"
               [dateOfBirth]="vm.profileDetails?.dateOfBirth || ''"
+              [gender]="vm.profileDetails?.gender || ''"
               [bloodType]="vm.profileDetails?.bloodType || ''"
               [openEditEmergencyMessageModal]="openEditProfileModal"
               [openManageInstructionsModal]="openAddInstructionModal"
@@ -294,6 +295,7 @@
   <app-edit-emergency-profile-modal
     [emergencyMessage]="{ name: '', allergies: '', instructions: '', location: '' }"
     [userProfile]="vm.profile"
+    [profileDetails]="vm.profileDetails"
     [mode]="'add'"
     (refresh)="onEmergencyProfileRefresh($event)"
     (saveModal)="saveNewEmergencyMessage($event)"
@@ -302,14 +304,20 @@
 </ion-modal>
 
 <!-- Edit Emergency Message Modal (if present) -->
-<ion-modal [isOpen]="profileEmergencySettings.showEditEmergencyMessageModal" (didDismiss)="profileEmergencySettings.showEditEmergencyMessageModal = false">
+<ion-modal
+  [isOpen]="profileEmergencySettings.showEditEmergencyMessageModal"
+  (didDismiss)="profileEmergencySettings.showEditEmergencyMessageModal = false">
+
   <app-edit-emergency-profile-modal
     [emergencyMessage]="vm.emergencyMessage"
     [userProfile]="vm.profile"
+    [profileDetails]="vm.profileDetails"
     [mode]="'edit'"
     (saveModal)="saveEditedEmergencyMessage($event)"
     (closeModal)="profileEmergencySettings.showEditEmergencyMessageModal = false">
+
   </app-edit-emergency-profile-modal>
+
 </ion-modal>
 
 <!-- Emergency Specific Instructions Modal - Available on all tabs -->
