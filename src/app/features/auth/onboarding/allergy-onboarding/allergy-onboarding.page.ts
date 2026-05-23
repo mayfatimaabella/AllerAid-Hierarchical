@@ -131,30 +131,25 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
   }
 
   private groupAllergyOptions(): void {
-    const commonNames = new Set([
-      'peanuts',
-      'shellfish',
-      'dairy',
-      'wheat',
-      'fish',
-      'eggs',
-      'soy',
-    ]);
 
-    const reservedOtherNames = new Set(['other', 'others']);
+    this.commonAllergens =
+      this.allergyOptions.filter(
+        o => o.isCommon === true
+      );
 
-    this.commonAllergens = this.allergyOptions.filter(o =>
-      commonNames.has(o.name)
-    );
-
-    this.otherAllergens = this.allergyOptions.filter(o =>
-      !commonNames.has(o.name) && !reservedOtherNames.has(o.name)
-    );
+    this.otherAllergens =
+      this.allergyOptions.filter(
+        o => o.isCommon !== true
+      );
   }
 
-  get customAllergenCount(): number {
-    return this.allergyOptions.filter(a => a.category === 'other' && a.hasInput).length;
-  }
+get customAllergenCount(): number {
+  return this.allergyOptions.filter(
+    a =>
+      a.categoryId === 'other' &&
+      a.hasInput
+  ).length;
+}
 
   get canAddMoreAllergens(): boolean {
     return this.customAllergenCount < this.MAX_CUSTOM_ALLERGENS;
@@ -180,7 +175,8 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       checked: true,
       hasInput: true,
       value: '',
-      category: 'other',
+      categoryId: 'other',
+      isCommon: false
     };
 
     this.allergyOptions.push(newOption);
@@ -269,25 +265,26 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
 
       const checkedAllergies = this.allergyOptions.filter(allergy => allergy.checked);
 
-      const customAllergies = checkedAllergies.filter(allergy =>
-        allergy.value &&
-        allergy.hasInput &&
-        (allergy.category === 'other' || allergy.name === 'others')
+      const customAllergies = checkedAllergies.filter(
+        allergy =>
+          allergy.value &&
+          allergy.hasInput &&
+          allergy.categoryId === 'other'
       );
 
     for (const allergy of customAllergies) {
       const label = allergy.value.trim();
 
-      await this.allergyService.submitAllergySuggestion({
-        name: label
-          .toLowerCase()
-          .replace(/[^a-z0-9\s]/g, '')
-          .replace(/\s+/g, '_'),
-        label,
-        category: 'other',
-        suggestedBy: currentUser.uid,
-        status: 'pending'
-      });
+    await this.allergyService.submitAllergySuggestion({
+      name: label
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '_'),
+      label,
+      categoryId: 'other',
+      suggestedBy: currentUser.uid,
+      status: 'pending'
+    });
     }
 
       const sanitizedAllergies = checkedAllergies.map(allergy => {

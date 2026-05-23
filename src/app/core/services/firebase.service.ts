@@ -1,37 +1,43 @@
 import { Injectable } from '@angular/core';
-import { initializeApp } from 'firebase/app';
+import { getApps, getApp, initializeApp } from 'firebase/app';
 import { firebaseConfig } from './firebase.config';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
+import {
+  Auth,
+  initializeAuth,
+  getAuth,
+  indexedDBLocalPersistence
+} from 'firebase/auth';
 
-import { getFirestore } from 'firebase/firestore';
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-import { getStorage } from 'firebase/storage';
-
-import { getAuth } from 'firebase/auth';
+// initializeAuth once with persistence — falls back to getAuth()
+// if auth was already initialized (e.g. during hot reload)
+let auth: Auth;
+try {
+  auth = initializeAuth(app, { persistence: indexedDBLocalPersistence });
+} catch {
+  auth = getAuth(app);
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class FirebaseService {
-  private db;
-  private storage;
-  private auth;
+  private db: Firestore = getFirestore(app);
+  private storage: FirebaseStorage = getStorage(app);
+  private auth: Auth = auth;
 
-  constructor() {
-    const app = initializeApp(firebaseConfig);
-    this.db = getFirestore(app);
-    this.storage = getStorage(app);
-    this.auth = getAuth(app);
-  }
-  
-  getDb() {
+  getDb(): Firestore {
     return this.db;
   }
 
-  getStorage() {
+  getStorage(): FirebaseStorage {
     return this.storage;
   }
 
-  getAuth() {
-  return this.auth;
-}
+  getAuth(): Auth {
+    return this.auth;
+  }
 }

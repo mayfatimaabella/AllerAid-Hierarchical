@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-import { initializeApp } from 'firebase/app';
-import { firebaseConfig } from './firebase.config';
+
 
 import {
-  getFirestore,
   collection,
   addDoc,
   getDocs,
@@ -11,8 +9,10 @@ import {
   getDoc,
   deleteDoc,
   doc,
-  serverTimestamp
+  serverTimestamp,
+  Firestore
 } from 'firebase/firestore';
+import { FirebaseService } from './firebase.service';
 
 export interface AllergyOption {
   id?: string;
@@ -30,15 +30,12 @@ export interface UserAllergy {
   value?: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AllergyService {
-  private db;
+  private db: Firestore;
 
-  constructor() {
-    const app = initializeApp(firebaseConfig);
-    this.db = getFirestore(app);
+  constructor(private firebase: FirebaseService) {
+    this.db = this.firebase.getDb();
   }
 
   // reference to users/{uid}/medical/info
@@ -155,47 +152,47 @@ export class AllergyService {
   }
 
   // GET all master allergy options
-  async getAllergyOptions(): Promise<AllergyOption[]> {
-    try {
-      const { query, orderBy } = await import('firebase/firestore');
-      const allergyOptionsRef = collection(this.db, 'allergyOptions');
-      const q = query(allergyOptionsRef, orderBy('order'));
-      const querySnapshot = await getDocs(q);
+async getAllergyOptions(): Promise<AllergyOption[]> {
+  try {
+    const allergyOptionsRef = collection(this.db, 'allergyOptions');
 
-      let options = querySnapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      })) as AllergyOption[];
+    // Fetch ALL docs without orderBy — avoids Firestore silently dropping
+    // any document that is missing the 'order' field (e.g. newly approved
+    // suggestions). We sort in-memory instead.
+    const querySnapshot = await getDocs(allergyOptionsRef);
 
-      // Exclude any options explicitly marked as not approved. If the
-      // document doesn't include `isApproved`, treat it as approved to
-      // preserve backward compatibility.
-      options = options.filter(opt => opt.isApproved !== false);
+    let options = querySnapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    })) as AllergyOption[];
 
-      const uniqueByName: Record<string, AllergyOption> = {};
-      options.forEach(option => {
-        const name = option.name;
-        if (!uniqueByName[name]) {
-          uniqueByName[name] = option;
-        }
-      });
+    // Exclude only options explicitly marked as not approved.
+    // Missing isApproved = treat as approved (backward compat).
+    options = options.filter(opt => opt.isApproved !== false);
 
-      return Object.values(uniqueByName).sort((a, b) => {
-        const bottomItems = ['medication', 'others'];
+    // Deduplicate by name, keeping the first occurrence.
+    const uniqueByName: Record<string, AllergyOption> = {};
+    options.forEach(option => {
+      if (!uniqueByName[option.name]) {
+        uniqueByName[option.name] = option;
+      }
+    });
 
-        const aBottom = bottomItems.includes(a.name);
-        const bBottom = bottomItems.includes(b.name);
+    return Object.values(uniqueByName).sort((a, b) => {
+      const bottomItems = ['medication', 'others'];
+      const aBottom = bottomItems.includes(a.name);
+      const bBottom = bottomItems.includes(b.name);
 
-        if (aBottom && !bBottom) return 1;
-        if (!aBottom && bBottom) return -1;
+      if (aBottom && !bBottom) return 1;
+      if (!aBottom && bBottom) return -1;
 
-        return (a.order || 999) - (b.order || 999);
-      });
-    } catch (error) {
-      console.error('Error fetching allergy options:', error);
-      throw error;
-    }
+      return (a.order ?? 998) - (b.order ?? 998);
+    });
+  } catch (error) {
+    console.error('Error fetching allergy options:', error);
+    throw error;
   }
+}
 
   // RESET allergy options
   async resetAllergyOptions(): Promise<void> { 
@@ -211,7 +208,7 @@ export class AllergyService {
 async submitAllergySuggestion(suggestion: {
   name: string;
   label: string;
-  category: string;
+  categoryId: string;
   suggestedBy: string;
   status: 'pending' | 'approved' | 'rejected';
 }): Promise<void> {

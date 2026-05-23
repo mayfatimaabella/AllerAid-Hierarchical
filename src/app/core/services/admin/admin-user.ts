@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { FirebaseService } from '../firebase.service';
 import {
-  getFirestore,
+  Firestore,
   collection,
   doc,
   getDocs,
@@ -26,7 +27,11 @@ export interface AdminUser {
 })
 export class AdminUserService {
 
-  private firestore = getFirestore();
+  private firestore: Firestore;
+
+  constructor(private firebase: FirebaseService) {
+    this.firestore = firebase.getDb();
+  }
 
   async getAllUsers(): Promise<AdminUser[]> {
     const usersRef = collection(this.firestore, 'users');

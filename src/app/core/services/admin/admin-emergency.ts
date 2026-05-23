@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { FirebaseService } from '../firebase.service';
 import {
-  getFirestore,
+  Firestore,
   collection,
   doc,
   getDoc,
@@ -14,7 +15,11 @@ import {
 })
 export class AdminEmergencyService {
 
-  private firestore = getFirestore();
+  private firestore: Firestore;
+
+  constructor(private firebase: FirebaseService) {
+    this.firestore = firebase.getDb();
+  }
 
   async getAllEmergencies(): Promise<any[]> {
     const emergenciesRef = collection(this.firestore, 'emergencies');

@@ -23,8 +23,8 @@ export class ManageAllergiesPage implements OnInit {
 
   allergyOptions: any[] = [];
   suggestions: any[] = [];
-
   isLoading = false;
+  activeTab: 'options' | 'suggestions' = 'options';
 
   constructor(
     private adminAllergyService: AdminAllergyService,
@@ -44,8 +44,25 @@ export class ManageAllergiesPage implements OnInit {
     try {
       this.isLoading = true;
 
+      const categories =
+        await this.adminAllergyService.getAllergyCategories();
+
+      const categoryMap = new Map(
+        categories.map(category => [
+          category.id,
+          category.name
+        ])
+      );
+
       this.allergyOptions =
         await this.adminAllergyService.getAllAllergyOptions();
+
+      this.allergyOptions =
+        this.allergyOptions.map(allergy => ({
+          ...allergy,
+          categoryName:
+            categoryMap.get(allergy.categoryId) || 'Uncategorized'
+        }));
 
       this.suggestions =
         await this.adminAllergyService.getAllergySuggestions();
@@ -57,37 +74,32 @@ export class ManageAllergiesPage implements OnInit {
     }
   }
 
+  getCategoryClass(category: string): string {
+    const c = (category || '').toLowerCase();
+    if (c === 'food') return 'food';
+    if (c === 'medication') return 'medication';
+    if (c === 'environment') return 'environment';
+    return 'general';
+  }
+
   async addAllergy() {
     const alert = await this.alertController.create({
       header: 'Add Allergy Option',
       inputs: [
-        {
-          name: 'name',
-          type: 'text',
-          placeholder: 'Example: Peanuts'
-        },
-        {
-          name: 'category',
-          type: 'text',
-          placeholder: 'Example: Food, Medication, Environment'
-        }
+        { name: 'name', type: 'text', placeholder: 'Example: Peanuts' },
+        { name: 'category', type: 'text', placeholder: 'Example: Food, Medication, Environment' }
       ],
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
+        { text: 'Cancel', role: 'cancel' },
         {
           text: 'Add',
           handler: async (data) => {
             const name = data.name?.trim();
             const category = data.category?.trim() || 'General';
-
             if (!name) {
               await this.presentToast('Allergy name is required.', 'warning');
               return false;
             }
-
             try {
               await this.adminAllergyService.addAllergyOption({
                 name,
@@ -96,10 +108,8 @@ export class ManageAllergiesPage implements OnInit {
                 category,
                 isActive: true
               });
-
               await this.presentToast('Allergy option added.', 'success');
               await this.loadData();
-
               return true;
             } catch (error) {
               console.error('Add allergy error:', error);
@@ -110,7 +120,6 @@ export class ManageAllergiesPage implements OnInit {
         }
       ]
     });
-
     await alert.present();
   }
 
@@ -118,49 +127,29 @@ export class ManageAllergiesPage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Edit Allergy Option',
       inputs: [
-        {
-          name: 'name',
-          type: 'text',
-          value: allergy.name || allergy.label || '',
-          placeholder: 'Allergy name'
-        },
-        {
-          name: 'category',
-          type: 'text',
-          value: allergy.category || 'General',
-          placeholder: 'Category'
-        }
+        { name: 'name', type: 'text', value: allergy.name || allergy.label || '', placeholder: 'Allergy name' },
+        { name: 'category', type: 'text', value: allergy.categoryName || allergy.categoryId || 'General', placeholder: 'Category' }
       ],
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
+        { text: 'Cancel', role: 'cancel' },
         {
           text: 'Save',
           handler: async (data) => {
             const name = data.name?.trim();
             const category = data.category?.trim() || 'General';
-
             if (!name) {
               await this.presentToast('Allergy name is required.', 'warning');
               return false;
             }
-
             try {
-              await this.adminAllergyService.updateAllergyOption(
-                allergy.id,
-                {
-                  name,
-                  label: name,
-                  value: name,
-                  category
-                }
-              );
-
+              await this.adminAllergyService.updateAllergyOption(allergy.id, {
+                name,
+                label: name,
+                value: name,
+                category
+              });
               await this.presentToast('Allergy option updated.', 'success');
               await this.loadData();
-
               return true;
             } catch (error) {
               console.error('Edit allergy error:', error);
@@ -171,21 +160,16 @@ export class ManageAllergiesPage implements OnInit {
         }
       ]
     });
-
     await alert.present();
   }
 
   async deleteAllergy(allergy: any) {
     const name = allergy.name || allergy.label || 'this allergy option';
-
     const alert = await this.alertController.create({
       header: 'Delete Allergy Option?',
       message: `Are you sure you want to delete ${name}?`,
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
+        { text: 'Cancel', role: 'cancel' },
         {
           text: 'Delete',
           role: 'destructive',
@@ -202,20 +186,79 @@ export class ManageAllergiesPage implements OnInit {
         }
       ]
     });
-
     await alert.present();
   }
 
   async approveSuggestion(suggestion: any) {
-    try {
-      await this.adminAllergyService.approveSuggestion(suggestion.id);
-      await this.presentToast('Suggestion approved.', 'success');
-      await this.loadData();
-    } catch (error) {
-      console.error(error);
-      await this.presentToast('Failed to approve suggestion.', 'danger');
-    }
+
+    const categories =
+      await this.adminAllergyService.getAllergyCategories();
+
+    const alert = await this.alertController.create({
+      header: 'Approve Suggestion',
+      message: `Choose category for "${suggestion.label || suggestion.name}"`,
+
+      inputs: categories.map(category => ({
+        type: 'radio',
+        name: 'categoryId',
+        label: category.name,
+        value: category.id,
+        checked: category.id === 'other'
+      })),
+
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Approve',
+          handler: async (categoryId) => {
+
+            if (!categoryId) {
+              await this.presentToast(
+                'Please select a category.',
+                'warning'
+              );
+              return false;
+            }
+
+            try {
+
+              await this.adminAllergyService
+                .approveSuggestion(
+                  suggestion.id,
+                  categoryId
+                );
+
+              await this.presentToast(
+                'Suggestion approved.',
+                'success'
+              );
+
+              await this.loadData();
+
+              return true;
+
+            } catch(error) {
+
+              console.error(error);
+
+              await this.presentToast(
+                'Failed to approve suggestion.',
+                'danger'
+              );
+
+              return false;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
+
 
   async rejectSuggestion(suggestion: any) {
     try {
@@ -235,7 +278,6 @@ export class ManageAllergiesPage implements OnInit {
       position: 'bottom',
       color
     });
-
     await toast.present();
   }
 }

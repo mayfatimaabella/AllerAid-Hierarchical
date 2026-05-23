@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
+import { FirebaseService } from '../firebase.service';
 
 import {
-  getFirestore,
+  Firestore,
   collection,
   doc,
   getDocs,
@@ -11,26 +12,25 @@ import {
   serverTimestamp,
   getDoc,
   query,
-  orderBy,
-  where
+  where,
+  orderBy
 } from 'firebase/firestore';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AdminAllergyService {
 
-  private firestore = getFirestore();
+  private firestore: Firestore;
+
+  constructor(private firebase: FirebaseService) {
+    this.firestore = firebase.getDb(); 
+  }
 
   // =========================
   // ALLERGY OPTIONS
   // =========================
 
   async getAllAllergyOptions(): Promise<any[]> {
-
-    const ref =
-      collection(this.firestore, 'allergyOptions');
-
+    const ref = collection(this.firestore, 'allergyOptions');
     const snapshot = await getDocs(ref);
 
     return snapshot.docs.map(docSnap => ({
@@ -40,9 +40,7 @@ export class AdminAllergyService {
   }
 
   async addAllergyOption(data: any): Promise<void> {
-
-    const ref =
-      collection(this.firestore, 'allergyOptions');
+    const ref = collection(this.firestore, 'allergyOptions');
 
     await addDoc(ref, {
       ...data,
@@ -51,13 +49,8 @@ export class AdminAllergyService {
     });
   }
 
-  async updateAllergyOption(
-    id: string,
-    data: any
-  ): Promise<void> {
-
-    const ref =
-      doc(this.firestore, `allergyOptions/${id}`);
+  async updateAllergyOption(id: string, data: any): Promise<void> {
+    const ref = doc(this.firestore, `allergyOptions/${id}`);
 
     await updateDoc(ref, {
       ...data,
@@ -66,10 +59,7 @@ export class AdminAllergyService {
   }
 
   async deleteAllergyOption(id: string): Promise<void> {
-
-    const ref =
-      doc(this.firestore, `allergyOptions/${id}`);
-
+    const ref = doc(this.firestore, `allergyOptions/${id}`);
     await deleteDoc(ref);
   }
 
@@ -78,15 +68,8 @@ export class AdminAllergyService {
   // =========================
 
   async getAllergySuggestions(): Promise<any[]> {
-
-    const ref =
-      collection(this.firestore, 'allergySuggestions');
-
-    const q = query(
-      ref,
-      where('status', '==', 'pending')
-    );
-
+    const ref = collection(this.firestore, 'allergySuggestions');
+    const q = query(ref, where('status', '==', 'pending'));
     const snapshot = await getDocs(q);
 
     const suggestions = snapshot.docs.map(docSnap => ({
@@ -94,15 +77,14 @@ export class AdminAllergyService {
       ...docSnap.data()
     })) as any[];
 
-    // Sort by createdAt in TypeScript instead of Firestore
     return suggestions.sort((a, b) => {
-      const aTime = (a as any).createdAt?.toMillis?.() || 0;
-      const bTime = (b as any).createdAt?.toMillis?.() || 0;
-      return bTime - aTime; // descending order
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
     });
   }
 
-async approveSuggestion(id: string): Promise<void> {
+async approveSuggestion(id: string, categoryId: string): Promise<void> {
   const suggestionRef = doc(this.firestore, `allergySuggestions/${id}`);
   const suggestionSnap = await getDoc(suggestionRef);
 
@@ -110,55 +92,94 @@ async approveSuggestion(id: string): Promise<void> {
     throw new Error('Suggestion not found.');
   }
 
+  if (!categoryId) {
+    throw new Error('Category is required before approving suggestion.');
+  }
+
   const suggestion = suggestionSnap.data();
 
-  const name = suggestion['name'];
-  const label = suggestion['label'] || suggestion['name'];
-  const category = suggestion['category'] || 'General';
+  const rawName = (suggestion['name'] || suggestion['label'] || '').trim();
+
+  if (!rawName) {
+    throw new Error('Suggestion name is missing.');
+  }
+
+  const name = rawName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '_');
+
+  const label = (suggestion['label'] || rawName).trim();
 
   const optionsRef = collection(this.firestore, 'allergyOptions');
 
-  const duplicateQuery = query(
-    optionsRef,
-    where('name', '==', name)
+  const duplicateSnap = await getDocs(
+    query(optionsRef, where('name', '==', name))
   );
 
-  const duplicateSnap = await getDocs(duplicateQuery);
-
   if (duplicateSnap.empty) {
-    const optionsSnap = await getDocs(
-      query(optionsRef, orderBy('order'))
-    );
-
-    const nextOrder = optionsSnap.size + 1;
+    const allOptionsSnap = await getDocs(optionsRef);
+    const nextOrder = allOptionsSnap.size + 1;
 
     await addDoc(optionsRef, {
       name,
       label,
       value: name,
-      category,
+
+    
+      categoryId,
+
       hasInput: false,
+      isCommon: false,
       order: nextOrder,
       isApproved: true,
+      isActive: true,
+
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  } else {
+    await updateDoc(duplicateSnap.docs[0].ref, {
+      categoryId,
+      isApproved: true,
+      isActive: true,
       updatedAt: serverTimestamp()
     });
   }
 
   await updateDoc(suggestionRef, {
     status: 'approved',
+    categoryId,
     updatedAt: serverTimestamp()
   });
 }
 
   async rejectSuggestion(id: string): Promise<void> {
-
-    const ref =
-      doc(this.firestore, `allergySuggestions/${id}`);
+    const ref = doc(this.firestore, `allergySuggestions/${id}`);
 
     await updateDoc(ref, {
       status: 'rejected',
       updatedAt: serverTimestamp()
     });
+  }
+
+  async getAllergyCategories(): Promise<any[]> {
+    const ref = collection(this.firestore, 'allergyCategories');
+
+    const q = query(
+      ref,
+      where('active', '==', true)
+    );
+
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs
+      .map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }))
+      .sort((a: any, b: any) => {
+        return (a.order || 0) - (b.order || 0);
+      });
   }
 }

@@ -1,0 +1,358 @@
+// =====================
+// TOOLBAR
+// =====================
+ion-toolbar.toolbar--teal {
+  --background: #0F6E56;
+  --color: #ffffff;
+  --border-color: transparent;
+
+  ion-title {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  ion-back-button {
+    --color: #ffffff;
+  }
+}
+
+// =====================
+// PAGE BACKGROUND
+// =====================
+ion-content.allergy-bg {
+  --background: #f4f7f6;
+}
+
+// =====================
+// HERO
+// =====================
+.hero {
+  padding: 20px 16px 16px;
+  background: #ffffff;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: 8px;
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #0F6E56;
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+// =====================
+// TABS
+// =====================
+.tab-bar {
+  display: flex;
+  background: #ffffff;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    color: #888;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s ease;
+
+    &.active {
+      color: #0F6E56;
+      border-bottom-color: #0F6E56;
+    }
+  }
+
+  .tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 500;
+    border-radius: 10px;
+    padding: 1px 6px;
+    margin-left: 5px;
+
+    &.options {
+      background: #E1F5EE;
+      color: #085041;
+    }
+
+    &.pending {
+      background: #FAEEDA;
+      color: #633806;
+    }
+  }
+}
+
+// =====================
+// SECTION
+// =====================
+.section {
+  padding: 12px 16px;
+}
+
+// =====================
+// ADD BUTTON
+// =====================
+.add-btn {
+  --background: #0F6E56;
+  --background-activated: #085041;
+  --border-radius: 10px;
+  --color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 14px;
+  height: 48px;
+}
+
+// =====================
+// COUNT BAR
+// =====================
+.count-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+
+  span {
+    font-size: 12px;
+    color: #888;
+  }
+}
+
+// =====================
+// ALLERGY OPTION CARD
+// =====================
+.allergy-card {
+  background: #ffffff;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .card-info {
+    flex: 1;
+    min-width: 0;
+
+    h3 {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1a1a1a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+}
+
+// =====================
+// CATEGORY PILLS
+// =====================
+.pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+  margin-top: 4px;
+
+  &.food {
+    background: #E1F5EE;
+    color: #085041;
+  }
+
+  &.medication {
+    background: #E6F1FB;
+    color: #0C447C;
+  }
+
+  &.environment {
+    background: #EAF3DE;
+    color: #27500A;
+  }
+
+  &.general {
+    background: #F1EFE8;
+    color: #444441;
+  }
+}
+
+// =====================
+// ICON BUTTONS
+// =====================
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  background: #f4f7f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.12s ease;
+
+  ion-icon {
+    font-size: 16px;
+  }
+
+  &.edit:hover {
+    background: #E6F1FB;
+    color: #185FA5;
+    border-color: #85B7EB;
+  }
+
+  &.danger:hover {
+    background: #FCEBEB;
+    color: #A32D2D;
+    border-color: #F09595;
+  }
+}
+
+// =====================
+// SUGGESTION CARD
+// =====================
+.suggestion-card {
+  background: #ffffff;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+
+  .suggestion-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #E1F5EE;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #085041;
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+
+    .meta-text {
+      h3 {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1a1a1a;
+        margin: 0;
+      }
+
+      p {
+        font-size: 11px;
+        color: #888;
+        margin: 2px 0 0;
+      }
+    }
+  }
+
+  .suggestion-actions {
+    display: flex;
+    gap: 8px;
+
+    .approve-btn {
+      flex: 1;
+      --background: #E1F5EE;
+      --color: #085041;
+      --border-color: #5DCAA5;
+      --border-width: 0.5px;
+      --border-style: solid;
+      --border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      height: 38px;
+    }
+
+    .reject-btn {
+      flex: 1;
+      --background: #FCEBEB;
+      --color: #A32D2D;
+      --border-color: #F09595;
+      --border-width: 0.5px;
+      --border-style: solid;
+      --border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      height: 38px;
+    }
+  }
+}
+
+// =====================
+// EMPTY STATE
+// =====================
+.empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  color: #aaa;
+
+  ion-icon {
+    font-size: 36px;
+    display: block;
+    margin: 0 auto 10px;
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+// =====================
+// LOADING
+// =====================
+.loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  gap: 12px;
+
+  ion-spinner {
+    color: #0F6E56;
+    width: 32px;
+    height: 32px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #888;
+  }
+}
