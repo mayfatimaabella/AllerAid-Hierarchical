@@ -286,7 +286,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
         label,
         category: 'other',
         suggestedBy: currentUser.uid,
-        status: 'pending',
+        status: 'pending'
       });
     }
 

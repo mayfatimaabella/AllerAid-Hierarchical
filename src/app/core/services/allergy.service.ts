@@ -217,7 +217,11 @@ async submitAllergySuggestion(suggestion: {
 }): Promise<void> {
   const suggestionsRef = collection(this.db, 'allergySuggestions');
 
-  await addDoc(suggestionsRef, suggestion);
+  await addDoc(suggestionsRef, {
+    ...suggestion,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
 }
 }
 

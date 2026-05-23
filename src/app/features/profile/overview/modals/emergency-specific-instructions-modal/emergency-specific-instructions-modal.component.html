@@ -42,8 +42,8 @@
             maxlength="500"
             placeholder="e.g. Administer EpiPen immediately, call 911, keep patient lying down...">
           </ion-textarea>
-          <p class="char-count" [class.near-limit]="(newInstructionText?.length ?? 0) > 400">
-            {{ newInstructionText?.length ?? 0 }} / 500
+          <p class="char-count" [class.near-limit]="newInstructionText.length > 400">
+            {{ newInstructionText.length }} / 500
           </p>
         </ion-item>
         

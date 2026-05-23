@@ -82,12 +82,24 @@ export class AdminAllergyService {
     const ref =
       collection(this.firestore, 'allergySuggestions');
 
-    const snapshot = await getDocs(ref);
+    const q = query(
+      ref,
+      where('status', '==', 'pending')
+    );
 
-    return snapshot.docs.map(docSnap => ({
+    const snapshot = await getDocs(q);
+
+    const suggestions = snapshot.docs.map(docSnap => ({
       id: docSnap.id,
       ...docSnap.data()
-    }));
+    })) as any[];
+
+    // Sort by createdAt in TypeScript instead of Firestore
+    return suggestions.sort((a, b) => {
+      const aTime = (a as any).createdAt?.toMillis?.() || 0;
+      const bTime = (b as any).createdAt?.toMillis?.() || 0;
+      return bTime - aTime; // descending order
+    });
   }
 
 async approveSuggestion(id: string): Promise<void> {
