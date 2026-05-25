@@ -9,7 +9,6 @@ import {
   orderBy,
   query,
   setDoc,
-  where
 } from 'firebase/firestore';
 import { AuthService } from '../../../../core/services/auth.service';
 import { BuddyService } from '../../../../core/services/buddy.service';
@@ -773,4 +772,32 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
     ];
   }
 }
+
+  onFallbackPhoneInput(event: any): void {
+    const rawValue = event?.detail?.value || '';
+
+    // keep numbers only and max 11 digits
+    const cleaned = rawValue
+      .replace(/\D/g, '')
+      .slice(0, 11);
+
+    this.fallbackContact.phone = cleaned;
+
+    if (event.target) {
+      event.target.value = cleaned;
+    }
+  }
+
+  onNameInput(event: any): void {
+    const rawValue = event?.detail?.value || '';
+
+    // allow letters, spaces, dots, apostrophes
+    const cleaned = rawValue.replace(/[^a-zA-Z\s.'-]/g, '');
+
+    this.fallbackContact.name = cleaned;
+
+    if (event.target) {
+      event.target.value = cleaned;
+    }
+  }
 }

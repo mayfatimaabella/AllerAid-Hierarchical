@@ -279,31 +279,35 @@
       Add at least one trusted contact or emergency hotline so you still have help even without a buddy.
     </p>
 
-    <div class="fallback-section">
-      <p class="fallback-label">Trusted contact</p>
+<div class="fallback-section">
+  <p class="fallback-label">Trusted contact</p>
 
-      <div class="field">
-        <label class="field-label">Full name</label>
-        <ion-input
-          class="field-input"
-          placeholder="e.g. Maria Santos"
-          [(ngModel)]="fallbackContact.name"
-          name="fallbackContactName">
-        </ion-input>
-      </div>
+  <div class="field">
+    <label class="field-label">Full name</label>
+    <ion-input
+      class="field-input"
+      placeholder="e.g. Maria Santos"
+      [(ngModel)]="fallbackContact.name"
+      (ionInput)="onNameInput($event)"
+      maxlength="50"
+      name="fallbackContactName">
+    </ion-input>
+  </div>
 
-      <div class="field">
-        <label class="field-label">Phone number</label>
-        <ion-input
-          class="field-input"
-          type="tel"
-          inputmode="numeric"
-          placeholder="09XXXXXXXXX"
-          [(ngModel)]="fallbackContact.phone"
-          name="fallbackContactPhone">
-        </ion-input>
-      </div>
-    </div>
+  <div class="field">
+    <label class="field-label">Phone number</label>
+    <ion-input
+      class="field-input"
+      type="tel"
+      inputmode="numeric"
+      placeholder="09XXXXXXXXX"
+      [(ngModel)]="fallbackContact.phone"
+      (ionInput)="onFallbackPhoneInput($event)"
+      maxlength="11"
+      name="fallbackContactPhone">
+    </ion-input>
+  </div>
+</div>
 
 <div class="fallback-section">
   <p class="fallback-label">Emergency hotlines</p>

@@ -9,83 +9,166 @@ import { ProfileDetailService } from 'src/app/core';
   standalone: true,
   imports: [CommonModule, IonicModule],
   template: `
-    <div class="buddy-modal-backdrop" (click)="closeDetails.emit()">
-      <div class="buddy-modal-content" (click)="$event.stopPropagation()">
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Buddy Details</ion-title>
-            <ion-buttons slot="end">
-              <ion-button fill="clear" (click)="closeDetails.emit()">
-                <ion-icon name="close"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="ion-padding">
-          <div *ngIf="buddy" class="buddy-details-container">
-            <!-- Profile Section -->
-            <div class="profile-section">
-              <div class="avatar-container">
-                <ion-avatar>
-                  <ion-icon name="person" size="large"></ion-icon>
-                </ion-avatar>
-              </div>
-              <h2 class="buddy-name">{{ buddy.firstName }} {{ buddy.lastName }}</h2>
-            </div>
+  <div class="buddy-modal-backdrop" (click)="closeDetails.emit()">
+  <div class="buddy-modal-content" (click)="$event.stopPropagation()">
 
-            <!-- Details Card -->
-            <ion-card class="details-card">
-              <ion-card-header>
-                <ion-card-title>
-                  <ion-icon name="information-circle"></ion-icon>
-                  Contact Information
-                </ion-card-title>
-              </ion-card-header>
-              <ion-card-content>
-                <ion-list lines="none">
-                  <ion-item class="detail-item" *ngIf="buddy.email">
-                    <ion-icon name="mail" slot="start"></ion-icon>
-                    <ion-label>
-                      <h3>Email</h3>
-                      <p>{{ buddy.email }}</p>
-                    </ion-label>
-                  </ion-item>
-                  <ion-item class="detail-item">
-                    <ion-icon name="heart" slot="start"></ion-icon>
-                    <ion-label>
-                      <h3>Relationship</h3>
-                      <p>{{ buddy.relationship || 'Not specified' }}</p>
-                    </ion-label>
-                  </ion-item>
-                  <ion-item class="detail-item">
-                    <ion-icon name="call" slot="start"></ion-icon>
-                    <ion-label>
-                      <h3>Contact Number</h3>
-                      <p>{{ displayedContact || buddy.contactNumber || 'Not provided' }}</p>
-                    </ion-label>
-                  </ion-item>
-                </ion-list>
-              </ion-card-content>
-            </ion-card>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Buddy Details</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="closeDetails.emit()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
 
-            <!-- Action Buttons -->
-            <div class="action-buttons" *ngIf="displayedContact || buddy.contactNumber || buddy.contact">
-              <ion-button expand="block" class="call-btn" (click)="callBuddy()">
+    <ion-content class="ion-padding">
+      <div *ngIf="buddy" class="buddy-details-container">
+
+        <div class="profile-section">
+          <div class="avatar-container">
+            <ion-avatar>
+              <ion-icon name="person" size="large"></ion-icon>
+            </ion-avatar>
+          </div>
+
+          <h2 class="buddy-name">
+            {{ buddy.fullName || ((buddy.firstName || '') + ' ' + (buddy.lastName || '')) || 'Unnamed Buddy' }}
+          </h2>
+
+          <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-top:6px;">
+            <ion-chip *ngIf="buddy.buddyType" color="success" outline size="small">
+              {{ buddy.buddyType | titlecase }}
+            </ion-chip>
+
+            <ion-chip *ngIf="buddy.status" [color]="buddy.status === 'accepted' ? 'success' : 'warning'" size="small">
+              {{ buddy.status | titlecase }}
+            </ion-chip>
+
+            <ion-chip *ngIf="buddy.relationship" outline size="small">
+              {{ buddy.relationship }}
+            </ion-chip>
+          </div>
+
+          <p *ngIf="buddy.addedAt" style="font-size:11px;color:#5F5E5A;margin-top:6px;">
+            Added {{ buddy.addedAt.toDate ? (buddy.addedAt.toDate() | date:'mediumDate') : (buddy.addedAt | date:'mediumDate') }}
+          </p>
+        </div>
+
+        <ion-card class="details-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="information-circle"></ion-icon>
+              Contact Information
+            </ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <ion-list lines="none">
+
+              <ion-item class="detail-item" *ngIf="buddy.email">
+                <ion-icon name="mail" slot="start"></ion-icon>
+                <ion-label>
+                  <h3>Email</h3>
+                  <p>{{ buddy.email }}</p>
+                </ion-label>
+              </ion-item>
+
+              <ion-item class="detail-item">
                 <ion-icon name="call" slot="start"></ion-icon>
-                Call {{ buddy.firstName }}
-              </ion-button>
-              <ion-button expand="block" fill="outline" class="message-btn" (click)="messageBuddy()">
-                <ion-icon name="chatbubble" slot="start"></ion-icon>
-                Send Message
-              </ion-button>
-            </div>
-          </div>
-          <div *ngIf="!buddy" class="no-buddy">
-            <p>No buddy data available</p>
-          </div>
-        </ion-content>
+                <ion-label>
+                  <h3>Contact Number</h3>
+                  <p>
+                    {{ displayedContact || buddy.contactNumber || buddy.contact || 'Not provided' }}
+                    <ion-badge
+                      *ngIf="contactAutoPopulated"
+                      color="success"
+                      style="margin-left:6px;font-size:10px;">
+                      From profile
+                    </ion-badge>
+                  </p>
+                </ion-label>
+              </ion-item>
+
+              <ion-item class="detail-item" *ngIf="buddy.relationship">
+                <ion-icon name="heart" slot="start"></ion-icon>
+                <ion-label>
+                  <h3>Relationship</h3>
+                  <p>{{ buddy.relationship }}</p>
+                </ion-label>
+              </ion-item>
+
+              <ion-item class="detail-item" *ngIf="buddy.buddyType">
+                <ion-icon name="people" slot="start"></ion-icon>
+                <ion-label>
+                  <h3>Buddy type</h3>
+                  <p>{{ buddy.buddyType | titlecase }}</p>
+                </ion-label>
+              </ion-item>
+
+              <ion-item class="detail-item" *ngIf="buddy.addedAt">
+                <ion-icon name="calendar" slot="start"></ion-icon>
+                <ion-label>
+                  <h3>Date added</h3>
+                  <p>
+                    {{ buddy.addedAt.toDate ? (buddy.addedAt.toDate() | date:'mediumDate') : (buddy.addedAt | date:'mediumDate') }}
+                  </p>
+                </ion-label>
+              </ion-item>
+
+              <ion-item class="detail-item" *ngIf="buddy.fallbackContact?.name || buddy.fallbackContact?.phone">
+                <ion-icon name="person-add" slot="start"></ion-icon>
+                <ion-label>
+                  <h3>Emergency backup contact</h3>
+                  <p>{{ buddy.fallbackContact?.name || 'No name' }}</p>
+                  <p>{{ buddy.fallbackContact?.phone || 'No phone number' }}</p>
+                </ion-label>
+              </ion-item>
+
+              <ion-item class="detail-item" *ngIf="buddy.fallbackContact?.customHotline">
+                <ion-icon name="call" slot="start"></ion-icon>
+                <ion-label>
+                  <h3>Custom hotline</h3>
+                  <p>{{ buddy.fallbackContact.customHotline }}</p>
+                </ion-label>
+              </ion-item>
+
+              <ion-item class="detail-item" *ngIf="buddy.enabledHotlines?.length">
+                <ion-icon name="medkit" slot="start"></ion-icon>
+                <ion-label>
+                  <h3>Emergency hotlines</h3>
+                  <p *ngFor="let hotline of buddy.enabledHotlines">
+                    {{ hotline.name }} — {{ hotline.number }}
+                  </p>
+                </ion-label>
+              </ion-item>
+
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <div class="action-buttons" *ngIf="displayedContact || buddy.contactNumber || buddy.contact">
+          <ion-button expand="block" class="call-btn" (click)="callBuddy()">
+            <ion-icon name="call" slot="start"></ion-icon>
+            Call {{ buddy.firstName || buddy.fullName || 'Buddy' }}
+          </ion-button>
+
+          <ion-button expand="block" fill="outline" class="message-btn" (click)="messageBuddy()">
+            <ion-icon name="chatbubble" slot="start"></ion-icon>
+            Send Message
+          </ion-button>
+        </div>
+
       </div>
-    </div>
+
+      <div *ngIf="!buddy" class="no-buddy">
+        <p>No buddy data available</p>
+      </div>
+    </ion-content>
+
+  </div>
+</div>        
   `,
   styles: [`
     :host {

@@ -29,7 +29,7 @@ export class AppComponent implements OnInit {
     private pushNotificationService: PushNotificationService,
     private medicationReminderService: MedicationReminderService
   ) {
-    this.allergyService.resetAllergyOptions();
+    // this.allergyService.resetAllergyOptions();
     // Initialize emergency detection on app startup
     this.initializeEmergencyDetection();
     // Initialize patient notification listening

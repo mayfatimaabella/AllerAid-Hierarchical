@@ -73,5 +73,62 @@
       </ion-card>
     </div>
 
+    <!-- Emergency Hotlines Section -->
+    <ion-card *ngIf="hasEmergencyResources" class="emergency-resources-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          Emergency Resources
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Trusted Contact -->
+        <div *ngIf="fallbackContact?.name" class="resource-section">
+          <div class="resource-label">Trusted Contact</div>
+          <div class="contact-info">
+            <div class="contact-item">
+              <ion-icon name="person-outline"></ion-icon>
+              <span>{{ fallbackContact.name }}</span>
+            </div>
+            <div class="contact-item" *ngIf="fallbackContact.phone">
+              <ion-icon name="call-outline"></ion-icon>
+              <ion-button fill="clear" size="small" (click)="callNumber(fallbackContact.phone)">
+                {{ fallbackContact.phone }}
+              </ion-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hotlines -->
+        <div *ngIf="hotlines && hotlines.length > 0" class="resource-section">
+          <div class="resource-label">Emergency Hotlines</div>
+          <div class="hotlines-list">
+            <div *ngFor="let hotline of hotlines" class="hotline-item">
+              <div class="hotline-info">
+                <span class="hotline-name">{{ hotline.name }}</span>
+                <span class="hotline-number">{{ hotline.number }}</span>
+              </div>
+              <ion-button fill="clear" size="small" (click)="callNumber(hotline.number)">
+                <ion-icon name="call-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Hotline -->
+        <div *ngIf="fallbackContact?.customHotline" class="resource-section">
+          <div class="resource-label">Custom Hotline</div>
+          <div class="contact-info">
+            <div class="contact-item">
+              <ion-icon name="phone-portrait-outline"></ion-icon>
+              <ion-button fill="clear" size="small" (click)="callNumber(fallbackContact.customHotline)">
+                {{ fallbackContact.customHotline }}
+              </ion-button>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
     <app-buddy-details-modal *ngIf="showDetailsModal" [buddy]="buddyToShowDetails" (closeDetails)="closeDetailsModal()"></app-buddy-details-modal>
 </ion-content>

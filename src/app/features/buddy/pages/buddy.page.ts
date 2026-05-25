@@ -2,10 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { BuddyService } from '../../../core/services/buddy.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
+import { FirebaseService } from '../../../core/services/firebase.service';
 import { ToastController, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { BuddyInvitationsModal } from '../components/buddy-invitations-modal.component';
 import { environment } from '../../../../environments/environment';
+import { doc, getDoc } from 'firebase/firestore';
 
 @Component({
   selector: 'app-buddy',
@@ -16,6 +18,11 @@ import { environment } from '../../../../environments/environment';
 export class BuddyPage implements OnInit {
   showDetailsModal = false;
   buddyToShowDetails: any = null;
+  
+  // Emergency resources
+  hotlines: any[] = [];
+  fallbackContact: any = null;
+  hasEmergencyResources = false;
   
   // Loading states to prevent multiple calls
   private isLoadingBuddies = false;
@@ -45,6 +52,7 @@ export class BuddyPage implements OnInit {
     private buddyService: BuddyService,
     private userService: UserService,
     private authService: AuthService,
+    private firebaseService: FirebaseService,
     private toastController: ToastController,
     private modalController: ModalController,
     private router: Router
@@ -52,6 +60,7 @@ export class BuddyPage implements OnInit {
 
   async ngOnInit() {
     await this.loadInvitationCount();
+    await this.loadEmergencyResources();
     this.loadBuddies();
   }
 
@@ -285,10 +294,49 @@ async loadBuddies() {
     }
   }
 
+  private async loadEmergencyResources(): Promise<void> {
+    try {
+      const currentUser = await this.authService.waitForAuthInit();
+      if (!currentUser) return;
+
+      const db = this.firebaseService.getDb();
+      const medicalRef = doc(db, `users/${currentUser.uid}/medical/info`);
+      const medicalSnap = await getDoc(medicalRef);
+
+      if (medicalSnap.exists()) {
+        const data = medicalSnap.data();
+        const fallbackSetup = data['fallbackEmergencySetup'];
+
+        if (fallbackSetup) {
+          if (fallbackSetup.trustedContact) {
+            this.fallbackContact = fallbackSetup.trustedContact;
+          }
+          if (fallbackSetup.enabledHotlines && fallbackSetup.enabledHotlines.length > 0) {
+            this.hotlines = fallbackSetup.enabledHotlines;
+          }
+        }
+      }
+
+      this.hasEmergencyResources = !!(this.fallbackContact?.name || this.hotlines.length > 0);
+    } catch (error) {
+      console.error('Error loading emergency resources:', error);
+    }
+  }
+
+  callNumber(number: string): void {
+    if (!number) return;
+    try {
+      window.open(`tel:${number}`, '_system');
+    } catch {
+      window.open(`tel:${number}`);
+    }
+  }
+
   async handleRefresh(event: any) {
     try {
       await this.loadBuddies();
       await this.loadInvitationCount();
+      await this.loadEmergencyResources();
       this.searchBuddy();
     } catch (error) {
       console.error('Error refreshing buddies:', error);

@@ -57,6 +57,10 @@ export class BuddyService {
 
   private notifiedAcceptances = new Set<string>();
 
+  
+
+  private relationsListenerUnsubscribe?: () => void;
+
   hasBeenNotified(buddyUid: string): boolean {
   return this.notifiedAcceptances.has(buddyUid);
 }
@@ -64,6 +68,7 @@ export class BuddyService {
   markAsNotified(buddyUid: string): void {
     this.notifiedAcceptances.add(buddyUid);
   }
+  
 
   constructor(private userService: UserService) {
     const app = initializeApp(firebaseConfig);
@@ -571,23 +576,39 @@ export class BuddyService {
     });
   }
 
-  listenForBuddyRelations(userId: string): () => void {
-    const buddiesRef = collection(this.db, 'users', userId, 'buddies');
+  listenForBuddyRelations(userId: string): void {
+
+
+    this.relationsListenerUnsubscribe?.();
+
+    const buddiesRef =
+      collection(this.db, 'users', userId, 'buddies');
 
     const q = query(
       buddiesRef,
       where('status', '==', 'accepted')
     );
 
-    return onSnapshot(q, snapshot => {
-      const buddies = snapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+    this.relationsListenerUnsubscribe =
+      onSnapshot(q, snapshot => {
 
-      this.buddyRelationsSubject.next(buddies);
-    });
+        const buddies = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }));
+
+        this.buddyRelationsSubject.next(buddies);
+
+      });
   }
+
+  stopBuddyRelationsListener(): void {
+
+  this.relationsListenerUnsubscribe?.();
+
+  this.relationsListenerUnsubscribe = undefined;
+
+}
 
   listenForEmergencyAlerts(userId: string): void {
   const emergenciesRef = collection(this.db, 'emergencies');

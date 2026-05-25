@@ -21,6 +21,7 @@ export interface AllergyOption {
   hasInput: boolean;
   order: number;
   isApproved?: boolean;
+  categoryId?: string;
 }
 
 export interface UserAllergy {
@@ -123,23 +124,36 @@ export class AllergyService {
         return;
       }
 
-      const allergyOptions: AllergyOption[] = [
-        { name: 'peanuts', label: 'Peanuts', hasInput: false, order: 1, isApproved: true },
-        { name: 'dairy', label: 'Dairy/Milk', hasInput: false, order: 2, isApproved: true },
-        { name: 'eggs', label: 'Eggs', hasInput: false, order: 3, isApproved: true },
-        { name: 'wheat', label: 'Wheat/Gluten', hasInput: false, order: 4, isApproved: true },
-        { name: 'fish', label: 'Fish', hasInput: false, order: 5, isApproved: true },
-        { name: 'shellfish', label: 'Shellfish', hasInput: false, order: 6, isApproved: true },
-        { name: 'soy', label: 'Soy', hasInput: false, order: 7, isApproved: true },
-        { name: 'pollen', label: 'Pollen', hasInput: false, order: 8, isApproved: true },
-        { name: 'latex', label: 'Latex', hasInput: false, order: 9, isApproved: true },
-        { name: 'animalDander', label: 'Animal Dander', hasInput: false, order: 10, isApproved: true },
-        { name: 'insectStings', label: 'Insect Stings', hasInput: false, order: 11, isApproved: true },
-        { name: 'medication', label: 'Medication', hasInput: true, order: 12, isApproved: true },
-        { name: 'others', label: 'Others', hasInput: true, order: 13, isApproved: true },
-        { name: 'nuts', label: 'Nuts', hasInput: false, order: 14, isApproved: true }
-      ];
+    const allergyOptions: AllergyOption[] = [
 
+      // FOOD
+      { name:'peanuts', label:'Peanuts', hasInput:false, order:1, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
+      { name:'dairy', label:'Dairy/Milk', hasInput:false, order:2, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
+      { name:'eggs', label:'Eggs', hasInput:false, order:3, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
+      { name:'wheat', label:'Wheat/Gluten', hasInput:false, order:4, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
+      { name:'fish', label:'Fish', hasInput:false, order:5, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
+      { name:'shellfish', label:'Shellfish', hasInput:false, order:6, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
+      { name:'soy', label:'Soy', hasInput:false, order:7, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
+      { name:'nuts', label:'Nuts', hasInput:false, order:14, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
+
+      // ENVIRONMENT
+      { name:'pollen', label:'Pollen', hasInput:false, order:8, isApproved:true, categoryId:'a7r0dsJ3ruUx0oaKJurw' },
+
+      // LATEX
+      { name:'latex', label:'Latex', hasInput:false, order:9, isApproved:true, categoryId:'bEDsfeS5najHfUJA9DKX' },
+
+      // PET
+      { name:'animalDander', label:'Animal Dander', hasInput:false, order:10, isApproved:true, categoryId:'jYh2ac36XSEkqeaWU0Yf' },
+
+      // INSECT
+      { name:'insectStings', label:'Insect Stings', hasInput:false, order:11, isApproved:true, categoryId:'HPdf4gLvM9lmynqITbGC' },
+
+      // MEDICATION
+      { name:'medication', label:'Medication', hasInput:true, order:12, isApproved:true, categoryId:'9vzDVLy2xID2OFauZFgz' },
+
+      // OTHER
+      { name:'others', label:'Others', hasInput:true, order:13, isApproved:true, categoryId:'ftxLYiCRUoKirHOsle4Z' }
+    ];
       for (const option of allergyOptions) {
         await addDoc(collection(this.db, 'allergyOptions'), option);
       }

@@ -32,6 +32,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
   currentUserId: string = '';
 
   private relationsSubscription?: any;
+  private initialRelationsLoaded = false;
 
   constructor(
     private modalController: ModalController,
@@ -52,20 +53,68 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.relationsSubscription?.unsubscribe();
+    this.buddyService.stopBuddyRelationsListener();
   }
 
   listenForAcceptedInvitations(userId: string): void {
-    this.buddyService.listenForBuddyRelations(userId);
-    this.relationsSubscription = this.buddyService.buddyRelations$.subscribe(relations => {
-      relations.forEach((rel: any) => {
-        if (!this.buddyService.hasBeenNotified(rel.buddyUid)) {
-          this.showToast(`${rel.buddyName} accepted your buddy request!`, 'success');
-          this.buddyService.markAsNotified(rel.buddyUid);
-          this.loadInvitations();
+
+  this.buddyService.listenForBuddyRelations(userId);
+
+  this.relationsSubscription =
+    this.buddyService.buddyRelations$
+      .subscribe(relations => {
+
+        // Skip the initial Firestore load
+        if (!this.initialRelationsLoaded) {
+
+          this.initialRelationsLoaded = true;
+
+          // Mark existing accepted buddies as already notified
+          relations.forEach((rel: any) => {
+
+            const buddyUid =
+              rel.buddyUid ||
+              rel.connectedUserId ||
+              rel.id;
+
+            if (buddyUid) {
+              this.buddyService.markAsNotified(buddyUid);
+            }
+
+          });
+
+          return;
         }
+
+        // Only notify for new changes
+        relations.forEach((rel: any) => {
+
+          const buddyUid =
+            rel.buddyUid ||
+            rel.connectedUserId ||
+            rel.id;
+
+          if (
+            buddyUid &&
+            !this.buddyService.hasBeenNotified(buddyUid)
+          ) {
+
+            this.showToast(
+              `${rel.buddyName} accepted your buddy request!`,
+              'success'
+            );
+
+            this.buddyService.markAsNotified(
+              buddyUid
+            );
+
+          }
+
+        });
+
       });
-    });
-  }
+
+}
 
   async loadInvitations() {
     try {

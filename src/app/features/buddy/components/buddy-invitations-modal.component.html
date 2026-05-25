@@ -156,7 +156,7 @@
         
         <div class="invitation-date">
           <ion-icon name="time-outline"></ion-icon>
-          <small>{{ invitation.createdAt | date:'medium' }}</small>
+        <small>{{ invitation.createdAt | date:'mediumDate' }}</small>
         </div>
 
         <div *ngIf="invitation.status === 'pending'" class="invitation-actions">
@@ -209,7 +209,7 @@
         
         <div class="invitation-date">
           <ion-icon name="time-outline"></ion-icon>
-          <small>{{ invitation.createdAt | date:'medium' }}</small>
+         <small>{{ invitation.createdAt | date:'mediumDate' }}</small>
         </div>
 
         <div *ngIf="invitation.status === 'pending'" class="invitation-actions">

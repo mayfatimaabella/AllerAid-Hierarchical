@@ -163,7 +163,25 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       .map(([categoryName, allergies]) => ({
         categoryName,
         order: categoryOrder[categoryName] || 99,
-        allergies: allergies.sort((a, b) => (a.order || 0) - (b.order || 0))
+        allergies: allergies.sort((a, b) => {
+
+        const aDefaultOthers = a.name === 'others';
+        const bDefaultOthers = b.name === 'others';
+
+        const aCustomOther = a.name?.startsWith('other_');
+        const bCustomOther = b.name?.startsWith('other_');
+
+        // Put default "Others" first
+        if (aDefaultOthers && !bDefaultOthers) return -1;
+        if (!aDefaultOthers && bDefaultOthers) return 1;
+
+        // Put custom added Others after the default one
+        if (aCustomOther && !bCustomOther) return 1;
+        if (!aCustomOther && bCustomOther) return -1;
+
+        return (a.order || 0) - (b.order || 0);
+
+      })
       }))
       .sort((a, b) => a.order - b.order);
   }

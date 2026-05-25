@@ -565,41 +565,49 @@ export class HomePage implements OnInit, OnDestroy {
     return this.userBuddies?.length || 0;
   }
 
-async checkBuddyStatus() {
-  try {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) return;
+  async checkBuddyStatus() {
+    try {
+      const currentUser = await this.authService.waitForAuthInit();
+      if (!currentUser) return;
 
-    // If live buddy list already has entries, trust it directly
-    if (this.userBuddies && this.userBuddies.length > 0) {
-      this.hasBuddy = true;
-      this.showBuddyBanner = false;
-      return;
-    }
+      // If user already has buddies, hide banner
+      if (this.userBuddies && this.userBuddies.length > 0) {
+        this.hasBuddy = true;
+        this.showBuddyBanner = false;
+        return;
+      }
 
-    const ref = doc(this.db, 'users', currentUser.uid, 'medical', 'info');
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
+      // No buddies = show buddy banner
       this.hasBuddy = false;
-      this.showBuddyBanner = false;
-      return;
+      this.showBuddyBanner = true;
+
+      const ref = doc(this.db, 'users', currentUser.uid, 'medical', 'info');
+      const snap = await getDoc(ref);
+
+      // Even if medical/info does not exist, still show banner
+      if (!snap.exists()) {
+        this.showBuddyBanner = true;
+        return;
+      }
+
+      const data = snap.data();
+      const setup = data?.['buddySetupOnboarding'];
+
+      const hasRealBuddy =
+        !!setup?.primaryBuddy?.buddyUid &&
+        setup?.primaryBuddy?.inviteStatus !== 'skipped';
+
+      this.hasBuddy = hasRealBuddy;
+      this.showBuddyBanner = !hasRealBuddy;
+
+    } catch (error) {
+      console.error('Error checking buddy status:', error);
+
+      // safer fallback
+      this.hasBuddy = false;
+      this.showBuddyBanner = true;
     }
-
-    const data = snap.data();
-    const setup = data?.['buddySetupOnboarding'];
-
-    const hasRealBuddy = !!(setup?.primaryBuddy?.buddyUid) &&
-                         setup?.primaryBuddy?.inviteStatus !== 'skipped';
-    const usedFallback = setup?.fallbackUsed === true;
-    const skipped = setup?.skippedBuddySetup === true;
-
-    this.hasBuddy = hasRealBuddy;
-    this.showBuddyBanner = (usedFallback || skipped) && !hasRealBuddy;
-  } catch (error) {
-    console.error('Error checking buddy status:', error);
   }
-}
 
 async openAddAllergiesModal() {
   const allergyOptions = await this.allergyManager.loadAllergyOptions();
