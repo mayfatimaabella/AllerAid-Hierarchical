@@ -15,10 +15,9 @@ import { FirebaseService } from '../../../../core/services/firebase.service';
 })
 export class AllergyOnboardingPage implements OnInit, OnDestroy {
   allergyOptions: any[] = [];
-  commonAllergens: any[] = [];
-  otherAllergens: any[] = [];
   isLoading = true;
   isSaving = false;
+  groupedAllergens: any[] = [];
 
   readonly MAX_CUSTOM_ALLERGENS = 3;
 
@@ -77,15 +76,6 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
     try {
       this.isLoading = true;
 
-      const options = await this.allergyService.getAllergyOptions();
-
-      if (!options || options.length === 0) {
-        this.allergyOptions = [];
-        this.commonAllergens = [];
-        this.otherAllergens = [];
-        return;
-      }
-
       const currentUser = await this.authService.waitForAuthInit();
 
       if (!currentUser) {
@@ -93,10 +83,25 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
         this.router.navigate(['/login'], { replaceUrl: true });
         return;
       }
+      const options = await this.allergyService.getAllergyOptions();
 
-      const userAllergies = await this.allergyService.getUserAllergies(currentUser.uid);
+      console.log('OPTIONS FROM SERVICE:', options);
 
-      if (userAllergies && userAllergies.length > 0) {
+      if (!options || options.length === 0) {
+        this.allergyOptions = [];
+        this.groupedAllergens = [];
+        return;
+      }
+
+      let userAllergies: any[] = [];
+      try {
+        userAllergies = await this.allergyService.getUserAllergies(currentUser.uid) || [];
+      } catch {
+        
+        userAllergies = [];
+      }
+
+      if (userAllergies.length > 0) {
         const userAllergiesMap = new Map();
 
         userAllergies.forEach((allergy: any) => {
@@ -131,25 +136,43 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
   }
 
   private groupAllergyOptions(): void {
+    const categoryOrder: Record<string, number> = {
+      Food: 1,
+      Medication: 2,
+      Environment: 3,
+      Insect: 4,
+      Latex: 5,
+      Pet: 6,
+      Chemical: 7,
+      Other: 8
+    };
 
-    this.commonAllergens =
-      this.allergyOptions.filter(
-        o => o.isCommon === true
-      );
+    const groupsMap = new Map<string, any[]>();
 
-    this.otherAllergens =
-      this.allergyOptions.filter(
-        o => o.isCommon !== true
-      );
+    this.allergyOptions.forEach(option => {
+      const categoryName = option.categoryName || option.category || 'Other';
+
+      if (!groupsMap.has(categoryName)) {
+        groupsMap.set(categoryName, []);
+      }
+
+      groupsMap.get(categoryName)?.push(option);
+    });
+
+    this.groupedAllergens = Array.from(groupsMap.entries())
+      .map(([categoryName, allergies]) => ({
+        categoryName,
+        order: categoryOrder[categoryName] || 99,
+        allergies: allergies.sort((a, b) => (a.order || 0) - (b.order || 0))
+      }))
+      .sort((a, b) => a.order - b.order);
   }
 
-get customAllergenCount(): number {
-  return this.allergyOptions.filter(
-    a =>
-      a.categoryId === 'other' &&
-      a.hasInput
-  ).length;
-}
+  get customAllergenCount(): number {
+    return this.allergyOptions.filter(
+      a => a.name?.startsWith('other_')
+    ).length;
+  }
 
   get canAddMoreAllergens(): boolean {
     return this.customAllergenCount < this.MAX_CUSTOM_ALLERGENS;
@@ -161,6 +184,7 @@ get customAllergenCount(): number {
   }
 
   addOtherOption() {
+
     if (!this.canAddMoreAllergens) {
       this.presentToast(
         `You can only add up to ${this.MAX_CUSTOM_ALLERGENS} custom allergens.`,
@@ -175,19 +199,25 @@ get customAllergenCount(): number {
       checked: true,
       hasInput: true,
       value: '',
-      categoryId: 'other',
-      isCommon: false
+      categoryName: 'Other',
+      categoryOrder: 8
     };
 
     this.allergyOptions.push(newOption);
-    this.otherAllergens.push(newOption);
+
+    this.groupAllergyOptions();
   }
 
   removeOtherOption(option: any) {
-    this.allergyOptions = this.allergyOptions.filter(a => a !== option);
-    this.otherAllergens = this.otherAllergens.filter(a => a !== option);
-  }
 
+    this.allergyOptions =
+      this.allergyOptions.filter(
+        a => a !== option
+      );
+
+    this.groupAllergyOptions();
+
+  }
   async presentToast(
     message: string,
     color: string = 'medium',
@@ -255,7 +285,7 @@ get customAllergenCount(): number {
     }
   }
 
-  async saveAllergies() {
+async saveAllergies() {
     try {
       const currentUser = await this.authService.waitForAuthInit();
 
@@ -263,29 +293,42 @@ get customAllergenCount(): number {
         throw new Error('No authenticated user found. Cannot save allergies.');
       }
 
+      console.log('>>> currentUser.uid:', currentUser.uid);
+
       const checkedAllergies = this.allergyOptions.filter(allergy => allergy.checked);
+      console.log('>>> checkedAllergies:', checkedAllergies);
 
       const customAllergies = checkedAllergies.filter(
         allergy =>
-          allergy.value &&
           allergy.hasInput &&
-          allergy.categoryId === 'other'
+          allergy.value?.trim() &&
+          allergy.name !== 'medication'
       );
 
-    for (const allergy of customAllergies) {
-      const label = allergy.value.trim();
+      console.log('>>> customAllergies (to be suggested):', customAllergies);
 
-    await this.allergyService.submitAllergySuggestion({
-      name: label
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, '_'),
-      label,
-      categoryId: 'other',
-      suggestedBy: currentUser.uid,
-      status: 'pending'
-    });
-    }
+      for (const allergy of customAllergies) {
+        const label = allergy.value.trim();
+        if (!label) continue;
+
+        console.log('>>> submitting suggestion:', label);
+
+        try {
+          await this.allergyService.submitAllergySuggestion({
+            name: label
+              .toLowerCase()
+              .replace(/[^a-z0-9\s]/g, '')
+              .replace(/\s+/g, '_'),
+            label,
+            categoryId: allergy.categoryId || 'other',
+            suggestedBy: currentUser.uid,
+            status: 'pending'
+          });
+          console.log('>>> suggestion submitted successfully');
+        } catch (suggestionError) {
+          console.error('>>> suggestion submit FAILED:', suggestionError);
+        }
+      } 
 
       const sanitizedAllergies = checkedAllergies.map(allergy => {
         const inputValue = allergy.value?.trim() ?? null;
@@ -299,13 +342,13 @@ get customAllergenCount(): number {
 
       await this.allergyService.saveUserAllergies(currentUser.uid, sanitizedAllergies);
       await this.presentToast('Allergies saved successfully!', 'success', 2000);
+
     } catch (error) {
       console.error('Error saving allergies:', error);
       await this.presentToast('Failed to save allergies.', 'danger');
       throw error;
     }
   }
-
   /**
    * Shown when no allergy chips are selected.
    * Confirms the user genuinely has no known allergies,

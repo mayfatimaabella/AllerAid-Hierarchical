@@ -152,48 +152,53 @@ export class AllergyService {
   }
 
   // GET all master allergy options
-async getAllergyOptions(): Promise<AllergyOption[]> {
+async getAllergyOptions(): Promise<any[]> {
   try {
-    const allergyOptionsRef = collection(this.db, 'allergyOptions');
+    console.log('Reading allergyCategories...');
+    const categorySnapshot = await getDocs(
+      collection(this.db, 'allergyCategories')
+    );
+    console.log('Categories count:', categorySnapshot.size);
 
-    // Fetch ALL docs without orderBy — avoids Firestore silently dropping
-    // any document that is missing the 'order' field (e.g. newly approved
-    // suggestions). We sort in-memory instead.
-    const querySnapshot = await getDocs(allergyOptionsRef);
+    const categoryMap = new Map();
 
-    let options = querySnapshot.docs.map(docSnap => ({
-      id: docSnap.id,
-      ...docSnap.data()
-    })) as AllergyOption[];
+    categorySnapshot.docs.forEach(docSnap => {
+      categoryMap.set(docSnap.id, {
+        id: docSnap.id,
+        ...docSnap.data()
+      });
+    });
 
-    // Exclude only options explicitly marked as not approved.
-    // Missing isApproved = treat as approved (backward compat).
+    console.log('Reading allergyOptions...');
+    const optionsSnapshot = await getDocs(
+      collection(this.db, 'allergyOptions')
+    );
+    console.log('Options count:', optionsSnapshot.size);
+
+    let options = optionsSnapshot.docs.map(docSnap => {
+      const option: any = {
+        id: docSnap.id,
+        ...docSnap.data()
+      };
+
+      const category: any = categoryMap.get(option.categoryId);
+
+      return {
+        ...option,
+        categoryName: category?.name || 'Other',
+        categoryOrder: category?.order || 99
+      };
+    });
+
     options = options.filter(opt => opt.isApproved !== false);
 
-    // Deduplicate by name, keeping the first occurrence.
-    const uniqueByName: Record<string, AllergyOption> = {};
-    options.forEach(option => {
-      if (!uniqueByName[option.name]) {
-        uniqueByName[option.name] = option;
-      }
-    });
+    return options;
 
-    return Object.values(uniqueByName).sort((a, b) => {
-      const bottomItems = ['medication', 'others'];
-      const aBottom = bottomItems.includes(a.name);
-      const bBottom = bottomItems.includes(b.name);
-
-      if (aBottom && !bBottom) return 1;
-      if (!aBottom && bBottom) return -1;
-
-      return (a.order ?? 998) - (b.order ?? 998);
-    });
   } catch (error) {
-    console.error('Error fetching allergy options:', error);
-    throw error;
+    console.error('getAllergyOptions FAILED:', error);
+    return [];
   }
 }
-
   // RESET allergy options
   async resetAllergyOptions(): Promise<void> { 
     const querySnapshot = await getDocs(collection(this.db, 'allergyOptions'));
