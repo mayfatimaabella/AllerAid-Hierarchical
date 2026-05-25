@@ -16,7 +16,7 @@
       
       <!-- Medication Name (Generic) -->
       <ion-item class="medication-field" lines="none">
-        <ion-label position="stacked">Name of Medication *</ion-label>
+        <ion-label position="stacked">Generic Name of Medication *</ion-label>
         <ion-input 
           [(ngModel)]="med.name" 
           name="name" 
@@ -53,7 +53,7 @@
                 <ion-select-option value="tablet">Tablet</ion-select-option>
                 <ion-select-option value="capsule">Capsule</ion-select-option>
                 <ion-select-option value="liquid">Liquid / Syrup</ion-select-option>
-                <ion-select-option value="injection">Injection</ion-select-option>
+                <ion-select-option value="injection">Intramuscular Injection</ion-select-option>
                 <ion-select-option value="inhaler">Inhaler</ion-select-option>
                 <ion-select-option value="drops">Drops</ion-select-option>
                 <ion-select-option value="cream">Cream / Ointment</ion-select-option>
@@ -206,7 +206,7 @@
 
       <!-- Physical Medicine Expiration -->
       <ion-item class="medication-field date-field" lines="none">
-        <ion-label position="stacked">Medicine Expiry (Shelf Life) *</ion-label>
+        <ion-label position="stacked">Medicine Expiry Date</ion-label>
         <ion-datetime-button datetime="medicineExpiryDate"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>

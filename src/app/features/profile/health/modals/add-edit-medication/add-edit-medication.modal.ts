@@ -65,17 +65,25 @@ export class AddMedicationModal implements OnInit {
   }
 
   public onDateOrIntervalChange() {
-    if (this.med.startDate && this.med.durationDays != null) {
-      const start = new Date(this.med.startDate);
-      const days = parseFloat(this.med.durationDays.toString()) || 0;
-      
-      const end = new Date(start.getTime() + (days * 24 * 60 * 60 * 1000));
-      this.med.expiryDate = end.toISOString();
+  if (this.med.startDate && this.med.durationDays != null) {
+    const selectedDate = new Date(this.med.startDate);
+    
+    // 1. Update the startTime property whenever the Date picker changes
+    this.med.startTime = selectedDate.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: true 
+    });
+    
+    // 2. Existing logic for Expiry Date
+    const days = parseFloat(this.med.durationDays.toString()) || 0;
+    const end = new Date(selectedDate.getTime() + (days * 24 * 60 * 60 * 1000));
+    this.med.expiryDate = end.toISOString();
 
-      this.calculateTotalPills();
-      this.med.frequency = `${days} day(s) (${this.getIntervalLabel(Number(this.med.intervalHours) || 24)})`;
-    }
+    this.calculateTotalPills();
+    this.med.frequency = `${days} day(s) (${this.getIntervalLabel(Number(this.med.intervalHours) || 24)})`;
   }
+}
 
   private calculateTotalPills() {
     const interval = Number(this.med.intervalHours) || 24;
