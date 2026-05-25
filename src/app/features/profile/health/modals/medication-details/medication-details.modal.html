@@ -60,42 +60,41 @@
         <div class="icon-circle dosage-bg"><ion-icon name="flask"></ion-icon></div>
         <div class="grid-text">
           <small>Take</small>
-          <p>{{ medication?.dosage }}</p>
+          <p>{{ medication.dosage }}</p>
         </div>
       </div>
       <div class="grid-item">
         <div class="icon-circle frequency-bg"><ion-icon name="time"></ion-icon></div>
         <div class="grid-text">
           <small>How often</small>
-          <p>{{ medication?.frequency }}</p>
+          <p>{{ medication.frequency }}</p>
         </div>
       </div>
     </div>
 
-   <div class="dates-container">
-  <span class="card-title">Treatment Timeline</span>
-  <div class="date-row">
-    <div class="date-block">
-      <div class="icon-circle start-bg"><ion-icon name="calendar"></ion-icon></div>
-      <div class="date-info">
-        <small>Start Date & Time</small>
-        <p>{{ medication?.startDate | date:'MMM d, yyyy' }}</p>
-        
-        <p class="time-subtext" style="margin-top: 2px; font-size: 14px; color: var(--ion-color-medium);">
-          {{ medication?.startTime | date:'shortTime' }}
-        </p>
+    <div class="dates-container">
+      <span class="card-title">Treatment Timeline</span>
+      <div class="date-row">
+        <div class="date-block">
+          <div class="icon-circle start-bg"><ion-icon name="calendar"></ion-icon></div>
+          <div class="date-info">
+            <small>Start Date & Time</small>
+            <p>{{ medication.startDate | date:'MMM d, yyyy' }}</p>
+            <p class="time-subtext" style="margin-top: 2px; font-size: 14px; color: var(--ion-color-medium);">
+              {{ medication.startTime }}
+            </p>
+          </div>
+        </div>
+        <div class="date-divider"></div>
+        <div class="date-block">
+          <div class="icon-circle end-bg"><ion-icon name="flag"></ion-icon></div>
+          <div class="date-info">
+            <small>End Date</small>
+            <p>{{ medication.expiryDate | date:'MMM d, yyyy' }}</p>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="date-divider"></div>
-    <div class="date-block">
-      <div class="icon-circle end-bg"><ion-icon name="flag"></ion-icon></div>
-      <div class="date-info">
-        <small>End Date</small>
-        <p>{{ medication?.expiryDate | date:'MMM d, yyyy' }}</p>
-      </div>
-    </div>
-  </div>
-</div>
 
     <div class="shelf-life-card" *ngIf="medication?.medicineExpiryDate" 
          [ngClass]="{'expired-warning': isMedicineExpired()}">

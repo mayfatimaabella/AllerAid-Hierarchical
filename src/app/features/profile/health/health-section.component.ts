@@ -9,7 +9,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { MedicationService } from 'src/app/core/services/medication.service';
+import { MedicationService, Medication } from 'src/app/core/services/medication.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-profile-health-section',
@@ -19,11 +20,15 @@ import { MedicationService } from 'src/app/core/services/medication.service';
   styleUrls: ['./health-section.component.scss']
 })
 export class HealthSectionComponent implements OnInit, OnDestroy {
-  @Input() userMedications: any[] = [];
-  @Input() filteredMedications: any[] = [];
+  @Input() filteredMedications: Medication[] = [];
   @Input() medicationFilter: string = 'all';
   @Input() medicationSearchTerm = '';
   @Input() isLoading = false;
+
+  // Internal state
+  userMedications: Medication[] = [];
+  private medSub?: Subscription;
+  private refreshInterval: any;
 
   @Input() isEmergencyMedicationFn?: (m: any) => boolean;
   @Input() isExpiringSoonFn?: (date: any) => boolean;
@@ -38,62 +43,57 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
   @Output() viewImage = new EventEmitter<{ url: string; title: string }>();
   @Output() viewDetails = new EventEmitter<any>();
 
-  private refreshInterval: any;
+  trackByMedication = (i: number, m: any) => m?.id ?? i;
 
-  trackByMedication = (i: number, m: any) => m?.id ?? m?.name ?? i;
-
-  constructor(
-    private medService: MedicationService
-  ) {}
+  constructor(private medService: MedicationService) {}
 
   ngOnInit() {
-    // Periodic refresh to update medication statuses (expiry, overdue, etc.)
+    // Subscribe to the source of truth in MedicationService
+    this.medSub = this.medService.medications$.subscribe(meds => {
+      this.userMedications = meds;
+    });
+
+    // Initial data load
+    this.medService.refreshMedications();
+
+    // Periodic refresh for status/expiry/overdue calculations
     this.refreshInterval = setInterval(() => {
-      // Trigger a refresh of medication data periodically
+      this.medService.refreshMedications();
     }, 60000);
   }
 
   ngOnDestroy() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
+    if (this.medSub) this.medSub.unsubscribe();
   }
 
-  getStatusLabel(medication: any): string {
+  getStatusLabel(medication: Medication): string {
     if (!medication) return '';
 
-    const now = new Date();
     const remaining = this.calculateRemainingPills(medication);
     
-    if (this.medService.isExpired(medication)) {
-      return 'Expired';
-    }
-    
+    if (this.medService.isExpired(medication)) return 'Expired';
     if (remaining <= 0) return 'Completed';
     
-    const endDate = medication.expiryDate ? new Date(medication.expiryDate) : null;
-    if (endDate && now > endDate) return 'Incomplete';
-
-    if (medication.nextDose && now > new Date(medication.nextDose)) {
-      return 'Overdue';
-    }
+    // Uses the new Overdue logic from MedicationService
+    if (this.medService.isOverdue(medication)) return 'Overdue';
 
     return medication.isActive ? 'Ongoing' : 'Inactive';
   }
 
-  getStatusColor(medication: any): string {
+  getStatusColor(medication: Medication): string {
     const label = this.getStatusLabel(medication);
     switch (label) {
       case 'Ongoing': return 'success';
       case 'Completed': return 'primary';
       case 'Overdue': return 'warning';
-      case 'Incomplete': return 'danger';
       case 'Expired': return 'danger';
+      case 'Inactive': return 'medium';
       default: return 'medium';
     }
   }
 
-  getUnitLabel(medication: any): string {
+  getUnitLabel(medication: Medication): string {
     const dosage = medication?.dosage?.toLowerCase() || '';
     if (dosage.includes('puff')) return 'puffs';
     if (dosage.includes('ml')) return 'mL';
@@ -101,7 +101,7 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
     return 'pills';
   }
 
-  getLowStockWarning(medication: any): string | null {
+  getLowStockWarning(medication: Medication): string | null {
     const remaining = this.calculateRemainingPills(medication);
     const unit = this.getUnitLabel(medication);
     
@@ -111,27 +111,21 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  calculateRemainingPills(medication: any): number {
+  calculateRemainingPills(medication: Medication): number {
     if (!medication) return 0;
-    const remainingValue = medication.refillsRemaining !== undefined 
-      ? medication.refillsRemaining 
-      : medication.quantity;
-
-    if (remainingValue === undefined || remainingValue === null) return 0;
-    const amount = Number(remainingValue);
-    return isNaN(amount) ? 0 : Math.max(Math.floor(amount), 0);
+    const remainingValue = medication.refillsRemaining ?? medication.quantity ?? 0;
+    return Math.max(Math.floor(Number(remainingValue)), 0);
   }
 
   onFilterChange(ev: any) {
-    const value = ev?.detail?.value;
-    this.medicationFilterChange.emit(value || 'all');
+    this.medicationFilterChange.emit(ev?.detail?.value || 'all');
   }
 
-  getToggleStatusLabel(medication: any): string {
-    return medication.isActive ? 'Mark as Inactive' : 'Mark as Active';
-  }
+  //getToggleStatusLabel(medication: Medication): string {
+   // return medication.isActive ? 'Mark as Inactive' : 'Mark as Active';
+  //}
 
-  isEmergencyMedication(med: any): boolean {
+  isEmergencyMedication(med: Medication): boolean {
     return this.isEmergencyMedicationFn ? !!this.isEmergencyMedicationFn(med) : false;
   }
 }

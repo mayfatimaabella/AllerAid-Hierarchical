@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { 
-  collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, query, orderBy, Timestamp,
-  enableIndexedDbPersistence, disableNetwork, enableNetwork
+  collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, query, orderBy, Timestamp
 } from 'firebase/firestore';
 import { FirebaseService } from './firebase.service';
 import { AuthService } from './auth.service';
@@ -42,8 +41,8 @@ export interface Medication {
   medicationImageUrl?: string;
   reminderEnabled?: boolean;
   reminderTimes?: string[];
-  lastTakenAt?: Date;
-  lastSkippedAt?: Date;
+  lastTakenAt?: string; 
+  lastSkippedAt?: string;
   lastReminderAction?: 'taken' | 'skipped' | 'opened';
   allergicReaction?: boolean;
   status?: 'Ongoing' | 'Active' | 'Completed' | 'Incomplete' | 'Expired' | 'Overdue' | 'Inactive';
@@ -51,7 +50,7 @@ export interface Medication {
 
 @Injectable({ providedIn: 'root' })
 export class MedicationService {
-  private db;
+  private db: any;
   private medicationsSubject = new BehaviorSubject<Medication[]>([]);
   public medications$ = this.medicationsSubject.asObservable();
 
@@ -69,22 +68,16 @@ export class MedicationService {
     console.log('DEBUG MedicationService: Refreshing medications from Firestore...');
     try {
       const meds = await this.getUserMedications();
-      console.log(`DEBUG MedicationService: Found ${meds.length} medications:`, meds.map(m => ({ id: m.id, name: m.name })));
+      console.log(`DEBUG MedicationService: Found ${meds.length} medications.`);
       this.medicationsSubject.next(meds);
-      console.log('DEBUG MedicationService: BehaviorSubject updated with fresh medications');
     } catch (error) {
       console.error('DEBUG MedicationService: Error refreshing medications:', error);
     }
   }
 
-  /**
-   * Adds medication with strict data sanitation to prevent Firestore rejection.
-   */
   async addMedication(medication: Medication, prescriptionImageData?: string): Promise<void> {
     const uid = await this.getUid();
     const medsRef = collection(this.db, `users/${uid}/medications`);
-    
-    // Sanitize: Remove undefined/null values that block Firestore writes
     const cleanData = JSON.parse(JSON.stringify(medication));
     
     await addDoc(medsRef, { 
@@ -93,18 +86,17 @@ export class MedicationService {
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now()
     });
-    
+    console.log('DEBUG MedicationService: Medication added.');
     await this.refreshMedications();
   }
 
   async updateMedication(medicationId: string, updates: Partial<Medication>): Promise<void> {
     const uid = await this.getUid();
     const medRef = doc(this.db, `users/${uid}/medications/${medicationId}`);
-    
-    // Sanitize updates
     const cleanUpdates = JSON.parse(JSON.stringify(updates));
     
     await updateDoc(medRef, { ...cleanUpdates, updatedAt: Timestamp.now() });
+    console.log(`DEBUG MedicationService: Medication ${medicationId} updated.`);
     await this.refreshMedications();
   }
 
@@ -114,45 +106,40 @@ export class MedicationService {
     const medDoc = await getDoc(medRef);
     if (medDoc.exists()) {
       await updateDoc(medRef, { isActive: !medDoc.data()['isActive'], updatedAt: Timestamp.now() });
+      console.log(`DEBUG MedicationService: Status toggled for ${medicationId}`);
       await this.refreshMedications();
     }
   }
 
-  async recordReminderAction(medicationId: string, action: 'taken' | 'skipped' | 'opened'): Promise<any> {
+  async recordReminderAction(medicationId: string, action: 'taken' | 'skipped' | 'opened'): Promise<void> {
+    console.log(`DEBUG MedicationService: Recording action '${action}' for ${medicationId}`);
     const uid = await this.getUid();
     const medRef = doc(this.db, `users/${uid}/medications/${medicationId}`);
     const medSnap = await getDoc(medRef);
+    
+    if (!medSnap.exists()) return;
+    
     const medData = medSnap.data() as Medication;
+    const updateData: any = { lastReminderAction: action, updatedAt: Timestamp.now() };
 
-    const updateData: any = { 
-      lastReminderAction: action, 
-      updatedAt: Timestamp.now() 
-    };
-
-    if (action === 'taken' && medData) {
+    if (action === 'taken') {
       const doseSize = medData.pillsPerDose || 1;
-      let updatedRefills = (medData.refillsRemaining ?? medData.quantity) - doseSize;
+      const currentQty = medData.refillsRemaining ?? medData.quantity ?? 0;
+      const updatedQty = Math.max(currentQty - doseSize, 0);
       
-      updateData.refillsRemaining = Math.max(updatedRefills, 0);
-
-      if (medData.status === 'Incomplete' || !medData.status) {
-        updateData.status = 'Ongoing';
-      }
+      updateData.refillsRemaining = updatedQty;
+      updateData.lastTakenAt = new Date().toISOString(); 
+      updateData.status = updatedQty <= 0 ? 'Completed' : 'Ongoing';
       
-      if (updatedRefills <= 0) { 
-        updateData.isActive = false; 
-        updateData.status = 'Completed'; 
-      }
-
-      await updateDoc(medRef, updateData);
-      await this.refreshMedications();
-      return { newRefills: updateData.refillsRemaining };
+      if (updatedQty <= 0) updateData.isActive = false;
+      console.log(`DEBUG MedicationService: Pill count updated to ${updatedQty}`);
+    } else if (action === 'skipped') {
+      updateData.lastSkippedAt = new Date().toISOString();
     }
     
-    if (action === 'skipped') updateData.lastSkippedAt = new Date();
-    
     await updateDoc(medRef, updateData);
-    await this.refreshMedications();
+    console.log(`DEBUG MedicationService: Action recorded in Firestore.`);
+    await this.refreshMedications(); 
   }
 
   async getUserMedications(uid?: string): Promise<Medication[]> {
@@ -164,28 +151,19 @@ export class MedicationService {
   }
 
   async deleteMedication(medicationId: string): Promise<void> {
-    console.log(`DEBUG MedicationService: Starting deletion for ID: ${medicationId}`);
+    console.log(`DEBUG MedicationService: Deleting ${medicationId}`);
     const uid = await this.getUid();
-    const docPath = `users/${uid}/medications/${medicationId}`;
-    console.log(`DEBUG MedicationService: Deleting from path: ${docPath}`);
-    try {
-      await deleteDoc(doc(this.db, docPath));
-      console.log(`DEBUG MedicationService: Document deleted successfully from Firestore`);
-      
-      // Remove from local state immediately
-      const currentMeds = this.medicationsSubject.value;
-      const filteredMeds = currentMeds.filter(m => m.id !== medicationId);
-      console.log(`DEBUG MedicationService: Removed from local state. Before: ${currentMeds.length}, After: ${filteredMeds.length}`);
-      this.medicationsSubject.next(filteredMeds);
-      
-      // Add small delay to allow Firestore to propagate, then refresh to verify
-      await new Promise(resolve => setTimeout(resolve, 500));
-      await this.refreshMedications();
-      console.log(`DEBUG MedicationService: Medications refreshed after deletion`);
-    } catch (error) {
-      console.error(`DEBUG MedicationService: Error deleting document:`, error);
-      throw error;
-    }
+    await deleteDoc(doc(this.db, `users/${uid}/medications/${medicationId}`));
+    console.log(`DEBUG MedicationService: Deleted successfully.`);
+    await this.refreshMedications();
+  }
+
+  isOverdue(medication: Medication): boolean {
+    if (!medication.lastTakenAt || medication.status === 'Completed') return false;
+    const lastTaken = new Date(medication.lastTakenAt).getTime();
+    const intervalMs = (medication.intervalHours || 24) * 60 * 60 * 1000;
+    const nextDue = lastTaken + intervalMs;
+    return new Date().getTime() > nextDue;
   }
 
   isExpired(medication: Medication): boolean {

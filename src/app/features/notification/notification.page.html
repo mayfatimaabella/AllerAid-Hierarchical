@@ -31,10 +31,8 @@
             
             <div class="time-highlight-pill">
               <ion-icon name="time"></ion-icon>
-              <span class="time-label">TAKE AT:</span>
-              <span class="time-value">
-                {{ reminder.body ? reminder.body.replace('Dose due at ', '') : '--:--' }}
-              </span>
+              <span class="time-label">SCHEDULED:</span>
+              <span class="time-value">{{ reminder.rawScheduledDate | date:'shortTime' }}</span>
             </div>
           </div>
           
@@ -54,10 +52,10 @@
           </ion-button>
         </div>
 
-        <div class="locked-actions-notice" *ngIf="!isWindowOpen(reminder)">
+        <div class="locked-actions-notice" *ngIf="isUpcoming(reminder)">
           <p>
             <ion-icon name="lock-closed-outline"></ion-icon>
-            Buttons unlock when the scheduled dose hour arrives.
+            Locked: Actions unlock in {{ (reminder.rawScheduledDate.getTime() - nowTime()) / 60000 | number:'1.0-0' }} mins
           </p>
         </div>
       </div>
@@ -70,12 +68,9 @@
             <h3 class="secondary-medication-name">
               {{ reminder.title ? reminder.title.split(':')[0] : 'Unknown Medication' }}
             </h3>
-            
             <div class="secondary-time-pill">
               <ion-icon name="time-outline"></ion-icon>
-              <span class="time-value">
-                {{ reminder.body ? reminder.body.replace('Dose due at ', '') : '--:--' }}
-              </span>
+              <span class="time-value">{{ reminder.rawScheduledDate | date:'shortTime' }}</span>
             </div>
           </div>
         </div>
@@ -85,8 +80,8 @@
           <ion-button fill="clear" size="small" color="medium" (click)="handleAction(reminder, 'SKIP')">Skip</ion-button>
         </div>
         
-        <div class="secondary-locked-notice" *ngIf="!isWindowOpen(reminder)">
-          <p><ion-icon name="time-outline"></ion-icon> Scheduled Upcoming Slot</p>
+        <div class="secondary-locked-notice" *ngIf="isUpcoming(reminder)">
+          <p><ion-icon name="lock-closed-outline"></ion-icon> Locked until {{ reminder.rawScheduledDate | date:'shortTime' }}</p>
         </div>
       </div>
 
@@ -100,6 +95,5 @@
         </ion-button>
       </div>
     </ng-container>
-
   </div>
 </ion-content>
