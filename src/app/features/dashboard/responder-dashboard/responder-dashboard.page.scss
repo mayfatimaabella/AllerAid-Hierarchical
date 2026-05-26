@@ -244,32 +244,40 @@ ion-toolbar {
     font-weight: 700; 
   }
 
-  .btn-completed { 
-    --background: #10b981; 
-    --background-activated: #059669;
-    height: 52px; 
-    font-weight: 800; 
-    font-size: 1rem;
-    --border-radius: 12px; 
-  }
+  //.btn-completed { 
+   // --background: #10b981; 
+   // --background-activated: #059669;
+   // height: 52px; 
+   // font-weight: 800; 
+   // font-size: 1rem;
+  //  --border-radius: 12px; 
+//}
   
   .secondary-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* 2fr for Respond (Big), 1fr for Decline (Small/Compact) */
+    grid-template-columns: 2fr 1fr; 
     gap: 10px;
-    .btn-speak { 
-      --background: #3b82f6; 
+    align-items: center;
+
+    .btn-respond { 
+      --background: #10b981; /* Green for positive action */
       --color: #ffffff; 
-      height: 44px; 
-      font-weight: 700; 
-      font-size: 0.8rem;
+      height: 60px; /* Tall button */
+      font-weight: 800; 
+      font-size: 1.1rem;
+      --border-radius: 12px;
     }
+    
     .btn-decline { 
-      --background: #ef4444; 
-      --color: #ffffff; 
-      height: 44px; 
-      font-weight: 700; 
-      font-size: 0.8rem;
+      --background: #f1f5f9; /* Light grey/subtle background */
+      --color: #ef4444;      /* Red text */
+      height: 60px;          /* Match height for alignment */
+      font-weight: 600; 
+      font-size: 0.75rem;    /* Smaller text */
+      --border-radius: 12px;
+      --padding-start: 4px;
+      --padding-end: 4px;
     }
   }
 }
