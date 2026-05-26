@@ -199,15 +199,15 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
   }
 
   async confirmHelpCompleted() {
-    const alert = await this.alertController.create({
-      header: 'Emergency Resolved',
-      subHeader: 'Patient Status Report',
-      message: 'Please provide a quick status of the patient.',
-      cssClass: 'custom-emergency-alert',
-      inputs: [
-        {
-          name: 'status',
-        type: 'radio', // Changed to radio for faster selection
+  const alert = await this.alertController.create({
+    header: 'Emergency Resolved',
+    subHeader: 'Patient Status Report',
+    message: 'Please provide a quick status of the patient.',
+    cssClass: 'custom-emergency-alert',
+    inputs: [
+      {
+        name: 'status',
+        type: 'radio',
         label: 'Stable / OK',
         value: 'stable',
         checked: true
@@ -223,32 +223,35 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
         type: 'radio',
         label: 'Unconscious',
         value: 'unconscious'
-        }
-      ],
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'Submit & Finish',
-          cssClass: 'submit-button',
-          handler: async (data) => {
-            if (this.currentEmergency?.id) {
-              await this.emergencyService.resolveEmergency(this.currentEmergency.id);
-              this.currentEmergency = null;
-              this.hasResponded = false;
-              const modal = await this.modalController.getTop();
-              if (modal) {
-                await modal.dismiss(null, 'completed');
-              } else {
-                await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
-              }
+      }
+    ],
+    buttons: [
+      { text: 'Cancel', role: 'cancel' },
+      {
+        text: 'Submit & Finish',
+        cssClass: 'submit-button',
+        handler: async (data) => {
+          // 'data' is the value of the selected radio button ('stable', 'needs_ems', or 'unconscious')
+          if (this.currentEmergency?.id && data) {
+            // Pass the data to the service
+            await this.emergencyService.resolveEmergency(this.currentEmergency.id, data);
+            
+            this.currentEmergency = null;
+            this.hasResponded = false;
+            
+            const modal = await this.modalController.getTop();
+            if (modal) {
+              await modal.dismiss(null, 'completed');
+            } else {
+              await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
             }
           }
         }
-      ]
-    });
-    await alert.present();
-  }
-
+      }
+    ]
+  });
+  await alert.present();
+}
   private async setupRealTimeListeners() {
     try {
       const user = await this.authService.waitForAuthInit();
