@@ -564,18 +564,23 @@ export class EmergencyService {
   /**
    * Mark an emergency as resolved
    */
-  async resolveEmergency(emergencyId: string): Promise<void> {
-    try {
-      const emergencyRef = doc(this.db, 'emergencies', emergencyId);
-      await updateDoc(emergencyRef, { status: 'resolved' });
-      
-      // Stop location tracking
-      this.stopLocationTracking();
-    } catch (error) {
-      console.error('Error resolving emergency:', error);
-      throw error;
-    }
+  async resolveEmergency(emergencyId: string, patientCondition?: string): Promise<void> {
+  try {
+    const emergencyRef = doc(this.db, 'emergencies', emergencyId);
+    
+    // Update status and save the patient's condition
+    await updateDoc(emergencyRef, { 
+      status: 'resolved',
+      patientCondition: patientCondition, // Saving the survey result
+      resolvedAt: new Date()              // Good practice to track completion time
+    });
+    
+    this.stopLocationTracking();
+  } catch (error) {
+    console.error('Error resolving emergency:', error);
+    throw error;
   }
+}
   
   /**
    * Get active emergencies for a specific buddy

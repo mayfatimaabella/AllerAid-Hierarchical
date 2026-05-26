@@ -81,24 +81,28 @@
           OPEN IN GOOGLE MAPS
         </ion-button>
 
-        <div class="secondary-grid" *ngIf="!hasResponded">
-          <ion-button expand="block" (click)="acceptEmergency()" fill="solid" class="btn-respond">
-            <ion-icon slot="start" name="checkmark-circle"></ion-icon> RESPOND
-          </ion-button>
+        <div class="initial-actions" *ngIf="!hasResponded">
+          <div class="secondary-grid">
+            <ion-button expand="block" (click)="acceptEmergency()" fill="solid" class="btn-respond">
+              <ion-icon slot="start" name="checkmark-circle"></ion-icon> RESPOND
+            </ion-button>
+            
+            <ion-button expand="block" (click)="cannotRespond()" fill="clear" class="btn-decline">
+              CAN'T HELP RIGHT NOW
+            </ion-button>
+          </div>
           
-          <ion-button expand="block" (click)="cannotRespond()" fill="clear" class="btn-decline">
-            <!--<ion-icon slot="start" name="close-circle"></ion-icon>--> CAN'T HELP RIGHT NOW
+          <ion-button expand="block" (click)="speakAlert()" fill="outline" class="btn-speak-visible">
+            <ion-icon slot="start" name="volume-high"></ion-icon> SPEAK ALERT
           </ion-button>
         </div>
 
-        <!--<ion-button expand="block" (click)="confirmHelpCompleted()" class="btn-completed">
-          <ion-icon slot="start" name="checkmark-done-circle"></ion-icon>
-          HELP COMPLETED
-        </ion-button>-->
-
-        <ion-button expand="block" (click)="speakAlert()" fill="clear" class="btn-speak">
-          <ion-icon slot="start" name="volume-high"></ion-icon> SPEAK ALERT
-        </ion-button>
+        <div class="completed-action-container" *ngIf="hasResponded">
+          <ion-button expand="block" (click)="confirmHelpCompleted()" class="btn-completed">
+            <ion-icon slot="start" name="checkmark-done-circle"></ion-icon>
+            HELP COMPLETED
+          </ion-button>
+        </div>
       </div>
     </div>
   </div>

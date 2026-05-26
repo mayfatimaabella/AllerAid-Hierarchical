@@ -1,22 +1,22 @@
 /* --- 1. Global & Header --- */
-ion-toolbar { 
-  --background: #036a5d; 
-  --color: white; 
+ion-toolbar {
+  --background: #036a5d;
+  --color: white;
 }
 
 .emergency-header {
-  background: #ef4444; 
+  background: #ef4444;
   color: white;
   padding: 8px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 
-  .alert-title { 
-    font-size: 0.9rem; 
-    font-weight: 700; 
+  .alert-title {
+    font-size: 0.9rem;
+    font-weight: 700;
   }
-  
+
   .time-badge {
     background: #ffffff;
     color: #000;
@@ -26,7 +26,7 @@ ion-toolbar {
   }
 }
 
-/* --- 2. Patient Identity Card (Keep as is) --- */
+/* --- 2. Patient Identity Card --- */
 .patient-identity-card {
   display: flex;
   align-items: center;
@@ -38,20 +38,20 @@ ion-toolbar {
     display: flex;
     align-items: center;
     gap: 12px;
-    flex: 1; 
+    flex: 1;
 
-    ion-avatar { 
-      width: 44px; 
-      height: 44px; 
+    ion-avatar {
+      width: 44px;
+      height: 44px;
       border: 2px solid #ef4444;
     }
-    
+
     .name-wrapper {
       display: flex;
       flex-direction: column;
-      
+
       .patient-name {
-        font-size: 1.1rem; 
+        font-size: 1.1rem;
         font-weight: 700;
         color: #1e293b;
       }
@@ -98,33 +98,30 @@ ion-toolbar {
   }
 }
 
-/* --- 3. Stacked Layout: Map on top, Info Side-by-Side below --- */
+/* --- 3. Map Section --- */
 .map-location-card {
   margin: 0 16px 12px 16px;
   display: flex;
-  flex-direction: column; /* Stacks Map (Top) and Info (Bottom) */
+  flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
   background: #ffffff;
 
   .map-container {
-    height: 180px; /* Full width map */
+    height: 180px;
     width: 100%;
     position: relative;
     background: #ebebeb;
     border-bottom: 1px solid #f1f5f9;
 
-    .mini-map { 
-      height: 100%; 
-      width: 100%; 
-    }
+    .mini-map { height: 100%; width: 100%; }
 
-    .map-reset-btn { 
+    .map-reset-btn {
       position: absolute;
-      width: 32px; 
-      height: 32px; 
-      bottom: 8px; 
+      width: 32px;
+      height: 32px;
+      bottom: 8px;
       right: 8px;
       z-index: 10;
       --padding-start: 0;
@@ -135,21 +132,20 @@ ion-toolbar {
     }
   }
 
-  /* --- Horizontal Location Section below the map --- */
   .location-info-section {
     padding: 12px 16px;
     background: #ffffff;
-    
+
     .location-grid {
-      display: flex; /* Makes the children (Patient/Responder) horizontal */
+      display: flex;
       gap: 12px;
 
       .loc-col {
-        flex: 1; /* Ensures both columns take up equal width */
+        flex: 1;
         min-width: 0;
 
         &.divider {
-          border-right: 1px solid #f1f5f9; /* Vertical line between columns */
+          border-right: 1px solid #f1f5f9;
           padding-right: 8px;
         }
 
@@ -159,11 +155,7 @@ ion-toolbar {
           gap: 6px;
           margin-bottom: 2px;
 
-          ion-icon { 
-            font-size: 1rem; 
-            color: #3b82f6; 
-          }
-
+          ion-icon { font-size: 1rem; color: #3b82f6; }
           span {
             font-size: 0.7rem;
             font-weight: 700;
@@ -177,8 +169,6 @@ ion-toolbar {
           color: #1e293b;
           line-height: 1.3;
           font-weight: 500;
-          
-          /* Ensures long addresses don't break the side-by-side layout */
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
@@ -190,7 +180,7 @@ ion-toolbar {
   }
 }
 
-/* --- 4. Instructions & Action Buttons --- */
+/* --- 4. Instructions --- */
 .instructions-card {
   margin: 0 16px 16px 16px;
 
@@ -200,7 +190,7 @@ ion-toolbar {
     background: #f0fdfa;
     border-radius: 8px;
     border-left: 4px solid #036a5d;
-    
+
     .plan-label {
       font-size: 0.65rem;
       font-weight: 700;
@@ -209,80 +199,96 @@ ion-toolbar {
       margin-bottom: 2px;
       display: block;
     }
-
-    .plan-text {
-      font-size: 0.85rem;
-      color: #0f172a;
-      line-height: 1.4;
-    }
+    .plan-text { font-size: 0.85rem; color: #0f172a; line-height: 1.4; }
   }
 
   .chip-group-container {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    .allergy-chip { 
-      --background: #f1f5f9; 
-      --color: #475569; 
-      height: 26px; 
-      font-size: 0.7rem; 
+    .allergy-chip {
+      --background: #f1f5f9;
+      --color: #475569;
+      height: 26px;
+      font-size: 0.7rem;
       margin: 0;
     }
   }
 }
 
+/* --- 5. Footer Actions (Updated Logic) --- */
 .footer-actions {
   padding: 0 16px 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 
-  .btn-google-maps { 
-    --border-color: #4285F4; 
-    --color: #4285F4; 
-    height: 46px; 
-    font-weight: 700; 
+  .btn-google-maps {
+    margin-bottom: 0;
+    --border-color: #4285F4;
+    --color: #4285F4;
+    height: 46px;
+    font-weight: 700;
   }
 
-  //.btn-completed { 
-   // --background: #10b981; 
-   // --background-activated: #059669;
-   // height: 52px; 
-   // font-weight: 800; 
-   // font-size: 1rem;
-  //  --border-radius: 12px; 
-//}
-  
-  .secondary-grid {
-    display: grid;
-    /* 2fr for Respond (Big), 1fr for Decline (Small/Compact) */
-    grid-template-columns: 2fr 1fr; 
+  /* Grouping Initial Phase Actions */
+  .initial-actions {
+    display: flex;
+    flex-direction: column;
     gap: 10px;
-    align-items: center;
+  }
 
-    .btn-respond { 
-      --background: #10b981; /* Green for positive action */
-      --color: #ffffff; 
-      height: 60px; /* Tall button */
-      font-weight: 800; 
+  /* Completed Phase */
+  .completed-action-container {
+    margin-top: 6px;
+    .btn-completed {
+      --background: #10b981;
+      --color: #ffffff;
+      height: 60px;
+      font-weight: 800;
       font-size: 1.1rem;
       --border-radius: 12px;
     }
-    
-    .btn-decline { 
-      --background: #f1f5f9; /* Light grey/subtle background */
-      --color: #ef4444;      /* Red text */
-      height: 60px;          /* Match height for alignment */
-      font-weight: 600; 
-      font-size: 0.75rem;    /* Smaller text */
+  }
+
+  .secondary-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 10px;
+    align-items: center;
+
+    .btn-respond {
+      --background: #10b981;
+      --color: #ffffff;
+      height: 60px;
+      font-weight: 800;
+      font-size: 1.1rem;
       --border-radius: 12px;
-      --padding-start: 4px;
-      --padding-end: 4px;
     }
+
+    .btn-decline {
+      --background: #f1f5f9;
+      --color: #ef4444;
+      height: 60px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      --border-radius: 12px;
+    }
+  }
+
+  .btn-speak-visible {
+    height: 52px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    --border-width: 2px;
+    --border-radius: 12px;
+    --border-color: #3b82f6;
+    --color: #3b82f6;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 }
 
-/* --- 5. Global Overrides --- */
+/* --- 6. Global Overrides --- */
 ::ng-deep .routing-instructions-container {
   width: 100% !important;
   max-height: 80px !important;
