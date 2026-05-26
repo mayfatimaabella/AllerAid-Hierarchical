@@ -1,0 +1,151 @@
+<ion-content [fullscreen]="true" class="onboarding-bg">
+
+  <!-- Hero + progress bar -->
+  <div class="onboarding-hero">
+    <button class="hero-back" (click)="goBack()">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </button>
+
+    <div class="hero-content">
+      <p class="step-eyebrow">Step 4 of 4 · Location</p>
+      <h2 class="hero-title">Enable location sharing</h2>
+      <p class="hero-sub">Help responders find you faster in an emergency</p>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" style="width: 100%"></div>
+      </div>
+      <div class="step-labels">
+        <span class="step-label done">Allergies</span>
+        <span class="step-label done">Emergency</span>
+        <span class="step-label done">Buddy</span>
+        <span class="step-label active">Location</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="state-container">
+    <ion-spinner color="medium"></ion-spinner>
+    <p class="state-text">Checking location settings…</p>
+  </div>
+
+  <!-- Main content -->
+  <div *ngIf="!isLoading" class="body-content">
+
+    <!-- Location icon and benefits -->
+    <div class="location-hero-card">
+      <ion-icon name="location-outline" class="location-icon"></ion-icon>
+      <h3 class="card-title">Share Your Location</h3>
+      <p class="card-subtitle">During an emergency, we'll share your location with your buddies so they can find you quickly.</p>
+    </div>
+
+    <!-- Benefits list -->
+    <div class="benefits-section">
+      <p class="benefits-label">Why location matters:</p>
+      
+      <div class="benefit-item">
+        <div class="benefit-icon-wrap">
+          <ion-icon name="checkmark-circle-outline" class="benefit-icon"></ion-icon>
+        </div>
+        <div class="benefit-text">
+          <p class="benefit-title">Faster response</p>
+          <p class="benefit-desc">Your buddies can reach you immediately</p>
+        </div>
+      </div>
+
+      <div class="benefit-item">
+        <div class="benefit-icon-wrap">
+          <ion-icon name="map-outline" class="benefit-icon"></ion-icon>
+        </div>
+        <div class="benefit-text">
+          <p class="benefit-title">Real-time tracking</p>
+          <p class="benefit-desc">We only track during active emergencies</p>
+        </div>
+      </div>
+
+      <div class="benefit-item">
+        <div class="benefit-icon-wrap">
+          <ion-icon name="shield-checkmark-outline" class="benefit-icon"></ion-icon>
+        </div>
+        <div class="benefit-text">
+          <p class="benefit-title">Your privacy matters</p>
+          <p class="benefit-desc">Location is never shared without permission</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status card -->
+    <div [class.permission-card]="true" [class.granted]="locationPermissionGranted">
+      <div class="permission-status">
+        <ion-icon 
+          [name]="locationPermissionGranted ? 'checkmark-circle' : 'alert-circle'"
+          [class]="locationPermissionGranted ? 'status-icon granted' : 'status-icon denied'">
+        </ion-icon>
+        <div class="status-text">
+          <p class="status-title">{{ locationPermissionGranted ? 'Location Access Enabled' : 'Location Access Not Enabled' }}</p>
+          <p class="status-desc">
+            {{ locationPermissionGranted 
+              ? 'Your location will be shared during emergencies' 
+              : 'Please enable location access to help responders find you' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      
+      <!-- If permission not granted, show request button -->
+      <ion-button 
+        *ngIf="!locationPermissionGranted"
+        class="btn-primary"
+        fill="solid"
+        (click)="requestLocationPermission()"
+        [disabled]="isSaving">
+        <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
+        <span>{{ isSaving ? 'Requesting...' : 'Enable Location Access' }}</span>
+      </ion-button>
+
+      <!-- If permission already granted, show finish button -->
+      <ion-button 
+        *ngIf="locationPermissionGranted && !hasPermissionAttempted"
+        class="btn-primary"
+        fill="solid"
+        (click)="finishWithPermission()"
+        [disabled]="isSaving">
+        <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
+        <span>{{ isSaving ? 'Finishing...' : 'Complete Setup' }}</span>
+      </ion-button>
+
+      <!-- After user attempts to enable, show continue button -->
+      <ion-button 
+        *ngIf="hasPermissionAttempted && locationPermissionGranted"
+        class="btn-primary"
+        fill="solid"
+        (click)="finishWithPermission()"
+        [disabled]="isSaving">
+        <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
+        <span>{{ isSaving ? 'Finishing...' : 'Complete Setup' }}</span>
+      </ion-button>
+
+      <!-- Skip option -->
+      <ion-button 
+        class="btn-outline"
+        fill="outline"
+        (click)="continueWithoutPermission()"
+        [disabled]="isSaving">
+        {{ isSaving ? 'Continuing...' : 'Enable Later' }}
+      </ion-button>
+    </div>
+
+    <!-- Information note -->
+    <p class="info-note">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      You can enable or disable location sharing anytime in your app settings.
+    </p>
+
+  </div>
+
+</ion-content>

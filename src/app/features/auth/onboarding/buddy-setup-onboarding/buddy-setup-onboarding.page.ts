@@ -507,7 +507,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
       await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
 
       await this.showToast('Buddy setup complete.', 'success');
-      await this.router.navigate(['/tabs/home'], { replaceUrl: true });
+      await this.router.navigate(['/location-permission-onboarding'], { replaceUrl: true });
 
     } catch (error) {
       console.error('Error saving buddy setup onboarding:', error);
@@ -647,7 +647,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
 
       await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
       await this.showToast('Emergency setup saved.', 'success');
-      await this.router.navigate(['/tabs/home'], { replaceUrl: true });
+      await this.router.navigate(['/location-permission-onboarding'], { replaceUrl: true });
 
     } catch (error) {
       console.error('Error saving fallback setup:', error);
@@ -683,7 +683,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
 
       await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
       await this.showToast('Setup complete. Add a buddy anytime from your profile.', 'success');
-      await this.router.navigate(['/tabs/home'], { replaceUrl: true });
+      await this.router.navigate(['/location-permission-onboarding'], { replaceUrl: true });
 
     } catch (error) {
       console.error('Error finishing without buddy:', error);

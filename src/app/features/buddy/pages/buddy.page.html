@@ -1,15 +1,16 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" class="buddy-header">
   <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-menu-button></ion-menu-button>
-      </ion-buttons>
-      
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
     <ion-title>Buddy</ion-title>
-    
+
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="openInvitationsModal()">
+      <ion-button class="invite-btn" fill="clear" (click)="openInvitationsModal()">
         <ion-icon name="person-add-outline"></ion-icon>
-        <ion-badge *ngIf="invitationCount > 0" color="danger" style="position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; font-size: 10px;">
+
+        <ion-badge *ngIf="invitationCount > 0" color="danger" class="invite-badge">
           {{ invitationCount }}
         </ion-badge>
       </ion-button>
@@ -17,118 +18,184 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
-      <ion-refresher-content
-        pullingIcon="chevron-down-circle-outline"
-        pullingText="Pull to refresh"
-        refreshingSpinner="crescent"
-        refreshingText="Refreshing buddies...">
-      </ion-refresher-content>
-    </ion-refresher>
+<ion-content [fullscreen]="true" class="buddy-page">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="crescent"
+      refreshingText="Refreshing buddies...">
+    </ion-refresher-content>
+  </ion-refresher>
 
-    <!-- Buddy Actions Modal -->
-    <app-buddy-actions-modal *ngIf="showActionsModal" [buddy]="selectedBuddy" (edit)="onEditBuddy($event)" (delete)="onDeleteBuddy($event)" (closeModal)="closeActionsModal()"></app-buddy-actions-modal>
+  <app-buddy-actions-modal
+    *ngIf="showActionsModal"
+    [buddy]="selectedBuddy"
+    (edit)="onEditBuddy($event)"
+    (delete)="onDeleteBuddy($event)"
+    (closeModal)="closeActionsModal()">
+  </app-buddy-actions-modal>
 
-    <!-- Buddy Edit Modal -->
-    <app-buddy-edit-modal *ngIf="showEditModal" [buddy]="buddyToEdit" (save)="onSaveEditBuddy($event)" (closeEdit)="closeEditModal()"></app-buddy-edit-modal>
+  <app-buddy-edit-modal
+    *ngIf="showEditModal"
+    [buddy]="buddyToEdit"
+    (save)="onSaveEditBuddy($event)"
+    (closeEdit)="closeEditModal()">
+  </app-buddy-edit-modal>
 
-    <!-- Buddy Delete Confirm Modal -->
-    <app-buddy-delete-confirm-modal *ngIf="showDeleteModal" [buddy]="buddyToEdit" (confirm)="onConfirmDeleteBuddy($event)" (cancelDelete)="closeDeleteModal()"></app-buddy-delete-confirm-modal>
+  <app-buddy-delete-confirm-modal
+    *ngIf="showDeleteModal"
+    [buddy]="buddyToEdit"
+    (confirm)="onConfirmDeleteBuddy($event)"
+    (cancelDelete)="closeDeleteModal()">
+  </app-buddy-delete-confirm-modal>
 
-    <ion-item class="search-bar-item" lines="none">
-      <ion-input class="search-bar-input" placeholder="Search buddy..." [(ngModel)]="searchTerm" (ionInput)="searchBuddy()"></ion-input>
-      <ion-button class="search-bar-btn" fill="clear" (click)="searchBuddy()">
-        <ion-icon name="search"></ion-icon>
-      </ion-button>
-    </ion-item>
-
-    <ion-card *ngIf="buddies.length > 0">
-      <ion-card-header style="display: flex; justify-content: space-between;">
-        <ion-card-title style="display: flex; align-items: center; gap: 8px;">
-          Recent Buddies
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>
-          <ion-item *ngFor="let buddy of filteredBuddies">
-            <ion-label (click)="showBuddyDetails(buddy)" style="cursor:pointer; color:#036a5d; font-weight:500;">
-              <h2>{{ buddy.firstName }} {{ buddy.lastName }}</h2>
-              <p *ngIf="buddy.email">{{ buddy.email }}</p>
-            </ion-label>
-            <ion-button fill="clear" slot="end" (click)="openBuddyActions(buddy)">
-              <ion-icon name="ellipsis-vertical"></ion-icon>
-            </ion-button>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-
-    <div *ngIf="buddies.length === 0" class="no-buddies-container">
-      <ion-card class="no-buddies-card">
-        <ion-card-content class="no-buddies-content">
-          <ion-icon name="person-add-outline" class="no-buddies-icon"></ion-icon>
-          <div class="no-buddies-text">You have no buddies yet. Invite friends to be your buddies!</div>
-        </ion-card-content>
-      </ion-card>
+  <section class="buddy-hero">
+    <div>
+      <p class="hero-eyebrow">Safety network</p>
+      <h1>Your Buddies</h1>
+      <p class="hero-subtitle">
+        Manage trusted people who can help during emergencies.
+      </p>
     </div>
 
-    <!-- Emergency Hotlines Section -->
-    <ion-card *ngIf="hasEmergencyResources" class="emergency-resources-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="alert-circle-outline"></ion-icon>
-          Emergency Resources
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <!-- Trusted Contact -->
-        <div *ngIf="fallbackContact?.name" class="resource-section">
-          <div class="resource-label">Trusted Contact</div>
-          <div class="contact-info">
-            <div class="contact-item">
-              <ion-icon name="person-outline"></ion-icon>
-              <span>{{ fallbackContact.name }}</span>
-            </div>
-            <div class="contact-item" *ngIf="fallbackContact.phone">
-              <ion-icon name="call-outline"></ion-icon>
-              <ion-button fill="clear" size="small" (click)="callNumber(fallbackContact.phone)">
-                {{ fallbackContact.phone }}
-              </ion-button>
-            </div>
+    <div class="buddy-count">
+      <strong>{{ buddies.length }}</strong>
+      <span>{{ buddies.length === 1 ? 'Buddy' : 'Buddies' }}</span>
+    </div>
+  </section>
+
+  <ion-item class="search-bar-item" lines="none">
+    <ion-icon name="search-outline" slot="start"></ion-icon>
+
+    <ion-input
+      class="search-bar-input"
+      placeholder="Search by name or email"
+      [(ngModel)]="searchTerm"
+      (ionInput)="searchBuddy()">
+    </ion-input>
+
+    <ion-button class="search-bar-btn" fill="clear" (click)="searchBuddy()">
+      Search
+    </ion-button>
+  </ion-item>
+
+  <ion-card *ngIf="buddies.length > 0" class="buddy-list-card">
+    <ion-card-header>
+      <div>
+        <ion-card-title>Recent Buddies</ion-card-title>
+        <ion-card-subtitle>{{ filteredBuddies.length }} shown</ion-card-subtitle>
+      </div>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-list class="buddy-list">
+        <ion-item
+          *ngFor="let buddy of filteredBuddies"
+          class="buddy-item"
+          lines="none"
+          button="true"
+          detail="false"
+          (click)="showBuddyDetails(buddy)">
+
+          <div class="buddy-avatar" slot="start">
+            {{ buddy.firstName?.charAt(0) || '?' }}{{ buddy.lastName?.charAt(0) || '' }}
           </div>
+
+          <ion-label>
+            <h2>{{ buddy.firstName }} {{ buddy.lastName }}</h2>
+            <p *ngIf="buddy.email">{{ buddy.email }}</p>
+          </ion-label>
+
+          <ion-button
+            fill="clear"
+            slot="end"
+            class="more-btn"
+            (click)="openBuddyActions(buddy); $event.stopPropagation()">
+            <ion-icon name="ellipsis-vertical"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <div *ngIf="buddies.length === 0" class="no-buddies-container">
+    <ion-card class="no-buddies-card">
+      <ion-card-content class="no-buddies-content">
+        <div class="empty-icon-wrap">
+          <ion-icon name="people-outline"></ion-icon>
         </div>
 
-        <!-- Hotlines -->
-        <div *ngIf="hotlines && hotlines.length > 0" class="resource-section">
-          <div class="resource-label">Emergency Hotlines</div>
-          <div class="hotlines-list">
-            <div *ngFor="let hotline of hotlines" class="hotline-item">
-              <div class="hotline-info">
-                <span class="hotline-name">{{ hotline.name }}</span>
-                <span class="hotline-number">{{ hotline.number }}</span>
-              </div>
-              <ion-button fill="clear" size="small" (click)="callNumber(hotline.number)">
-                <ion-icon name="call-outline" slot="icon-only"></ion-icon>
-              </ion-button>
-            </div>
-          </div>
-        </div>
+        <h2>No buddies yet</h2>
+        <p>Invite trusted contacts so they can respond quickly during emergencies.</p>
 
-        <!-- Custom Hotline -->
-        <div *ngIf="fallbackContact?.customHotline" class="resource-section">
-          <div class="resource-label">Custom Hotline</div>
-          <div class="contact-info">
-            <div class="contact-item">
-              <ion-icon name="phone-portrait-outline"></ion-icon>
-              <ion-button fill="clear" size="small" (click)="callNumber(fallbackContact.customHotline)">
-                {{ fallbackContact.customHotline }}
-              </ion-button>
-            </div>
-          </div>
-        </div>
+        <ion-button expand="block" class="empty-action" (click)="openInvitationsModal()">
+          <ion-icon name="person-add-outline" slot="start"></ion-icon>
+          Invite Buddy
+        </ion-button>
       </ion-card-content>
     </ion-card>
+  </div>
 
-    <app-buddy-details-modal *ngIf="showDetailsModal" [buddy]="buddyToShowDetails" (closeDetails)="closeDetailsModal()"></app-buddy-details-modal>
+  <ion-card *ngIf="hasEmergencyResources" class="emergency-resources-card">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        Emergency Resources
+      </ion-card-title>
+      <ion-card-subtitle>Fallback contacts and hotlines</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <div *ngIf="fallbackContact?.name" class="resource-section">
+        <div class="resource-label">Trusted Contact</div>
+
+        <div class="contact-item">
+          <ion-icon name="person-outline"></ion-icon>
+          <span>{{ fallbackContact.name }}</span>
+        </div>
+
+        <div class="contact-item" *ngIf="fallbackContact.phone">
+          <ion-icon name="call-outline"></ion-icon>
+          <ion-button fill="clear" size="small" (click)="callNumber(fallbackContact.phone)">
+            {{ fallbackContact.phone }}
+          </ion-button>
+        </div>
+      </div>
+
+      <div *ngIf="hotlines && hotlines.length > 0" class="resource-section">
+        <div class="resource-label">Emergency Hotlines</div>
+
+        <div class="hotlines-list">
+          <div *ngFor="let hotline of hotlines" class="hotline-item">
+            <div class="hotline-info">
+              <span class="hotline-name">{{ hotline.name }}</span>
+              <span class="hotline-number">{{ hotline.number }}</span>
+            </div>
+
+            <ion-button fill="clear" size="small" (click)="callNumber(hotline.number)">
+              <ion-icon name="call-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="fallbackContact?.customHotline" class="resource-section">
+        <div class="resource-label">Custom Hotline</div>
+
+        <div class="contact-item">
+          <ion-icon name="phone-portrait-outline"></ion-icon>
+          <ion-button fill="clear" size="small" (click)="callNumber(fallbackContact.customHotline)">
+            {{ fallbackContact.customHotline }}
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <app-buddy-details-modal
+    *ngIf="showDetailsModal"
+    [buddy]="buddyToShowDetails"
+    (closeDetails)="closeDetailsModal()">
+  </app-buddy-details-modal>
 </ion-content>

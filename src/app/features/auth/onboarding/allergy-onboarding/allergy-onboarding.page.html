@@ -3,18 +3,19 @@
   <!-- Hero + progress bar -->
   <div class="onboarding-hero">
     <div class="hero-content">
-      <p class="step-eyebrow">Step 1 of 3 · Allergies</p>
+      <p class="step-eyebrow">Step 1 of 4 · Allergies</p>
       <h2 class="hero-title">What are you allergic to?</h2>
       <p class="hero-sub">Select all that apply. This helps keep you safe.</p>
     </div>
     <div class="progress-wrap">
       <div class="progress-track">
-        <div class="progress-fill" style="width: 33%"></div>
+        <div class="progress-fill" style="width: 25%"></div>
       </div>
       <div class="step-labels">
         <span class="step-label active">Allergies</span>
         <span class="step-label">Emergency</span>
         <span class="step-label">Buddy</span>
+        <span class="step-label">Location</span>
       </div>
     </div>
   </div>
@@ -61,6 +62,27 @@
           [name]="allergy.name + 'Value'"
           (click)="$event.stopPropagation()">
         </ion-input>
+
+        <p
+          *ngIf="allergy.name === 'medication' && allergy.checked"
+          class="chip-input-guide"
+          (click)="$event.stopPropagation()">
+          Specify the medicine, e.g. "penicillin" or "ibuprofen".
+        </p>
+
+        <p
+          *ngIf="!allergy.name?.startsWith('other_') && allergy.name !== 'medication' && allergy.hasInput && allergy.checked"
+          class="chip-input-guide"
+          (click)="$event.stopPropagation()">
+          Type any allergy not listed above.
+        </p>
+
+        <p
+          *ngIf="allergy.name?.startsWith('other_') && allergy.hasInput && allergy.checked"
+          class="chip-input-guide"
+          (click)="$event.stopPropagation()">
+          Enter a specific substance, e.g. "mango" or "latex gloves".
+        </p>
 
         <ion-button
           *ngIf="allergy.name?.startsWith('other_') && allergy.hasInput"

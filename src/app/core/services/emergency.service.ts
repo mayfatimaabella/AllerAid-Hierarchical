@@ -24,7 +24,7 @@ export interface EmergencyAlert {
   id?: string;
   userId: string;
   userName: string;
-  timestamp: any; // Firestore Timestamp
+  timestamp: any;
   location: {
     latitude: number;
     longitude: number;
@@ -61,6 +61,9 @@ export interface EmergencyAlert {
 export class EmergencyService {
   private db;
   private locationWatchId: string | null = null;
+  private backgroundLocationWatchId: string | null = null;
+  private cachedLocation: Position | null = null;
+  private isBackgroundTrackingActive = false;
   
   // Observable for tracking emergency alerts that the current user initiated
   private userEmergencySubject = new BehaviorSubject<EmergencyAlert | null>(null);
@@ -91,17 +94,21 @@ export class EmergencyService {
     try {
       console.log('Starting emergency alert process...');
       
-      // 1st Get current location with graceful fallback
-      let position: Position | null = null;
-      try {
-        position = await this.getCurrentLocation();
-      } catch (geoError) {
-        // Geolocation can fail on web if not served over HTTPS or permission denied
-        const code = (geoError as any)?.code;
-        console.warn('Geolocation unavailable, proceeding without precise location.', {
-          code,
-          message: (geoError as any)?.message || String(geoError)
-        });
+      // 1st Get current location from cache first (no waiting time), then fallback to fresh location
+      let position: Position | null = this.cachedLocation; // Use cached location if available
+      if (!position) {
+        try {
+          position = await this.getCurrentLocation();
+        } catch (geoError) {
+          // Geolocation can fail on web if not served over HTTPS or permission denied
+          const code = (geoError as any)?.code;
+          console.warn('Geolocation unavailable, proceeding without precise location.', {
+            code,
+            message: (geoError as any)?.message || String(geoError)
+          });
+        }
+      } else {
+        console.log('Using cached location for emergency alert (no waiting time)');
       }
       
       // Create the emergency alert
@@ -362,6 +369,88 @@ export class EmergencyService {
       }
       this.locationWatchId = null;
     }
+  }
+  
+  /**
+   * Start background location tracking (no waiting time for emergency location)
+   * Called after user grants location permission during onboarding
+   * Continuously caches location so emergency alerts have immediate location data
+   */
+  async startBackgroundLocationTracking(): Promise<void> {
+    if (this.isBackgroundTrackingActive) {
+      console.log('Background location tracking already active');
+      return;
+    }
+    
+    if (Capacitor.isNativePlatform()) {
+      if (!Capacitor.isPluginAvailable('Geolocation')) {
+        console.error('Geolocation is not available on this device');
+        return;
+      }
+      
+      try {
+        this.backgroundLocationWatchId = await Geolocation.watchPosition(
+          { 
+            enableHighAccuracy: true, 
+            timeout: 10000,
+            maximumAge: 30000
+          },
+          (position) => {
+            if (position) {
+              this.cachedLocation = position;
+              console.log('Background location cached:', position.coords.latitude, position.coords.longitude);
+            }
+          }
+        );
+        this.isBackgroundTrackingActive = true;
+        console.log('Background location tracking started');
+      } catch (error) {
+        console.error('Error starting background location tracking:', error);
+      }
+    } else {
+      // Use browser geolocation for web
+      if (!navigator.geolocation) {
+        console.error('Geolocation is not supported by this browser');
+        return;
+      }
+      
+      const watchId = setInterval(async () => {
+        try {
+          const position = await this.getCurrentLocation();
+          this.cachedLocation = position;
+          console.log('Background location cached (web):', position.coords.latitude, position.coords.longitude);
+        } catch (error) {
+          console.warn('Error caching location:', error);
+        }
+      }, 5000); // Update every 5 seconds
+      
+      this.backgroundLocationWatchId = watchId.toString();
+      this.isBackgroundTrackingActive = true;
+      console.log('Background location tracking started (web)');
+    }
+  }
+  
+  /**
+   * Stop background location tracking
+   */
+  async stopBackgroundLocationTracking(): Promise<void> {
+    if (this.backgroundLocationWatchId !== null) {
+      if (Capacitor.isNativePlatform()) {
+        await Geolocation.clearWatch({ id: this.backgroundLocationWatchId });
+      } else {
+        clearInterval(parseInt(this.backgroundLocationWatchId));
+      }
+      this.backgroundLocationWatchId = null;
+      this.isBackgroundTrackingActive = false;
+      console.log('Background location tracking stopped');
+    }
+  }
+  
+  /**
+   * Get cached location (for emergency alerts with no waiting time)
+   */
+  getCachedLocation(): Position | null {
+    return this.cachedLocation;
   }
   
   /**

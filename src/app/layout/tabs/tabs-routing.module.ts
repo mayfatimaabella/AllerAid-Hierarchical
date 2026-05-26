@@ -42,7 +42,7 @@ const routes: Routes = [
         data: { roles: ['buddy'] }
       },
       
-      // Doctor/Nurse Routes
+      // Doctor Routes
       {
         path: 'doctor-dashboard',
         loadChildren: () => import('../../features/dashboard/doctor-dashboard/doctor-dashboard.module').then(m => m.DoctorDashboardPageModule),

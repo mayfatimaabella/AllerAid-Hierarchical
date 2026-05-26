@@ -1,276 +1,297 @@
-ion-card-title {
-  font-weight: bold !important;
-}
-ion-card ion-item,
-ion-list {
-  --background: #fff !important;
-  background: #fff !important;
+.buddy-header ion-toolbar {
+  --background: #036a5d;
+  --color: #ffffff;
 }
 
-
-ion-card {
-  background: #fff !important;
-  border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(229, 94, 118, 0.10);
-  border: 1px solid #036a5d;
-  color: #036a5d;
+.invite-btn {
+  position: relative;
+  --color: #ffffff;
 }
 
-ion-card,
-ion-card * {
-  color: #036a5d !important;
-}
-:host {
-  display: block;
-  background: #ffffff;
-}
-
-ion-header ion-toolbar {
-  --background: #036a5d !important;
-  color: #fff !important;
+.invite-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  font-size: 10px;
 }
 
-
-// .wrapper {
-//   position: absolute;
-//   top: 0;
-//   left: 0;
-//   width: 100vw;
-//   height: 100vh;
-//   background-color: #faeaee;
-//   display: flex;
-//   flex-direction: column;
-//   padding: 20px;
-//   z-index: 1;
-//   margin-top: 56px; /* Push content below toolbar (default toolbar height for mobile) */
-// }
-
-ion-content{
-  --background: #ffffff;
-
+.buddy-page {
+  --background: #f5fbfa;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 16px;
+  --padding-bottom: 90px;
 }
 
-ion-fab {
-  z-index: 100;
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-}
-
-ion-fab-button {
-  --background: #036a5d !important;
-  --color: #fff;
-}
-
-ion-item.search-bar-item {
-  --background: #F1F2F5;
-  border: 0.5px solid #4a5553;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-}
-
-ion-input.search-bar-input {
-  --background: #F1F2F5;
-  background: #F1F2F5;
-  border-radius: 8px;
-  --color: #272727;
-  color: #272727;
-}
-
-ion-button.search-bar-btn {
-  --background: transparent;
-  --color: #036a5d;
-  border-radius: 8px;
-  margin-left: 8px;
-  box-shadow: none;
-  min-width: 40px;
-  width: 40px;
-  height: 40px;
+.buddy-hero {
+  background: linear-gradient(135deg, #036a5d, #0b8f7f);
+  border-radius: 22px;
+  padding: 20px;
+  color: #ffffff;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-/* Ensure shadow DOM native element is transparent */
-ion-button.search-bar-btn::part(native) {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-ion-button.search-bar-btn ion-icon {
-  color: #036a5d;
-  font-size: 22px;
-}
-
-ion-button[fill="clear"] ion-icon[name="ellipsis-vertical"] {
-  color: #036a5d !important;
-}
-
-.user-info-card {
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 16px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  box-shadow: 0 12px 28px rgba(3, 106, 93, 0.22);
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  
-  ion-icon {
-    font-size: 32px;
-    color: #451d66;
-  }
-  
-  h3 {
-    margin: 0 0 4px 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #451d66;
-  }
-  
-  p {
-    margin: 0;
-    font-size: 14px;
-    color: #666;
-  }
+.hero-eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  opacity: 0.85;
+  font-weight: 700;
 }
 
-/* Empty state card: gray background and centered muted text */
-.no-buddies-card {
-  background: #eaeaea !important;
-  border: 1 !important;
-  box-shadow: none !important;
-  border-color: #b7b7b7 !important;
-  min-height: 220px;
+.buddy-hero h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.hero-subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.buddy-count {
+  min-width: 78px;
+  height: 78px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.16);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-/* Center the empty state block in the content area */
-.no-buddies-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 60vh; /* keep it centered vertically in most viewports */
-  box-sizing: border-box;
-  padding: 12px;
+.buddy-count strong {
+  font-size: 24px;
 }
 
-.no-buddies-card .no-buddies-content {
-  text-align: center;
-  padding: 20px 16px;
+.buddy-count span {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.search-bar-item {
+  --background: #ffffff;
+  --border-radius: 16px;
+  --padding-start: 14px;
+  --inner-padding-end: 8px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 18px rgba(15, 42, 38, 0.08);
+}
+
+.search-bar-item ion-icon {
+  color: #036a5d;
+  font-size: 20px;
+}
+
+.search-bar-input {
+  --color: #173f39;
+  --placeholder-color: #7a928d;
   font-size: 14px;
 }
 
-.no-buddies-icon {
-  font-size: 42px;
-  color: #8a8f94; /* muted gray */
-  display: block;
-  margin: 0 auto 10px auto;
+.search-bar-btn {
+  --color: #036a5d;
+  font-weight: 700;
+  font-size: 13px;
 }
 
-.no-buddies-text {
-  line-height: 1.4;
+.buddy-list-card,
+.emergency-resources-card,
+.no-buddies-card {
+  margin: 0 0 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(3, 106, 93, 0.12);
+  box-shadow: 0 8px 24px rgba(15, 42, 38, 0.08);
 }
 
-/* Make sure the empty-state card and its children use dark gray, overriding the global card color */
-.no-buddies-card,
-.no-buddies-card * {
-  color: #6f6f6f !important;
+.buddy-list-card ion-card-header {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 8px;
 }
 
-.no-buddies-card ion-icon.no-buddies-icon {
-  color: #6f6f6f !important; /* ensure icon uses gray */
+.buddy-list-card ion-card-title,
+.emergency-resources-card ion-card-title {
+  color: #036a5d;
+  font-size: 18px;
+  font-weight: 800;
 }
 
-/* Emergency Resources Card */
+.buddy-list-card ion-card-subtitle,
+.emergency-resources-card ion-card-subtitle {
+  margin-top: 4px;
+  color: #6b827e;
+  font-size: 12px;
+}
+
+.buddy-list {
+  background: transparent;
+}
+
+.buddy-item {
+  --background: #f8fffd;
+  --border-radius: 16px;
+  --padding-start: 12px;
+  --inner-padding-end: 8px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(3, 106, 93, 0.08);
+}
+
+.buddy-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #e4f5f1;
+  color: #036a5d;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+.buddy-item h2 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #173f39;
+  margin-bottom: 3px;
+}
+
+.buddy-item p {
+  font-size: 12px;
+  color: #6b827e;
+}
+
+.more-btn {
+  --color: #036a5d;
+}
+
+.no-buddies-container {
+  min-height: 55vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-buddies-card {
+  width: 100%;
+  background: #ffffff;
+}
+
+.no-buddies-content {
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.empty-icon-wrap {
+  width: 76px;
+  height: 76px;
+  border-radius: 24px;
+  background: #eef8f6;
+  color: #036a5d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.empty-icon-wrap ion-icon {
+  font-size: 38px;
+}
+
+.no-buddies-content h2 {
+  margin: 0 0 8px;
+  color: #173f39;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.no-buddies-content p {
+  margin: 0 0 20px;
+  color: #6b827e;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.empty-action {
+  --background: #036a5d;
+  --border-radius: 14px;
+  font-weight: 700;
+}
+
 .emergency-resources-card {
-  background: linear-gradient(135deg, #f5fffe 0%, #eef8f6 100%) !important;
-  border-left: 5px solid #ff6b6b !important;
-  margin: 16px 0;
-}
-
-.emergency-resources-card ion-card-header {
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(3, 106, 93, 0.1);
+  background: #ffffff;
+  border-left: 5px solid #ff6b6b;
 }
 
 .emergency-resources-card ion-card-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
-  color: #036a5d !important;
 }
 
-.emergency-resources-card ion-icon {
-  color: #ff6b6b !important;
-  font-size: 20px;
+.emergency-resources-card ion-card-title ion-icon {
+  color: #ff6b6b;
 }
 
 .resource-section {
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  padding: 14px 0;
   border-bottom: 1px solid rgba(3, 106, 93, 0.08);
+}
 
-  &:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-  }
+.resource-section:last-child {
+  border-bottom: none;
 }
 
 .resource-label {
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.7px;
   color: #036a5d;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.contact-item,
+.hotline-item {
+  background: #f8fffd;
+  border: 1px solid rgba(3, 106, 93, 0.1);
+  border-radius: 14px;
+  padding: 11px 12px;
 }
 
 .contact-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  margin-bottom: 8px;
+}
 
-  ion-icon {
-    font-size: 18px;
-    color: #036a5d !important;
-    flex-shrink: 0;
-  }
+.contact-item ion-icon {
+  color: #036a5d;
+}
 
-  span {
-    color: #173f39;
-    font-weight: 500;
-  }
+.contact-item span {
+  color: #173f39;
+  font-weight: 700;
+}
 
-  ion-button {
-    --color: #036a5d !important;
-    text-decoration: none;
-    padding: 0;
-    margin: 0;
-    height: auto;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
+.contact-item ion-button {
+  --color: #036a5d;
+  margin: 0;
+  height: auto;
 }
 
 .hotlines-list {
@@ -283,33 +304,39 @@ ion-button[fill="clear"] ion-icon[name="ellipsis-vertical"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(3, 106, 93, 0.1);
 }
 
 .hotline-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1;
+  gap: 3px;
 }
 
 .hotline-name {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
   color: #173f39;
 }
 
 .hotline-number {
   font-size: 12px;
   color: #036a5d;
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .hotline-item ion-button {
-  --color: #ff6b6b !important;
-  font-size: 18px;
+  --color: #ff6b6b;
 }
 
+@media (max-width: 380px) {
+  .buddy-hero {
+    flex-direction: column;
+  }
+
+  .buddy-count {
+    width: 100%;
+    height: 64px;
+    flex-direction: row;
+    gap: 8px;
+  }
+}

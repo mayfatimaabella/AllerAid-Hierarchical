@@ -68,6 +68,10 @@ const routes: Routes = [
     loadChildren: () => import('./features/auth/onboarding/buddy-setup-onboarding/buddy-setup-onboarding.module').then( m => m.BuddySetupOnboardingPageModule)
   },
   {
+    path: 'location-permission-onboarding',
+    loadChildren: () => import('./features/auth/onboarding/location-permission-onboarding/location-permission-onboarding.module').then( m => m.LocationPermissionOnboardingPageModule)
+  },
+  {
     path: 'notification',
     loadChildren: () => import('./features/notification/notification.module').then( m => m.NotificationPageModule),
     canActivate: [AuthGuard]

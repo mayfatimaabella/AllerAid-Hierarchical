@@ -471,7 +471,7 @@ export class HomePage implements OnInit, OnDestroy {
 
       const buddyIds = Array.from(new Set(
         this.userBuddies
-          .map(buddy => buddy.connectedUserId)
+          .map(buddy => buddy.buddyUid || buddy.id)
           .filter(id => !!id && id !== currentUser.uid)
       ));
       const hasBuddies = buddyIds.length > 0;
@@ -496,12 +496,12 @@ export class HomePage implements OnInit, OnDestroy {
 
       if (hasBuddies) {
         this.userBuddies.forEach(buddy => {
-          const key = buddy.connectedUserId || buddy.id;
+          const key = buddy.buddyUid || buddy.id;
           if (!key || key === currentUser.uid) return;
           this.buddyResponses[key] = {
             status: 'sent',
             timestamp: new Date(),
-            name: buddy.firstName + ' ' + buddy.lastName
+            name: buddy.buddyName || `${buddy.firstName || ''} ${buddy.lastName || ''}`.trim() || 'Buddy'
           };
         });
       }
