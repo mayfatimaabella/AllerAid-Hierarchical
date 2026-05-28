@@ -25,9 +25,9 @@
         <div class="emergency-section">
           <div class="emergency-label">Phone Number</div>
           <div class="emergency-value">
-            <ng-container *ngIf="profileDetails?.phone; else noPhone">
-              {{ profileDetails.phone }}
-            </ng-container>
+          <ng-container *ngIf="hasValidPhone; else noPhone">
+            {{ formattedPhone }}
+          </ng-container>
             <ng-template #noPhone><i>No phone number added</i></ng-template>
           </div>
         </div>

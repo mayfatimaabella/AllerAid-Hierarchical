@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BuddyService } from '../../../core/services/buddy.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
@@ -15,7 +15,7 @@ import { doc, getDoc } from 'firebase/firestore';
   styleUrls: ['./buddy.page.scss'],
   standalone: false,
 })
-export class BuddyPage implements OnInit {
+export class BuddyPage implements OnInit, OnDestroy {
   showDetailsModal = false;
   buddyToShowDetails: any = null;
   
@@ -27,6 +27,11 @@ export class BuddyPage implements OnInit {
   // Loading states to prevent multiple calls
   private isLoadingBuddies = false;
   private isLoadingInvitations = false;
+
+  private relationsSubscription?: any;
+  private initialRelationsLoaded = false;
+  private invitationsSubscription?: any;
+  private invitationsListenerUnsubscribe?: () => void;
 
   showBuddyDetails(buddy: any) {
     this.buddyToShowDetails = buddy;
@@ -61,7 +66,21 @@ export class BuddyPage implements OnInit {
   async ngOnInit() {
     await this.loadInvitationCount();
     await this.loadEmergencyResources();
-    this.loadBuddies();
+
+    const currentUser = await this.authService.waitForAuthInit();
+
+    if (currentUser?.uid) {
+      this.listenForAcceptedInvitations(currentUser.uid);
+
+      this.invitationsListenerUnsubscribe =
+        this.buddyService.listenForBuddyInvitations(currentUser.uid);
+
+      this.invitationsSubscription =
+        this.buddyService.pendingInvitations$.subscribe(invitations => {
+          this.invitationCount =
+            (invitations || []).filter(inv => inv.status === 'pending').length;
+        });
+    }
   }
 
   async loadInvitationCount() {
@@ -243,35 +262,69 @@ async loadBuddies() {
 
   async onConfirmDeleteBuddy(buddy: any) {
     try {
-      await this.buddyService.deleteBuddy(buddy); // Pass the full buddy object, not just the ID
+      await this.buddyService.deleteBuddy(buddy);
+
       this.showDeleteModal = false;
       this.buddyToEdit = null;
-      
-      // Update local arrays instead of reloading from server
-      this.buddies = this.buddies.filter(b => b.id !== buddy.id);
-      this.filteredBuddies = this.filteredBuddies.filter(b => b.id !== buddy.id);
-      
-      // Show success toast
+
+      // Use buddyUid instead of id
+      const buddyUid =
+        buddy.buddyUid ||
+        buddy.connectedUserId ||
+        buddy.id;
+
+      this.buddies = this.buddies.filter(
+        b => (b.buddyUid || b.connectedUserId || b.id) !== buddyUid
+      );
+
+      this.filteredBuddies = this.filteredBuddies.filter(
+        b => (b.buddyUid || b.connectedUserId || b.id) !== buddyUid
+      );
+
+      // Refresh from Firestore to ensure sync
+      await this.loadBuddies();
+
       const toast = await this.toastController.create({
         message: `${buddy.firstName} ${buddy.lastName} has been removed from your buddy list.`,
         duration: 3000,
         color: 'success'
       });
+
       await toast.present();
-    } catch (error) {
-      // Handle error (e.g., show a toast)
-      console.error('Error deleting buddy:', error);
-      
-      // Show error toast
+
+    } catch (error: any) {
+
+      console.error('Delete operation error:', error);
+
+      // If the buddy is already gone, treat it as success
+      await this.loadBuddies();
+
+      const buddyStillExists = this.buddies.some(
+        b =>
+          (b.buddyUid || b.connectedUserId || b.id) ===
+          (buddy.buddyUid || buddy.connectedUserId || buddy.id)
+      );
+
+      if (!buddyStillExists) {
+        const toast = await this.toastController.create({
+          message: 'Buddy removed successfully.',
+          duration: 3000,
+          color: 'success'
+        });
+
+        await toast.present();
+
+        this.showDeleteModal = false;
+        return;
+      }
+
       const toast = await this.toastController.create({
-        message: 'Failed to delete buddy. Please try again.',
+        message: 'Failed to delete buddy.',
         duration: 3000,
         color: 'danger'
       });
+
       await toast.present();
-      
-      // Fallback to reload if delete fails locally
-      await this.loadBuddies();
     }
   }
 
@@ -344,4 +397,79 @@ async loadBuddies() {
       event.target.complete();
     }
   }
+
+  listenForAcceptedInvitations(userId: string): void {
+    this.buddyService.listenForBuddyRelations(userId);
+
+    this.relationsSubscription =
+      this.buddyService.buddyRelations$
+        .subscribe(async relations => {
+
+          const mappedRelations = (relations || []).map((b: any) => ({
+            ...b,
+            firstName: b.firstName || b.buddyName?.split(' ')[0] || '',
+            lastName: b.lastName || b.buddyName?.split(' ').slice(1).join(' ') || '',
+            email: b.email || b.buddyEmail || '',
+          }));
+
+          // Update buddy cards immediately
+          this.buddies = mappedRelations;
+          this.filteredBuddies = [...mappedRelations];
+
+          // Ignore first Firestore load only for toast
+          if (!this.initialRelationsLoaded) {
+            this.initialRelationsLoaded = true;
+
+            mappedRelations.forEach((rel: any) => {
+              const buddyUid =
+                rel.buddyUid ||
+                rel.connectedUserId ||
+                rel.id;
+
+              if (buddyUid) {
+                this.buddyService.markAsNotified(buddyUid);
+              }
+            });
+
+            return;
+          }
+
+          for (const rel of mappedRelations) {
+            const buddyUid =
+              rel.buddyUid ||
+              rel.connectedUserId ||
+              rel.id;
+
+            const requesterUid =
+              rel.requesterUid ||
+              rel.fromUserId;
+
+            if (
+              requesterUid === userId &&
+              buddyUid &&
+              !this.buddyService.hasBeenNotified(buddyUid)
+            ) {
+              const toast = await this.toastController.create({
+                message: `${rel.buddyName || rel.firstName} accepted your invitation.`,
+                duration: 3000,
+                color: 'success',
+                position: 'top'
+              });
+
+              await toast.present();
+
+              this.buddyService.markAsNotified(buddyUid);
+            }
+          }
+        });
+  }
+
+    ngOnDestroy() {
+      this.relationsSubscription?.unsubscribe();
+      this.invitationsSubscription?.unsubscribe();
+      if (this.invitationsListenerUnsubscribe) {
+        try { this.invitationsListenerUnsubscribe(); } catch {}
+      }
+      this.buddyService.stopBuddyRelationsListener();
+    }
 }

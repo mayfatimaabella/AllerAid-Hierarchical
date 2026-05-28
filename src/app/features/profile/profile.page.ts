@@ -54,7 +54,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   activeModal: ActiveModal = null;
   allergyOptions: AllergyOption[] = [];
   allergiesCount: number = 0;
-  emergencySettings: any = {};
 
   doctorStats: DoctorStats = {
     activePatients: 0,
@@ -141,9 +140,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   async loadMedicalData(): Promise<void> {
     try {
       const data = await this.profileDataLoader.loadMedicalData();
-
-      Object.assign(this.profileEmergencySettings.emergencySettings, data.emergencySettings || {});
-      this.emergencySettings = data.emergencySettings || {};
 
       this.profileEHRManager.doctorVisits = data.doctorVisits;
       this.profileEHRManager.medicalHistory = data.medicalHistory;
@@ -233,7 +229,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     return this.profileEmergencySettings.getEmergencyInstructionEntries(
       this.profileDataLoader.emergencyInstructionsValue,
       this.profileDataLoader.emergencyMessageValue ?? EMPTY_EMERGENCY_MESSAGE,
-      this.emergencySettings,
+      this.profileEmergencySettings.emergencySettings,
       this.profileDataLoader.emergencyMessageValue?.instructions
     );
   }

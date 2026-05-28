@@ -100,8 +100,9 @@ export class EditEmergencyProfileModalComponent implements OnInit {
       message: 'Save changes to the emergency message?',
       cssClass: 'fixed-dark-alert',
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Save', role: 'confirm' }
+        { text: 'Save', role: 'confirm' },
+        { text: 'Cancel', role: 'cancel' }
+        
       ]
     });
     await alert.present();

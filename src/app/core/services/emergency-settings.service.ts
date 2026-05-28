@@ -3,7 +3,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   onSnapshot,
   Unsubscribe,
   serverTimestamp,
@@ -101,15 +100,34 @@ private initializeAuthListener(): void {
 
   // ─── Public write API ─────────────────────────────────────────────────────
 
+  async initializeDefaults(uid: string): Promise<void> {
+    await setDoc(
+      doc(this.db, 'users', uid, 'settings', 'preferences'),
+      { emergencySettings: this.DEFAULTS },
+      { merge: true }
+    );
+  }
+
   async update(patch: Partial<EmergencySettings>): Promise<void> {
     if (!this.currentUserId) throw new Error('User not authenticated');
 
-    const prefsRef = doc(this.db, 'users', this.currentUserId, 'settings', 'preferences');
-    await updateDoc(prefsRef, {
-      'emergencySettings.shakeToAlert':      patch.shakeToAlert      ?? this.settingsSubject.value?.shakeToAlert,
-      'emergencySettings.powerButtonAlert':  patch.powerButtonAlert  ?? this.settingsSubject.value?.powerButtonAlert,
-      'emergencySettings.audioInstructions': patch.audioInstructions ?? this.settingsSubject.value?.audioInstructions,
-    });
+    await this.updateForUser(this.currentUserId, patch);
+  }
+
+  async updateForUser(uid: string, patch: Partial<EmergencySettings>): Promise<void> {
+    const currentSettings = this.settingsSubject.value ?? this.DEFAULTS;
+
+    await setDoc(
+      doc(this.db, 'users', uid, 'settings', 'preferences'),
+      {
+        emergencySettings: {
+          shakeToAlert: patch.shakeToAlert ?? currentSettings.shakeToAlert,
+          powerButtonAlert: patch.powerButtonAlert ?? currentSettings.powerButtonAlert,
+          audioInstructions: patch.audioInstructions ?? currentSettings.audioInstructions,
+        }
+      },
+      { merge: true }
+    );
   }
 
   async setShakeToAlert(enabled: boolean): Promise<void> {

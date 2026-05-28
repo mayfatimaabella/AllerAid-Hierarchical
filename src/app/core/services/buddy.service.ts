@@ -52,6 +52,9 @@ export class BuddyService {
   private pendingInvitationsSubject = new BehaviorSubject<BuddyInvitation[]>([]);
   pendingInvitations$ = this.pendingInvitationsSubject.asObservable();
 
+  private sentInvitationsSubject = new BehaviorSubject<BuddyInvitation[]>([]);
+  sentInvitations$ = this.sentInvitationsSubject.asObservable();
+
   private buddyRelationsSubject = new BehaviorSubject<any[]>([]);
   buddyRelations$ = this.buddyRelationsSubject.asObservable();
 
@@ -344,6 +347,8 @@ export class BuddyService {
         buddyUid: receiverUid,
         buddyEmail: invitation.toUserEmail,
         buddyName: invitation.toUserName,
+        requesterUid: senderUid,
+        responderUid: receiverUid,
         relationship: senderRelationship,
         status: 'accepted',
         invitationId,
@@ -358,6 +363,8 @@ export class BuddyService {
         buddyUid: senderUid,
         buddyEmail: invitation.fromUserEmail,
         buddyName: invitation.fromUserName,
+        requesterUid: senderUid,
+        responderUid: receiverUid,
         relationship: receiverRelationship,
         status: 'accepted',
         invitationId,
@@ -458,8 +465,19 @@ export class BuddyService {
       throw new Error('Missing user or buddy ID.');
     }
 
+    const inviteId1 = `${currentUserId}_${buddyUid}`;
+    const inviteId2 = `${buddyUid}_${currentUserId}`;
+
+    // Delete buddy records on both sides
     await deleteDoc(doc(this.db, 'users', currentUserId, 'buddies', buddyUid));
     await deleteDoc(doc(this.db, 'users', buddyUid, 'buddies', currentUserId));
+
+    // Delete old invitation records on both sides
+    await deleteDoc(doc(this.db, 'users', currentUserId, 'sentBuddyInvitations', inviteId1));
+    await deleteDoc(doc(this.db, 'users', buddyUid, 'receivedBuddyInvitations', inviteId1));
+
+    await deleteDoc(doc(this.db, 'users', buddyUid, 'sentBuddyInvitations', inviteId2));
+    await deleteDoc(doc(this.db, 'users', currentUserId, 'receivedBuddyInvitations', inviteId2));
   }
 
   async getUserBuddies(userId: string): Promise<any[]> {
@@ -510,10 +528,8 @@ export class BuddyService {
       'receivedBuddyInvitations'
     );
 
-    const q = query(
-      invitationsRef,
-      where('status', '==', 'pending')
-    );
+    // Load all invitations
+    const q = query(invitationsRef);
 
     const snap = await getDocs(q);
 
@@ -538,6 +554,7 @@ export class BuddyService {
   }
 
   async getSentInvitations(userId: string): Promise<BuddyInvitation[]> {
+
     const invitationsRef = collection(
       this.db,
       'users',
@@ -547,10 +564,39 @@ export class BuddyService {
 
     const snap = await getDocs(invitationsRef);
 
-    return snap.docs.map(docSnap => ({
-      id: docSnap.id,
-      ...docSnap.data()
-    })) as BuddyInvitation[];
+    const validInvitations: BuddyInvitation[] = [];
+
+    for (const docSnap of snap.docs) {
+
+      const invitation = {
+        id: docSnap.id,
+        ...docSnap.data()
+      } as BuddyInvitation;
+
+      
+      if (invitation.status === 'accepted') {
+
+        const buddyRef = doc(
+          this.db,
+          'users',
+          userId,
+          'buddies',
+          invitation.toUserId
+        );
+
+        const buddySnap = await getDoc(buddyRef);
+
+        
+        if (!buddySnap.exists()) {
+          await deleteDoc(docSnap.ref);
+          continue;
+        }
+      }
+
+      validInvitations.push(invitation);
+    }
+
+    return validInvitations;
   }
 
   listenForBuddyInvitations(userId: string): () => void {
@@ -561,10 +607,7 @@ export class BuddyService {
       'receivedBuddyInvitations'
     );
 
-    const q = query(
-      invitationsRef,
-      where('status', '==', 'pending')
-    );
+    const q = query(invitationsRef);
 
     return onSnapshot(q, snapshot => {
       const invitations = snapshot.docs.map(docSnap => ({
@@ -573,6 +616,26 @@ export class BuddyService {
       })) as BuddyInvitation[];
 
       this.pendingInvitationsSubject.next(invitations);
+    });
+  }
+
+  listenForSentInvitations(userId: string): () => void {
+    const invitationsRef = collection(
+      this.db,
+      'users',
+      userId,
+      'sentBuddyInvitations'
+    );
+
+    const q = query(invitationsRef);
+
+    return onSnapshot(q, snapshot => {
+      const invitations = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      })) as BuddyInvitation[];
+
+      this.sentInvitationsSubject.next(invitations);
     });
   }
 
@@ -712,8 +775,7 @@ export class BuddyService {
 
   private getInverseRelationship(relationship: string): string {
   switch (relationship) {
-    case 'Caregiver':      return 'Patient';
-    case 'Doctor / Nurse': return 'Patient';
+    case 'Doctor':          return 'Patient';
     case 'Family':
     case 'Family Member':  return 'Family Member';
     case 'Friend':         return 'Friend';

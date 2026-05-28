@@ -24,7 +24,7 @@
         <div class="hero-tags">
           <span class="tag tag-danger">
             <ion-icon name="warning-outline"></ion-icon>
-            {{ userAllergies.length }} Allergies
+            {{ userAllergies.length || 0 }} Allergies
           </span>
 
           <span class="tag tag-danger">
@@ -35,133 +35,192 @@
     </div>
 
     <div class="tab-bar">
-  <button class="tab" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">Overview</button>
-  <button class="tab" [class.active]="activeTab === 'instructions'" (click)="setTab('instructions')">Instructions</button>
+      <button
+        class="tab"
+        [class.active]="activeTab === 'overview'"
+        (click)="setTab('overview')">
+        Overview
+      </button>
+
+      <button
+        class="tab"
+        [class.active]="activeTab === 'instructions'"
+        (click)="setTab('instructions')">
+        Instructions
+      </button>
     </div>
   </div>
 
-<div class="body">
+  <div class="body">
 
-  <!-- OVERVIEW TAB -->
-  <ng-container *ngIf="activeTab === 'overview'">
+    <!-- OVERVIEW TAB -->
+    <ng-container *ngIf="activeTab === 'overview'">
 
-    <div class="section-label">Emergency information</div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-header-title">Personal details</span>
-        <button class="card-edit" aria-label="Edit"
+      <div class="section-label">Emergency information</div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header-title">Personal details</span>
+
+          <button
+            class="card-edit"
+            aria-label="Edit"
+            *ngIf="openEditEmergencyMessageModal"
+            (click)="openEditEmergencyMessageModal()">
+            <ion-icon name="create-outline"></ion-icon>
+          </button>
+        </div>
+
+        <div class="info-rows">
+          <div class="info-row">
+            <span class="row-label">
+              <ion-icon name="call-outline"></ion-icon>
+              Contact
+            </span>
+            <span class="row-val">
+              {{ emergencyContactPhone || 'Not provided' }}
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="row-label">
+              <ion-icon name="calendar-outline"></ion-icon>
+              Date of birth
+            </span>
+            <span class="row-val">
+              {{ formattedDateOfBirth || 'Not provided' }}
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="row-label">
+              <ion-icon name="person-outline"></ion-icon>
+              Gender
+            </span>
+            <span class="row-val">
+              {{ gender || 'Not specified' }}
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="row-label">
+              <ion-icon name="heart-outline"></ion-icon>
+              Blood type
+            </span>
+            <span class="row-val blood-type">
+              {{ bloodType || 'Unknown' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-row">
+        <span class="section-label">Allergies</span>
+
+        <button
+          class="section-row-btn"
+          aria-label="Edit allergies"
+          (click)="openEditAllergies.emit()">
+          <ion-icon name="create-outline"></ion-icon>
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="chips" *ngIf="userAllergies.length > 0; else noAllergiesOverview">
+          <span *ngFor="let allergy of userAllergies" class="chip">
+            {{ allergy.label || allergy.name }}
+          </span>
+        </div>
+
+        <ng-template #noAllergiesOverview>
+          <div class="empty">
+            <ion-icon name="medical-outline"></ion-icon>
+            <p class="empty-text">No allergies added</p>
+          </div>
+        </ng-template>
+      </div>
+
+    </ng-container>
+
+    <!-- INSTRUCTIONS TAB -->
+    <ng-container *ngIf="activeTab === 'instructions'">
+
+      <div class="section-row">
+        <span class="section-label">General instruction</span>
+
+        <button
+          class="section-row-btn"
+          aria-label="Edit instruction"
           *ngIf="openEditEmergencyMessageModal"
           (click)="openEditEmergencyMessageModal()">
           <ion-icon name="create-outline"></ion-icon>
         </button>
       </div>
-      <div class="info-rows">
-        <div class="info-row">
-          <span class="row-label"><ion-icon name="call-outline"></ion-icon> Contact</span>
-          <span class="row-val">{{ emergencyContactPhone || '—' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="row-label"><ion-icon name="calendar-outline"></ion-icon> Date of birth</span>
-          <span class="row-val">{{ formattedDateOfBirth || '—' }}</span>
-        </div>
 
-        <div class="info-row">
-          <span class="row-label"><ion-icon name="person-outline"></ion-icon>Gender</span>
-          <span class="row-val">{{ gender || '—' }}</span>
-        </div>
-        
-        <div class="info-row">
-          <span class="row-label"><ion-icon name="heart-outline"></ion-icon> Blood type</span>
-          <span class="row-val blood-type">{{ bloodType || '—' }}</span>
-        </div>
-      </div>
-    </div>
+     <ng-container *ngIf="instructionEntries.length; else noGeneralInstruction">
+        <ng-container *ngFor="let entry of instructionEntries">
+          <div *ngIf="entry.label === 'General'" class="instr-card critical">
+            <div class="instr-tag-row">
+              <span class="instr-priority">
+                <ion-icon name="warning-outline"></ion-icon>
+                Emergency Action Plan
+              </span>
+            </div>
 
-    <div class="section-row">
-      <span class="section-label">Allergies</span>
-      <button class="section-row-btn" aria-label="Edit allergies" (click)="openEditAllergies.emit()">
-        <ion-icon name="create-outline"></ion-icon>
-      </button>
-    </div>
-    <div class="card">
-      <div class="chips" *ngIf="userAllergies.length > 0; else noAllergiesOverview">
-        <span *ngFor="let allergy of userAllergies" class="chip">
-          {{ allergy.label || allergy.name }}
-        </span>
-      </div>
-      <ng-template #noAllergiesOverview>
-        <div class="empty">
-          <ion-icon name="medical-outline"></ion-icon>
-          <p class="empty-text">No allergies added yet</p>
+            <div class="instr-body">
+              {{ entry.text || 'No emergency instructions added' }}
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <ng-template #noGeneralInstruction>
+        <div class="instr-card">
+          <div class="empty">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            <p class="empty-text">No emergency instructions added</p>
+          </div>
         </div>
       </ng-template>
-    </div>
 
-  </ng-container>
+      <div class="section-row" style="margin-top: 6px">
+        <span class="section-label">Specific instructions</span>
 
-  <!-- INSTRUCTIONS TAB -->
-  <ng-container *ngIf="activeTab === 'instructions'">
-
-    <div class="section-row">
-      <span class="section-label">General instruction</span>
-      <button class="section-row-btn" aria-label="Edit instruction"
-        *ngIf="openEditEmergencyMessageModal"
-        (click)="openEditEmergencyMessageModal()">
-        <ion-icon name="create-outline"></ion-icon>
-      </button>
-    </div>
-
-    <ng-container *ngIf="hasInstructionEntries; else noGeneralInstruction">
-      <ng-container *ngFor="let entry of instructionEntries">
-        <div *ngIf="entry.label === 'General'" class="instr-card critical">
-          <div class="instr-tag-row">
-            <span class="instr-priority">
-              <ion-icon name="warning-outline"></ion-icon>
-              Emergency Action Plan 
-            </span>
-          </div>
-          <div class="instr-body">{{ entry.text }}</div>
-        </div>
-      </ng-container>
-    </ng-container>
-    <ng-template #noGeneralInstruction>
-      <div class="instr-card">
-        <div class="empty">
-          <ion-icon name="information-circle-outline"></ion-icon>
-          <p class="empty-text">No general instruction set</p>
-        </div>
+        <button
+          class="section-row-btn"
+          aria-label="Add instruction"
+          (click)="addInstruction.emit()">
+          <ion-icon name="add-outline"></ion-icon>
+        </button>
       </div>
-    </ng-template>
 
-    <div class="section-row" style="margin-top: 6px">
-      <span class="section-label">Specific instructions</span>
-      <button class="section-row-btn" aria-label="Add instruction" (click)="addInstruction.emit()">
-        <ion-icon name="add-outline"></ion-icon>
-      </button>
-    </div>
+      <ng-container *ngIf="hasSpecificInstructions; else noSpecificInstructions">
+        <ng-container *ngFor="let entry of instructionEntries">
+          <div *ngIf="entry.label !== 'General'" class="instr-card">
+            <div class="instr-tag-row">
+              <span class="instr-pill">
+                {{ entry.label || 'Specific allergy' }}
+              </span>
+            </div>
 
-    <ng-container *ngIf="hasSpecificInstructions; else noSpecificInstructions">
-      <ng-container *ngFor="let entry of instructionEntries">
-        <div *ngIf="entry.label !== 'General'" class="instr-card">
-          <div class="instr-tag-row">
-            <span class="instr-pill">{{ entry.label }}</span>
+            <div class="instr-body">
+              {{ entry.text || 'No specific instructions added' }}
+            </div>
           </div>
-          <div class="instr-body">{{ entry.text }}</div>
-        </div>
+        </ng-container>
       </ng-container>
-    </ng-container>
-    <ng-template #noSpecificInstructions>
-      <div class="instr-card">
-        <div class="empty">
-          <ion-icon name="information-circle-outline"></ion-icon>
-          <p class="empty-text">No allergy-specific instructions yet</p>
+
+      <ng-template #noSpecificInstructions>
+        <div class="instr-card">
+          <div class="empty">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            <p class="empty-text">No specific instructions added</p>
+          </div>
         </div>
-      </div>
-    </ng-template>
+      </ng-template>
 
-  </ng-container>
+    </ng-container>
 
-
-</div>
+  </div>
 
 </ion-content>

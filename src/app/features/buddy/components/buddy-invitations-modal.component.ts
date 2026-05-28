@@ -30,9 +30,12 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
   
   isLoading: boolean = false;
   currentUserId: string = '';
-
   private relationsSubscription?: any;
   private initialRelationsLoaded = false;
+  private pendingSubscription?: any;
+  private sentSubscription?: any;
+  private pendingListenerUnsubscribe?: () => void;
+  private sentListenerUnsubscribe?: () => void;
 
   constructor(
     private modalController: ModalController,
@@ -48,11 +51,36 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
       this.currentUserId = currentUser.uid;
       this.listenForAcceptedInvitations(currentUser.uid);
     }
-    await this.loadInvitations();
+    // Ensure initial invitations are loaded immediately when modal opens
+    try {
+      await this.loadInvitations();
+    } catch (e) {
+      console.warn('Failed to load invitations on init', e);
+    }
+    // Use realtime listeners so UI reflects invites immediately
+    if (currentUser) {
+      this.pendingListenerUnsubscribe = this.buddyService.listenForBuddyInvitations(currentUser.uid);
+      this.pendingSubscription = this.buddyService.pendingInvitations$.subscribe(invs => {
+        this.receivedInvitations = invs || [];
+      });
+
+      this.sentListenerUnsubscribe = this.buddyService.listenForSentInvitations(currentUser.uid);
+      this.sentSubscription = this.buddyService.sentInvitations$.subscribe(invs => {
+        this.sentInvitations = invs || [];
+      });
+    }
   }
 
   ngOnDestroy(): void {
     this.relationsSubscription?.unsubscribe();
+    this.pendingSubscription?.unsubscribe();
+    this.sentSubscription?.unsubscribe();
+    if (this.pendingListenerUnsubscribe) {
+      try { this.pendingListenerUnsubscribe(); } catch {}
+    }
+    if (this.sentListenerUnsubscribe) {
+      try { this.sentListenerUnsubscribe(); } catch {}
+    }
     this.buddyService.stopBuddyRelationsListener();
   }
 
@@ -72,10 +100,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
           // Mark existing accepted buddies as already notified
           relations.forEach((rel: any) => {
 
-            const buddyUid =
-              rel.buddyUid ||
-              rel.connectedUserId ||
-              rel.id;
+            const buddyUid = this.getBuddyRelationUserId(rel);
 
             if (buddyUid) {
               this.buddyService.markAsNotified(buddyUid);
@@ -89,18 +114,16 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
         // Only notify for new changes
         relations.forEach((rel: any) => {
 
-          const buddyUid =
-            rel.buddyUid ||
-            rel.connectedUserId ||
-            rel.id;
+          const buddyUid = this.getBuddyRelationUserId(rel);
 
           if (
+            this.isRequesterSideRelation(rel, userId) &&
             buddyUid &&
             !this.buddyService.hasBeenNotified(buddyUid)
           ) {
 
             this.showToast(
-              `${rel.buddyName} accepted your buddy request!`,
+              `${rel.buddyName} accepted your invitation.`,
               'success'
             );
 
@@ -217,10 +240,6 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
       message: 'Are you sure you want to accept this buddy invitation?',
       buttons: [
         {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
           text: 'Accept',
           handler: async () => {
             try {
@@ -233,7 +252,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
               const buddyName = accepted?.fromUserName || 'Your buddy';
 
               await this.buddyService.acceptBuddyInvitationWithUser(invitationId, currentUser.uid);
-              this.showToast(`${buddyName} is now your buddy!`, 'success');
+              this.showToast(`You are now buddies with ${buddyName}.`, 'success');
               await this.loadInvitations();
               this.dismiss(true, 'accepted');
             } catch (error) {
@@ -242,7 +261,11 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
               this.showToast(errorMessage, 'danger');
             }
           }
-        }
+        },
+                {
+          text: 'Cancel',
+          role: 'cancel'
+        },
       ]
     });
 
@@ -254,10 +277,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
       header: 'Decline Buddy Invitation',
       message: 'Are you sure you want to decline this buddy invitation?',
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
+
         {
           text: 'Decline',
           handler: async () => {
@@ -271,7 +291,10 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
               this.showToast('Error declining invitation', 'danger');
             }
           }
-        }
+        },        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
       ]
     });
 
@@ -284,10 +307,6 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
       message: 'Are you sure you want to cancel this invitation?',
       buttons: [
         {
-          text: 'No',
-          role: 'cancel'
-        },
-        {
           text: 'Cancel Invitation',
           handler: async () => {
             try {
@@ -299,6 +318,10 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
               this.showToast('Error cancelling invitation', 'danger');
             }
           }
+        },
+             {
+          text: 'No',
+          role: 'cancel'
         }
       ]
     });
@@ -368,6 +391,14 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
       position: 'top'
     });
     await toast.present();
+  }
+
+  private getBuddyRelationUserId(rel: any): string {
+    return rel.buddyUid || rel.connectedUserId || rel.id || '';
+  }
+
+  private isRequesterSideRelation(rel: any, currentUserId: string): boolean {
+    return rel.requesterUid === currentUserId || rel.fromUserId === currentUserId;
   }
 
   dismiss(refreshNeeded: boolean = false, actionType?: string) {

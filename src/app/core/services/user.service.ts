@@ -14,6 +14,7 @@ import {
 import { FirebaseService } from './firebase.service';
 import { AuthService } from './auth.service';
 import { UserProfile } from './models/user-profile.model';
+import { EmergencySettingsService } from './emergency-settings.service';
 
 
 
@@ -24,7 +25,11 @@ export class UserService {
 
     private userProfileCache: Map<string, UserProfile> = new Map();
 
-    constructor(private firebaseService: FirebaseService, private authService: AuthService) {}
+    constructor(
+      private firebaseService: FirebaseService,
+      private authService: AuthService,
+      private emergencySettingsService: EmergencySettingsService
+    ) {}
 
 
   // Create user profile for registration
@@ -87,13 +92,7 @@ export class UserService {
       }
 
       // Settings subcollection
-      await setDoc(doc(this.db, 'users', uid, 'settings', 'preferences'), {
-        emergencySettings: {
-          shakeToAlert: false,
-          powerButtonAlert: false,
-          audioInstructions: false
-        }
-      });
+      await this.emergencySettingsService.initializeDefaults(uid);
 
       console.log('User profile created successfully');
     } catch (error) {

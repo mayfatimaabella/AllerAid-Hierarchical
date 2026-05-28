@@ -10,11 +10,9 @@ import { IonicModule } from '@ionic/angular';
   templateUrl: './overview-section.component.html',
   styleUrls: ['./overview-section.component.scss']
 })
-
 export class OverviewSectionComponent {
-  constructor(
 
-  ) {}
+  constructor() {}
 
   // Inputs from parent
   @Input() userAllergies: any[] = [];
@@ -22,27 +20,44 @@ export class OverviewSectionComponent {
   @Input() profileDetails: any = {};
   @Input() userProfile: UserProfile | null = null;
   @Input() openEditEmergencyMessageModal!: () => void;
-  // UI state owned by this component
-
 
   // Events to parent
   @Output() openEditAllergies = new EventEmitter<void>();
   @Output() openEmergencyInfo = new EventEmitter<void>();
-
   @Output() shareInstruction = new EventEmitter<any>();
 
-  // Inputs for the instructions modal
+  // Instructions
   @Input() emergencyInstructions: any[] = [];
 
-
-  // Add this method to help Angular track changes
   trackByAllergyName(index: number, allergy: any): string {
     return allergy.name;
   }
 
-  
+  /**
+   * Strict PH mobile number formatter
+   * Format: 09XXXXXXXXX
+   */
+  get formattedPhone(): string {
 
+    if (!this.profileDetails?.phone) {
+      return '';
+    }
 
-  
-  
+    // Remove all non-numeric characters
+    let phone = String(this.profileDetails.phone).replace(/\D/g, '');
+
+    // Convert +639XXXXXXXXX -> 09XXXXXXXXX
+    if (phone.startsWith('639')) {
+      phone = '0' + phone.substring(2);
+    }
+
+    // Strict validation
+    const isValid = /^09\d{9}$/.test(phone);
+
+    return isValid ? phone : '';
+  }
+
+  get hasValidPhone(): boolean {
+    return !!this.formattedPhone;
+  }
 }

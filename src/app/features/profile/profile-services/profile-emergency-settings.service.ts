@@ -7,6 +7,7 @@ import { UserProfile } from '../../../core/services/models/user-profile.model';
 import { EditEmergencyProfileModalComponent } from '../overview/modals/edit-profile-message/edit-emergency-profile-modal.component';
 import { EmergencyDetectorService } from '../../../core/services/emergency-detector.service';
 import { ProfileDetailService } from '../../../core/services/profile-details.service';
+import { EmergencySettingsService } from '../../../core/services/emergency-settings.service';
 
 interface EmergencyMessageFormData {
   name?: string;
@@ -33,7 +34,8 @@ export class ProfileEmergencySettingsService {
     private medicalService: MedicalService,
     private userService: UserService,
     private profileDetailService: ProfileDetailService,
-    private emergencyDetectorService: EmergencyDetectorService
+    private emergencyDetectorService: EmergencyDetectorService,
+    private emergencySettingsService: EmergencySettingsService
   ) {}
 
   private parseName(name?: string): { firstName?: string; lastName?: string; fullName?: string } {
@@ -62,10 +64,7 @@ export class ProfileEmergencySettingsService {
         audioInstructions: this.emergencySettings?.audioInstructions !== false
       };
 
-      await this.userService.updateUserProfile(uid, {
-        emergencySettings: settings
-      } as Partial<UserProfile>);
-
+      await this.emergencySettingsService.updateForUser(uid, settings as any);
       await this.emergencyDetectorService.updateEmergencySettings(settings as any);
 
       await this.presentToast('Emergency settings saved');
