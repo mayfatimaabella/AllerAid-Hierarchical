@@ -120,6 +120,11 @@ export class AddMedicationModal implements OnInit {
       this.med.notes = '';
     }
 
+    // Calculate and store reminderTimes based on startTime and intervalHours
+    if (this.med.startTime && this.med.intervalHours) {
+      this.med.reminderTimes = this.calculateReminderTimes();
+    }
+
     if (!this.isEditMode) {
       // --- CORRECTED SYSTEM DEDUCTION LOGIC ---
       const now = new Date().getTime();
@@ -155,6 +160,29 @@ export class AddMedicationModal implements OnInit {
       console.error("DEBUG: Firestore Rejection:", error);
       this.showToast('Error saving: Check console for error details.');
     }
+  }
+
+  /**
+   * Calculate reminder times based on start time and interval hours
+   */
+  private calculateReminderTimes(): string[] {
+    if (!this.med.startTime || !this.med.intervalHours) return [];
+
+    const times: string[] = [];
+    const [startHour, startMin] = this.med.startTime.split(':').map(Number);
+    const intervalMs = Number(this.med.intervalHours) * 60 * 60 * 1000;
+    
+    let currentTime = new Date();
+    currentTime.setHours(startHour, startMin, 0, 0);
+    
+    // Generate up to 5 reminder times (or until end of day)
+    for (let i = 0; i < 5; i++) {
+      if (currentTime.getHours() >= 24) break; // Stop if past midnight
+      times.push(`${String(currentTime.getHours()).padStart(2, '0')}:${String(currentTime.getMinutes()).padStart(2, '0')}`);
+      currentTime.setTime(currentTime.getTime() + intervalMs);
+    }
+    
+    return times;
   }
 
   public getStatusLabel(): string {

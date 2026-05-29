@@ -73,34 +73,77 @@ export class MedicationDetailsModal implements OnInit, OnDestroy {
   // --- Reactive Status Logic ---
 
   getStatusLabel(): string {
-    if (!this.medication) return '';
+  if (!this.medication) return '';
 
-    const remaining = this.calculateRemainingPills(); 
-    
-    // 1. Priority Checks via Service
-    if (this.medService.isExpired(this.medication)) return 'Expired';
-    if (remaining <= 0) return 'Completed';
-    if (this.medService.isOverdue(this.medication)) return 'Overdue';
+  // 1. Calculate states
+  const remaining = this.calculateRemainingPills();
+  const isPastEndDate = this.isPastEndDate(this.medication); 
+  
+  // 2. Priority Logic
+  // A. Incomplete: End date passed AND pills remain
+  if (isPastEndDate && remaining > 0) return 'Incomplete';
+  
+  // B. Expired: Shelf life reached (from your medService)
+  if (this.medService.isExpired(this.medication)) return 'Expired';
+  
+  // C. Completed: No pills left
+  if (remaining <= 0) return 'Completed';
+  
+  // D. Overdue: Missed dose logic
+  if (this.medService.isOverdue(this.medication)) return 'Overdue';
 
-    // 2. Database Statuses
-    if (this.medication.status === 'Incomplete') return 'Incomplete';
-    if (this.medication.status === 'Ongoing' || this.medication.status === 'Active') return this.medication.status;
+  // 3. Database Statuses fallback
+  if (this.medication.status === 'Incomplete') return 'Incomplete';
+  if (this.medication.status === 'Ongoing' || this.medication.status === 'Active') 
+    return this.medication.status;
 
-    return this.medication.isActive ? 'Ongoing' : 'Inactive';
-  }
+  return this.medication.isActive ? 'Ongoing' : 'Inactive';
+}
+
+// Helper method to safely handle the date comparison
+private isPastEndDate(medication: any): boolean {
+  // Check if expiryDate is defined and is not null/undefined
+  if (!medication || !medication.expiryDate) return false;
+
+  // Handle Firebase Timestamps or standard string dates
+  const endDate = medication.expiryDate.toDate 
+    ? medication.expiryDate.toDate() 
+    : new Date(medication.expiryDate);
+
+  // Guard against invalid date objects
+  if (isNaN(endDate.getTime())) return false;
+
+  const now = new Date();
+  // We compare only the date (ignore time) to avoid false "past" flags on the final day
+  endDate.setHours(0, 0, 0, 0);
+  now.setHours(0, 0, 0, 0);
+
+  return now > endDate;
+}
 
   getStatusColor(): string {
     const label = this.getStatusLabel();
     switch (label) {
-      case 'Ongoing': 
+      case 'Ongoing': return 'success';
       case 'Active': return 'success';
       case 'Completed': return 'primary';
       case 'Overdue': return 'warning';
-      case 'Incomplete': 
+      case 'Incomplete': return 'danger';
       case 'Expired': return 'danger';
       default: return 'medium';
     }
   }
+
+  getStatusCaption(label: string): string {
+  const captions: { [key: string]: string } = {
+    'Overdue': 'You missed a scheduled dose.',
+    'Incomplete': 'You didn\'t finish the medication on time.',
+    'Completed': 'You have successfully finished the medication.',
+    'Expired': 'This medication has reached its shelf life expiry.',
+    'Ongoing': 'You are currently taking this medication.'
+  };
+  return captions[label] || '';
+}
 
   // --- Action Handlers ---
 

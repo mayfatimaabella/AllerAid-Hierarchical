@@ -67,28 +67,51 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
     if (this.medSub) this.medSub.unsubscribe();
   }
 
-  getStatusLabel(medication: Medication): string {
-    if (!medication) return '';
+  getStatusLabel(medication: any): string {
+  if (!medication) return '';
 
-    const remaining = this.calculateRemainingPills(medication);
-    
-    if (this.medService.isExpired(medication)) return 'Expired';
-    if (remaining <= 0) return 'Completed';
-    
-    // Uses the new Overdue logic from MedicationService
-    if (this.medService.isOverdue(medication)) return 'Overdue';
-
-    return medication.isActive ? 'Ongoing' : 'Inactive';
+  const remaining = this.calculateRemainingPills(medication);
+  
+  // 1. NEW: Check if the end date has passed (Incomplete status)
+  if (this.isPastEndDate(medication) && remaining > 0) {
+    return 'Incomplete';
   }
+
+  // 2. Existing Priority Logic
+  if (this.medService.isExpired(medication)) return 'Expired';
+  if (remaining <= 0) return 'Completed';
+  if (this.medService.isOverdue(medication)) return 'Overdue';
+
+  // 3. Fallback
+  return medication.isActive ? 'Ongoing' : 'Inactive';
+}
+
+// Ensure this helper is present in this component as well
+private isPastEndDate(medication: any): boolean {
+  if (!medication || !medication.expiryDate) return false;
+
+  const endDate = (medication.expiryDate.toDate && typeof medication.expiryDate.toDate === 'function')
+    ? medication.expiryDate.toDate()
+    : new Date(medication.expiryDate);
+
+  if (isNaN(endDate.getTime())) return false;
+
+  const now = new Date();
+  endDate.setHours(0, 0, 0, 0);
+  now.setHours(0, 0, 0, 0);
+
+  return now > endDate;
+}
 
   getStatusColor(medication: Medication): string {
     const label = this.getStatusLabel(medication);
     switch (label) {
       case 'Ongoing': return 'success';
+      case 'Active': return 'success';
       case 'Completed': return 'primary';
       case 'Overdue': return 'warning';
+      case 'Incomplete': return 'danger';
       case 'Expired': return 'danger';
-      case 'Inactive': return 'medium';
       default: return 'medium';
     }
   }
