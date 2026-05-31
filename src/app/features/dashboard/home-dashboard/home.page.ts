@@ -7,6 +7,7 @@ import { EmergencyService } from '../../../core/services/emergency.service';
 import { EmergencyNotificationService } from '../../../core/services/emergency-notification.service';
 import { UserService } from '../../../core/services/user.service';
 import { MedicalService } from '../../../core/services/medical.profile.service';
+import { LocationPermissionService } from '../../../core/services/location-permission.service';
 import { Subscription } from 'rxjs';
 import { doc, getDoc } from 'firebase/firestore';
 import { FirebaseService } from '../../../core/services/firebase.service';
@@ -68,26 +69,25 @@ export class HomePage implements OnInit, OnDestroy {
     private firebaseService: FirebaseService,
     private modalController: ModalController,
     private allergyManager: AllergyManagerService,
-    private allergyModalService: AllergyModalService
+    private allergyModalService: AllergyModalService,
+    private locationPermissionService: LocationPermissionService
   ) {
     this.db = this.firebaseService.getDb();
   }
 
   async ngOnInit() {
     await this.loadUserData();
-    this.listenForEmergencyResponses();
     this.listenForNotificationStatus();
-    this.subscribeToUserEmergency();
   }
 
   async ionViewWillEnter() {
      this.unsubscribeAll();
     await this.loadUserData();
-    this.subscribeToUserEmergency();
+    this.listenForNotificationStatus();
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.unsubscribeAll();
     this.clearEmergencyConfirmationTimer();
   }
 
@@ -121,37 +121,44 @@ export class HomePage implements OnInit, OnDestroy {
         this.userBuddies = await this.buddyService.getUserBuddies(currentUser.uid);
         await this.checkBuddyStatus();
 
-        this.listenForEmergencyResponses();
-        this.subscribeToUserEmergency();
+  
       }
     } catch (error) {
       console.error('Error loading user data:', error);
     }
   }
 
-  listenForEmergencyResponses() {
-    if (!this.currentEmergencyId) return;
+private emergencyResponseSub: Subscription | null = null;
 
-    const responseSubscription = this.emergencyService.emergencyResponse$.subscribe(response => {
-      if (response) {
-        if (this.buddyResponses[response.responderId]) {
-          this.buddyResponses[response.responderId].status = 'responded';
-          this.buddyResponses[response.responderId].timestamp = new Date();
-        }
+listenForEmergencyResponses() {
+  if (!this.currentEmergencyId) return;
 
-        this.respondingBuddy = {
-          responderName: response.responderName,
-          estimatedTime: response.estimatedArrival ? `${response.estimatedArrival} min` : 'Calculating...',
-          distance: response.distance || 0,
-          estimatedArrival: response.estimatedArrival || 0,
-          emergencyId: response.emergencyId
-        };
-        this.showResponderAlert(response);
-      }
-    });
-
-    this.subscriptions.push(responseSubscription);
+  if (this.emergencyResponseSub) {
+    this.emergencyResponseSub.unsubscribe();
+    this.emergencyResponseSub = null;
   }
+
+  this.emergencyResponseSub = this.emergencyService.emergencyResponse$.subscribe(response => {
+    if (!response || response.emergencyId !== this.currentEmergencyId) return;
+
+    if (this.buddyResponses[response.responderId]) {
+      this.buddyResponses[response.responderId].status = 'responded';
+      this.buddyResponses[response.responderId].timestamp = new Date();
+    }
+
+    this.respondingBuddy = {
+      responderName: response.responderName,
+      estimatedTime: response.estimatedArrival ? `${response.estimatedArrival} min` : 'Calculating...',
+      distance: response.distance || 0,
+      estimatedArrival: response.estimatedArrival || 0,
+      emergencyId: response.emergencyId
+    };
+
+    this.showResponderAlert(response);
+  });
+
+  this.subscriptions.push(this.emergencyResponseSub);
+}
 
   private subscribeToUserEmergency() {
     const sub = this.emergencyService.userEmergency$.subscribe(async (emergency) => {
@@ -303,6 +310,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async presentEmergencyConfirmation() {
+
     this.clearEmergencyConfirmationTimer();
     this.emergencyConfirmationTimeLeft = 5;
 
@@ -449,6 +457,18 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async sendEmergencyAlert() {
+    // Request location permission before sending alert
+    try {
+      const permissionResult = await this.locationPermissionService.requestLocationPermissions();
+      if (permissionResult.granted) {
+        console.log('Location permission granted');
+      } else {
+        console.warn('Location permission not granted:', permissionResult.message);
+      }
+    } catch (permError) {
+      console.warn('Error requesting location permission:', permError);
+    }
+
     const loading = await this.loadingController.create({
       message: 'Sending emergency alert...',
       duration: 15000
@@ -459,8 +479,12 @@ export class HomePage implements OnInit, OnDestroy {
       const currentUser = await this.authService.waitForAuthInit();
       if (!currentUser) throw new Error('User not authenticated');
 
+      //Get medical profile to ensure we have the latest instructions and allergies before sending alert
       const latestMedical = await this.medicalService.getUserMedicalProfile(currentUser.uid);
+
+      // Determine the most relevant emergency instruction to use
       const latestMessageInstruction = (latestMedical as any)?.emergencyMessage?.instructions;
+      // Priority: 1) Specific message instruction, 2) General medical profile instruction, 3) Existing instruction in component (which may have been loaded on init)
       const resolvedInstruction =
         (typeof latestMessageInstruction === 'string' && latestMessageInstruction.trim()) ||
         latestMedical?.generalEmergencyInstruction?.trim() ||
@@ -468,14 +492,14 @@ export class HomePage implements OnInit, OnDestroy {
         '';
 
       this.emergencyInstruction = resolvedInstruction;
-
+// Get buddy IDs, ensuring we only include valid IDs and exclude the current user
       const buddyIds = Array.from(new Set(
         this.userBuddies
           .map(buddy => buddy.buddyUid || buddy.id)
           .filter(id => !!id && id !== currentUser.uid)
       ));
       const hasBuddies = buddyIds.length > 0;
-
+// Prepare allergy information as strings for the alert
       const allergyStrings = this.userAllergies
         .map((allergy: any) => allergy.label || allergy.name || '')
         .filter((allergy: string) => allergy !== '');
@@ -489,7 +513,7 @@ export class HomePage implements OnInit, OnDestroy {
         allergyStrings,
         resolvedInstruction
       );
-
+      this.listenForEmergencyResponses();
       this.isEmergencyActive = true;
       this.emergencyStartTime = new Date();
       this.buddyResponses = {};

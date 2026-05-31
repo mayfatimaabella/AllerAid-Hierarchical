@@ -314,41 +314,74 @@ async getUserProfile(uid: string, useCache: boolean = true): Promise<UserProfile
     }
   }
 
+    /**
+   * Get profile details document
+   * users/{uid}/profile/details
+   */
+  async getUserProfileDetails(uid: string): Promise<any | null> {
+    try {
+      const snap = await getDoc(
+        doc(this.db, 'users', uid, 'profile', 'details')
+      );
 
+      return snap.exists() ? snap.data() : null;
+    } catch (error) {
+      console.error('Error getting profile details:', error);
+      return null;
+    }
+  }
 
+  /**
+   * Get medical info document
+   * users/{uid}/medical/info
+   */
+  async getUserMedicalInfo(uid: string): Promise<any | null> {
+    try {
+      const snap = await getDoc(
+        doc(this.db, 'users', uid, 'medical', 'info')
+      );
 
+      return snap.exists() ? snap.data() : null;
+    } catch (error) {
+      console.error('Error getting medical info:', error);
+      return null;
+    }
+  }
 
+  /**
+   * Get complete emergency profile
+   * Combines:
+   * users/{uid}
+   * users/{uid}/profile/details
+   * users/{uid}/medical/info
+   */
+  async getCompleteEmergencyProfile(uid: string): Promise<any | null> {
+    try {
+      const [
+        baseProfile,
+        profileDetails,
+        medicalInfo
+      ] = await Promise.all([
+        this.getUserProfile(uid, false),
+        this.getUserProfileDetails(uid),
+        this.getUserMedicalInfo(uid)
+      ]);
 
+      if (!baseProfile) {
+        return null;
+      }
 
+      return {
+        ...baseProfile,
+        profileDetails: profileDetails || {},
+        medicalInfo: medicalInfo || {}
+      };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
+    } catch (error) {
+      console.error('Error getting complete emergency profile:', error);
+      return null;
+    }
+  }
 
 
   // Get doctor credentials (for verification/professional pages)

@@ -1,309 +1,489 @@
-/* --- 1. Global & Header --- */
-ion-toolbar {
-  --background: #036a5d;
-  --color: white;
+/* ─── Variables ─── */
+:root,
+ion-content {
+  --red: #b91c1c;
+  --red-light: #fee2e2;
+  --red-mid: #fca5a5;
+  --teal: #0d9488;
+  --teal-light: #f0fdf4;
+  --teal-border: #99f6e4;
+  --green: #059669;
+  --orange-light: #fff7ed;
+  --orange-border: #fed7aa;
+  --orange-text: #7c2d12;
+  --surface: #ffffff;
+  --bg: #f1f5f9;
+  --border: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.13);
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --font: 'DM Sans', system-ui, sans-serif;
+  --mono: 'DM Mono', monospace;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --background: var(--bg);
 }
 
+/* ─── Layout ─── */
+.mobile-container {
+  min-height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Header ─── */
 .emergency-header {
-  background: #ef4444;
-  color: white;
-  padding: 8px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--red);
+  padding: 13px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  .alert-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-  }
-
-  .time-badge {
-    background: #ffffff;
-    color: #000;
-    font-size: 0.7rem;
-    padding: 2px 10px;
-    border-radius: 12px;
-  }
 }
 
-/* --- 2. Patient Identity Card --- */
-.patient-identity-card {
+.hdr-left {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: white;
-
-  .patient-info-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-
-    ion-avatar {
-      width: 44px;
-      height: 44px;
-      border: 2px solid #ef4444;
-    }
-
-    .name-wrapper {
-      display: flex;
-      flex-direction: column;
-
-      .patient-name {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #1e293b;
-      }
-
-      .emergency-type {
-        font-size: 0.75rem;
-        color: #ef4444;
-        font-weight: 600;
-      }
-    }
-  }
-
-  .status-badge {
-    background: #fee2e2;
-    color: #ef4444;
-    font-size: 0.65rem;
-    font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 6px;
-    text-transform: uppercase;
-  }
+  gap: 8px;
 }
 
-.emergency-info-card {
-  margin: 0 16px 12px 16px;
-  padding: 10px 14px;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-
-  .emergency-info-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #64748b;
-    margin-bottom: 6px;
-  }
-
-  p {
-    margin: 2px 0;
-    font-size: 0.85rem;
-    color: #1e293b;
-    strong { font-weight: 600; }
-  }
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red-mid);
+  animation: pulse-dot 1.4s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
-/* --- 3. Map Section --- */
-.map-location-card {
-  margin: 0 16px 12px 16px;
-  display: flex;
-  flex-direction: column;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-
-  .map-container {
-    height: 180px;
-    width: 100%;
-    position: relative;
-    background: #ebebeb;
-    border-bottom: 1px solid #f1f5f9;
-
-    .mini-map { height: 100%; width: 100%; }
-
-    .map-reset-btn {
-      position: absolute;
-      width: 32px;
-      height: 32px;
-      bottom: 8px;
-      right: 8px;
-      z-index: 10;
-      --padding-start: 0;
-      --padding-end: 0;
-      --border-radius: 50%;
-      --background: white;
-      --color: black;
-    }
-  }
-
-  .location-info-section {
-    padding: 12px 16px;
-    background: #ffffff;
-
-    .location-grid {
-      display: flex;
-      gap: 12px;
-
-      .loc-col {
-        flex: 1;
-        min-width: 0;
-
-        &.divider {
-          border-right: 1px solid #f1f5f9;
-          padding-right: 8px;
-        }
-
-        .loc-header {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          margin-bottom: 2px;
-
-          ion-icon { font-size: 1rem; color: #3b82f6; }
-          span {
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-          }
-        }
-
-        .address-text {
-          font-size: 0.75rem;
-          color: #1e293b;
-          line-height: 1.3;
-          font-weight: 500;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
-    }
-  }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .45; transform: scale(.7); }
 }
 
-/* --- 4. Instructions --- */
-.instructions-card {
-  margin: 0 16px 16px 16px;
-
-  .emergency-plan-box {
-    padding: 10px 14px;
-    margin-bottom: 10px;
-    background: #f0fdfa;
-    border-radius: 8px;
-    border-left: 4px solid #036a5d;
-
-    .plan-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #036a5d;
-      margin-bottom: 2px;
-      display: block;
-    }
-    .plan-text { font-size: 0.85rem; color: #0f172a; line-height: 1.4; }
-  }
-
-  .chip-group-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    .allergy-chip {
-      --background: #f1f5f9;
-      --color: #475569;
-      height: 26px;
-      font-size: 0.7rem;
-      margin: 0;
-    }
-  }
+.alert-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  color: #fecaca;
+  text-transform: uppercase;
 }
 
-/* --- 5. Footer Actions (Updated Logic) --- */
-.footer-actions {
-  padding: 0 16px 20px 16px;
+.time-badge {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: #fff;
+}
+
+/* ─── Section wrapper ─── */
+.emergency-section {
+  padding: 14px 14px 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
 
-  .btn-google-maps {
-    margin-bottom: 0;
-    --border-color: #4285F4;
-    --color: #4285F4;
-    height: 46px;
-    font-weight: 700;
+/* ─── Shared card base ─── */
+.patient-identity-card,
+.emergency-info-card,
+.map-location-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* ─── Patient card ─── */
+.patient-identity-card {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.patient-info-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.avatar-initials {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--red-light);
+  color: var(--red);
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1.5px solid var(--red-mid);
+}
+
+.name-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.patient-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emergency-type {
+  font-size: 12px;
+  color: var(--red);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.status-badge {
+  background: var(--red-light);
+  color: #991b1b;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  letter-spacing: .02em;
+}
+
+/* ─── Info card ─── */
+.emergency-info-card {
+  padding: 0;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.info-cell {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.info-cell:nth-child(odd) {
+  border-right: 1px solid var(--border);
+}
+
+.info-cell.align-right {
+  text-align: right;
+}
+
+.info-label {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 3px;
+}
+
+.info-val {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.info-val.blood {
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: 14px;
+}
+
+/* ─── Map card ─── */
+.map-container {
+  height: 155px;
+  position: relative;
+  background: #dde1e7;
+  overflow: hidden;
+}
+
+.mini-map {
+  width: 100%;
+  height: 100%;
+}
+
+.map-reset-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--teal);
+  font-size: 16px;
+  transition: background .15s;
+  /* Ionic overrides */
+  --border-radius: 50%;
+  --background: #fff;
+  --color: var(--teal);
+  --box-shadow: none;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.map-reset-btn:hover { background: #f8fafc; }
+
+.location-info-section {
+  padding: 12px 16px;
+}
+
+.location-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.loc-col { min-width: 0; }
+
+.loc-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.loc-header ion-icon {
+  font-size: 13px;
+  color: var(--teal);
+}
+
+.loc-header span {
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 500;
+}
+
+.address-text {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.eta-container {
+  background: var(--teal-light);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  text-align: center;
+}
+
+.eta-label {
+  font-size: 10px;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+}
+
+.eta-value {
+  font-family: var(--mono);
+  font-size: 19px;
+  font-weight: 500;
+  color: #065f46;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+/* ─── Instructions card ─── */
+.instructions-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.emergency-plan-box {
+  background: var(--teal-light);
+  border-left: 3px solid var(--teal);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 12px 14px;
+}
+
+.plan-label {
+  display: block;
+  font-size: 10px;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.plan-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.chip-group-container {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.allergy-chip {
+  background: var(--orange-light);
+  border: 1px solid var(--orange-border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 12px;
+  color: var(--orange-text);
+  line-height: 1.45;
+}
+
+.allergy-chip strong {
+  color: #9a3412;
+}
+
+/* ─── Footer ─── */
+.footer-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  padding: 12px 0 calc(14px + env(safe-area-inset-bottom));
+  background: rgba(241, 245, 249, 0.94);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  /* offset the section padding */
+  margin: 0 -14px;
+  padding-left: 14px;
+  padding-right: 14px;
+  margin-top: 10px;
+}
+
+.btn {
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: opacity .15s, transform .1s;
+  letter-spacing: .01em;
+  /* Ionic button resets */
+  --border-radius: var(--radius-sm);
+}
+
+.btn:active { transform: scale(.98); }
+
+.btn ion-icon { font-size: 16px; flex-shrink: 0; }
+
+.btn-maps {
+  height: 40px;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  --background: transparent;
+  --color: var(--text);
+  --border-color: var(--border-strong);
+}
+
+.btn-maps:hover { background: #f8fafc; }
+
+.btn-maps ion-icon { color: #4285f4; }
+
+.secondary-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-respond,
+.btn-completed {
+  height: 52px;
+  background: var(--green);
+  color: #fff;
+  font-size: 14px;
+  border-radius: var(--radius);
+  --background: var(--green);
+  --color: #fff;
+  --border-radius: var(--radius);
+}
+
+.btn-respond:hover,
+.btn-completed:hover { opacity: .9; }
+
+.btn-decline {
+  height: 40px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  line-height: 1.3;
+  --background: transparent;
+  --color: var(--text-muted);
+  --border-radius: var(--radius-sm);
+}
+
+.btn-decline:hover { background: var(--red-light); color: var(--red); }
+
+.btn-decline:hover { opacity: .85; }
+
+.btn-speak {
+  height: 40px;
+  background: transparent;
+  border: 1px solid var(--teal);
+  color: var(--teal);
+  --background: transparent;
+  --color: var(--teal);
+  --border-color: var(--teal);
+}
+
+.btn-speak:hover { background: var(--teal-light); }
+
+/* ─── Small phones ─── */
+@media (max-width: 380px) {
+  .location-grid {
+    grid-template-columns: 1fr;
   }
 
-  /* Grouping Initial Phase Actions */
-  .initial-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  /* Completed Phase */
-  .completed-action-container {
-    margin-top: 6px;
-    .btn-completed {
-      --background: #10b981;
-      --color: #ffffff;
-      height: 60px;
-      font-weight: 800;
-      font-size: 1.1rem;
-      --border-radius: 12px;
-    }
+  .eta-container {
+    order: -1;
+    width: 100%;
   }
 
   .secondary-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 10px;
-    align-items: center;
-
-    .btn-respond {
-      --background: #10b981;
-      --color: #ffffff;
-      height: 60px;
-      font-weight: 800;
-      font-size: 1.1rem;
-      --border-radius: 12px;
-    }
-
-    .btn-decline {
-      --background: #f1f5f9;
-      --color: #ef4444;
-      height: 60px;
-      font-weight: 600;
-      font-size: 0.75rem;
-      --border-radius: 12px;
-    }
+    grid-template-columns: 1fr;
   }
 
-  .btn-speak-visible {
-    height: 52px;
-    font-weight: 800;
-    font-size: 0.95rem;
-    --border-width: 2px;
-    --border-radius: 12px;
-    --border-color: #3b82f6;
-    --color: #3b82f6;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  .patient-identity-card {
+    align-items: flex-start;
   }
-}
-
-/* --- 6. Global Overrides --- */
-::ng-deep .routing-instructions-container {
-  width: 100% !important;
-  max-height: 80px !important;
-  overflow-y: auto !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  z-index: 1000 !important;
-  font-size: 0.7rem !important;
-  border-top: 1px solid #eee;
-}
-
-.custom-emergency-alert {
-  --background: #fdfdfd;
-  .alert-title { color: #036a5d; font-weight: 700; }
-  .submit-button { color: #10b981 !important; font-weight: bold; }
 }

@@ -1,44 +1,64 @@
 <ion-content [fullscreen]="true">
   <div class="mobile-container">
-    
+
     <div class="emergency-header" *ngIf="currentEmergency">
-      <div class="alert-title">EMERGENCY ALERT</div>
-      <div class="time-badge">{{ currentEmergency.timestamp?.toDate() | date:'shortTime' }}</div>
+      <div class="hdr-left">
+        <div class="pulse-dot"></div>
+        <span class="alert-title">EMERGENCY ALERT</span>
+      </div>
+      <span class="time-badge">{{ currentEmergency.timestamp?.toDate() | date:'shortTime' }}</span>
     </div>
 
     <div class="emergency-section" *ngIf="currentEmergency">
-      
+
       <div class="patient-identity-card">
         <div class="patient-info-left">
-          <ion-avatar>
-            <img [src]="patientAvatar || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
+          <div class="avatar-initials" *ngIf="!patientAvatar">
+            {{ (currentEmergency.userName || 'P').charAt(0).toUpperCase() }}
+          </div>
+          <ion-avatar *ngIf="patientAvatar">
+            <img [src]="patientAvatar" />
           </ion-avatar>
           <div class="name-wrapper">
             <span class="patient-name">{{ currentEmergency.userName || 'Patient' }}</span>
             <span class="emergency-type">Medical Emergency</span>
           </div>
         </div>
-        <div class="status-badge">CRITICAL</div>
+        <div class="status-badge">Critical</div>
       </div>
 
       <div class="emergency-info-card">
-        <div class="emergency-info-title">EMERGENCY INFORMATION</div>
-        <p><strong>Contact:</strong> {{ emergencyContactPhone || 'Not specified' }}</p>
-        <p><strong>Date of Birth:</strong> {{ formattedDateOfBirth }}</p>
-        <p><strong>Blood Type:</strong> {{ bloodType || 'Not specified' }}</p>
+        <div class="info-grid">
+          <div class="info-cell">
+            <div class="info-label">Emergency contact</div>
+            <div class="info-val">{{ emergencyContactPhone || 'Not specified' }}</div>
+          </div>
+          <div class="info-cell align-right">
+            <div class="info-label">Blood type</div>
+            <div class="info-val blood">{{ bloodType || '—' }}</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">Date of birth</div>
+            <div class="info-val">{{ formattedDateOfBirth }}</div>
+          </div>
+          <div class="info-cell align-right">
+            <div class="info-label">Status</div>
+            <div class="info-val">{{ currentEmergency.status | titlecase }}</div>
+          </div>
+        </div>
       </div>
 
-      <div class="map-location-card large-map-card">
-        <div class="map-container large-map">
+      <div class="map-location-card">
+        <div class="map-container">
           <div #miniMap id="miniMap" class="mini-map"></div>
-          <ion-button size="small" (click)="resetMiniMapView()" class="map-reset-btn">
+          <button class="map-reset-btn" (click)="resetMiniMapView()" aria-label="Reset map view">
             <ion-icon name="locate"></ion-icon>
-          </ion-button>
+          </button>
         </div>
 
         <div class="location-info-section">
           <div class="location-grid">
-            <div class="loc-col divider">
+            <div class="loc-col">
               <div class="loc-header">
                 <ion-icon name="location"></ion-icon>
                 <span>Patient</span>
@@ -54,7 +74,7 @@
             <div class="loc-col">
               <div class="loc-header">
                 <ion-icon name="navigate-circle"></ion-icon>
-                <span>Responder</span>
+                <span>You</span>
               </div>
               <div class="address-text">{{ responderAddress || 'Locating...' }}</div>
             </div>
@@ -63,47 +83,48 @@
       </div>
 
       <div class="instructions-card">
-        <div class="emergency-plan-box primary-plan" *ngIf="profileEmergencyInstruction || eventSpecificInstruction">
-          <span class="plan-label main-label">Emergency Plan</span>
+        <div class="emergency-plan-box" *ngIf="profileEmergencyInstruction || eventSpecificInstruction">
+          <span class="plan-label">Emergency plan</span>
           <div class="plan-text">{{ eventSpecificInstruction || profileEmergencyInstruction }}</div>
         </div>
-        
+
         <div class="chip-group-container" *ngIf="specificInstructionEntries?.length">
-          <ion-chip *ngFor="let instr of specificInstructionEntries" class="allergy-chip">
-            <ion-label><strong>{{ instr.label }}:</strong> {{ instr.text || 'None' }}</ion-label>
-          </ion-chip>
+          <div class="allergy-chip" *ngFor="let instr of specificInstructionEntries">
+            <strong>{{ instr.label }}:</strong> {{ instr.text || 'None' }}
+          </div>
         </div>
       </div>
 
       <div class="footer-actions">
-        <ion-button expand="block" fill="outline" (click)="openGoogleMaps()" class="btn-google-maps">
-          <ion-icon slot="start" name="logo-google"></ion-icon>
-          OPEN IN GOOGLE MAPS
-        </ion-button>
+        <button class="btn btn-maps" (click)="openGoogleMaps()">
+          <ion-icon name="logo-google"></ion-icon>
+          Open in Google Maps
+        </button>
 
         <div class="initial-actions" *ngIf="!hasResponded">
           <div class="secondary-grid">
-            <ion-button expand="block" (click)="acceptEmergency()" fill="solid" class="btn-respond">
-              <ion-icon slot="start" name="checkmark-circle"></ion-icon> RESPOND
-            </ion-button>
-            
-            <ion-button expand="block" (click)="cannotRespond()" fill="clear" class="btn-decline">
-              CAN'T HELP RIGHT NOW
-            </ion-button>
+            <button class="btn btn-respond" (click)="acceptEmergency()">
+              <ion-icon name="checkmark-circle"></ion-icon>
+              Respond
+            </button>
+            <button class="btn btn-decline" (click)="cannotRespond()">
+              Can't help right now
+            </button>
           </div>
-          
-          <ion-button expand="block" (click)="speakAlert()" fill="outline" class="btn-speak-visible">
-            <ion-icon slot="start" name="volume-high"></ion-icon> SPEAK ALERT
-          </ion-button>
+          <button class="btn btn-speak" (click)="speakAlert()">
+            <ion-icon name="volume-high"></ion-icon>
+            Speak alert
+          </button>
         </div>
 
         <div class="completed-action-container" *ngIf="hasResponded">
-          <ion-button expand="block" (click)="confirmHelpCompleted()" class="btn-completed">
-            <ion-icon slot="start" name="checkmark-done-circle"></ion-icon>
-            HELP COMPLETED
-          </ion-button>
+          <button class="btn btn-completed" (click)="confirmHelpCompleted()">
+            <ion-icon name="checkmark-done-circle"></ion-icon>
+            Help completed
+          </button>
         </div>
       </div>
+
     </div>
   </div>
 </ion-content>

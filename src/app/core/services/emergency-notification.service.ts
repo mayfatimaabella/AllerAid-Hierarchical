@@ -10,11 +10,21 @@ export interface EmergencyNotificationData {
   patientName: string;
   allergies: string[];
   emergencyInstructions: string;
-  location: {
+
+  profileDetails: {
+    phone: string;
+    dateOfBirth: string;
+    bloodType: string;
+    gender: string;
+    profile_picture: string;
+  };
+
+  location?: {
     latitude: number;
     longitude: number;
     locationLink: string;
   };
+
   emergencyId: string;
   timestamp: string;
 }
@@ -23,7 +33,9 @@ export interface EmergencyNotificationData {
   providedIn: 'root'
 })
 export class EmergencyNotificationService {
-  private notificationStatusSubject = new BehaviorSubject<{[key: string]: 'sending' | 'sent' | 'failed'}>({});
+  private notificationStatusSubject =
+    new BehaviorSubject<{ [key: string]: 'sending' | 'sent' | 'failed' }>({});
+
   notificationStatus$ = this.notificationStatusSubject.asObservable();
 
   constructor(
@@ -32,103 +44,163 @@ export class EmergencyNotificationService {
     private userService: UserService
   ) {}
 
-  /**
-   * Send emergency notifications to all buddies
-   */
   async sendEmergencyNotifications(
     emergencyAlert: EmergencyAlert,
     userProfile: any
   ): Promise<void> {
     try {
       console.log('Starting emergency notification process...');
-      
-      // Get all buddies for this user (who should receive notifications)
-      const buddyRelations = await this.buddyService.getUserBuddies(emergencyAlert.userId);
-      
+
+      if (!emergencyAlert?.userId) {
+        console.error('Emergency alert missing userId');
+        return;
+      }
+
+      const buddyRelations =
+        await this.buddyService.getUserBuddies(emergencyAlert.userId);
+
       if (buddyRelations.length === 0) {
         console.log('No buddies found to notify');
         return;
       }
 
-      // Prepare notification data
-      const notificationData = this.prepareNotificationData(emergencyAlert, userProfile);
-      
-      // Send notifications to each buddy
+      // Gracefully handle missing userProfile
+      const notificationData =
+        this.prepareNotificationData(emergencyAlert, userProfile || {});
+
       const notificationPromises = buddyRelations.map(async (buddy) => {
         try {
+          const buddyId = buddy.id || buddy.buddyId;
+          if (!buddyId) {
+            console.warn('Buddy without ID found, skipping');
+            return;
+          }
           await this.sendToBuddy(buddy, notificationData);
-          this.updateNotificationStatus(buddy.id!, 'sent');
+          this.updateNotificationStatus(buddyId, 'sent');
         } catch (error) {
-          console.error(`Failed to notify buddy ${buddy.id}:`, error);
-          this.updateNotificationStatus(buddy.id!, 'failed');
+          const buddyId = buddy.id || buddy.buddyId || 'unknown';
+          console.error(`Failed to notify buddy ${buddyId}:`, error);
+          this.updateNotificationStatus(buddyId, 'failed');
         }
       });
 
-      // Wait for all notifications to complete
       await Promise.all(notificationPromises);
-      
+
       console.log('Emergency notifications process completed');
-      
+
     } catch (error) {
       console.error('Emergency notification process failed:', error);
-      throw error;
+      // Don't throw - notifications failing shouldn't block the emergency alert
     }
   }
 
-  /**
-   * Prepare comprehensive notification data
-   */
   private prepareNotificationData(
-    emergencyAlert: EmergencyAlert,
-    userProfile: any
-  ): EmergencyNotificationData {
-    const locationLink = this.generateLocationLink(
-      emergencyAlert.location.latitude,
-      emergencyAlert.location.longitude
-    );
+  emergencyAlert: EmergencyAlert,
+  userProfile: any
+): EmergencyNotificationData {
+  // Safely extract data with fallbacks
+  const baseProfile = userProfile || {};
+  const profileDetails = baseProfile.profileDetails || {};
+  const medicalInfo = baseProfile.medicalInfo || {};
 
-    return {
-      patientName: emergencyAlert.userName,
-      allergies: emergencyAlert.allergies || [],
-      emergencyInstructions: emergencyAlert.instruction || userProfile.emergencyInstruction || 'No specific instructions provided',
-      location: {
-        latitude: emergencyAlert.location.latitude,
-        longitude: emergencyAlert.location.longitude,
-        locationLink
-      },
-      emergencyId: emergencyAlert.id!,
-      timestamp: new Date().toISOString()
-    };
-  }
+  const hasLocation =
+    emergencyAlert.location &&
+    typeof emergencyAlert.location.latitude === 'number' &&
+    typeof emergencyAlert.location.longitude === 'number';
 
-  /**
-   * Send notification to a specific buddy
-   */
+  const locationLink = hasLocation
+    ? this.generateLocationLink(
+        emergencyAlert.location!.latitude,
+        emergencyAlert.location!.longitude
+      )
+    : '';
+
+  const allergies =
+    emergencyAlert.allergies?.length
+      ? emergencyAlert.allergies
+      : (medicalInfo.allergies || []).map((allergy: any) =>
+          typeof allergy === 'string' ? allergy : (allergy.label || allergy.name || allergy)
+        ).filter((a: any) => !!a);
+
+  return {
+    patientName:
+      emergencyAlert.userName ||
+      baseProfile.fullName ||
+      `${baseProfile.firstName || ''} ${baseProfile.lastName || ''}`.trim() ||
+      'Patient',
+
+    allergies,
+
+    emergencyInstructions:
+      emergencyAlert.instruction ||
+      emergencyAlert.emergencyInstruction ||
+      medicalInfo.emergencyInstruction ||
+      medicalInfo.generalInstruction ||
+      'No specific instructions provided',
+
+    profileDetails: {
+      phone: profileDetails.phone || '',
+      dateOfBirth: profileDetails.dateOfBirth || '',
+      bloodType: profileDetails.bloodType || '',
+      gender: profileDetails.gender || '',
+      profile_picture: profileDetails.profile_picture || ''
+    },
+
+    location: {
+      latitude: hasLocation
+        ? emergencyAlert.location!.latitude
+        : 0,
+
+      longitude: hasLocation
+        ? emergencyAlert.location!.longitude
+        : 0,
+
+      locationLink: hasLocation
+        ? locationLink
+        : 'Location unavailable'
+    },
+
+    emergencyId: emergencyAlert.id!,
+    timestamp: new Date().toISOString()
+  };
+}
+
   private async sendToBuddy(
     buddy: any,
     notificationData: EmergencyNotificationData
   ): Promise<void> {
-    this.updateNotificationStatus(buddy.id!, 'sending');
+    try {
+      const buddyId = buddy.id || buddy.buddyId;
+      if (!buddyId) {
+        console.warn('Buddy ID not found, skipping notification');
+        return;
+      }
 
-    // Get buddy's user profile for contact information
-    // Use connectedUserId which contains the actual buddy's user ID
-    const buddyUserId = buddy.connectedUserId || buddy.user2Id;
-    const buddyProfile = await this.userService.getUserProfile(buddyUserId);
-    
-    if (!buddyProfile) {
-      throw new Error(`Buddy profile not found for ${buddy.id} (userId: ${buddyUserId})`);
+      this.updateNotificationStatus(buddyId, 'sending');
+
+      const buddyUserId = buddy.connectedUserId || buddy.user2Id || buddy.user1Id || buddy.buddyUid;
+      if (!buddyUserId) {
+        console.warn(`No user ID found for buddy ${buddyId}`);
+        this.updateNotificationStatus(buddyId, 'failed');
+        return;
+      }
+
+      const buddyProfile = await this.userService.getUserProfile(buddyUserId);
+
+      if (!buddyProfile) {
+        console.warn(`Buddy profile not found for ${buddyId} (userId: ${buddyUserId})`);
+        this.updateNotificationStatus(buddyId, 'failed');
+        return;
+      }
+
+      await this.sendPushNotification(buddyProfile, notificationData);
+      console.log(`Notifications sent to buddy: ${buddyProfile.fullName}`);
+    } catch (error) {
+      console.error('Error sending notification to buddy:', error);
+      throw error;
     }
-
-    // Send push notification (if supported)
-    await this.sendPushNotification(buddyProfile, notificationData);
-
-    console.log(`Notifications sent to buddy: ${buddyProfile.fullName}`);
   }
 
-
-  /**
-   * Send push notification
-   */
   private async sendPushNotification(
     buddyProfile: any,
     notificationData: EmergencyNotificationData
@@ -137,21 +209,32 @@ export class EmergencyNotificationService {
       const pushMessage = {
         title: 'EMERGENCY ALERT',
         body: `${notificationData.patientName} needs immediate help!`,
+
         data: {
           type: 'emergency',
           emergencyId: notificationData.emergencyId,
           patientName: notificationData.patientName,
+
+          contactNumber: notificationData.profileDetails.phone,
+          dateOfBirth: notificationData.profileDetails.dateOfBirth,
+          bloodType: notificationData.profileDetails.bloodType,
+          gender: notificationData.profileDetails.gender,
+          profilePicture: notificationData.profileDetails.profile_picture,
+
+          profileDetails: notificationData.profileDetails,
+
           location: notificationData.location,
           allergies: notificationData.allergies,
           instructions: notificationData.emergencyInstructions
         },
-        click_action: `https://your-app-domain.com/tabs/responder-dashboard?emergency=${notificationData.emergencyId}`
+
+        click_action:
+          `https://your-app-domain.com/tabs/responder-dashboard?emergency=${notificationData.emergencyId}`
       };
 
       const endpoint = environment.pushNotificationEndpoint;
 
       if (endpoint) {
-        // Real backend call: send the push payload to your Cloud Function / API
         await firstValueFrom(
           this.http.post(endpoint, {
             targetUserId: buddyProfile.uid || buddyProfile.id,
@@ -159,7 +242,6 @@ export class EmergencyNotificationService {
           })
         );
       } else {
-        // Fallback / development mode: log instead of sending
         console.log('Push Notification (simulated):');
         console.log(`To: ${buddyProfile.fullName}`);
         console.log('Message:', pushMessage);
@@ -172,30 +254,23 @@ export class EmergencyNotificationService {
     }
   }
 
-  /**
-   * Generate live location link for navigation
-   */
   private generateLocationLink(latitude: number, longitude: number): string {
     return `https://www.google.com/maps?q=${latitude},${longitude}&ll=${latitude},${longitude}&z=16`;
   }
 
-  /**
-   * Update notification status for UI feedback
-   */
-  private updateNotificationStatus(buddyId: string, status: 'sending' | 'sent' | 'failed'): void {
+  private updateNotificationStatus(
+    buddyId: string,
+    status: 'sending' | 'sent' | 'failed'
+  ): void {
     const currentStatus = this.notificationStatusSubject.value;
+
     this.notificationStatusSubject.next({
       ...currentStatus,
       [buddyId]: status
     });
   }
 
-
-  /**
-   * Clear notification status (call after emergency is resolved)
-   */
   clearNotificationStatus(): void {
     this.notificationStatusSubject.next({});
   }
-
 }

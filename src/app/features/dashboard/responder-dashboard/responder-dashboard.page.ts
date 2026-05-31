@@ -321,28 +321,52 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  private async loadProfileInstructionFallback(userId?: string): Promise<void> {
-    if (!userId) return;
-    try {
-      const profile = await this.userService.getUserProfile(userId);
-      this.profileInstructionFallback = (profile as any)?.emergencyMessage?.instructions || (profile as any)?.emergencyInstruction || '';
-      const rawAvatar = (profile as any)?.avatar;
-      this.patientAvatar = (typeof rawAvatar === 'string' && rawAvatar.trim().length > 0) ? rawAvatar.trim() : null;
+private async loadProfileInstructionFallback(userId?: string): Promise<void> {
+  if (!userId) return;
 
-      // Patient identity details for responder view
-      this.emergencyContactPhone = (profile as any)?.emergencyContactPhone || null;
-      const dob = (profile as any)?.dateOfBirth;
-      if (dob) {
-        const date = new Date(dob);
-        this.formattedDateOfBirth = isNaN(date.getTime()) ? dob : date.toLocaleDateString();
-      } else {
-        this.formattedDateOfBirth = 'Not specified';
-      }
-      this.bloodType = (profile as any)?.bloodType || null;
-    } catch (error) {
-      console.warn('Unable to load profile instructions:', error);
+  try {
+    const completeProfile =
+      await this.userService.getCompleteEmergencyProfile(userId);
+
+    if (!completeProfile) return;
+
+    const profileDetails = completeProfile.profileDetails || {};
+    const medicalInfo = completeProfile.medicalInfo || {};
+
+    this.profileInstructionFallback =
+      medicalInfo.emergencyInstruction ||
+      medicalInfo.generalInstruction ||
+      '';
+
+    this.patientAvatar =
+      profileDetails.profile_picture ||
+      null;
+
+    this.emergencyContactPhone =
+      profileDetails.phone ||
+      null;
+
+    const dob = profileDetails.dateOfBirth;
+
+    if (dob) {
+      const date = new Date(dob);
+
+      this.formattedDateOfBirth =
+        isNaN(date.getTime())
+          ? dob
+          : date.toLocaleDateString();
+    } else {
+      this.formattedDateOfBirth = 'Not specified';
     }
+
+    this.bloodType =
+      profileDetails.bloodType ||
+      null;
+
+  } catch (error) {
+    console.warn('Unable to load profile instructions:', error);
   }
+}
 
   get profileEmergencyInstruction(): string { return this.profileInstructionFallback; }
   get hasEmergencyInstruction(): boolean { return !!(this.eventSpecificInstruction || this.profileEmergencyInstruction); }

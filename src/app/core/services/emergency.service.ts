@@ -29,7 +29,7 @@ export interface EmergencyAlert {
     latitude: number;
     longitude: number;
     accuracy?: number;
-  };
+  }  | null;
   responderLocation?: {
     latitude: number;
     longitude: number;
@@ -85,20 +85,23 @@ export class EmergencyService {
    * Send an emergency alert to the user's buddies with automatic notifications
    */
   async sendEmergencyAlert(
+
     userId: string, 
     userName: string, 
     buddyIds: string[], 
     allergies: string[] = [], 
     instruction: string = ''
+
   ): Promise<string> {
     try {
       console.log('Starting emergency alert process...');
       
       // 1st Get current location from cache first (no waiting time), then fallback to fresh location
-      let position: Position | null = this.cachedLocation; // Use cached location if available
+      let position: Position | null = this.cachedLocation; // Use cached location if available (Background tracking should have been started during onboarding)
       if (!position) {
         try {
           position = await this.getCurrentLocation();
+          this.cachedLocation = position;
         } catch (geoError) {
           // Geolocation can fail on web if not served over HTTPS or permission denied
           const code = (geoError as any)?.code;
@@ -113,14 +116,15 @@ export class EmergencyService {
       
       // Create the emergency alert
       // Build location object safely (avoid undefined fields for Firestore)
-      const location = position ? {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        ...(position.coords.accuracy !== undefined ? { accuracy: position.coords.accuracy } : {})
-      } : {
-        latitude: 0,
-        longitude: 0
-      };
+      const location = position
+        ? {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            ...(position.coords.accuracy !== undefined
+              ? { accuracy: position.coords.accuracy }
+              : {})
+          }
+        : null;
 
       const emergencyData: EmergencyAlert = {
         userId,
@@ -144,6 +148,7 @@ export class EmergencyService {
       
       // 4th Start tracking location updates
       this.startLocationTracking(emergencyId);
+      this.refreshEmergencyLocation(emergencyId);
       
       // 5th Set up listener for responses
       this.listenForResponses(emergencyId, userId);
@@ -155,7 +160,7 @@ export class EmergencyService {
           console.log('Sending emergency notifications to buddies...');
           
           // Get user profile for comprehensive emergency info
-          const userProfile = await this.userService.getUserProfile(userId);
+          const userProfile =  await this.userService.getCompleteEmergencyProfile(userId);
           
           // Send notifications to all buddies
           await this.emergencyNotificationService.sendEmergencyNotifications(
@@ -193,7 +198,7 @@ export class EmergencyService {
       // Request location permissions
       await Geolocation.requestPermissions();
       
-      console.log('Attempting to get current location...'); // Debug log
+      console.log('Attempting to get current location...');
       
       try {
         // First try with high accuracy and longer timeout
@@ -205,6 +210,7 @@ export class EmergencyService {
         
         console.log('Got high accuracy location:', position); // Debug log
         return position;
+
       } catch (highAccuracyError) {
         console.log('High accuracy failed, trying low accuracy...', highAccuracyError); // Debug log
         
@@ -294,6 +300,34 @@ export class EmergencyService {
       });
     }
   }
+
+  /**
+   * Check if geolocation permission is granted without showing prompts
+   */
+  private checkGeolocationPermission(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(false);
+        return;
+      }
+
+      // Try a quick geolocation request to check permission
+      navigator.geolocation.getCurrentPosition(
+        () => {
+          // Success - permission granted
+          resolve(true);
+        },
+        (error) => {
+          // Check if it's a permission denied error
+          resolve(error.code !== 1); // code 1 = PERMISSION_DENIED
+        },
+        {
+          timeout: 1000,
+          maximumAge: Infinity // Don't use cached location for permission check
+        }
+      );
+    });
+  }
   
   /**
    * Start tracking location and update it in Firestore
@@ -335,6 +369,13 @@ export class EmergencyService {
         return;
       }
       
+      // Check permission first before setting up tracking
+      const hasPermission = await this.checkGeolocationPermission();
+      if (!hasPermission) {
+        console.warn('Geolocation permission denied - skipping location tracking');
+        return;
+      }
+      
       // For web, we'll use setInterval to periodically get location
       const watchId = setInterval(async () => {
         try {
@@ -346,7 +387,14 @@ export class EmergencyService {
           });
           console.log('Location updated:', position.coords.latitude, position.coords.longitude);
         } catch (error) {
-          console.error('Error updating location:', error);
+          const errorMsg = (error as any)?.message || String(error);
+          console.warn('Location update failed:', errorMsg);
+          // Stop tracking if permission denied
+          if (errorMsg.includes('User denied') || errorMsg.includes('Permission denied')) {
+            clearInterval(parseInt(this.locationWatchId!));
+            this.locationWatchId = null;
+            console.warn('Location tracking stopped due to permission change');
+          }
         }
       }, 5000); // Update every 5 seconds for more real-time tracking
       
@@ -376,59 +424,27 @@ export class EmergencyService {
    * Called after user grants location permission during onboarding
    * Continuously caches location so emergency alerts have immediate location data
    */
-  async startBackgroundLocationTracking(): Promise<void> {
-    if (this.isBackgroundTrackingActive) {
-      console.log('Background location tracking already active');
-      return;
-    }
-    
-    if (Capacitor.isNativePlatform()) {
-      if (!Capacitor.isPluginAvailable('Geolocation')) {
-        console.error('Geolocation is not available on this device');
-        return;
-      }
-      
-      try {
-        this.backgroundLocationWatchId = await Geolocation.watchPosition(
-          { 
-            enableHighAccuracy: true, 
-            timeout: 10000,
-            maximumAge: 30000
-          },
-          (position) => {
-            if (position) {
-              this.cachedLocation = position;
-              console.log('Background location cached:', position.coords.latitude, position.coords.longitude);
-            }
-          }
-        );
-        this.isBackgroundTrackingActive = true;
-        console.log('Background location tracking started');
-      } catch (error) {
-        console.error('Error starting background location tracking:', error);
-      }
-    } else {
-      // Use browser geolocation for web
-      if (!navigator.geolocation) {
-        console.error('Geolocation is not supported by this browser');
-        return;
-      }
-      
-      const watchId = setInterval(async () => {
-        try {
-          const position = await this.getCurrentLocation();
-          this.cachedLocation = position;
-          console.log('Background location cached (web):', position.coords.latitude, position.coords.longitude);
-        } catch (error) {
-          console.warn('Error caching location:', error);
-        }
-      }, 5000); // Update every 5 seconds
-      
-      this.backgroundLocationWatchId = watchId.toString();
-      this.isBackgroundTrackingActive = true;
-      console.log('Background location tracking started (web)');
-    }
+/**
+ * Cache the user's last known location during onboarding.
+ * No continuous tracking.
+ */
+async startBackgroundLocationTracking(): Promise<void> {
+  try {
+    const position = await this.getCurrentLocation();
+
+    this.cachedLocation = position;
+
+    console.log(
+      'Location cached for emergency use:',
+      position.coords.latitude,
+      position.coords.longitude
+    );
+
+    this.isBackgroundTrackingActive = true;
+  } catch (error) {
+    console.warn('Failed to cache location:', error);
   }
+}
   
   /**
    * Stop background location tracking
@@ -452,6 +468,27 @@ export class EmergencyService {
   getCachedLocation(): Position | null {
     return this.cachedLocation;
   }
+
+  /**
+ * Refresh location after emergency is created
+ */
+async refreshEmergencyLocation(emergencyId: string): Promise<void> {
+  try {
+    const freshPosition = await this.getCurrentLocation();
+
+    this.cachedLocation = freshPosition;
+
+    await this.updateEmergencyLocation(emergencyId, {
+      latitude: freshPosition.coords.latitude,
+      longitude: freshPosition.coords.longitude,
+      accuracy: freshPosition.coords.accuracy
+    });
+
+    console.log('Emergency location refreshed');
+  } catch (error) {
+    console.warn('Could not refresh emergency location:', error);
+  }
+}
   
   /**
    * Update emergency location in Firestore
@@ -499,61 +536,68 @@ export class EmergencyService {
    * Respond to an emergency (for buddies/responders)
    */
   async respondToEmergency(
-    emergencyId: string, 
-    responderId: string,
-    responderName: string
-  ): Promise<void> {
-    try {
-      const emergencyRef = doc(this.db, 'emergencies', emergencyId);
-      
-      // Get current responder location
-      const responderPosition = await this.getCurrentLocation();
-      const responderLocation = {
-        latitude: responderPosition.coords.latitude,
-        longitude: responderPosition.coords.longitude,
-        accuracy: responderPosition.coords.accuracy
-      };
-      
-      // Get emergency details to calculate distance and ETA
-      const emergencyDoc = await getDoc(emergencyRef);
-      const emergencyData = emergencyDoc.data() as EmergencyAlert;
-      
-      // Calculate distance and estimated arrival time
-      const distance = this.calculateDistance(
-        responderLocation.latitude,
-        responderLocation.longitude,
-        emergencyData.location.latitude,
-        emergencyData.location.longitude
-      );
-      
-      const estimatedArrival = this.calculateETA(distance);
-      
-      // Update the emergency status with ETA info
-      await updateDoc(emergencyRef, {
-        status: 'responding',
-        responderId,
-        responderName,
-        responderLocation,
-        responseTimestamp: Timestamp.now(),
-        distance: Math.round(distance * 100) / 100, // Round to 2 decimal places
-        estimatedArrival,
-        [`buddyResponses.${responderId}`]: {
-          status: 'responded',
-          name: responderName,
-          timestamp: Timestamp.now()
-        }
-      });
-      
-      // Start tracking the responder's location
-      this.startResponderLocationTracking(emergencyId, responderId);
-      
-      console.log(`${responderName} is responding - ETA: ${estimatedArrival} minutes, Distance: ${distance.toFixed(1)}km`);
-    } catch (error) {
-      console.error('Error responding to emergency:', error);
-      throw error;
+  emergencyId: string,
+  responderId: string,
+  responderName: string
+): Promise<void> {
+  try {
+    const emergencyRef = doc(this.db, 'emergencies', emergencyId);
+
+    const responderPosition = await this.getCurrentLocation();
+
+    const responderLocation = {
+      latitude: responderPosition.coords.latitude,
+      longitude: responderPosition.coords.longitude,
+      accuracy: responderPosition.coords.accuracy
+    };
+
+    const emergencyDoc = await getDoc(emergencyRef);
+
+    if (!emergencyDoc.exists()) {
+      throw new Error('Emergency alert not found.');
     }
+
+    const emergencyData = emergencyDoc.data() as EmergencyAlert;
+
+    if (!emergencyData.location) {
+      throw new Error('Patient location is not available yet.');
+    }
+
+    const distance = this.calculateDistance(
+      responderLocation.latitude,
+      responderLocation.longitude,
+      emergencyData.location.latitude,
+      emergencyData.location.longitude
+    );
+
+    const estimatedArrival = this.calculateETA(distance);
+
+    await updateDoc(emergencyRef, {
+      status: 'responding',
+      responderId,
+      responderName,
+      responderLocation,
+      responseTimestamp: Timestamp.now(),
+      distance: Math.round(distance * 100) / 100,
+      estimatedArrival,
+      [`buddyResponses.${responderId}`]: {
+        status: 'responded',
+        name: responderName,
+        timestamp: Timestamp.now()
+      }
+    });
+
+    this.startResponderLocationTracking(emergencyId, responderId);
+
+    console.log(
+      `${responderName} is responding - ETA: ${estimatedArrival} minutes, Distance: ${distance.toFixed(1)}km`
+    );
+
+  } catch (error) {
+    console.error('Error responding to emergency:', error);
+    throw error;
   }
-  
+}
   /**
    * Track responder location when they respond to an emergency
    */
@@ -657,12 +701,18 @@ export class EmergencyService {
   try {
     const emergencyRef = doc(this.db, 'emergencies', emergencyId);
     
-    // Update status and save the patient's condition
-    await updateDoc(emergencyRef, { 
+    // Build update object, only including patientCondition if it's defined
+    const updateData: any = { 
       status: 'resolved',
-      patientCondition: patientCondition, // Saving the survey result
-      resolvedAt: new Date()              // Good practice to track completion time
-    });
+      resolvedAt: Timestamp.now()
+    };
+    
+    // Only add patientCondition if provided (avoid undefined values in Firestore)
+    if (patientCondition !== undefined) {
+      updateData.patientCondition = patientCondition;
+    }
+    
+    await updateDoc(emergencyRef, updateData);
     
     this.stopLocationTracking();
   } catch (error) {
