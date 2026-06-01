@@ -436,7 +436,6 @@ private async loadProfileInstructionFallback(userId?: string): Promise<void> {
       header: 'Decline Emergency',
       message: 'Are you sure you cannot respond to this emergency?',
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
         {
           text: 'Decline',
           handler: async () => {
@@ -476,7 +475,8 @@ private async loadProfileInstructionFallback(userId?: string): Promise<void> {
               }
             }
           }
-        }
+        },
+        { text: 'Cancel', role: 'cancel' }
       ]
     });
     await alert.present();

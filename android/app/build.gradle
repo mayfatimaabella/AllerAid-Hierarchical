@@ -53,6 +53,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
+    implementation 'com.google.firebase:firebase-messaging'
     
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
@@ -62,11 +63,11 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
-// try {
-//     def servicesJSON = file('google-services.json')
-//     if (servicesJSON.text) {
-//         apply plugin: 'com.google.gms.google-services'
-//     }
-// } catch(Exception e) {
-//     logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
-// }
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

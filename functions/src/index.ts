@@ -13,7 +13,24 @@ interface PushMessagePayload {
   data?: { [key: string]: string };
 }
 
+// Helper function to set CORS headers
+function setCorsHeaders(res: functions.Response): void {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Max-Age', '3600');
+}
+
 export const sendEmergencyPush = functions.region('us-central1').https.onRequest(async (req, res) => {
+  // Set CORS headers for all requests
+  setCorsHeaders(res);
+
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+
   // Allow only POST
   if (req.method !== 'POST') {
     res.status(405).send('Method Not Allowed');
@@ -27,41 +44,47 @@ export const sendEmergencyPush = functions.region('us-central1').https.onRequest
     };
 
     if (!targetUserId || !message) {
-      res.status(400).send('Missing targetUserId or message');
+      res.status(400).json({ error: 'Missing targetUserId or message' });
       return;
     }
 
     const userDoc = await db.collection('users').doc(targetUserId).get();
     if (!userDoc.exists) {
-      res.status(404).send('User not found');
+      res.status(404).json({ error: 'User not found' });
       return;
     }
 
     const data = userDoc.data() || {};
-    const tokens: string[] = Array.isArray(data.pushTokens) ? data.pushTokens : [];
+    // Support both fcmToken (single) and pushTokens (array) for backwards compatibility
+    const fcmToken = data.fcmToken || (Array.isArray(data.pushTokens) && data.pushTokens[0]);
 
-    if (!tokens.length) {
-      res.status(200).send('No push tokens for user');
+    if (!fcmToken) {
+      res.status(200).json({ message: 'No FCM token found for user' });
       return;
     }
 
-    const messagePayload: admin.messaging.MulticastMessage = {
-      tokens,
+    await admin.messaging().send({
+      token: fcmToken,
       notification: {
         title: message.title,
         body: message.body
       },
-      data: message.data as { [key: string]: string } | undefined
-    };
+      data: message.data as { [key: string]: string } | undefined,
+      android: {
+        priority: 'high',
+        notification: {
+          channelId: 'emergency_alerts',
+          sound: 'default'
+        }
+      }
+    });
 
-    const response = await admin.messaging().sendEachForMulticast(messagePayload);
+    console.log('sendEmergencyPush sent to', fcmToken);
 
-    console.log('sendEmergencyPush result', response);
-
-    res.status(200).send('Push sent');
+    res.status(200).json({ success: true });
   } catch (err) {
     console.error('sendEmergencyPush error', err);
-    res.status(500).send('Error sending push');
+    res.status(500).json({ error: 'Error sending push' });
   }
 });
 

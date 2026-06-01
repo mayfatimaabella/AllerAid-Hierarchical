@@ -7,15 +7,15 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:125756003828:android:bbe6f53ac3f0fd0b3a95a1",
+        "mobilesdk_app_id": "1:125756003828:android:abf0fb051b5b773a3a95a1",
         "android_client_info": {
-          "package_name": "io.ionic.starter"
+          "package_name": "com.yourcompany.alleraid2"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDDufMC90MIPg-EdMWbM916a7KQIOhmHDA"
+          "current_key": "AIzaSyA2N8BySn6GaapIr0h51k7AXILk8eZyelw"
         }
       ],
       "services": {

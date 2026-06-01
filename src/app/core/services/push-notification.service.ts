@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications, Token, RegistrationError } from '@capacitor/push-notifications';
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, doc, setDoc, arrayUnion } from 'firebase/firestore';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { firebaseConfig } from './firebase.config';
 import { AuthService } from './auth.service';
 
@@ -52,6 +52,18 @@ export class PushNotificationService {
         console.error('PushNotificationService: registration error', error);
       });
 
+      // Listen for incoming push notifications
+      PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
+        console.log('PushNotificationService: push notification received', notification);
+        this.handlePushNotification(notification);
+      });
+
+      // Listen for push notification taps/opens
+      PushNotifications.addListener('pushNotificationActionPerformed', (action: any) => {
+        console.log('PushNotificationService: push notification action performed', action);
+        this.handlePushNotificationAction(action);
+      });
+
       this.initialized = true;
     } catch (err) {
       console.error('PushNotificationService: init failed', err);
@@ -68,11 +80,11 @@ export class PushNotificationService {
 
       const userDocRef = doc(this.db, 'users', user.uid);
 
-      // Store tokens in an array field so a user can have multiple devices.
+      // Store the FCM token for this device
       await setDoc(
         userDocRef,
         {
-          pushTokens: arrayUnion(token)
+          fcmToken: token
         },
         { merge: true }
       );
@@ -80,6 +92,37 @@ export class PushNotificationService {
       console.log('PushNotificationService: token saved for user', user.uid);
     } catch (err) {
       console.error('PushNotificationService: failed to save token', err);
+    }
+  }
+
+  /**
+   * Handle incoming push notification (foreground)
+   */
+  private handlePushNotification(notification: any): void {
+    const data = notification.data || {};
+    console.log('Handling push notification:', data);
+
+    // Extract emergency data if present
+    if (data.type === 'emergency' && data.emergencyId) {
+      console.log('Emergency notification received:', data.emergencyId);
+      // You can emit this to a service/subject for routing
+      // or navigate to emergency response page
+    }
+  }
+
+  /**
+   * Handle push notification action (user tapped notification)
+   */
+  private handlePushNotificationAction(action: any): void {
+    const notification = action.notification;
+    const data = notification.data || {};
+    console.log('Push notification action:', action.actionId, data);
+
+    // Handle navigation based on notification data
+    if (data.type === 'emergency' && data.emergencyId) {
+      console.log('Navigating to emergency response for:', data.emergencyId);
+      // TODO: Navigate to emergency responder dashboard
+      // this.router.navigate(['/tabs/responder-dashboard'], { queryParams: { emergency: data.emergencyId } });
     }
   }
 }

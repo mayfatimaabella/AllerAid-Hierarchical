@@ -9,9 +9,6 @@ import { UserService } from '../../../core/services/user.service';
 import { MedicalService } from '../../../core/services/medical.profile.service';
 import { LocationPermissionService } from '../../../core/services/location-permission.service';
 import { Subscription } from 'rxjs';
-import { doc, getDoc } from 'firebase/firestore';
-import { FirebaseService } from '../../../core/services/firebase.service';
-import { ModalController } from '@ionic/angular';
 import { AllergyManagerService } from '../../../core/services/allergy-manager.service';
 import { AllergyModalService } from '../../profile/profile-services/allergy-modal.service';
 
@@ -48,12 +45,8 @@ export class HomePage implements OnInit, OnDestroy {
   emergencyConfirmationTimeLeft: number = 5;
 
   private subscriptions: Subscription[] = [];
-  private db: any;
 
-  private unsubscribeAll() {
-  this.subscriptions.forEach(sub => sub.unsubscribe());
-  this.subscriptions = [];
-}
+  private isInitialized = false;
 
   constructor(
     private alertController: AlertController,
@@ -66,22 +59,22 @@ export class HomePage implements OnInit, OnDestroy {
     private emergencyNotificationService: EmergencyNotificationService,
     private userService: UserService,
     private medicalService: MedicalService,
-    private firebaseService: FirebaseService,
-    private modalController: ModalController,
     private allergyManager: AllergyManagerService,
     private allergyModalService: AllergyModalService,
     private locationPermissionService: LocationPermissionService
-  ) {
-    this.db = this.firebaseService.getDb();
-  }
+  ) {}
 
   async ngOnInit() {
     await this.loadUserData();
     this.listenForNotificationStatus();
+    this.isInitialized = true;
   }
 
   async ionViewWillEnter() {
-     this.unsubscribeAll();
+
+    if (!this.isInitialized) return;
+
+    this.unsubscribeAll();
     await this.loadUserData();
     this.listenForNotificationStatus();
   }
@@ -89,6 +82,11 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.unsubscribeAll();
     this.clearEmergencyConfirmationTimer();
+  }
+
+  private unsubscribeAll() {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions = [];
   }
 
   async loadUserData() {
@@ -120,120 +118,57 @@ export class HomePage implements OnInit, OnDestroy {
 
         this.userBuddies = await this.buddyService.getUserBuddies(currentUser.uid);
         await this.checkBuddyStatus();
-
-  
       }
     } catch (error) {
       console.error('Error loading user data:', error);
     }
   }
 
-private emergencyResponseSub: Subscription | null = null;
+  listenForEmergencyResponses() {
+    if (!this.currentEmergencyId) return;
 
-listenForEmergencyResponses() {
-  if (!this.currentEmergencyId) return;
+    // Subscribe to buddy responses / responder updates
+    const emergencyResponseSub = this.emergencyService.emergencyResponse$.subscribe(response => {
+      if (!response || response.emergencyId !== this.currentEmergencyId) return;
 
-  if (this.emergencyResponseSub) {
-    this.emergencyResponseSub.unsubscribe();
-    this.emergencyResponseSub = null;
-  }
-
-  this.emergencyResponseSub = this.emergencyService.emergencyResponse$.subscribe(response => {
-    if (!response || response.emergencyId !== this.currentEmergencyId) return;
-
-    if (this.buddyResponses[response.responderId]) {
-      this.buddyResponses[response.responderId].status = 'responded';
-      this.buddyResponses[response.responderId].timestamp = new Date();
-    }
-
-    this.respondingBuddy = {
-      responderName: response.responderName,
-      estimatedTime: response.estimatedArrival ? `${response.estimatedArrival} min` : 'Calculating...',
-      distance: response.distance || 0,
-      estimatedArrival: response.estimatedArrival || 0,
-      emergencyId: response.emergencyId
-    };
-
-    this.showResponderAlert(response);
-  });
-
-  this.subscriptions.push(this.emergencyResponseSub);
-}
-
-  private subscribeToUserEmergency() {
-    const sub = this.emergencyService.userEmergency$.subscribe(async (emergency) => {
-      if (!emergency) {
-        this.clearEmergencyState();
-        this.emergencyAddress = '';
-        return;
+      if (this.buddyResponses[response.responderId]) {
+        this.buddyResponses[response.responderId].status = 'responded';
+        this.buddyResponses[response.responderId].timestamp = new Date();
       }
 
-      this.currentEmergencyId = emergency.id || this.currentEmergencyId;
-      this.isEmergencyActive = emergency.status !== 'resolved';
+      this.respondingBuddy = {
+        responderName: response.responderName,
+        estimatedTime: response.estimatedArrival ? `${response.estimatedArrival} min` : 'Calculating...',
+        distance: response.distance || 0,
+        estimatedArrival: response.estimatedArrival || 0,
+        emergencyId: response.emergencyId
+      };
 
-      if (emergency.timestamp && typeof (emergency.timestamp as any).toDate === 'function') {
-        this.emergencyStartTime = (emergency.timestamp as any).toDate();
+      this.showResponderAlert(response);
+    });
+
+    // Subscribe to the full emergency document so displayAddress (written by
+    // the service's reverse geocoder) and live location updates flow into the
+    // UI automatically — no separate geocoding call needed in the component.
+    const emergencyDocSub = this.emergencyService.userEmergency$.subscribe(emergency => {
+      if (!emergency || emergency.id !== this.currentEmergencyId) return;
+
+      // Sync address once the service finishes reverse geocoding
+      if (emergency.displayAddress) {
+        this.emergencyAddress = emergency.displayAddress;
+        this.isEmergencyAddressLoading = false;
       }
 
-      if (emergency.status === 'responding' && emergency.responderId) {
-        const eta = typeof emergency.estimatedArrival === 'number' ? `${emergency.estimatedArrival} min` : 'Calculating...';
-        const distanceKm = typeof emergency.distance === 'number' ? emergency.distance : 0;
-        this.respondingBuddy = {
-          responderName: emergency.responderName || 'A buddy',
-          estimatedTime: eta,
-          distance: distanceKm,
-          estimatedArrival: emergency.estimatedArrival || 0,
-          emergencyId: emergency.id
+      // Sync live location updates
+      if (emergency.location) {
+        this.emergencyLocation = {
+          latitude: emergency.location.latitude,
+          longitude: emergency.location.longitude
         };
-      } else if (emergency.status === 'resolved') {
-        this.clearEmergencyState();
-        this.emergencyAddress = '';
-      }
-
-      if (emergency.buddyResponses) {
-        Object.keys(emergency.buddyResponses).forEach((buddyId) => {
-          const responseInfo: any = (emergency.buddyResponses as any)[buddyId];
-          if (!responseInfo || !responseInfo.status) return;
-
-          const existing = this.buddyResponses[buddyId];
-          const timestamp = responseInfo.timestamp && typeof (responseInfo.timestamp as any).toDate === 'function'
-            ? (responseInfo.timestamp as any).toDate()
-            : new Date();
-
-          const previousStatus = this.buddyStatusHistory[buddyId];
-          this.buddyStatusHistory[buddyId] = responseInfo.status;
-
-          const displayName = responseInfo.name || (existing && existing.name) || 'Buddy';
-
-          this.buddyResponses[buddyId] = { status: responseInfo.status, timestamp, name: displayName };
-
-          if (responseInfo.status === 'cannot_respond' && previousStatus !== 'cannot_respond') {
-            this.presentToast(`${displayName} cannot respond to your emergency right now.`);
-          }
-        });
-      }
-
-      if (emergency.location && typeof emergency.location.latitude === 'number' && typeof emergency.location.longitude === 'number') {
-        this.emergencyLocation = { latitude: emergency.location.latitude, longitude: emergency.location.longitude };
-        this.reverseGeocodeEmergencyAddress(emergency.location.latitude, emergency.location.longitude);
       }
     });
-    this.subscriptions.push(sub);
-  }
 
-  private async reverseGeocodeEmergencyAddress(lat: number, lng: number) {
-    try {
-      this.isEmergencyAddressLoading = true;
-      const url = `/nominatim/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1&email=support@aller-aid.example`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      this.emergencyAddress = (data?.display_name || '').trim() || 'Location unavailable';
-    } catch (e) {
-      this.emergencyAddress = 'Location unavailable';
-    } finally {
-      this.isEmergencyAddressLoading = false;
-    }
+    this.subscriptions.push(emergencyResponseSub, emergencyDocSub);
   }
 
   clearEmergencyState() {
@@ -242,6 +177,8 @@ listenForEmergencyResponses() {
     this.currentEmergencyId = null;
     this.buddyResponses = {};
     this.emergencyLocation = null;
+    this.emergencyAddress = '';
+    this.isEmergencyAddressLoading = false;
     this.respondingBuddy = null;
     this.minimizedResponder = null;
   }
@@ -253,7 +190,6 @@ listenForEmergencyResponses() {
       header: 'Resolve Emergency',
       message: 'Are you sure you want to mark this emergency as resolved?',
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
         {
           text: 'Resolve',
           handler: async () => {
@@ -268,7 +204,8 @@ listenForEmergencyResponses() {
               await this.presentToast('Failed to resolve emergency');
             }
           }
-        }
+        },
+        { text: 'Cancel', role: 'cancel' }
       ]
     });
 
@@ -310,7 +247,6 @@ listenForEmergencyResponses() {
   }
 
   async presentEmergencyConfirmation() {
-
     this.clearEmergencyConfirmationTimer();
     this.emergencyConfirmationTimeLeft = 5;
 
@@ -413,7 +349,10 @@ listenForEmergencyResponses() {
   }
 
   getNotificationStatus(buddyId: string): string {
-    const status = this.notificationStatus[buddyId] || 'pending';
+    // Look up by buddyUid first (matching the key used in sendEmergencyAlert
+    // and in emergency-notification.service), then fall back to id.
+    const resolvedId = this.resolveBuddyStatusKey(buddyId);
+    const status = this.notificationStatus[resolvedId] || 'pending';
     switch (status) {
       case 'sending': return 'Sending...';
       case 'sent': return 'Notified';
@@ -423,13 +362,24 @@ listenForEmergencyResponses() {
   }
 
   getNotificationStatusColor(buddyId: string): string {
-    const status = this.notificationStatus[buddyId] || 'pending';
+    //  Same key resolution applied here.
+    const resolvedId = this.resolveBuddyStatusKey(buddyId);
+    const status = this.notificationStatus[resolvedId] || 'pending';
     switch (status) {
       case 'sending': return 'warning';
       case 'sent': return 'success';
       case 'failed': return 'danger';
       default: return 'medium';
     }
+  }
+
+  //  Helper that finds the buddy object matching a given id and returns
+  // the canonical key (buddyUid || id) used consistently throughout the app.
+  private resolveBuddyStatusKey(buddyId: string): string {
+    const buddy = this.userBuddies.find(
+      b => (b.buddyUid || b.id) === buddyId || b.id === buddyId || b.buddyUid === buddyId
+    );
+    return buddy ? (buddy.buddyUid || buddy.id) : buddyId;
   }
 
   shouldShowNotificationBadge(buddyId: string): boolean {
@@ -457,7 +407,6 @@ listenForEmergencyResponses() {
   }
 
   async sendEmergencyAlert() {
-    // Request location permission before sending alert
     try {
       const permissionResult = await this.locationPermissionService.requestLocationPermissions();
       if (permissionResult.granted) {
@@ -479,12 +428,9 @@ listenForEmergencyResponses() {
       const currentUser = await this.authService.waitForAuthInit();
       if (!currentUser) throw new Error('User not authenticated');
 
-      //Get medical profile to ensure we have the latest instructions and allergies before sending alert
       const latestMedical = await this.medicalService.getUserMedicalProfile(currentUser.uid);
 
-      // Determine the most relevant emergency instruction to use
       const latestMessageInstruction = (latestMedical as any)?.emergencyMessage?.instructions;
-      // Priority: 1) Specific message instruction, 2) General medical profile instruction, 3) Existing instruction in component (which may have been loaded on init)
       const resolvedInstruction =
         (typeof latestMessageInstruction === 'string' && latestMessageInstruction.trim()) ||
         latestMedical?.generalEmergencyInstruction?.trim() ||
@@ -492,14 +438,14 @@ listenForEmergencyResponses() {
         '';
 
       this.emergencyInstruction = resolvedInstruction;
-// Get buddy IDs, ensuring we only include valid IDs and exclude the current user
+
       const buddyIds = Array.from(new Set(
         this.userBuddies
           .map(buddy => buddy.buddyUid || buddy.id)
           .filter(id => !!id && id !== currentUser.uid)
       ));
       const hasBuddies = buddyIds.length > 0;
-// Prepare allergy information as strings for the alert
+
       const allergyStrings = this.userAllergies
         .map((allergy: any) => allergy.label || allergy.name || '')
         .filter((allergy: string) => allergy !== '');
@@ -513,13 +459,17 @@ listenForEmergencyResponses() {
         allergyStrings,
         resolvedInstruction
       );
+
       this.listenForEmergencyResponses();
       this.isEmergencyActive = true;
       this.emergencyStartTime = new Date();
       this.buddyResponses = {};
+      this.isEmergencyAddressLoading = true; // Will be cleared when displayAddress arrives via userEmergency$
 
       if (hasBuddies) {
         this.userBuddies.forEach(buddy => {
+          // FIX #5: Use buddyUid || id as the key so it matches the notification
+          // service which keys status by buddy.id || buddy.buddyId.
           const key = buddy.buddyUid || buddy.id;
           if (!key || key === currentUser.uid) return;
           this.buddyResponses[key] = {
@@ -536,6 +486,7 @@ listenForEmergencyResponses() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude
         };
+        // Address is resolved by emergency.service.ts and synced via userEmergency$
       } catch (locationError) {
         console.warn('Location unavailable, alert sent without precise location.');
       }
@@ -601,20 +552,17 @@ listenForEmergencyResponses() {
 
     } catch (error) {
       console.error('Error checking buddy status:', error);
-
-      // safer fallback
       this.hasBuddy = false;
       this.showBuddyBanner = true;
     }
   }
 
-async openAddAllergiesModal() {
-  const allergyOptions = await this.allergyManager.loadAllergyOptions();
-  await this.allergyModalService.openEditAllergiesModal(
-    allergyOptions,
-    () => this.loadUserData(),
-    'add'
-  );
-}
-
+  async openAddAllergiesModal() {
+    const allergyOptions = await this.allergyManager.loadAllergyOptions();
+    await this.allergyModalService.openEditAllergiesModal(
+      allergyOptions,
+      () => this.loadUserData(),
+      'add'
+    );
+  }
 }

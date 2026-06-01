@@ -56,31 +56,33 @@ export class EmergencyNotificationService {
         return;
       }
 
-      const buddyRelations =
-        await this.buddyService.getUserBuddies(emergencyAlert.userId);
+      const buddyRelations = await this.buddyService.getUserBuddies(emergencyAlert.userId);
 
       if (buddyRelations.length === 0) {
         console.log('No buddies found to notify');
         return;
       }
 
-      // Gracefully handle missing userProfile
-      const notificationData =
-        this.prepareNotificationData(emergencyAlert, userProfile || {});
+      const notificationData = this.prepareNotificationData(emergencyAlert, userProfile || {});
 
       const notificationPromises = buddyRelations.map(async (buddy) => {
+        // FIX #5: Use buddyUid || id as the canonical key, matching what
+        // home.page.ts uses when building buddyResponses and looking up
+        // notification status. This ensures the status map keys are consistent
+        // and statuses actually display correctly in the UI.
+        const buddyStatusKey = buddy.buddyUid || buddy.id || buddy.buddyId;
+
+        if (!buddyStatusKey) {
+          console.warn('Buddy without ID found, skipping');
+          return;
+        }
+
         try {
-          const buddyId = buddy.id || buddy.buddyId;
-          if (!buddyId) {
-            console.warn('Buddy without ID found, skipping');
-            return;
-          }
-          await this.sendToBuddy(buddy, notificationData);
-          this.updateNotificationStatus(buddyId, 'sent');
+          await this.sendToBuddy(buddy, notificationData, buddyStatusKey);
+          this.updateNotificationStatus(buddyStatusKey, 'sent');
         } catch (error) {
-          const buddyId = buddy.id || buddy.buddyId || 'unknown';
-          console.error(`Failed to notify buddy ${buddyId}:`, error);
-          this.updateNotificationStatus(buddyId, 'failed');
+          console.error(`Failed to notify buddy ${buddyStatusKey}:`, error);
+          this.updateNotificationStatus(buddyStatusKey, 'failed');
         }
       });
 
@@ -90,106 +92,95 @@ export class EmergencyNotificationService {
 
     } catch (error) {
       console.error('Emergency notification process failed:', error);
-      // Don't throw - notifications failing shouldn't block the emergency alert
     }
   }
 
   private prepareNotificationData(
-  emergencyAlert: EmergencyAlert,
-  userProfile: any
-): EmergencyNotificationData {
-  // Safely extract data with fallbacks
-  const baseProfile = userProfile || {};
-  const profileDetails = baseProfile.profileDetails || {};
-  const medicalInfo = baseProfile.medicalInfo || {};
+    emergencyAlert: EmergencyAlert,
+    userProfile: any
+  ): EmergencyNotificationData {
+    const baseProfile = userProfile || {};
+    const profileDetails = baseProfile.profileDetails || {};
+    const medicalInfo = baseProfile.medicalInfo || {};
 
-  const hasLocation =
-    emergencyAlert.location &&
-    typeof emergencyAlert.location.latitude === 'number' &&
-    typeof emergencyAlert.location.longitude === 'number';
+    const hasLocation =
+      emergencyAlert.location &&
+      typeof emergencyAlert.location.latitude === 'number' &&
+      typeof emergencyAlert.location.longitude === 'number';
 
-  const locationLink = hasLocation
-    ? this.generateLocationLink(
-        emergencyAlert.location!.latitude,
-        emergencyAlert.location!.longitude
-      )
-    : '';
+    const locationLink = hasLocation
+      ? this.generateLocationLink(
+          emergencyAlert.location!.latitude,
+          emergencyAlert.location!.longitude
+        )
+      : '';
 
-  const allergies =
-    emergencyAlert.allergies?.length
-      ? emergencyAlert.allergies
-      : (medicalInfo.allergies || []).map((allergy: any) =>
-          typeof allergy === 'string' ? allergy : (allergy.label || allergy.name || allergy)
-        ).filter((a: any) => !!a);
+    const allergies =
+      emergencyAlert.allergies?.length
+        ? emergencyAlert.allergies
+        : (medicalInfo.allergies || []).map((allergy: any) =>
+            typeof allergy === 'string' ? allergy : (allergy.label || allergy.name || allergy)
+          ).filter((a: any) => !!a);
 
-  return {
-    patientName:
-      emergencyAlert.userName ||
-      baseProfile.fullName ||
-      `${baseProfile.firstName || ''} ${baseProfile.lastName || ''}`.trim() ||
-      'Patient',
+    return {
+      patientName:
+        emergencyAlert.userName ||
+        baseProfile.fullName ||
+        `${baseProfile.firstName || ''} ${baseProfile.lastName || ''}`.trim() ||
+        'Patient',
 
-    allergies,
+      allergies,
 
-    emergencyInstructions:
-      emergencyAlert.instruction ||
-      emergencyAlert.emergencyInstruction ||
-      medicalInfo.emergencyInstruction ||
-      medicalInfo.generalInstruction ||
-      'No specific instructions provided',
+      emergencyInstructions:
+        emergencyAlert.instruction ||
+        emergencyAlert.emergencyInstruction ||
+        medicalInfo.emergencyInstruction ||
+        medicalInfo.generalInstruction ||
+        'No specific instructions provided',
 
-    profileDetails: {
-      phone: profileDetails.phone || '',
-      dateOfBirth: profileDetails.dateOfBirth || '',
-      bloodType: profileDetails.bloodType || '',
-      gender: profileDetails.gender || '',
-      profile_picture: profileDetails.profile_picture || ''
-    },
+      profileDetails: {
+        phone: profileDetails.phone || '',
+        dateOfBirth: profileDetails.dateOfBirth || '',
+        bloodType: profileDetails.bloodType || '',
+        gender: profileDetails.gender || '',
+        profile_picture: profileDetails.profile_picture || ''
+      },
 
-    location: {
-      latitude: hasLocation
-        ? emergencyAlert.location!.latitude
-        : 0,
+      location: {
+        latitude: hasLocation ? emergencyAlert.location!.latitude : 0,
+        longitude: hasLocation ? emergencyAlert.location!.longitude : 0,
+        locationLink: hasLocation ? locationLink : 'Location unavailable'
+      },
 
-      longitude: hasLocation
-        ? emergencyAlert.location!.longitude
-        : 0,
+      emergencyId: emergencyAlert.id!,
+      timestamp: new Date().toISOString()
+    };
+  }
 
-      locationLink: hasLocation
-        ? locationLink
-        : 'Location unavailable'
-    },
-
-    emergencyId: emergencyAlert.id!,
-    timestamp: new Date().toISOString()
-  };
-}
-
+  // Accept the pre-resolved buddyStatusKey so sendToBuddy always uses
+  // the same key that was passed to updateNotificationStatus, rather than
+  // deriving a potentially different key internally.
   private async sendToBuddy(
     buddy: any,
-    notificationData: EmergencyNotificationData
+    notificationData: EmergencyNotificationData,
+    buddyStatusKey: string
   ): Promise<void> {
     try {
-      const buddyId = buddy.id || buddy.buddyId;
-      if (!buddyId) {
-        console.warn('Buddy ID not found, skipping notification');
-        return;
-      }
+      this.updateNotificationStatus(buddyStatusKey, 'sending');
 
-      this.updateNotificationStatus(buddyId, 'sending');
-
+      // Resolve the buddy's Firebase user ID for profile lookup
       const buddyUserId = buddy.connectedUserId || buddy.user2Id || buddy.user1Id || buddy.buddyUid;
       if (!buddyUserId) {
-        console.warn(`No user ID found for buddy ${buddyId}`);
-        this.updateNotificationStatus(buddyId, 'failed');
+        console.warn(`No user ID found for buddy ${buddyStatusKey}`);
+        this.updateNotificationStatus(buddyStatusKey, 'failed');
         return;
       }
 
       const buddyProfile = await this.userService.getUserProfile(buddyUserId);
 
       if (!buddyProfile) {
-        console.warn(`Buddy profile not found for ${buddyId} (userId: ${buddyUserId})`);
-        this.updateNotificationStatus(buddyId, 'failed');
+        console.warn(`Buddy profile not found for ${buddyStatusKey} (userId: ${buddyUserId})`);
+        this.updateNotificationStatus(buddyStatusKey, 'failed');
         return;
       }
 
