@@ -1,3 +1,23 @@
+// Color variables
+$primary-color: #036a5d;
+$light-bg: #e8f2f0;
+$light-bg-alt: #eaf1ee;
+$card-shadow: 0 4px 16px rgba(229, 94, 118, 0.10);
+$dark-text: #333;
+$medium-text: #666;
+$light-text: #999;
+
+ion-header {
+  ion-toolbar {
+    --background: $primary-color !important;
+    color: #fff !important;
+  }
+}
+
+ion-content {
+  --background: linear-gradient(0deg, #013b34 0%, #036a5d 100%) !important;
+}
+
 .success-banner {
   background: linear-gradient(135deg, #2dd36f 0%, #2dd36f 100%);
   color: white;
@@ -8,9 +28,11 @@
   align-items: center;
   gap: 12px;
   animation: slideDown 0.3s ease-out;
+  box-shadow: $card-shadow;
 
   ion-icon {
     font-size: 24px;
+    flex-shrink: 0;
   }
 
   p {
@@ -32,14 +54,15 @@
 
 .invite-card {
   margin: 16px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  box-shadow: $card-shadow;
+  overflow: hidden;
+  background: white;
 
   ion-card-header {
-    background: linear-gradient(135deg, #3880ff 0%, #2d5aa0 100%);
+    background: linear-gradient(135deg, $primary-color 0%, #024d45 100%);
     color: white;
-    border-radius: 12px 12px 0 0;
-    padding: 16px;
+    padding: 20px;
 
     ion-card-title,
     ion-card-subtitle {
@@ -49,11 +72,13 @@
     ion-card-title {
       font-weight: 600;
       margin-bottom: 4px;
+      font-size: 16px;
     }
 
     ion-card-subtitle {
       opacity: 0.9;
       font-size: 13px;
+      font-weight: 400;
     }
   }
 
@@ -69,9 +94,10 @@
 
   ion-label {
     font-weight: 500;
-    color: #333;
+    color: $dark-text;
     margin-bottom: 8px;
     margin-top: 0;
+    font-size: 14px;
 
     .required {
       color: #ff3a30;
@@ -81,22 +107,26 @@
 
   ion-input,
   ion-textarea {
-    --padding-top: 8px;
-    --padding-bottom: 8px;
-    --background: #f5f5f5;
-    border-radius: 6px;
-    padding: 12px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --background: $light-bg !important;
+    --color: $dark-text !important;
+    border-radius: 10px;
     margin-top: 8px;
+    border: 1px solid #d0e0dc;
 
     &:focus {
-      --background: #ffffff;
-      --border-color: #3880ff;
+      --background: #ffffff !important;
+      border: 1px solid $primary-color;
     }
   }
 
   ion-note {
-    margin-top: 4px;
+    margin-top: 6px;
     font-size: 12px;
+    color: #ff3a30;
   }
 }
 
@@ -104,14 +134,27 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
+  padding: 20px;
+  padding-top: 0;
 
   ion-button {
-    --border-radius: 25px;
+    --border-radius: 10px;
     --padding-start: 20px;
     --padding-end: 20px;
     min-height: 44px;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    --background: white !important;
+    --color: $primary-color !important;
+    box-shadow: $card-shadow;
+
+    &[disabled] {
+      opacity: 0.6;
+    }
+
+    ion-spinner {
+      margin-right: 8px;
+    }
   }
 }
 
@@ -119,16 +162,25 @@
   padding: 0 16px 32px;
 
   .info-card {
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    box-shadow: $card-shadow;
+    background: white;
+    overflow: hidden;
 
     ion-card-header {
-      padding: 16px;
-      background: #f0f4ff;
+      padding: 16px 20px;
+      background: $light-bg;
+      border-bottom: 1px solid #d0e0dc;
+
+      ion-card-title {
+        color: $primary-color !important;
+        font-weight: 600;
+        font-size: 14px;
+      }
     }
 
     ion-card-content {
-      padding: 16px;
+      padding: 16px 20px;
 
       ul {
         list-style: none;
@@ -138,19 +190,43 @@
         li {
           display: flex;
           align-items: flex-start;
-          padding: 8px 0;
-          color: #666;
+          padding: 10px 0;
+          color: $medium-text;
           font-size: 14px;
+          line-height: 1.5;
 
           &:before {
             content: "✓";
             color: #2dd36f;
             font-weight: bold;
-            margin-right: 8px;
+            margin-right: 12px;
             min-width: 20px;
+            font-size: 16px;
+          }
+
+          &:not(:last-child) {
+            border-bottom: 1px solid #f0f0f0;
           }
         }
       }
     }
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .invite-card,
+  .info-section .info-card {
+    margin: 12px;
+    border-radius: 16px;
+  }
+
+  .form-item {
+    margin-bottom: 14px;
+  }
+
+  .button-group {
+    padding: 16px;
+    gap: 10px;
   }
 }

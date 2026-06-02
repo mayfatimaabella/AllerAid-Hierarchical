@@ -6,103 +6,216 @@
   color: #3880ff;
 }
 
-.patient-header-card {
-  margin: 16px;
-  margin-bottom: 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #3880ff 0%, #2d5aa0 100%);
+.profile-page-bg {
+  --background: #f8f9fa;
+}
 
-  ion-card-content {
-    color: white;
-    padding: 24px;
+// Header
+.toolbar--teal {
+  --background: linear-gradient(135deg, #3880ff 0%, #2d5aa0 100%);
+  --color: white;
+}
+
+// Profile Header Card
+.profile-header {
+  margin: 16px 0 20px;
+  
+  .profile-header-card {
+    background: linear-gradient(135deg, #3880ff 0%, #2d5aa0 100%);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
-  .patient-header {
+  .profile-header-content {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
     gap: 16px;
+  }
 
-    .patient-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      border: 4px solid white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .patient-info {
-      flex: 1;
-
-      h1 {
-        margin: 0 0 4px;
-        font-size: 24px;
-        font-weight: 600;
-      }
-
-      .patient-id {
-        margin: 0 0 8px;
-        opacity: 0.9;
-        font-size: 13px;
-      }
     }
   }
 
-  .quick-contact {
-    display: flex;
-    gap: 8px;
+  .profile-info {
+    flex: 1;
+    color: white;
 
-    ion-button {
-      flex: 1;
-      --color: white;
-      ion-icon {
-        margin-right: 4px;
-      }
+    .profile-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 4px;
+    }
+
+    .profile-email {
+      font-size: 13px;
+      opacity: 0.9;
+      margin: 0 0 4px;
+    }
+
+    .profile-phone {
+      font-size: 13px;
+      opacity: 0.85;
+      margin: 0;
     }
   }
 }
 
-.profile-segments {
-  --background: white;
-  margin: 0 16px;
-  margin-bottom: 16px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+// Quick Actions
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 20px;
+  overflow-x: auto;
+  padding-bottom: 8px;
 
-  ion-segment-button {
-    --color: #666;
-    --color-checked: white;
-    --background-checked: #3880ff;
-    border-radius: 10px;
-    margin: 4px;
+  ion-button {
+    flex-shrink: 0;
+    --padding-start: 16px;
+    --padding-end: 16px;
+  }
+}
 
-    ion-icon {
-      margin-bottom: 4px;
-    }
+// Profile Stats
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
 
-    ion-label {
+  .stat {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .stat-label {
       font-size: 12px;
+      color: #666;
       font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #3880ff;
+
+      &.stat-status {
+        font-size: 14px;
+        color: #999;
+        
+        &.active {
+          color: #28a745;
+        }
+      }
     }
   }
 }
 
-.info-card {
-  margin: 16px;
+// Profile Card Container
+.profile-card {
+  background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 0;
+  margin-bottom: 32px;
+  overflow: hidden;
+
+  // Tabs Navigation
+  .profile-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e5e5;
+    background: #f5f5f5;
+    padding: 0;
+    margin: 0;
+
+    .tab {
+      flex: 1;
+      border: none;
+      background: none;
+      color: #666;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 16px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+
+      ion-icon {
+        font-size: 20px;
+      }
+
+      span {
+        display: block;
+      }
+
+      &.active {
+        color: #3880ff;
+        border-bottom-color: #3880ff;
+        background: white;
+      }
+
+      &:hover:not(.active) {
+        background: rgba(56, 128, 255, 0.05);
+      }
+    }
+  }
+
+  // Tab Content
+  .tab-content {
+    padding: 16px 0;
+
+    ion-card {
+      margin: 8px 16px;
+      border-radius: 12px;
+
+      &:first-child {
+        margin-top: 0;
+      }
+
+      &:last-child {
+        margin-bottom: 16px;
+      }
+    }
+  }
+}
+
+// Info Card Styling
+.info-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: none;
+  border: 1px solid #e5e5e5;
+  background: white;
 
   ion-card-header {
     background: linear-gradient(135deg, #f5f5f5 0%, #efefef 100%);
     border-radius: 12px 12px 0 0;
     padding: 16px;
+    border-bottom: 1px solid #e5e5e5;
 
     ion-card-title {
       color: #333;
       font-weight: 600;
       font-size: 16px;
+      margin: 0;
     }
   }
 
@@ -113,53 +226,137 @@
       --padding-start: 16px;
       --padding-end: 16px;
       --inner-padding-end: 0;
+      --background: white;
 
       ion-label {
         color: #666;
         font-weight: 500;
+        font-size: 14px;
       }
 
       ion-text {
         color: #333;
         font-weight: 400;
+        font-size: 14px;
       }
     }
 
     .empty-message {
       text-align: center;
       color: #999;
-      padding: 24px;
+      padding: 32px 16px;
       font-size: 14px;
     }
   }
 }
 
-ion-badge {
-  --padding-start: 12px;
-  --padding-end: 12px;
-}
+// Medication Item
+.medication-item {
+  width: 100%;
+  padding: 8px 0;
 
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  padding-bottom: 32px;
+  .medication-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
 
-  ion-button {
-    --border-radius: 25px;
-    --padding-start: 20px;
-    --padding-end: 20px;
-    min-height: 44px;
-    font-weight: 500;
+  .medication-details {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    color: #666;
+
+    .dosage {
+      font-weight: 500;
+    }
+
+    .frequency {
+      opacity: 0.7;
+    }
   }
 }
 
-// Dark theme support
+// Visit Item
+.visit-item {
+  width: 100%;
+  padding: 8px 0;
+
+  .visit-date {
+    font-weight: 600;
+    color: #3880ff;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .visit-reason {
+    font-weight: 500;
+    color: #333;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .visit-notes {
+    font-size: 13px;
+    color: #666;
+  }
+}
+
+// Badge Styling
+ion-badge {
+  --padding-start: 10px;
+  --padding-end: 10px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  font-weight: 500;
+}
+
+// Dark Theme Support
 @media (prefers-color-scheme: dark) {
+  .profile-page-bg {
+    --background: #1a1a1a;
+  }
+
+  .profile-stats .stat {
+    background: #2a2a2a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    .stat-label {
+      color: #aaa;
+    }
+  }
+
+  .profile-card {
+    background: #2a2a2a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    .profile-tabs {
+      background: #1f1f1f;
+      border-bottom-color: #3a3a3a;
+
+      .tab {
+        color: #aaa;
+
+        &.active {
+          color: #3880ff;
+          background: #2a2a2a;
+        }
+
+        &:hover:not(.active) {
+          background: rgba(56, 128, 255, 0.1);
+        }
+      }
+    }
+  }
+
   .info-card {
+    background: #2a2a2a;
+    border-color: #3a3a3a;
+
     ion-card-header {
       background: rgba(0, 0, 0, 0.2);
+      border-bottom-color: #3a3a3a;
 
       ion-card-title {
         color: #fff;
@@ -168,8 +365,10 @@ ion-badge {
 
     ion-card-content {
       ion-item {
+        --background: #2a2a2a;
+
         ion-label {
-          color: #ccc;
+          color: #aaa;
         }
 
         ion-text {
@@ -178,8 +377,32 @@ ion-badge {
       }
 
       .empty-message {
-        color: #999;
+        color: #666;
       }
+    }
+  }
+
+  .medication-item {
+    .medication-name {
+      color: #fff;
+    }
+
+    .medication-details {
+      color: #aaa;
+    }
+  }
+
+  .visit-item {
+    .visit-date {
+      color: #64b5f6;
+    }
+
+    .visit-reason {
+      color: #fff;
+    }
+
+    .visit-notes {
+      color: #aaa;
     }
   }
 }

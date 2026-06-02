@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController, AlertController } from '@ionic/angular';
-import { Subject } from 'rxjs';
+import { DoctorService, DoctorInvitation } from '../../../core/services/doctor.service';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-patient-invite',
@@ -11,112 +11,305 @@ import { Subject } from 'rxjs';
   standalone: false,
 })
 export class PatientInvitePage implements OnInit, OnDestroy {
-  inviteForm!: FormGroup;
+  selectedSegment: 'invite' | 'received' | 'sent' = 'invite';
+  
+  // Search functionality
+  searchEmail: string = '';
+  searchResults: any[] = [];
+  selectedUser: any = null;
+  isSearching: boolean = false;
+  showSearchDropdown: boolean = false;
+  
+  inviteMessage: string = '';
   isSubmitting: boolean = false;
   showSuccessMessage: boolean = false;
-  private destroy$ = new Subject<void>();
+  currentUserId: string = '';
+
+  // Invitations lists
+  receivedInvitations: DoctorInvitation[] = [];
+  sentInvitations: DoctorInvitation[] = [];
+
+  private relationsSubscription?: any;
 
   constructor(
-    private formBuilder: FormBuilder,
     private router: Router,
     private toastController: ToastController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private doctorService: DoctorService,
+    private userService: UserService
   ) {}
 
-  ngOnInit() {
-    this.initializeForm();
+  async ngOnInit() {
+    const currentUser = await this.userService.getCurrentUserProfile();
+    if (currentUser) {
+      this.currentUserId = currentUser.uid;
+      this.listenForAcceptedInvitations(currentUser.uid);
+    }
+    await this.loadInvitations();
   }
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+  ngOnDestroy(): void {
+    this.relationsSubscription?.unsubscribe();
   }
 
-  initializeForm() {
-    this.inviteForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      phoneNumber: ['', [Validators.pattern(/^[0-9\-+()\s]*$/)]],
-      message: ['', [Validators.maxLength(500)]]
+  listenForAcceptedInvitations(userId: string): void {
+    this.doctorService.listenForDoctorRelations(userId);
+    this.relationsSubscription = this.doctorService.doctorRelations$.subscribe(relations => {
+      relations.forEach((rel: any) => {
+        if (!this.doctorService.hasBeenNotified(rel.doctorUid)) {
+          this.showToast(`${rel.doctorName} accepted your patient invitation!`, 'success');
+          this.doctorService.markAsNotified(rel.doctorUid);
+          this.loadInvitations();
+        }
+      });
     });
   }
 
+  async loadInvitations() {
+    try {
+      const currentUser = await this.userService.getCurrentUserProfile();
+      if (currentUser) {
+        this.receivedInvitations = await this.doctorService.getReceivedInvitations(currentUser.uid);
+        this.sentInvitations = await this.doctorService.getSentInvitations(currentUser.uid);
+      }
+    } catch (error) {
+      console.error('Error loading invitations:', error);
+      this.showToast('Error loading invitations', 'danger');
+    }
+  }
+
+  onSegmentChange() {}
+
   async sendInvite() {
-    if (!this.inviteForm.valid) {
-      this.showToast('Please fill in all required fields correctly', 'warning');
+    if (!this.selectedUser) {
+      await this.showToast('Please select a patient from the dropdown', 'warning');
       return;
     }
 
-    this.isSubmitting = true;
-    const inviteData = this.inviteForm.value;
-
     try {
-      // TODO: Implement invite sending through service
-      // await this.patientService.sendInvite(inviteData).toPromise();
+      this.isSubmitting = true;
+
+      const currentUser = await this.userService.getCurrentUserProfile();
+      if (!currentUser) {
+        await this.showToast('You must be logged in to send invitations', 'danger');
+        this.isSubmitting = false;
+        return;
+      }
+
+      const duplicateCheck = await this.doctorService.checkDuplicateDoctorByEmail(currentUser.uid, this.selectedUser.email.trim());
       
+      if (duplicateCheck.isDuplicate) {
+        let alertMessage = '';
+        let alertHeader = 'Duplicate Patient';
+        
+        switch (duplicateCheck.type) {
+          case 'existing_doctor':
+            alertMessage = `You already have ${duplicateCheck.details?.name || 'this person'} as a patient.`;
+            break;
+          case 'pending_sent_invitation':
+            alertMessage = `You have already sent a patient invitation to ${duplicateCheck.details?.name || this.selectedUser.email}. Please wait for them to respond.`;
+            break;
+          case 'pending_received_invitation':
+            alertMessage = `${duplicateCheck.details?.name || 'This person'} has already sent you a patient invitation. Please check your invitations.`;
+            break;
+          default:
+            alertMessage = `This email is already associated with a patient relationship.`;
+        }
+
+        const alert = await this.alertController.create({
+          header: alertHeader,
+          message: alertMessage,
+          buttons: ['OK']
+        });
+        
+        await alert.present();
+        this.isSubmitting = false;
+        return;
+      }
+
+      await this.doctorService.sendDoctorInvitationWithUser(
+        currentUser,
+        this.selectedUser,
+        this.inviteMessage
+      );
+
       this.showSuccessMessage = true;
-      this.showToast('Invitation sent successfully!', 'success');
+      await this.showToast('Invitation sent successfully!', 'success');
       
+      // Clear form
+      this.searchEmail = '';
+      this.selectedUser = null;
+      this.searchResults = [];
+      this.showSearchDropdown = false;
+      this.inviteMessage = '';
+
+      await this.loadInvitations();
+      this.selectedSegment = 'sent';
+
       setTimeout(() => {
-        this.router.navigate(['/doctor-dashboard']);
-      }, 2000);
-      
+        this.showSuccessMessage = false;
+      }, 2500);
+
     } catch (error) {
-      console.error('Error sending invite:', error);
-      this.showToast('Failed to send invitation', 'danger');
+      console.error('Error sending invitation:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error sending invitation. Please try again.';
+      await this.showToast(errorMessage, 'danger');
     } finally {
       this.isSubmitting = false;
     }
   }
 
-  async sendBulkInvites() {
+  async acceptInvitation(invitationId: string) {
     const alert = await this.alertController.create({
-      header: 'Bulk Invite',
-      message: 'Paste email addresses separated by commas or new lines',
-      inputs: [
-        {
-          name: 'emails',
-          type: 'textarea',
-          placeholder: 'email1@example.com, email2@example.com'
-        }
-      ],
+      header: 'Accept Patient Invitation',
+      message: 'Are you sure you want to accept this patient invitation?',
       buttons: [
         {
           text: 'Cancel',
           role: 'cancel'
         },
         {
-          text: 'Send',
-          handler: async (data) => {
-            // TODO: Implement bulk invite
-            this.showToast('Bulk invites feature coming soon', 'info');
+          text: 'Accept',
+          handler: async () => {
+            try {
+              const currentUser = await this.userService.getCurrentUserProfile();
+              if (!currentUser) {
+                throw new Error('No current user found');
+              }
+              
+              const accepted = this.receivedInvitations.find(inv => inv.id === invitationId);
+              const doctorName = accepted?.fromUserName || 'The doctor';
+
+              await this.doctorService.acceptDoctorInvitationWithUser(invitationId, currentUser.uid);
+              this.showToast(`${doctorName} is now your healthcare provider!`, 'success');
+              await this.loadInvitations();
+            } catch (error) {
+              console.error('Error accepting invitation:', error);
+              const errorMessage = error instanceof Error ? error.message : 'Error accepting invitation';
+              this.showToast(errorMessage, 'danger');
+            }
           }
         }
       ]
     });
+
     await alert.present();
   }
 
-  filterPhoneInput(event: any) {
-    const input = event.target.value;
-    // Remove any characters that are not digits, +, -, (, ), or spaces
-    const filtered = input.replace(/[^0-9+\-() ]/g, '');
-    this.inviteForm.get('phoneNumber')?.setValue(filtered, { emitEvent: false });
+  async declineInvitation(invitationId: string) {
+    const alert = await this.alertController.create({
+      header: 'Decline Patient Invitation',
+      message: 'Are you sure you want to decline this patient invitation?',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Decline',
+          handler: async () => {
+            try {
+              await this.doctorService.declineDoctorInvitation(invitationId);
+              this.showToast('Invitation declined', 'medium');
+              await this.loadInvitations();
+            } catch (error) {
+              console.error('Error declining invitation:', error);
+              this.showToast('Error declining invitation', 'danger');
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
-  resetForm() {
-    this.inviteForm.reset();
-    this.showSuccessMessage = false;
+  async cancelInvitation(invitationId: string) {
+    const alert = await this.alertController.create({
+      header: 'Cancel Invitation',
+      message: 'Are you sure you want to cancel this invitation?',
+      buttons: [
+        {
+          text: 'No',
+          role: 'cancel'
+        },
+        {
+          text: 'Cancel Invitation',
+          handler: async () => {
+            try {
+              await this.doctorService.cancelDoctorInvitation(invitationId);
+              this.showToast('Invitation cancelled', 'medium');
+              await this.loadInvitations();
+            } catch (error) {
+              console.error('Error cancelling invitation:', error);
+              this.showToast('Error cancelling invitation', 'danger');
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
-  async showToast(message: string, color: string = 'default') {
+  getInvitationStatusColor(status: string): string {
+    switch (status) {
+      case 'pending': return 'warning';
+      case 'accepted': return 'success';
+      case 'declined': return 'danger';
+      case 'cancelled': return 'medium';
+      default: return 'medium';
+    }
+  }
+
+  getPendingReceivedCount(): number {
+    return this.receivedInvitations.filter(inv => inv.status === 'pending').length;
+  }
+
+  async searchForUsers(searchTerm: string) {
+    this.searchEmail = searchTerm;
+    
+    if (!searchTerm || searchTerm.trim().length < 2) {
+      this.searchResults = [];
+      this.showSearchDropdown = false;
+      return;
+    }
+
+    try {
+      this.isSearching = true;
+      const results = await this.userService.searchUsers(searchTerm, this.currentUserId);
+      this.searchResults = results;
+      this.showSearchDropdown = results.length > 0;
+    } catch (error) {
+      console.error('Error searching users:', error);
+      this.searchResults = [];
+      this.showSearchDropdown = false;
+    } finally {
+      this.isSearching = false;
+    }
+  }
+
+  selectUserFromDropdown(user: any) {
+    this.selectedUser = user;
+    this.searchEmail = user.email;
+    this.showSearchDropdown = false;
+  }
+
+  clearSearch() {
+    this.searchEmail = '';
+    this.selectedUser = null;
+    this.searchResults = [];
+    this.showSearchDropdown = false;
+  }
+
+  async showToast(message: string, color: string = 'medium') {
     const toast = await this.toastController.create({
-      message,
-      color,
-      duration: 2000,
+      message: message,
+      duration: color === 'success' ? 3000 : 2500,
+      color: color,
       position: 'top',
     });
     await toast.present();
   }
 }
+

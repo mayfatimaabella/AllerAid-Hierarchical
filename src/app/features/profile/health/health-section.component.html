@@ -1,48 +1,14 @@
 <div class="section-title">
-  Medications 
-</div>
-
-<div class="medication-search">
-  <ion-searchbar 
-    [value]="medicationSearchTerm"
-    (ionInput)="search.emit($event)"
-    (ionClear)="clearSearch.emit()"
-    placeholder="Search medications..."
-    showClearButton="focus"
-    debounce="300">
-  </ion-searchbar>
-  <div *ngIf="medicationSearchTerm && medicationSearchTerm.trim()" class="search-results-info">
-    <small>{{ filteredMedications.length }} of {{ userMedications.length }} medications found</small>
-  </div>
-</div>
-
-<div class="medication-filters">
-  <ion-segment [ngModel]="medicationFilter" (ionChange)="onFilterChange($event)" mode="md">
-    <ion-segment-button value="all">
-      <ion-label>All</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="active">
-      <ion-label>Active</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="history">
-      <ion-label>History</ion-label>
-    </ion-segment-button>
-  </ion-segment>
+  Medications
 </div>
 
 <div class="medications-list">
-  <div *ngIf="isLoading && (!userMedications || userMedications.length === 0)" class="loading-state">
-    <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
-    <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
-    <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
-  </div>
-
   <ng-container *ngIf="!isLoading">
-    <div *ngFor="let medication of filteredMedications; trackBy: trackByMedication" 
+    <div *ngFor="let medication of recentMedications; trackBy: trackByMedication" 
       class="medication-card" 
       [ngClass]="{ 
         'emergency-medication': isEmergencyMedication(medication),
-        'finished-medication': getStatusLabel(medication) === 'Completed' || getStatusLabel(medication) === 'Incomplete'
+        'finished-medication': getStatusLabel(medication) === 'Completed' || getStatusLabel(medication) === 'Inactive'
       }"
       (click)="viewDetails.emit(medication)"
       style="cursor: pointer;">
@@ -74,24 +40,13 @@
       </div>
     </div>
 
-    <div *ngIf="!isLoading && filteredMedications.length === 0" class="no-medications">
+    <div *ngIf="!isLoading && recentMedications.length === 0" class="no-medications">
       <div class="no-medications-container">
         <ion-icon name="medical-outline" class="no-medications-icon"></ion-icon>
         <p class="no-medications-text">
-          <ng-container *ngIf="medicationSearchTerm && medicationSearchTerm.trim(); else noMedicationsAtAll">
-            No medications found matching "{{ medicationSearchTerm }}"
-          </ng-container>
-          <ng-template #noMedicationsAtAll>
-            No {{ medicationFilter !== 'all' ? (medicationFilter === 'history' ? 'past' : medicationFilter) : '' }} medications recorded
-          </ng-template>
+          No medications recorded
         </p>
       </div>
     </div>
   </ng-container>
 </div>
-
-<ion-fab class="add-med-fab" horizontal="end" vertical="bottom" slot="fixed">
-  <ion-fab-button (click)="add.emit()">
-    <ion-icon name="add"></ion-icon>
-  </ion-fab-button>
-</ion-fab>

@@ -50,51 +50,23 @@
 
 /* Search Bar Styling */
 .medication-search ion-searchbar::part(container) {
-  background: #ffffff !important;
-  border: 1px solid #d9d9d9 !important;
-  border-radius: 8px !important; 
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
-  padding: 0 !important;
+  display: none;
 }
 
 /* --- UPDATED: Filters / Segment Styling --- */
 .medication-filters { 
-  margin: 0 16px 16px; 
+  display: none;
 }
 
-.medication-filters ion-segment {
-  --background: #e6edec; // Light background for the track
-  border-radius: 8px;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-  padding: 4px;
-}
-
-.medication-filters ion-segment-button {
-  --color: #036a5d;
-  --color-checked: #ffffff;
-  --indicator-color: transparent; // We use background-checked instead
-  --background-checked: #036a5d;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 14px;
-  min-height: 36px;
-  transition: all 0.2s ease-in-out;
-}
-
-/* Ensure labels are visible */
-.medication-filters ion-segment-button::part(label) {
-  text-transform: none;
-}
-
-/* --- UPDATED: Medication Cards --- */
+/* --- UPDATED: Medication Cards (Read-Only with Click Details) --- */
 .medication-card { 
   border: 1.5px solid #bbb; 
   border-radius: 12px; 
   background: #fff; 
   margin-bottom: 12px; 
   padding: 16px; 
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
-  cursor: pointer; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
 }
@@ -181,15 +153,7 @@
 /* Floating Action Button Styling */
 @media (max-width: 768px) {
   .add-med-fab {
-    display: block;
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
-    z-index: 1000;
-  }
-  .add-med-fab ion-fab-button {
-    --background: #065a4c;
-    --color: #fff;
+    display: none;
   }
 }
 

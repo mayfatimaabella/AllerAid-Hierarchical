@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController, ToastController, AlertController } from '@ionic/angular';
 import { UserService } from '../../../core/services/user.service';
+import { DoctorService } from '../../../core/services/doctor.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-doctor-invite-modal',
@@ -33,21 +35,35 @@ export class DoctorInviteModalComponent implements OnInit {
     private modalController: ModalController,
     private toastController: ToastController,
     private alertController: AlertController,
-    private userService: UserService
+    private userService: UserService,
+    private doctorService: DoctorService,
+    private authService: AuthService
   ) { }
 
   async ngOnInit() {
-    const currentUser = await this.userService.getCurrentUserProfile();
-    if (currentUser) {
-      this.currentUserId = currentUser.uid;
+    try {
+      const currentUser = await this.userService.getCurrentUserProfile();
+      if (currentUser) {
+        this.currentUserId = currentUser.uid;
+        await this.loadInvitations();
+      } else {
+        this.showToast('Unable to load user information', 'danger');
+      }
+    } catch (error) {
+      console.error('Error initializing modal:', error);
+      this.showToast('Error loading invitations', 'danger');
     }
-    await this.loadInvitations();
   }
 
   async loadInvitations() {
     try {
-      // TODO: Implement doctor invitation service methods
-      this.showToast('Invitations loaded', 'success');
+      const [received, sent] = await Promise.all([
+        this.doctorService.getReceivedInvitations(this.currentUserId),
+        this.doctorService.getSentInvitations(this.currentUserId)
+      ]);
+
+      this.receivedInvitations = received;
+      this.sentInvitations = sent;
     } catch (error) {
       console.error('Error loading invitations:', error);
       this.showToast('Error loading invitations', 'danger');
@@ -67,7 +83,9 @@ export class DoctorInviteModalComponent implements OnInit {
 
     this.isSearching = true;
     try {
-      // TODO: Implement user search service
+      const currentUser = await this.userService.getCurrentUserProfile();
+      const results = await this.userService.searchUsers(searchTerm, currentUser?.uid);
+      this.searchResults = results;
       this.showSearchDropdown = true;
     } catch (error) {
       console.error('Error searching users:', error);
@@ -99,7 +117,13 @@ export class DoctorInviteModalComponent implements OnInit {
         return;
       }
 
-      // TODO: Implement send doctor invitation logic
+      await this.doctorService.sendDoctorInvitationWithUser(
+        currentUser,
+        this.selectedUser,
+        this.inviteMessage,
+        this.selectedUser.specialty || ''
+      );
+
       this.showToast('Invitation sent successfully', 'success');
       this.resetForm();
       await this.loadInvitations();
@@ -122,7 +146,7 @@ export class DoctorInviteModalComponent implements OnInit {
   async acceptInvitation(invitation: any) {
     try {
       this.isLoading = true;
-      // TODO: Implement accept invitation logic
+      await this.doctorService.acceptDoctorInvitationWithUser(invitation.id, this.currentUserId);
       this.showToast('Invitation accepted', 'success');
       await this.loadInvitations();
     } catch (error) {
@@ -136,7 +160,7 @@ export class DoctorInviteModalComponent implements OnInit {
   async rejectInvitation(invitation: any) {
     try {
       this.isLoading = true;
-      // TODO: Implement reject invitation logic
+      await this.doctorService.declineDoctorInvitationWithUser(invitation.id, this.currentUserId);
       this.showToast('Invitation rejected', 'success');
       await this.loadInvitations();
     } catch (error) {
@@ -161,7 +185,7 @@ export class DoctorInviteModalComponent implements OnInit {
           handler: async () => {
             try {
               this.isLoading = true;
-              // TODO: Implement cancel invitation logic
+              await this.doctorService.cancelDoctorInvitationWithUser(invitation.id, this.currentUserId);
               this.showToast('Invitation cancelled', 'success');
               await this.loadInvitations();
             } catch (error) {

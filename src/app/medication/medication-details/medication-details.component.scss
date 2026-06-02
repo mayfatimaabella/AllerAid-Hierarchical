@@ -1,0 +1,178 @@
+:host {
+  display: block;
+  height: 100%; 
+}
+
+.white-content {
+  --background: #ffffff;
+  background: #ffffff;
+  --padding-top: 0;
+  height: 100%; 
+}
+
+.main-container {
+  display: block;
+  min-height: 100%;
+  padding: 20px 16px;
+  background: #ffffff;
+  position: relative;
+  z-index: 1;
+}
+
+/* 1. Hero Header */
+.hero-section {
+  text-align: center;
+  padding: 10px 0 25px;
+  
+  .med-avatar {
+    width: 72px;
+    height: 72px;
+    background: #e2f2ef;
+    border-radius: 20px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(3, 106, 93, 0.1);
+    ion-icon { font-size: 36px; color: #036a5d; }
+  }
+  .med-name { margin: 0; font-size: 26px; font-weight: 800; color: #1f4a42; letter-spacing: -0.5px; }
+  .brand-sub { margin: 4px 0 0; font-size: 15px; color: #6b8581; font-weight: 500; }
+}
+
+/* 2. Status Badge - DYNAMIC SYNC */
+/* 2. Status Badge - Contrast Fix */
+/* 2. Status Badge - High Visibility Update */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 30px;
+  margin-top: 15px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  
+  /* Background is still dynamic from HTML, but we force white text */
+  color: #ffffff !important; 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  .pulse-dot { 
+    width: 8px; 
+    height: 8px; 
+    border-radius: 50%; 
+    /* Force the dot to be a bright, solid version of the status color */
+    background-color: #ffffff !important; 
+    opacity: 0.9;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+    animation: pulse-animation 2s infinite; 
+  }
+  
+  span {
+    text-transform: capitalize;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* 3. Supply Tracker Card */
+.supply-tracker-card {
+  background: #f8faf9;
+  border-radius: 24px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid #e8f3f1;
+  .card-title { font-weight: 700; font-size: 12px; color: #6b8581; text-transform: uppercase; margin-bottom: 12px; }
+  .supply-visual {
+    text-align: center;
+    .big-number { font-size: 56px; font-weight: 900; color: #036a5d; line-height: 1; }
+    .unit-text { font-size: 18px; color: #546e6a; font-weight: 600; }
+  }
+}
+
+.bottle-progress {
+  height: 12px; 
+  background: #e0e6e4; 
+  border-radius: 6px; 
+  margin: 20px 0 10px; 
+  overflow: hidden;
+  
+  .liquid-fill { 
+    height: 100%; 
+    border-radius: 6px; 
+    /* Width and Background-color are handled by [style] in HTML */
+    transition: width 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67), background-color 0.4s ease; 
+  }
+}
+
+/* 4. Schedule Grid */
+.schedule-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;
+  .grid-item {
+    background: #ffffff; border: 2px solid #f0f4f3; padding: 14px; border-radius: 20px; display: flex; align-items: center; gap: 12px;
+    .icon-circle { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; ion-icon { font-size: 20px; color: white; } }
+    small { display: block; font-size: 10px; color: #888; font-weight: 700; text-transform: uppercase; }
+    p { margin: 0; font-weight: 700; color: #1f4a42; font-size: 14px; }
+    .dosage-bg { background: #5c7cfa; } 
+    .frequency-bg { background: #f08c00; }
+  }
+}
+
+/* 5. Treatment Timeline */
+.dates-container {
+  background: #ffffff; border: 2px solid #f0f4f3; border-radius: 20px; padding: 12px 16px; margin-bottom: 12px;
+  .card-title { font-weight: 700; font-size: 11px; color: #6b8581; text-transform: uppercase; margin-bottom: 12px; text-align: center; display: block; }
+}
+.date-row { display: flex; justify-content: space-between; align-items: center; }
+.date-block {
+  display: flex; align-items: center; gap: 8px; flex: 1;
+  .icon-circle { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; ion-icon { font-size: 20px; color: white; } }
+  .date-info {
+    small { display: block; font-size: 9px; color: #888; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
+    p { margin: 0; font-weight: 700; color: #1f4a42; font-size: 14px; white-space: nowrap; }
+  }
+  .start-bg { background: #036a5d; } 
+  .end-bg { background: #e03131; }
+}
+.date-divider { width: 1px; height: 28px; background: #e8f3f1; margin: 0 12px; }
+
+/* 6. Shelf Life Card */
+.shelf-life-card {
+  background: #f8faf9; border: 1px solid #e8f3f1; border-radius: 16px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+  transition: all 0.3s ease;
+  ion-icon { font-size: 20px; color: #036a5d; }
+  .shelf-info {
+    display: flex; gap: 6px; align-items: center;
+    span { font-size: 13px; color: #6b8581; font-weight: 600; }
+    strong { font-size: 13px; color: #1f4a42; font-weight: 700; }
+  }
+
+  /* Warning state if Expired */
+  &.expired-warning {
+    border-color: var(--ion-color-danger);
+    background: var(--ion-color-danger-tint);
+    ion-icon { color: var(--ion-color-danger); }
+  }
+}
+
+/* 7. Notes & Actions */
+.user-notes {
+  margin-bottom: 24px;
+  .note-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #6b8581; margin-bottom: 8px; ion-icon { color: #036a5d; font-size: 18px; } }
+  .note-body { background: #fdfae5; padding: 14px 16px; border-radius: 16px; font-size: 14px; color: #4a4a4a; line-height: 1.5; border: 1px solid #f2eecb; font-style: italic; }
+}
+.action-button { width: 100%; padding: 18px; border-radius: 16px; border: none; background: #036a5d; color: white; font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.toolbar--teal { --background: #036a5d; --color: #ffffff; ion-title { font-weight: 700; } }
+.loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; color: #6b8581; p { margin-top: 15px; font-weight: 600; } }
+
+/* Animations */
+@keyframes pulse-animation { 
+  0% { transform: scale(1); opacity: 1; } 
+  50% { transform: scale(1.2); opacity: 0.6; } 
+  100% { transform: scale(1); opacity: 1; } 
+}
+
+.danger-text {
+  color: var(--ion-color-danger) !important;
+}

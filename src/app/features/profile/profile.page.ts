@@ -20,8 +20,6 @@ import { ProfileUtilityService } from './profile-services/profile-utility.servic
 import { ProfileAccessRequestService } from './profile-services/profile-access-request.service';
 import { VoiceSettingsManagerService } from './profile-services/voice-settings-manager.service';
 import { AllergyModalService } from './profile-services/allergy-modal.service';
-
-import { AddMedicationModal } from './health/modals/add-edit-medication/add-edit-medication.modal';
 import { ChangePasswordModal } from './change-password/change-password.modal';
 import {
   ActiveModal,
@@ -156,13 +154,6 @@ export class ProfilePage implements OnInit, OnDestroy {
       this.allergyOptions,
       () => this.refreshAllergiesDisplay()
     );
-  }
-
-  async openAddMedicationModal() {
-    const modal = await this.openModal(AddMedicationModal);
-    modal.onDidDismiss().then((result) => {
-      if (result.data?.saved) this.loadUserMedications();
-    });
   }
 
   async openChangePasswordModal(): Promise<void> {

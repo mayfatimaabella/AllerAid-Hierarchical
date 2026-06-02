@@ -13,7 +13,7 @@
       </ion-tab-button>
 
       <ion-tab-button tab="smartwatch" [routerLink]="['/tabs/smartwatch']">
-        <ion-icon name="watch-outline"></ion-icon>
+        <ion-icon name="watch"></ion-icon>
         <ion-label>Smartwatch</ion-label>
       </ion-tab-button>
     </ng-container>
@@ -45,14 +45,10 @@
     </ng-container>
 
     <!-- Doctor/Nurse Tabs -->
-    <ng-container *ngIf="userRole === 'doctor' || userRole === 'nurse'">
+    <ng-container *ngIf="userRole === 'doctor'">
       <ion-tab-button tab="doctor-dashboard" [routerLink]="['/tabs/doctor-dashboard']">
         <ion-icon name="medical-outline"></ion-icon>
         <ion-label>Dashboard</ion-label>
-      </ion-tab-button>
-      <ion-tab-button tab="emergencies" [routerLink]="['/tabs/emergencies']">
-        <ion-icon name="warning-outline"></ion-icon>
-        <ion-label>Emergency</ion-label>
       </ion-tab-button>
     </ng-container>
   </ion-tab-bar>

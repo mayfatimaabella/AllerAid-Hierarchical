@@ -43,7 +43,7 @@ export class EHRSectionCardsComponent {
   newProviderHospital: string = '';
   @Input() newProviderEmail: string = '';
   @Input() newProviderName: string = '';
-  @Input() newProviderRole: 'doctor' | 'nurse' = 'doctor';
+  @Input() newProviderRole: 'doctor' = 'doctor';
   @Input() newProviderLicense: string = '';
   getVisitTypeColor(type: string): string {
     switch (type) {

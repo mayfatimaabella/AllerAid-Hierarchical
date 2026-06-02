@@ -11,10 +11,10 @@ import { Router } from '@angular/router';
           <ion-icon name="person-circle" color="primary"></ion-icon>
         </ion-avatar>
         <div class="user-details">
-          <h4>{{ userRole === 'nurse' ? 'Nurse' : 'Dr.' }} {{ doctorName }}</h4>
+          <h4>Dr. {{ doctorName }}</h4>
           <p>{{ doctorEmail }}</p>
-          <ion-chip [color]="userRole === 'nurse' ? 'secondary' : 'primary'" size="small">
-            <ion-label>{{ userRole === 'nurse' ? 'Nurse' : 'Doctor' }}</ion-label>
+          <ion-chip color="primary" size="small">
+            <ion-label>Doctor</ion-label>
           </ion-chip>
         </div>
       </div>

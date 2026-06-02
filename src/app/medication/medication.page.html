@@ -1,0 +1,105 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>Medication</ion-title>
+  
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="onAddMedication()">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="medication-search">
+    <ion-searchbar 
+      [value]="medicationSearchTerm"
+      (ionInput)="onSearch($event)"
+      (ionClear)="onClearSearch()"
+      placeholder="Search medications..."
+      showClearButton="focus"
+      debounce="300">
+    </ion-searchbar>
+    <div *ngIf="medicationSearchTerm && medicationSearchTerm.trim()" class="search-results-info">
+      <small>{{ filteredMedications.length }} of {{ userMedications.length }} medications found</small>
+    </div>
+  </div>
+
+  <div class="medication-filters">
+    <ion-segment [ngModel]="medicationFilter" (ionChange)="onFilterChange($event)" mode="md">
+      <ion-segment-button value="all">
+        <ion-label>All</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="active">
+        <ion-label>Active</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="history">
+        <ion-label>History</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <div class="medications-list">
+    <div *ngIf="isLoading && (!userMedications || userMedications.length === 0)" class="loading-state">
+      <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
+      <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+      <div *ngFor="let medication of filteredMedications; trackBy: trackByMedication" 
+        class="medication-card" 
+        [ngClass]="{ 
+          'emergency-medication': isEmergencyMedication(medication),
+          'finished-medication': getStatusLabel(medication) === 'Completed' || getStatusLabel(medication) === 'Incomplete'
+        }"
+        (click)="onViewDetails(medication)"
+        style="cursor: pointer;">
+            
+        <div class="medication-header">
+          <div class="medication-title-section">
+            <span class="medication-title">{{ medication.name }}</span>
+            
+            <div class="medication-summary">
+              <span class="dosage">{{ medication.dosage }}</span>
+              <span class="frequency" *ngIf="medication.frequency"> • {{ medication.frequency }}</span>
+              
+              <span class="pills" *ngIf="medication.quantity !== undefined"> 
+                • {{ calculateRemainingPills(medication) | number:'1.0-0' }} {{ getUnitLabel(medication) }} left
+              </span>
+            </div>
+
+            <div *ngIf="getLowStockWarning(medication) && calculateRemainingPills(medication) > 0" class="low-stock-text">
+              <ion-icon name="alert-circle-outline" color="warning"></ion-icon>
+              <small>{{ getLowStockWarning(medication) }}</small>
+            </div>
+          </div>
+
+          <div class="medication-actions">
+            <ion-chip [color]="getStatusColor(medication)" size="small">
+              <ion-label>{{ getStatusLabel(medication) }}</ion-label>
+            </ion-chip>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading && filteredMedications.length === 0" class="no-medications">
+        <div class="no-medications-container">
+          <ion-icon name="medical-outline" class="no-medications-icon"></ion-icon>
+          <p class="no-medications-text">
+            <ng-container *ngIf="medicationSearchTerm && medicationSearchTerm.trim(); else noMedicationsAtAll">
+              No medications found matching "{{ medicationSearchTerm }}"
+            </ng-container>
+            <ng-template #noMedicationsAtAll>
+              No {{ medicationFilter !== 'all' ? (medicationFilter === 'history' ? 'past' : medicationFilter) : '' }} medications recorded
+            </ng-template>
+          </p>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>

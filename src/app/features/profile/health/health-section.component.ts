@@ -20,27 +20,16 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./health-section.component.scss']
 })
 export class HealthSectionComponent implements OnInit, OnDestroy {
-  @Input() filteredMedications: Medication[] = [];
-  @Input() medicationFilter: string = 'all';
-  @Input() medicationSearchTerm = '';
   @Input() isLoading = false;
 
   // Internal state
   userMedications: Medication[] = [];
+  recentMedications: Medication[] = [];
   private medSub?: Subscription;
   private refreshInterval: any;
 
   @Input() isEmergencyMedicationFn?: (m: any) => boolean;
-  @Input() isExpiringSoonFn?: (date: any) => boolean;
 
-  @Output() add = new EventEmitter<void>();
-  @Output() search = new EventEmitter<CustomEvent>();
-  @Output() clearSearch = new EventEmitter<void>();
-  @Output() medicationFilterChange = new EventEmitter<string>();
-  @Output() toggleStatus = new EventEmitter<any>();
-  @Output() edit = new EventEmitter<any>();
-  @Output() delete = new EventEmitter<any>();
-  @Output() viewImage = new EventEmitter<{ url: string; title: string }>();
   @Output() viewDetails = new EventEmitter<any>();
 
   trackByMedication = (i: number, m: any) => m?.id ?? i;
@@ -51,6 +40,7 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
     // Subscribe to the source of truth in MedicationService
     this.medSub = this.medService.medications$.subscribe(meds => {
       this.userMedications = meds;
+      this.updateRecentMedications();
     });
 
     // Initial data load
@@ -67,8 +57,20 @@ export class HealthSectionComponent implements OnInit, OnDestroy {
     if (this.medSub) this.medSub.unsubscribe();
   }
 
-  getStatusLabel(medication: any): string {
-  if (!medication) return '';
+  /**
+   * Update recent medications - get 5 most recent medications
+   */
+  updateRecentMedications() {
+    const sorted = [...this.userMedications].sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA; // Most recent first
+    });
+    this.recentMedications = sorted.slice(0, 5);
+  }
+
+  getStatusLabel(medication: Medication): string {
+    if (!medication) return '';
 
   const remaining = this.calculateRemainingPills(medication);
   
@@ -141,12 +143,8 @@ private isPastEndDate(medication: any): boolean {
   }
 
   onFilterChange(ev: any) {
-    this.medicationFilterChange.emit(ev?.detail?.value || 'all');
+    this.updateRecentMedications();
   }
-
-  //getToggleStatusLabel(medication: Medication): string {
-   // return medication.isActive ? 'Mark as Inactive' : 'Mark as Active';
-  //}
 
   isEmergencyMedication(med: Medication): boolean {
     return this.isEmergencyMedicationFn ? !!this.isEmergencyMedicationFn(med) : false;
