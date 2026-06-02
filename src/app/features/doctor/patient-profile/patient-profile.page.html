@@ -1,5 +1,5 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header [translucent]="true">
+  <ion-toolbar class="toolbar--teal">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/doctor-dashboard"></ion-back-button>
     </ion-buttons>
@@ -10,208 +10,242 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen>
+<ion-content fullscreen class="ion-padding profile-page-bg">
   <ion-spinner *ngIf="isLoading" class="loading-spinner"></ion-spinner>
 
   <ng-container *ngIf="!isLoading && patient">
     <!-- Patient Header Card -->
-    <ion-card class="patient-header-card">
-      <ion-card-content>
-        <div class="patient-header">
-          <img 
-            [src]="patient.avatar" 
-            alt="Patient avatar"
-            class="patient-avatar"
-          />
-          <div class="patient-info">
-            <h1>{{ patient.name }}</h1>
-            <p class="patient-id">ID: {{ patientId }}</p>
-            <ion-badge [color]="patient.status === 'active' ? 'success' : 'warning'">
-              {{ patient.status | titlecase }}
-            </ion-badge>
+    <section class="profile-header">
+      <div class="profile-header-card">
+        <div class="profile-header-content">
+          <ion-avatar class="profile-avatar">
+            <img [src]="patientProfileDetails?.profile_picture || 'https://ionicframework.com/docs/img/demos/avatar.svg'" 
+                 alt="Patient avatar"/>
+          </ion-avatar>
+          
+          <div class="profile-info">
+            <div class="profile-name">{{ patient.fullName }}</div>
+            <div class="profile-email">{{ patient.email }}</div>
+            <div class="profile-phone">{{ patient.phone }}</div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="quick-contact">
-          <ion-button fill="clear" size="small" (click)="sendMessage()">
-            <ion-icon slot="start" name="mail-outline"></ion-icon>
-            Message
-          </ion-button>
-          <ion-button fill="clear" size="small" (click)="scheduleAppointment()">
-            <ion-icon slot="start" name="calendar-outline"></ion-icon>
-            Schedule
-          </ion-button>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Segment Tabs -->
-    <ion-segment 
-      [(ngModel)]="selectedSegment"
-      class="profile-segments"
-    >
-      <ion-segment-button value="overview">
-        <ion-icon name="information-circle-outline"></ion-icon>
-        <ion-label>Overview</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="allergies">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        <ion-label>Allergies</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="medications">
-        <ion-icon name="medical-outline"></ion-icon>
-        <ion-label>Medications</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="contacts">
-        <ion-icon name="people-circle-outline"></ion-icon>
-        <ion-label>Contacts</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-
-    <!-- Overview Tab -->
-    <ng-container *ngIf="selectedSegment === 'overview'">
-      <ion-card class="info-card">
-        <ion-card-header>
-          <ion-card-title>Contact Information</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-item>
-            <ion-label>Email</ion-label>
-            <ion-text slot="end">{{ patient.email }}</ion-text>
-          </ion-item>
-          <ion-item>
-            <ion-label>Phone</ion-label>
-            <ion-text slot="end">{{ patient.phone }}</ion-text>
-          </ion-item>
-          <ion-item>
-            <ion-label>Date of Birth</ion-label>
-            <ion-text slot="end">{{ patient.dateOfBirth | date }}</ion-text>
-          </ion-item>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card class="info-card">
-        <ion-card-header>
-          <ion-card-title>Appointment Schedule</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-item>
-            <ion-label>Last Visit</ion-label>
-            <ion-text slot="end">{{ patient.lastVisit | date }}</ion-text>
-          </ion-item>
-          <ion-item>
-            <ion-label>Next Appointment</ion-label>
-            <ion-text slot="end" color="primary">{{ patient.nextAppointment | date }}</ion-text>
-          </ion-item>
-        </ion-card-content>
-      </ion-card>
-    </ng-container>
-
-    <!-- Allergies Tab -->
-    <ng-container *ngIf="selectedSegment === 'allergies'">
-      <ion-card class="info-card">
-        <ion-card-header>
-          <ion-card-title>Known Allergies</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list *ngIf="patient.allergies && patient.allergies.length > 0">
-            <ion-item *ngFor="let allergy of patient.allergies">
-              <ion-icon 
-                name="alert-circle" 
-                color="danger"
-                slot="start"
-              ></ion-icon>
-              <ion-label>{{ allergy }}</ion-label>
-            </ion-item>
-          </ion-list>
-          <p *ngIf="!patient.allergies || patient.allergies.length === 0" class="empty-message">
-            No allergies recorded
-          </p>
-        </ion-card-content>
-      </ion-card>
-    </ng-container>
-
-    <!-- Medications Tab -->
-    <ng-container *ngIf="selectedSegment === 'medications'">
-      <ion-card class="info-card">
-        <ion-card-header>
-          <ion-card-title>Current Medications</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list *ngIf="patient.medications && patient.medications.length > 0">
-            <ion-item *ngFor="let medication of patient.medications">
-              <ion-icon 
-                name="medical" 
-                color="primary"
-                slot="start"
-              ></ion-icon>
-              <ion-label>{{ medication }}</ion-label>
-            </ion-item>
-          </ion-list>
-          <p *ngIf="!patient.medications || patient.medications.length === 0" class="empty-message">
-            No medications recorded
-          </p>
-        </ion-card-content>
-      </ion-card>
-    </ng-container>
-
-    <!-- Emergency Contacts Tab -->
-    <ng-container *ngIf="selectedSegment === 'contacts'">
-      <ion-card class="info-card">
-        <ion-card-header>
-          <ion-card-title>Emergency Contacts</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list *ngIf="patient.emergencyContacts && patient.emergencyContacts.length > 0">
-            <ion-item *ngFor="let contact of patient.emergencyContacts">
-              <ion-avatar slot="start">
-                <ion-icon name="person-circle" color="medium"></ion-icon>
-              </ion-avatar>
-              <ion-label>
-                <h2>{{ contact.name }}</h2>
-                <p>{{ contact.relationship }}</p>
-                <p class="phone">{{ contact.phone }}</p>
-              </ion-label>
-            </ion-item>
-          </ion-list>
-          <p *ngIf="!patient.emergencyContacts || patient.emergencyContacts.length === 0" class="empty-message">
-            No emergency contacts recorded
-          </p>
-        </ion-card-content>
-      </ion-card>
-    </ng-container>
-
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-      <ion-button 
-        expand="block" 
-        fill="outline" 
-        color="primary"
-        (click)="viewMedicalHistory()"
-      >
+    <!-- Quick Action Buttons -->
+    <div class="quick-actions">
+      <ion-button fill="outline" size="small" (click)="sendMessage()">
+        <ion-icon slot="start" name="mail-outline"></ion-icon>
+        Message
+      </ion-button>
+      <ion-button fill="outline" size="small" (click)="scheduleAppointment()">
+        <ion-icon slot="start" name="calendar-outline"></ion-icon>
+        Schedule
+      </ion-button>
+      <ion-button fill="outline" size="small" (click)="viewMedicalHistory()">
         <ion-icon slot="start" name="document-outline"></ion-icon>
-        Medical History
-      </ion-button>
-
-      <ion-button 
-        expand="block" 
-        fill="outline" 
-        color="secondary"
-        (click)="editProfile()"
-      >
-        <ion-icon slot="start" name="create-outline"></ion-icon>
-        Edit Profile
-      </ion-button>
-
-      <ion-button 
-        expand="block" 
-        fill="outline" 
-        color="danger"
-        (click)="removePatient()"
-      >
-        <ion-icon slot="start" name="trash-outline"></ion-icon>
-        Remove Patient
+        History
       </ion-button>
     </div>
+
+    <!-- Patient Stats -->
+    <section class="profile-stats">
+      <div class="stat">
+        <div class="stat-label">Allergies</div>
+        <div class="stat-value">{{ patientAllergies.length }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Medications</div>
+        <div class="stat-value">{{ patientMedications.length }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Status</div>
+        <div class="stat-value stat-status" [class.active]="patient.status === 'active'">
+          {{ patient.status | uppercase }}
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <section class="profile-card">
+      <nav class="profile-tabs">
+        <button class="tab"
+          [class.active]="selectedTab === 'overview'"
+          (click)="selectTab('overview')">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>Overview</span>
+        </button>
+        <button class="tab"
+          [class.active]="selectedTab === 'medications'"
+          (click)="selectTab('medications')">
+          <ion-icon name="medical-outline"></ion-icon>
+          <span>Medications</span>
+        </button>
+        <button class="tab"
+          [class.active]="selectedTab === 'ehr'"
+          (click)="selectTab('ehr')">
+          <ion-icon name="document-text-outline"></ion-icon>
+          <span>EHR</span>
+        </button>
+      </nav>
+
+      <!-- Overview Tab -->
+      <ng-container *ngIf="selectedTab === 'overview'">
+        <div class="tab-content">
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>Contact Information</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="inset">
+                <ion-label>Email</ion-label>
+                <ion-text slot="end">{{ patient.email }}</ion-text>
+              </ion-item>
+              <ion-item lines="inset">
+                <ion-label>Phone</ion-label>
+                <ion-text slot="end">{{ patient.phone }}</ion-text>
+              </ion-item>
+              <ion-item lines="inset">
+                <ion-label>Date of Birth</ion-label>
+                <ion-text slot="end">{{ patient.dateOfBirth | date:'short' }}</ion-text>
+              </ion-item>
+              <ion-item>
+                <ion-label>Age</ion-label>
+                <ion-text slot="end">{{ patient.age }}</ion-text>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>Known Allergies</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="patientAllergies && patientAllergies.length > 0">
+                <ion-item *ngFor="let allergy of patientAllergies" lines="inset">
+                  <ion-label>{{ allergy.name }}</ion-label>
+                  <ion-badge 
+                    [color]="allergy.severity === 'severe' ? 'danger' : 'warning'"
+                    slot="end">
+                    {{ allergy.severity | uppercase }}
+                  </ion-badge>
+                </ion-item>
+              </ion-list>
+              <p *ngIf="!patientAllergies || patientAllergies.length === 0" class="empty-message">
+                No known allergies recorded
+              </p>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>Appointment Schedule</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="inset">
+                <ion-label>Last Visit</ion-label>
+                <ion-text slot="end">{{ patient.lastVisit | date:'short' }}</ion-text>
+              </ion-item>
+              <ion-item>
+                <ion-label>Next Appointment</ion-label>
+                <ion-text slot="end">{{ patient.nextAppointment | date:'short' }}</ion-text>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ng-container>
+
+      <!-- Medications Tab -->
+      <ng-container *ngIf="selectedTab === 'medications'">
+        <div class="tab-content">
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>Current Medications</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="patientMedications && patientMedications.length > 0">
+                <ion-item *ngFor="let med of patientMedications" lines="inset">
+                  <div class="medication-item">
+                    <div class="medication-name">{{ med.name }}</div>
+                    <div class="medication-details">
+                      <span class="dosage">{{ med.dosage }}</span>
+                      <span class="frequency">{{ med.frequency }}</span>
+                    </div>
+                    <ion-badge color="success" slot="end">
+                      {{ med.status | uppercase }}
+                    </ion-badge>
+                  </div>
+                </ion-item>
+              </ion-list>
+              <p *ngIf="!patientMedications || patientMedications.length === 0" class="empty-message">
+                No medications recorded
+              </p>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ng-container>
+
+      <!-- EHR Tab -->
+      <ng-container *ngIf="selectedTab === 'ehr'">
+        <div class="tab-content">
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>Medical Information</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="inset">
+                <ion-label>Blood Type</ion-label>
+                <ion-text slot="end">{{ patientProfileDetails?.bloodType || 'N/A' }}</ion-text>
+              </ion-item>
+              <ion-item lines="inset">
+                <ion-label>Height</ion-label>
+                <ion-text slot="end">{{ patientProfileDetails?.height || 'N/A' }}</ion-text>
+              </ion-item>
+              <ion-item>
+                <ion-label>Weight</ion-label>
+                <ion-text slot="end">{{ patientProfileDetails?.weight || 'N/A' }}</ion-text>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>Diagnoses</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="patientEHR?.diagnoses && patientEHR.diagnoses.length > 0">
+                <ion-item *ngFor="let diagnosis of patientEHR.diagnoses" lines="none">
+                  <ion-icon name="checkmark-circle" slot="start" color="primary"></ion-icon>
+                  <ion-label>{{ diagnosis }}</ion-label>
+                </ion-item>
+              </ion-list>
+              <p *ngIf="!patientEHR?.diagnoses || patientEHR.diagnoses.length === 0" class="empty-message">
+                No diagnoses recorded
+              </p>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>Recent Visits</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="patientEHR?.recentVisits && patientEHR.recentVisits.length > 0">
+                <ion-item *ngFor="let visit of patientEHR.recentVisits" lines="inset">
+                  <div class="visit-item">
+                    <div class="visit-date">{{ visit.date | date:'short' }}</div>
+                    <div class="visit-reason">{{ visit.reason }}</div>
+                    <div class="visit-notes">{{ visit.notes }}</div>
+                  </div>
+                </ion-item>
+              </ion-list>
+              <p *ngIf="!patientEHR?.recentVisits || patientEHR.recentVisits.length === 0" class="empty-message">
+                No recent visits
+              </p>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ng-container>
+    </section>
   </ng-container>
 </ion-content>

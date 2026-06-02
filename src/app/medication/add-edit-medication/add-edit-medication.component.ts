@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController, ToastController, ActionSheetController } from '@ionic/angular';
-import { MedicationService, Medication } from '../../../../../core/services/medication.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ToastController, ActionSheetController } from '@ionic/angular';
+import { MedicationService, Medication } from 'src/app/core/services/medication.service';
+
 
 @Component({
-  selector: 'app-add-medication',
-  templateUrl: './add-edit-medication.modal.html',
-  styleUrls: ['./add-edit-medication.modal.scss'],
+  selector: 'app-add-edit-medication',
+  templateUrl: './add-edit-medication.component.html',
+  styleUrls: ['./add-edit-medication.component.scss'],
   standalone: false,
 })
-export class AddMedicationModal implements OnInit {
-  medication?: Medication; 
+export class AddEditMedicationComponent  implements OnInit {
+medication?: Medication; 
   isEditMode: boolean = false;
   prescriptionImage: string | null = null;
   todayISO: string = new Date().toISOString();
@@ -24,34 +26,55 @@ export class AddMedicationModal implements OnInit {
   };
 
   constructor(
-    private modalCtrl: ModalController,
+    private route: ActivatedRoute,
+    private router: Router,
     private medService: MedicationService,
     private toastController: ToastController,
     private actionSheetController: ActionSheetController
   ) {}
 
   ngOnInit() {
-    if (this.isEditMode && this.medication) {
-      this.med = { ...this.medication };
-      if (this.med.startDate) this.med.startDate = new Date(this.med.startDate).toISOString();
-      
-      // FIX: Only overwrite startTime if it doesn't already exist in the record
-      if (!this.med.startTime && this.med.startDate) {
-        this.extractStartTimeFromDate();
+    // Check if we're editing by looking for ID in route params
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditMode = true;
+        this.loadMedication(params['id']);
+      } else {
+        this.initializeNewMedication();
       }
-      if (this.med.medicineExpiryDate) this.med.medicineExpiryDate = new Date(this.med.medicineExpiryDate).toISOString();
-      if (this.medication.prescriptionImageUrl) this.prescriptionImage = this.medication.prescriptionImageUrl;
-      this.onDateOrIntervalChange();
-    } else {
-      this.med.startDate = this.todayISO;
-      this.med.medicineExpiryDate = this.todayISO;
+    });
+  }
+
+  private async loadMedication(medicationId: string): Promise<void> {
+    try {
+      const meds = await this.medService.getUserMedications();
+      this.medication = meds.find(m => m.id === medicationId);
       
-      // FIX: Only extract a placeholder time string if the user hasn't explicitly set one
-      if (!this.med.startTime) {
-        this.extractStartTimeFromDate();
+      if (this.medication) {
+        this.med = { ...this.medication };
+        if (this.med.startDate) this.med.startDate = new Date(this.med.startDate).toISOString();
+        
+        if (!this.med.startTime && this.med.startDate) {
+          this.extractStartTimeFromDate();
+        }
+        if (this.med.medicineExpiryDate) this.med.medicineExpiryDate = new Date(this.med.medicineExpiryDate).toISOString();
+        if (this.medication.prescriptionImageUrl) this.prescriptionImage = this.medication.prescriptionImageUrl;
+        this.onDateOrIntervalChange();
       }
-      this.onDateOrIntervalChange();
+    } catch (error) {
+      console.error('Error loading medication:', error);
+      this.showToast('Error loading medication', 'danger');
     }
+  }
+
+  private initializeNewMedication(): void {
+    this.med.startDate = this.todayISO;
+    this.med.medicineExpiryDate = this.todayISO;
+    
+    if (!this.med.startTime) {
+      this.extractStartTimeFromDate();
+    }
+    this.onDateOrIntervalChange();
   }
 
   public onTypeChange() {
@@ -150,10 +173,11 @@ export class AddMedicationModal implements OnInit {
       } else {
         await this.medService.addMedication(cleanMed, this.prescriptionImage || undefined);
       }
-      this.modalCtrl.dismiss({ saved: true });
+      this.showToast(this.isEditMode ? 'Medication updated successfully!' : 'Medication added successfully!', 'success');
+      this.router.navigate(['/medication']);
     } catch (error) {
       console.error("DEBUG: Firestore Rejection:", error);
-      this.showToast('Error saving: Check console for error details.');
+      this.showToast('Error saving: Check console for error details.', 'danger');
     }
   }
 
@@ -203,18 +227,18 @@ export class AddMedicationModal implements OnInit {
   }
 
   public removePrescriptionImage() { this.prescriptionImage = null; this.med.prescriptionImageUrl = undefined; }
-  public dismiss() { this.modalCtrl.dismiss(); }
+  public dismiss() { this.router.navigate(['/tabs/medication']); }
   
   private extractStartTimeFromDate() { 
     this.med.startTime = new Date(this.med.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }); 
   }
   
-  private async showToast(message: string) {
+  private async showToast(message: string, color: string = 'dark') {
     const toast = await this.toastController.create({
       message: message,
       duration: 2000,
       position: 'bottom',
-      color: 'dark'
+      color: color
     });
     await toast.present();
   }

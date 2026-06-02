@@ -22,6 +22,12 @@ const routes: Routes = [
         data: { roles: ['user'] }
       },
       {
+        path: 'medication',
+        loadChildren: () => import('../../medication/medication.module').then(m => m.MedicationPageModule),
+        canActivate: [RoleGuard],
+        data: { roles: ['user'] }
+      },
+      {
         path: 'smartwatch',
         loadChildren: () => import('../../features/smartwatch/smartwatch.module').then(m => m.SmartwatchPageModule),
         canActivate: [RoleGuard],
@@ -72,6 +78,12 @@ const routes: Routes = [
         loadChildren: () => import('../../features/emergency/patient-map/patient-map.module').then(m => m.PatientMapPageModule),
         canActivate: [RoleGuard],
         data: { roles: ['patient', 'user', 'default', 'all'] }
+      },
+      {
+        path: 'doctor-profile',
+        loadChildren: () => import('../../features/doctor/doctor-profile/doctor-profile.module').then(m => m.DoctorProfilePageModule),
+        canActivate: [RoleGuard],
+        data: { roles: ['doctor', 'nurse'] }
       },
       
       // Shared Routes (Available to multiple roles)

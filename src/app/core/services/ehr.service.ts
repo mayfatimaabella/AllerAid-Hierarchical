@@ -77,7 +77,7 @@ export interface TreatmentOutcome {
 
 export interface HealthcareProvider {
   email: string;
-  role: 'doctor' | 'nurse';
+  role: 'doctor';
   name: string;
   license?: string;
   specialty?: string;
@@ -93,7 +93,7 @@ export interface AccessRequest {
   patientEmail: string;
   doctorEmail: string;
   doctorName: string;
-  doctorRole: 'doctor' | 'nurse';
+  doctorRole: 'doctor';
   specialty?: string;
   originalVisitName: string;
   status: 'pending' | 'accepted' | 'declined' | 'expired';
@@ -384,7 +384,7 @@ export class EHRService {
 
   async grantHealthcareProviderAccess(
     providerEmail: string,
-    role: 'doctor' | 'nurse',
+    role: 'doctor',
     providerName: string,
     license?: string,
     specialty?: string,
@@ -396,7 +396,7 @@ export class EHRService {
     const providerQuery = query(
       collection(this.db, 'users'),
       where('email', '==', providerEmail.toLowerCase()),
-      where('role', 'in', ['doctor', 'nurse'])
+      where('role', '==', 'doctor')
     );
 
     const providerSnapshot = await getDocs(providerQuery);
@@ -451,17 +451,6 @@ export class EHRService {
         deleteDoctorVisit: true,
         prescribeMedications: true,
         editMedicalHistory: true
-      },
-      nurse: {
-        viewFullEHR: true,
-        viewMedicalHistory: true,
-        viewMedications: true,
-        viewAllergies: true,
-        addDoctorVisit: false,
-        editDoctorVisit: false,
-        deleteDoctorVisit: false,
-        prescribeMedications: false,
-        editMedicalHistory: false
       }
     };
 
@@ -621,7 +610,7 @@ export class EHRService {
     const doctorQuery = query(
       collection(this.db, 'users'),
       where('email', '==', doctorEmail.toLowerCase()),
-      where('role', 'in', ['doctor', 'nurse'])
+      where('role', '==', 'doctor')
     );
 
     const snapshot = await getDocs(doctorQuery);
@@ -646,7 +635,7 @@ export class EHRService {
 
     const matchedDoctor = doctors.find(doctor => {
       const fullName = `${doctor.firstName} ${doctor.lastName}`.toLowerCase();
-      const cleanName = doctorName.toLowerCase().replace(/^dr\.?\s*/i, '').replace(/^nurse\s*/i, '');
+      const cleanName = doctorName.toLowerCase().replace(/^dr\.?\s*/i, '');
       return fullName.includes(cleanName) || cleanName.includes(fullName);
     });
 
@@ -663,7 +652,7 @@ export class EHRService {
 
   async createAccessRequest(
     doctorEmail: string,
-    role: 'doctor' | 'nurse',
+    role: 'doctor',
     doctorName: string,
     specialty: string,
     originalVisitName: string

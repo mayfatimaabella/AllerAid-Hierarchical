@@ -1,56 +1,55 @@
+.cancelBtn {
+  --color: #036a5d !important;
+  color: #036a5d !important;
+}
+
+ion-icon {
+  color: #036a5d !important;
+}
+
+.doctor-modal-content h2,
+.doctor-modal-content p {
+  color: #000 !important;
+}
+
+:host {
+  display: block;
+  background: transparent;
+}
+
+ion-content {
+  --background: #eaf1ee !important;
+  color: #000 !important;
+}
+
+ion-item {
+  --background: #e3ece7 !important;
+  color: #000 !important;
+  border-radius: 32px;
+}
+
 .doctor-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
 }
 
 .doctor-modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 90%;
+  width: 90vw;
   max-width: 400px;
-  padding: 32px 24px;
-  text-align: center;
-  animation: slideIn 0.3s ease-out;
+  height: 45vh;
+  max-height: 80vh;
+  z-index: 1001;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.delete-icon {
-  font-size: 48px;
-  color: #f04141;
-  margin-bottom: 16px;
-}
-
-.delete-message {
-  margin: 16px 0 8px 0;
-  font-size: 1rem;
-}
-
-.warning-text {
-  color: #999;
-  font-size: 0.875rem;
-  margin-bottom: 24px;
-}
-
-.button-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.deleteBtn {
+  --background: #e12826 !important;
+  --color: #fff !important;
 }

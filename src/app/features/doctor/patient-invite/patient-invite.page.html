@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/doctor-dashboard"></ion-back-button>
     </ion-buttons>
-    <ion-title>Invite Patient</ion-title>
+    <ion-title>Patient Invitations</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -13,120 +13,211 @@
     <p>Patient invitation sent successfully!</p>
   </div>
 
-  <ion-card class="invite-card">
-    <ion-card-header>
-      <ion-card-title>Send Patient Invitation</ion-card-title>
-      <ion-card-subtitle>Fill in the patient details to send an invitation</ion-card-subtitle>
-    </ion-card-header>
+  <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange()">
+    <ion-segment-button value="invite">
+      <ion-label>Send Invite</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="received">
+      <ion-label>
+        Received 
+        <ion-badge *ngIf="getPendingReceivedCount() > 0" 
+                   color="danger" 
+                   style="margin-left: 4px;">
+          {{ getPendingReceivedCount() }}
+        </ion-badge>
+      </ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="sent">
+      <ion-label>Sent ({{ sentInvitations.length }})</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
-    <ion-card-content>
-      <form [formGroup]="inviteForm">
-        
-        <ion-item class="form-item">
-          <ion-label position="stacked">
-            Email Address <span class="required">*</span>
-          </ion-label>
-          <ion-input
-            type="email"
-            formControlName="email"
-            placeholder="patient@example.com"
-            clearInput
-          ></ion-input>
-          <ion-note 
-            *ngIf="inviteForm.get('email')?.hasError('email') && inviteForm.get('email')?.touched"
-            slot="helper"
-            color="danger"
-          >
-            Please enter a valid email address
-          </ion-note>
-        </ion-item>
+  <!-- Send Invitation Tab -->
+  <div *ngIf="selectedSegment === 'invite'" class="invite-section ion-padding">
+    <h3>Invite a Patient</h3>
+    <p style="color: #e9e9e9; font-size: 14px; margin-bottom: 20px;">
+      Search for users by email or name and send them a patient invitation.
+    </p>
 
-        <ion-item class="form-item">
-          <ion-label position="stacked">
-            First Name <span class="required">*</span>
-          </ion-label>
-          <ion-input
-            type="text"
-            formControlName="firstName"
-            placeholder="John"
-            clearInput
-          ></ion-input>
-        </ion-item>
-
-        <ion-item class="form-item">
-          <ion-label position="stacked">
-            Last Name <span class="required">*</span>
-          </ion-label>
-          <ion-input
-            type="text"
-            formControlName="lastName"
-            placeholder="Doe"
-            clearInput
-          ></ion-input>
-        </ion-item>
-
-        <ion-item class="form-item">
-          <ion-label position="stacked">
-            Phone Number
-          </ion-label>
-          <ion-input
-            type="tel"
-            inputmode="numeric"
-            formControlName="phoneNumber"
-            placeholder="+639123456789"
-            clearInput
-            (ionInput)="filterPhoneInput($event)"
-          ></ion-input>
-          <ion-note 
-            *ngIf="inviteForm.get('phoneNumber')?.hasError('pattern') && inviteForm.get('phoneNumber')?.touched"
-            slot="helper"
-            color="danger"
-          >
-            Phone number can only contain digits, +, -, (), and spaces
-          </ion-note>
-        </ion-item>
-
-        <ion-item class="form-item">
-          <ion-label position="stacked">
-            Message (Optional)
-          </ion-label>
-          <ion-textarea
-            formControlName="message"
-            placeholder="Add a personal message to the invitation"
-            rows="3"
-          ></ion-textarea>
-        </ion-item>
-
-      </form>
-    </ion-card-content>
-  </ion-card>
-
-  <div class="button-group">
-    <ion-button
-      expand="block"
-      shape="round"
-      color="primary"
-      [disabled]="!inviteForm.valid || isSubmitting"
-      (click)="sendInvite()"
-    >
-      <ion-spinner *ngIf="isSubmitting" name="bubbles" color="light"></ion-spinner>
-      <span *ngIf="!isSubmitting">Send Invitation</span>
-    </ion-button>
-  </div>
-
-  <div class="info-section">
-    <ion-card class="info-card">
-      <ion-card-header>
-        <ion-card-title size="small">How it works</ion-card-title>
-      </ion-card-header>
+    <ion-card class="invite-card">
       <ion-card-content>
-        <ul>
-          <li>The patient will receive an invitation email</li>
-          <li>They can accept or decline the invitation</li>
-          <li>Once accepted, they'll appear in your patient list</li>
-          <li>You can then access their health information</li>
-        </ul>
+        <form (ngSubmit)="sendInvite()">
+          <div class="search-container">
+            <ion-item lines="none" class="search-item">
+              <ion-label position="stacked">Search for Patient *</ion-label>
+              <ion-input 
+                [(ngModel)]="searchEmail"
+                name="searchEmail"
+                (ionInput)="searchForUsers(searchEmail)"
+                placeholder="Enter name or email"
+                type="text"
+                clearInput="true">
+              </ion-input>
+              <ion-icon 
+                *ngIf="searchEmail && selectedUser" 
+                name="checkmark-circle" 
+                slot="end"
+                style="color: #4CAF50; font-size: 24px;">
+              </ion-icon>
+            </ion-item>
+
+            <!-- Search Results Dropdown -->
+            <div *ngIf="showSearchDropdown && searchResults.length > 0" class="search-dropdown">
+              <div class="search-results">
+                <div 
+                  *ngFor="let user of searchResults" 
+                  class="search-result-item"
+                  (click)="selectUserFromDropdown(user)"
+                  [class.selected]="selectedUser?.uid === user.uid">
+                  <div class="user-info">
+                    <h4>{{ user.fullName || user.firstName + ' ' + user.lastName }}</h4>
+                    <p class="user-email">{{ user.email }}</p>
+                  </div>
+                  <ion-icon 
+                    *ngIf="selectedUser?.uid === user.uid" 
+                    name="checkmark" 
+                    style="color: #4CAF50;">
+                  </ion-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected User Display -->
+          <div *ngIf="selectedUser" class="selected-user-card">
+            <div class="user-card-content">
+              <ion-icon name="person-circle" class="user-avatar"></ion-icon>
+              <div class="user-details">
+                <h4>{{ selectedUser.fullName || selectedUser.firstName + ' ' + selectedUser.lastName }}</h4>
+                <p class="user-email">{{ selectedUser.email }}</p>
+              </div>
+              <ion-button 
+                fill="clear" 
+                size="small"
+                type="button"
+                (click)="clearSearch()">
+                <ion-icon name="close"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <ion-item lines="none">
+            <ion-label position="stacked">Personal Message</ion-label>
+            <ion-textarea 
+              [(ngModel)]="inviteMessage"
+              name="inviteMessage"
+              placeholder="Add a personal message to the invitation"
+              rows="3">
+            </ion-textarea>
+          </ion-item>
+
+          <ion-button 
+            expand="block" 
+            type="submit"
+            [disabled]="!selectedUser || isSubmitting"
+            style="margin-top: 20px;">
+            <ion-spinner *ngIf="isSubmitting" name="bubbles" color="light"></ion-spinner>
+            <span *ngIf="!isSubmitting">Send Invitation</span>
+          </ion-button>
+        </form>
       </ion-card-content>
     </ion-card>
+  </div>
+
+  <!-- Received Invitations Tab -->
+  <div *ngIf="selectedSegment === 'received'" class="received-section ion-padding">
+    <h3>Received Invitations</h3>
+    
+    <div *ngIf="receivedInvitations.length > 0">
+      <div *ngFor="let invitation of receivedInvitations" class="invitation-card">
+        <div class="invitation-header">
+          <div class="sender-info">
+            <h4>{{ invitation.fromUserName }}</h4>
+            <p class="sender-email">{{ invitation.fromUserEmail }}</p>
+          </div>
+          <ion-chip [color]="getInvitationStatusColor(invitation.status)" size="small">
+            {{ invitation.status | titlecase }}
+          </ion-chip>
+        </div>
+        
+        <p class="invitation-message" *ngIf="invitation.message">
+          "{{ invitation.message }}"
+        </p>
+        
+        <div class="invitation-date">
+          <ion-icon name="time-outline"></ion-icon>
+          <small>{{ invitation.createdAt | date:'medium' }}</small>
+        </div>
+
+        <div *ngIf="invitation.status === 'pending'" class="invitation-actions">
+          <ion-button 
+            size="small" 
+            fill="solid" 
+            color="success"
+            (click)="acceptInvitation(invitation.id!)">
+            <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+            Accept
+          </ion-button>
+          
+          <ion-button 
+            size="small" 
+            fill="outline" 
+            color="danger"
+            (click)="declineInvitation(invitation.id!)">
+            <ion-icon name="close-outline" slot="start"></ion-icon>
+            Decline
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="receivedInvitations.length === 0" class="empty-state">
+      <ion-icon name="mail-outline" class="empty-icon"></ion-icon>
+      <p style="color: #ececec">No patient invitations received</p>
+    </div>
+  </div>
+
+  <!-- Sent Invitations Tab -->
+  <div *ngIf="selectedSegment === 'sent'" class="sent-section ion-padding">
+    <h3>Sent Invitations</h3>
+    
+    <div *ngIf="sentInvitations.length > 0">
+      <div *ngFor="let invitation of sentInvitations" class="invitation-card">
+        <div class="invitation-header">
+          <div class="recipient-info">
+            <h4>{{ invitation.toUserName }}</h4>
+            <p class="recipient-email">{{ invitation.toUserEmail }}</p>
+          </div>
+          <ion-chip [color]="getInvitationStatusColor(invitation.status)" size="small">
+            {{ invitation.status | titlecase }}
+          </ion-chip>
+        </div>
+        
+        <p class="invitation-message" *ngIf="invitation.message">
+          "{{ invitation.message }}"
+        </p>
+        
+        <div class="invitation-date">
+          <ion-icon name="time-outline"></ion-icon>
+          <small>{{ invitation.createdAt | date:'medium' }}</small>
+        </div>
+
+        <div *ngIf="invitation.status === 'pending'" class="invitation-actions">
+          <ion-button 
+            size="small" 
+            fill="outline" 
+            color="warning"
+            (click)="cancelInvitation(invitation.id!)">
+            <ion-icon name="close-outline" slot="start"></ion-icon>
+            Cancel
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="sentInvitations.length === 0" class="empty-state">
+      <ion-icon name="paper-plane-outline" class="empty-icon"></ion-icon>
+      <p style="color: #ececec">No patient invitations sent</p>
+    </div>
   </div>
 </ion-content>

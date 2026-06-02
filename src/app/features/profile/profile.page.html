@@ -178,18 +178,8 @@
 
           [isEmergencyMedicationFn]="isEmergencyMedicationBind"
           [isExpiringSoonFn]="isExpiringSoonBind"
-        
-          (add)="openAddMedicationModal()"
-          (search)="profileMedicationManager.searchMedications($event)"
-          (clearSearch)="profileMedicationManager.clearMedicationSearch()"
-          (medicationFilterChange)="profileMedicationManager.medicationFilter = $event; profileMedicationManager.filterMedications()"
-          (toggleStatus)="toggleMedicationStatus($event)"
-
-          (edit)="editMedication($event)"
-          (delete)="deleteMedication($event)"
-          (viewImage)="profileMedicationManager.viewMedicationImage($event.url, $event.title)"
           (viewDetails)="openMedicationDetails($event)"
-          ></app-profile-health-section>
+        ></app-profile-health-section>
         </ng-container>
 
       <!-- Medication Details Modal -->

@@ -35,13 +35,10 @@ export class UserService {
       firstName: string;
       lastName: string;
       role: string;
-
-
       licenseURL?: string;
       license?: string;
       specialty?: string;
       hospital?: string;
-
     }
   ): Promise<void> {
     
@@ -272,7 +269,7 @@ async getUserProfile(uid: string, useCache: boolean = true): Promise<UserProfile
           return;
         }
 
-        // Only include patients (exclude doctors and nurses)
+        // Only include patients (exclude doctors)
         if (user.role === 'doctor' ) {
           return;
         }

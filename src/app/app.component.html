@@ -24,6 +24,11 @@
           <ion-label>Doctor</ion-label>
         </ion-item>
 
+        <ion-item lines="none" [routerLink]="['/tabs/medication']" (click)="onMenuItemClick()">
+          <ion-icon name="medical-outline" slot="start"></ion-icon>
+          <ion-label>Medication</ion-label>
+        </ion-item>
+
         <ion-item lines="none" [routerLink]="['/tabs/pollen-map']" (click)="onMenuItemClick()">
           <ion-icon name="map-outline" slot="start"></ion-icon>
           <ion-label>Pollen Map</ion-label>

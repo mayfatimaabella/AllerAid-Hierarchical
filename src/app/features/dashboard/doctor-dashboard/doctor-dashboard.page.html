@@ -1,13 +1,13 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ userRole === 'nurse' ? 'Nurse' : 'Doctor' }} Dashboard</ion-title>
+    <ion-title>Doctor Dashboard</ion-title>
     <ion-buttons slot="end">
       <!-- Role Chip - Hide on mobile -->
       <ion-chip 
-        [color]="userRole === 'nurse' ? 'secondary' : 'primary'"
+        color="primary"
         class="role-chip">
         <ion-icon name="medical-outline"></ion-icon>
-        <ion-label>{{ userRole === 'nurse' ? 'Nurse' : 'Doctor' }}</ion-label>
+        <ion-label>Doctor</ion-label>
       </ion-chip>
       
       <!-- User Menu -->
@@ -24,7 +24,7 @@
 <ion-content class="ion-padding">
   <!-- Welcome Section -->
   <div class="welcome-section">
-    <h2>Welcome, {{ userRole === 'Nurse' ? 'Nurse' : 'Dr.' }} {{ doctorName }}</h2>
+    <h2>Welcome, Dr. {{ doctorName }}</h2>
     <p>Professional Dashboard - {{ patients.length }} Active Patients</p>
   </div>
 
@@ -105,10 +105,9 @@
           <ion-button 
             fill="outline" 
             size="small" 
-            (click)="addTreatmentOutcome(patient)"
-            [disabled]="isNurse">
+            (click)="addTreatmentOutcome(patient)">
             <ion-icon name="medical-outline" slot="start"></ion-icon>
-            {{ isNurse ? 'Add Treatment (Doctor Only)' : 'Add Treatment' }}
+            Add Treatment
           </ion-button>
           
         </div>

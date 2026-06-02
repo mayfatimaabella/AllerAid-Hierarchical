@@ -25,7 +25,7 @@ export class ProfileEHRManagerService {
   // Form properties
   newProviderEmail: string = '';
   newProviderName: string = '';
-  newProviderRole: 'doctor' | 'nurse' = 'doctor';
+  newProviderRole: 'doctor' = 'doctor';
   newProviderLicense: string = '';
   newProviderSpecialty: string = '';
   newProviderHospital: string = '';

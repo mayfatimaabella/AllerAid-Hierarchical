@@ -2,6 +2,16 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastController, AlertController } from '@ionic/angular';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { UserService } from '../../../core/services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ProfileDetailService } from '../../../core/services/profile-details.service';
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc
+} from 'firebase/firestore';
 
 
 @Component({
@@ -21,7 +31,10 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
   constructor(
     private formBuilder: FormBuilder,
     private toastController: ToastController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private userService: UserService,
+    private authService: AuthService,
+    private profileDetailService: ProfileDetailService
   ) {
     this.initializeForm();
   }
@@ -49,24 +62,25 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
     });
   }
 
-  loadDoctorProfile() {
+  async loadDoctorProfile() {
     this.isLoading = true;
-    // TODO: Implement doctor profile loading from service
-    // this.doctorService.getDoctorProfile()
-    //   .pipe(takeUntil(this.destroy$))
-    //   .subscribe({
-    //     next: (profile) => {
-    //       this.doctorProfile = profile;
-    //       this.populateForm(profile);
-    //       this.isLoading = false;
-    //     },
-    //     error: (error) => {
-    //       console.error('Error loading doctor profile:', error);
-    //       this.showError('Failed to load profile');
-    //       this.isLoading = false;
-    //     }
-    //   });
-    this.isLoading = false;
+    try {
+      const user = this.authService.getCurrentUser();
+      if (user) {
+        const profile = await this.userService.getUserProfile(user.uid);
+        if (profile) {
+          this.doctorProfile = profile;
+          this.populateForm(profile);
+        } else {
+          this.showError('Failed to load profile');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading doctor profile:', error);
+      this.showError('Failed to load profile');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   populateForm(profile: any) {
@@ -98,29 +112,54 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
     this.populateForm(this.doctorProfile);
   }
 
-  saveDoctorProfile() {
+  async saveDoctorProfile() {
     if (this.doctorProfileForm.invalid) {
       this.showError('Please fill in all required fields');
       return;
     }
 
-    // TODO: Implement save profile to service
-    // this.doctorService.updateDoctorProfile(this.doctorProfileForm.value)
-    //   .pipe(takeUntil(this.destroy$))
-    //   .subscribe({
-    //     next: (response) => {
-    //       this.doctorProfile = response;
-    //       this.isEditing = false;
-    //       this.showSuccess('Profile updated successfully');
-    //     },
-    //     error: (error) => {
-    //       console.error('Error updating profile:', error);
-    //       this.showError('Failed to update profile');
-    //     }
-    //   });
+    try {
+      const user = this.authService.getCurrentUser();
+      if (!user) {
+        this.showError('User not authenticated');
+        return;
+      }
 
-    this.isEditing = false;
-    this.showSuccess('Profile updated successfully');
+      const formValue = this.doctorProfileForm.value;
+      
+      // Update base user profile
+      await this.userService.updateUserProfile(user.uid, {
+        firstName: formValue.firstName,
+        lastName: formValue.lastName,
+        email: formValue.email
+      });
+
+      // Update profile details (phone, profile picture)
+      await this.profileDetailService.updateProfileDetails(user.uid, {
+        phone: formValue.phoneNumber,
+        profile_picture: formValue.profilePhoto
+      });
+
+      // Update professional credentials for doctors
+      const db = getFirestore();
+      await setDoc(
+        doc(db, 'users', user.uid, 'professional', 'credentials'),
+        {
+          specialty: formValue.specialization,
+          license: formValue.licenseNumber,
+          hospital: formValue.hospital,
+          bio: formValue.bio
+        },
+        { merge: true }
+      );
+
+      this.doctorProfile = { ...this.doctorProfile, ...formValue };
+      this.isEditing = false;
+      this.showSuccess('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      this.showError('Failed to update profile');
+    }
   }
 
   async showSuccess(message: string) {

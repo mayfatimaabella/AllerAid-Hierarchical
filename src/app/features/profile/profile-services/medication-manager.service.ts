@@ -18,19 +18,7 @@ export class MedicationManagerService {
     medication: Medication,
     loadUserMedications: () => Promise<void>
   ) {
-    const modal = await this.modalController.create({
-      component: (await import('../health/modals/add-edit-medication/add-edit-medication.modal')).AddMedicationModal,
-      componentProps: {
-        medication: medication,
-        isEditMode: true
-      }
-    });
-    modal.onDidDismiss().then((result) => {
-      if (result.data?.saved) {
-        loadUserMedications();
-      }
-    });
-    await modal.present();
+    // Medication editing modal has been removed from profile
   }
 
   /**

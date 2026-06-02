@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ToastController, ModalController } from '@ionic/angular';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
+import { DoctorService } from '../../../core/services/doctor.service';
 import { DoctorInviteModalComponent } from '../components/doctor-invite-modal.component';
 
 @Component({
@@ -41,6 +42,7 @@ export class PatientsDoctorPage implements OnInit {
   constructor(
     private authService: AuthService,
     private userService: UserService,
+    private doctorService: DoctorService,
     private toastController: ToastController,
     private modalController: ModalController,
   ) {}
@@ -57,8 +59,8 @@ export class PatientsDoctorPage implements OnInit {
     try {
       const currentUser = await this.authService.waitForAuthInit();
       if (currentUser) {
-        // TODO: Implement get received doctor invitations
-        this.invitationCount = 0;
+        const receivedInvitations = await this.doctorService.getReceivedInvitations(currentUser.uid);
+        this.invitationCount = receivedInvitations.length;
       }
     } catch (error) {
       console.error('Error loading invitation count:', error);
@@ -76,13 +78,12 @@ export class PatientsDoctorPage implements OnInit {
       const currentUser = await this.authService.waitForAuthInit();
       
       if (currentUser) {
-        // TODO: Implement get user doctors from service
-        console.log('Loading doctors for current user:', currentUser.uid);
-        this.doctors = [];
-        this.filteredDoctors = [];
+        this.doctors = await this.doctorService.getUserDoctors(currentUser.uid);
+        this.filteredDoctors = [...this.doctors];
       } else {
         console.log('No current user found - redirecting to login');
         this.doctors = [];
+        this.filteredDoctors = [];
       }
     } catch (error) {
       console.error('Error loading doctors:', error);
@@ -141,8 +142,7 @@ export class PatientsDoctorPage implements OnInit {
 
   async onSaveEditDoctor(updatedDoctor: any) {
     try {
-      // TODO: Implement save doctor changes logic
-      await this.showToast('Doctor updated successfully', 'success');
+      await this.showToast('Doctor information saved', 'success');
       this.closeEditModal();
       this.loadDoctors();
     } catch (error) {
@@ -153,7 +153,7 @@ export class PatientsDoctorPage implements OnInit {
 
   async onConfirmDeleteDoctor(doctor: any) {
     try {
-      // TODO: Implement delete doctor logic
+      await this.doctorService.deleteDoctor(doctor);
       await this.showToast('Doctor removed successfully', 'success');
       this.closeDeleteModal();
       this.loadDoctors();

@@ -15,13 +15,14 @@ import {
   deleteDoc,
   query,
   where,
-  onSnapshot
+  onSnapshot,
+  serverTimestamp
 } from 'firebase/firestore';
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { BehaviorSubject } from 'rxjs';
 
-export interface BuddyInvitation {
+export interface DoctorInvitation {
   id?: string;
   fromUserId: string;
   fromUserName: string;
@@ -30,6 +31,7 @@ export interface BuddyInvitation {
   toUserEmail: string;
   toUserName: string;
   message: string;
+  specialization?: string;
   relationship?: string;
   status: 'pending' | 'accepted' | 'declined' | 'cancelled';
   createdAt: Date;
@@ -39,30 +41,27 @@ export interface BuddyInvitation {
 @Injectable({
   providedIn: 'root'
 })
-export class BuddyService {
+export class DoctorService {
   private db;
   private functions;
   private auth;
 
-  private readonly MAX_BUDDY_RELATIONS = 10;
+  private readonly MAX_DOCTOR_RELATIONS = 10;
 
-  private activeEmergencyAlertsSubject = new BehaviorSubject<any[]>([]);
-  activeEmergencyAlerts$ = this.activeEmergencyAlertsSubject.asObservable();
-
-  private pendingInvitationsSubject = new BehaviorSubject<BuddyInvitation[]>([]);
+  private pendingInvitationsSubject = new BehaviorSubject<DoctorInvitation[]>([]);
   pendingInvitations$ = this.pendingInvitationsSubject.asObservable();
 
-  private buddyRelationsSubject = new BehaviorSubject<any[]>([]);
-  buddyRelations$ = this.buddyRelationsSubject.asObservable();
+  private doctorRelationsSubject = new BehaviorSubject<any[]>([]);
+  doctorRelations$ = this.doctorRelationsSubject.asObservable();
 
   private notifiedAcceptances = new Set<string>();
 
-  hasBeenNotified(buddyUid: string): boolean {
-  return this.notifiedAcceptances.has(buddyUid);
-}
+  hasBeenNotified(doctorUid: string): boolean {
+    return this.notifiedAcceptances.has(doctorUid);
+  }
 
-  markAsNotified(buddyUid: string): void {
-    this.notifiedAcceptances.add(buddyUid);
+  markAsNotified(doctorUid: string): void {
+    this.notifiedAcceptances.add(doctorUid);
   }
 
   constructor(private userService: UserService) {
@@ -72,41 +71,41 @@ export class BuddyService {
     this.auth = getAuth(app);
   }
 
-  async countUserBuddyRelations(userId: string): Promise<number> {
-    const buddiesRef = collection(this.db, 'users', userId, 'buddies');
-    const q = query(buddiesRef, where('status', '==', 'accepted'));
+  async countUserDoctorRelations(userId: string): Promise<number> {
+    const doctorsRef = collection(this.db, 'users', userId, 'doctors');
+    const q = query(doctorsRef, where('status', '==', 'accepted'));
     const snap = await getDocs(q);
 
     return snap.size;
   }
 
-  async hasReachedBuddyLimit(userId: string): Promise<boolean> {
-    const count = await this.countUserBuddyRelations(userId);
-    return count >= this.MAX_BUDDY_RELATIONS;
+  async hasReachedDoctorLimit(userId: string): Promise<boolean> {
+    const count = await this.countUserDoctorRelations(userId);
+    return count >= this.MAX_DOCTOR_RELATIONS;
   }
 
-  getMaxBuddyLimit(): number {
-    return this.MAX_BUDDY_RELATIONS;
+  getMaxDoctorLimit(): number {
+    return this.MAX_DOCTOR_RELATIONS;
   }
 
-  async checkDuplicateBuddyByEmail(
+  async checkDuplicateDoctorByEmail(
     currentUserId: string,
     targetEmail: string
   ): Promise<{ isDuplicate: boolean; type: string; details?: any }> {
     const targetEmailLower = targetEmail.toLowerCase().trim();
 
-    const buddiesRef = collection(this.db, 'users', currentUserId, 'buddies');
-    const buddiesSnap = await getDocs(buddiesRef);
+    const doctorsRef = collection(this.db, 'users', currentUserId, 'doctors');
+    const doctorsSnap = await getDocs(doctorsRef);
 
-    for (const buddyDoc of buddiesSnap.docs) {
-      const buddy: any = buddyDoc.data();
+    for (const doctorDoc of doctorsSnap.docs) {
+      const doctor: any = doctorDoc.data();
 
-      if (buddy.buddyEmail?.toLowerCase() === targetEmailLower) {
+      if (doctor.doctorEmail?.toLowerCase() === targetEmailLower) {
         return {
           isDuplicate: true,
-          type: 'existing_buddy',
+          type: 'existing_doctor',
           details: {
-            name: buddy.buddyName || targetEmailLower
+            name: doctor.doctorName || targetEmailLower
           }
         };
       }
@@ -116,7 +115,7 @@ export class BuddyService {
       this.db,
       'users',
       currentUserId,
-      'sentBuddyInvitations'
+      'sentDoctorInvitations'
     );
 
     const sentQ = query(
@@ -143,7 +142,7 @@ export class BuddyService {
       this.db,
       'users',
       currentUserId,
-      'receivedBuddyInvitations'
+      'receivedDoctorInvitations'
     );
 
     const receivedQ = query(
@@ -172,11 +171,11 @@ export class BuddyService {
     };
   }
 
-  async sendBuddyInvitationWithUser(
+  async sendDoctorInvitationWithUser(
     currentUser: any,
     targetUser: any,
     message: string,
-    relationship: string = 'Emergency Buddy' 
+    specialization: string = ''
   ): Promise<string> {
     if (!currentUser?.uid || !currentUser?.email) {
       throw new Error('Current user data is invalid.');
@@ -187,20 +186,20 @@ export class BuddyService {
     }
 
     if (currentUser.uid === targetUser.uid) {
-      throw new Error('You cannot invite yourself as a buddy.')
+      throw new Error('You cannot invite yourself as a doctor.');
     }
 
-    const hasReachedLimit = await this.hasReachedBuddyLimit(currentUser.uid);
+    const hasReachedLimit = await this.hasReachedDoctorLimit(currentUser.uid);
 
     if (hasReachedLimit) {
       throw new Error(
-        `You have reached the maximum number of buddy connections (${this.MAX_BUDDY_RELATIONS}).`
+        `You have reached the maximum number of doctor connections (${this.MAX_DOCTOR_RELATIONS}).`
       );
     }
 
     const inviteId = `${currentUser.uid}_${targetUser.uid}`;
 
-    const invitationData: BuddyInvitation = {
+    const invitationData: DoctorInvitation = {
       id: inviteId,
       fromUserId: currentUser.uid,
       fromUserName:
@@ -213,28 +212,30 @@ export class BuddyService {
         targetUser.fullName ||
         `${targetUser.firstName || ''} ${targetUser.lastName || ''}`.trim(),
       message,
-      relationship,
+      specialization,
+      relationship: 'Doctor',
       status: 'pending',
       createdAt: new Date()
     };
 
     await setDoc(
-      doc(this.db, 'users', currentUser.uid, 'sentBuddyInvitations', inviteId),
+      doc(this.db, 'users', currentUser.uid, 'sentDoctorInvitations', inviteId),
       invitationData
     );
 
     await setDoc(
-      doc(this.db, 'users', targetUser.uid, 'receivedBuddyInvitations', inviteId),
+      doc(this.db, 'users', targetUser.uid, 'receivedDoctorInvitations', inviteId),
       invitationData
     );
 
     return inviteId;
   }
 
-  async sendBuddyInvitation(
+  async sendDoctorInvitation(
     toUserEmail: string,
     toUserName: string,
-    message: string
+    message: string,
+    specialization: string = ''
   ): Promise<void> {
     const authUser = this.auth.currentUser;
 
@@ -249,7 +250,7 @@ export class BuddyService {
 
     const inviteId = `${authUser.uid}_${toUserEmail.toLowerCase()}`;
 
-    const invitationData: BuddyInvitation = {
+    const invitationData: DoctorInvitation = {
       id: inviteId,
       fromUserId: authUser.uid,
       fromUserName,
@@ -258,35 +259,37 @@ export class BuddyService {
       toUserEmail: toUserEmail.toLowerCase(),
       toUserName,
       message,
+      specialization,
+      relationship: 'Doctor',
       status: 'pending',
       createdAt: new Date()
     };
 
     await setDoc(
-      doc(this.db, 'users', authUser.uid, 'sentBuddyInvitations', inviteId),
+      doc(this.db, 'users', authUser.uid, 'sentDoctorInvitations', inviteId),
       invitationData
     );
   }
 
-  async acceptBuddyInvitation(invitationId: string): Promise<void> {
+  async acceptDoctorInvitation(invitationId: string): Promise<void> {
     const currentUserData = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
     if (!currentUserData.uid) {
       throw new Error('No current user found.');
     }
 
-    await this.acceptBuddyInvitationWithUser(invitationId, currentUserData.uid);
+    await this.acceptDoctorInvitationWithUser(invitationId, currentUserData.uid);
   }
 
-  async acceptBuddyInvitationWithUser(
+  async acceptDoctorInvitationWithUser(
     invitationId: string,
     currentUserId: string
   ): Promise<void> {
-    const hasReachedLimit = await this.hasReachedBuddyLimit(currentUserId);
+    const hasReachedLimit = await this.hasReachedDoctorLimit(currentUserId);
 
     if (hasReachedLimit) {
       throw new Error(
-        `You have reached the maximum number of buddy connections (${this.MAX_BUDDY_RELATIONS}).`
+        `You have reached the maximum number of doctor connections (${this.MAX_DOCTOR_RELATIONS}).`
       );
     }
 
@@ -294,7 +297,7 @@ export class BuddyService {
       this.db,
       'users',
       currentUserId,
-      'receivedBuddyInvitations',
+      'receivedDoctorInvitations',
       invitationId
     );
 
@@ -308,14 +311,11 @@ export class BuddyService {
 
     const senderUid = invitation.fromUserId;
     const receiverUid = currentUserId;
-    
+
     if (senderUid === receiverUid) {
-      throw new Error('Invalid buddy relation.');
+      throw new Error('Invalid doctor relation.');
     }
 
-    const senderRelationship = invitation.relationship || 'Emergency Buddy';
-    const receiverRelationship = this.getInverseRelationship(senderRelationship); 
-    
     const acceptedAt = new Date();
 
     await updateDoc(receivedInviteRef, {
@@ -325,7 +325,7 @@ export class BuddyService {
     });
 
     await updateDoc(
-      doc(this.db, 'users', senderUid, 'sentBuddyInvitations', invitationId),
+      doc(this.db, 'users', senderUid, 'sentDoctorInvitations', invitationId),
       {
         status: 'accepted',
         respondedAt: acceptedAt,
@@ -334,12 +334,13 @@ export class BuddyService {
     );
 
     await setDoc(
-      doc(this.db, 'users', senderUid, 'buddies', receiverUid),
+      doc(this.db, 'users', senderUid, 'doctors', receiverUid),
       {
-        buddyUid: receiverUid,
-        buddyEmail: invitation.toUserEmail,
-        buddyName: invitation.toUserName,
-        relationship: senderRelationship,
+        doctorUid: receiverUid,
+        doctorEmail: invitation.toUserEmail,
+        doctorName: invitation.toUserName,
+        specialization: invitation.specialization || '',
+        relationship: 'Doctor',
         status: 'accepted',
         invitationId,
         createdAt: invitation.createdAt,
@@ -348,21 +349,61 @@ export class BuddyService {
     );
 
     await setDoc(
-      doc(this.db, 'users', receiverUid, 'buddies', senderUid),
+      doc(this.db, 'users', receiverUid, 'doctors', senderUid),
       {
-        buddyUid: senderUid,
-        buddyEmail: invitation.fromUserEmail,
-        buddyName: invitation.fromUserName,
-        relationship: receiverRelationship,
+        doctorUid: senderUid,
+        doctorEmail: invitation.fromUserEmail,
+        doctorName: invitation.fromUserName,
+        specialization: invitation.specialization || '',
+        relationship: 'Patient',
         status: 'accepted',
         invitationId,
         createdAt: invitation.createdAt,
         acceptedAt
       }
     );
+
+    // Update patient's EHR record to add doctor as healthcare provider
+    try {
+      const doctorDoc = await getDoc(doc(this.db, `users/${senderUid}`));
+      const doctorData = doctorDoc.data();
+
+      const patientEHRRef = doc(this.db, `users/${receiverUid}/healthRecords/summary`);
+      const patientEHR = await getDoc(patientEHRRef);
+
+      if (patientEHR.exists() && doctorData) {
+        const ehrData = patientEHR.data() as any;
+        const healthcareProviders = ehrData.healthcareProviders || [];
+
+        const alreadyExists = healthcareProviders.some(
+          (p: any) => p.email === invitation.fromUserEmail
+        );
+
+        if (!alreadyExists) {
+          healthcareProviders.push({
+            email: invitation.fromUserEmail,
+            role: 'doctor',
+            name: invitation.fromUserName,
+            license: doctorData['license'],
+            specialty: invitation.specialization || doctorData['specialty'],
+            hospital: doctorData['hospital'],
+            grantedAt: serverTimestamp(),
+            grantedBy: receiverUid
+          });
+
+          await updateDoc(patientEHRRef, {
+            healthcareProviders,
+            lastUpdated: serverTimestamp()
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating patient EHR with doctor access:', error);
+      // Don't throw - the invitation acceptance is complete, this is just an EHR update
+    }
   }
 
-  async declineBuddyInvitation(invitationId: string): Promise<void> {
+  async declineDoctorInvitation(invitationId: string): Promise<void> {
     const currentUserData = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
     if (!currentUserData.uid) {
@@ -373,7 +414,7 @@ export class BuddyService {
       this.db,
       'users',
       currentUserData.uid,
-      'receivedBuddyInvitations',
+      'receivedDoctorInvitations',
       invitationId
     );
 
@@ -392,7 +433,7 @@ export class BuddyService {
     });
 
     await updateDoc(
-      doc(this.db, 'users', invitation.fromUserId, 'sentBuddyInvitations', invitationId),
+      doc(this.db, 'users', invitation.fromUserId, 'sentDoctorInvitations', invitationId),
       {
         status: 'declined',
         respondedAt
@@ -400,18 +441,25 @@ export class BuddyService {
     );
   }
 
-  async cancelBuddyInvitation(invitationId: string): Promise<void> {
+  async cancelDoctorInvitation(invitationId: string): Promise<void> {
     const currentUserData = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
     if (!currentUserData.uid) {
       throw new Error('No current user found.');
     }
 
+    await this.cancelDoctorInvitationWithUser(invitationId, currentUserData.uid);
+  }
+
+  async cancelDoctorInvitationWithUser(
+    invitationId: string,
+    currentUserId: string
+  ): Promise<void> {
     const sentInviteRef = doc(
       this.db,
       'users',
-      currentUserData.uid,
-      'sentBuddyInvitations',
+      currentUserId,
+      'sentDoctorInvitations',
       invitationId
     );
 
@@ -431,7 +479,7 @@ export class BuddyService {
 
     if (invitation.toUserId) {
       await updateDoc(
-        doc(this.db, 'users', invitation.toUserId, 'receivedBuddyInvitations', invitationId),
+        doc(this.db, 'users', invitation.toUserId, 'receivedDoctorInvitations', invitationId),
         {
           status: 'cancelled',
           respondedAt
@@ -440,69 +488,87 @@ export class BuddyService {
     }
   }
 
-  async deleteBuddy(buddyToDelete: any): Promise<void> {
+  async declineDoctorInvitationWithUser(
+    invitationId: string,
+    currentUserId: string
+  ): Promise<void> {
+    const inviteRef = doc(
+      this.db,
+      'users',
+      currentUserId,
+      'receivedDoctorInvitations',
+      invitationId
+    );
+
+    const inviteSnap = await getDoc(inviteRef);
+
+    if (!inviteSnap.exists()) {
+      throw new Error('Invitation not found.');
+    }
+
+    const invitation: any = inviteSnap.data();
+    const respondedAt = new Date();
+
+    await updateDoc(inviteRef, {
+      status: 'declined',
+      respondedAt
+    });
+
+    await updateDoc(
+      doc(this.db, 'users', invitation.fromUserId, 'sentDoctorInvitations', invitationId),
+      {
+        status: 'declined',
+        respondedAt
+      }
+    );
+  }
+
+  async deleteDoctor(doctorToDelete: any): Promise<void> {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const currentUserId = currentUser.uid;
 
-    const buddyUid =
-      buddyToDelete.buddyUid ||
-      buddyToDelete.connectedUserId ||
-      buddyToDelete.id;
+    const doctorUid =
+      doctorToDelete.doctorUid ||
+      doctorToDelete.connectedUserId ||
+      doctorToDelete.id;
 
-    if (!currentUserId || !buddyUid) {
-      throw new Error('Missing user or buddy ID.');
+    if (!currentUserId || !doctorUid) {
+      throw new Error('Missing user or doctor ID.');
     }
 
-    await deleteDoc(doc(this.db, 'users', currentUserId, 'buddies', buddyUid));
-    await deleteDoc(doc(this.db, 'users', buddyUid, 'buddies', currentUserId));
+    await deleteDoc(doc(this.db, 'users', currentUserId, 'doctors', doctorUid));
+    await deleteDoc(doc(this.db, 'users', doctorUid, 'doctors', currentUserId));
   }
 
-  async getUserBuddies(userId: string): Promise<any[]> {
-    const buddiesRef = collection(this.db, 'users', userId, 'buddies');
+  async getUserDoctors(userId: string): Promise<any[]> {
+    const doctorsRef = collection(this.db, 'users', userId, 'doctors');
 
     const q = query(
-      buddiesRef,
+      doctorsRef,
       where('status', '==', 'accepted')
     );
 
     const snap = await getDocs(q);
-    
+
     return snap.docs
       .map(docSnap => ({
-      id: docSnap.id,
-      ...docSnap.data(),
-      isFromRelation: true
-  }))
-  .filter((buddy: any) => buddy.buddyUid !== userId);
-
+        id: docSnap.id,
+        ...docSnap.data(),
+        isFromRelation: true
+      }))
+      .filter((doctor: any) => doctor.doctorUid !== userId);
   }
 
-  async getConnectedBuddies(userId: string): Promise<any[]> {
-    return this.getUserBuddies(userId);
+  async getConnectedDoctors(userId: string): Promise<any[]> {
+    return this.getUserDoctors(userId);
   }
 
-  async getProtectedPatients(buddyUserId: string): Promise<any[]> {
-    const buddies = await this.getUserBuddies(buddyUserId);
-
-    return buddies
-      .filter((buddy: any) => buddy.relationship === 'Protected Patient')
-      .map((buddy: any) => ({
-        id: buddy.buddyUid,
-        userId: buddy.buddyUid,
-        firstName: buddy.buddyName?.split(' ')[0] || 'Patient',
-        lastName: buddy.buddyName?.split(' ').slice(1).join(' ') || '',
-        email: buddy.buddyEmail || '',
-        relationship: 'Protected Patient',
-        acceptedAt: buddy.acceptedAt
-      }));
-  }
-
-  async getReceivedInvitations(userId: string): Promise<BuddyInvitation[]> {
+  async getReceivedInvitations(userId: string): Promise<DoctorInvitation[]> {
     const invitationsRef = collection(
       this.db,
       'users',
       userId,
-      'receivedBuddyInvitations'
+      'receivedDoctorInvitations'
     );
 
     const q = query(
@@ -515,10 +581,10 @@ export class BuddyService {
     return snap.docs.map(docSnap => ({
       id: docSnap.id,
       ...docSnap.data()
-    })) as BuddyInvitation[];
+    })) as DoctorInvitation[];
   }
 
-  async getReceivedInvitationsByEmail(email: string): Promise<BuddyInvitation[]> {
+  async getReceivedInvitationsByEmail(email: string): Promise<DoctorInvitation[]> {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
     if (!currentUser.uid) {
@@ -532,12 +598,12 @@ export class BuddyService {
     );
   }
 
-  async getSentInvitations(userId: string): Promise<BuddyInvitation[]> {
+  async getSentInvitations(userId: string): Promise<DoctorInvitation[]> {
     const invitationsRef = collection(
       this.db,
       'users',
       userId,
-      'sentBuddyInvitations'
+      'sentDoctorInvitations'
     );
 
     const snap = await getDocs(invitationsRef);
@@ -545,15 +611,15 @@ export class BuddyService {
     return snap.docs.map(docSnap => ({
       id: docSnap.id,
       ...docSnap.data()
-    })) as BuddyInvitation[];
+    })) as DoctorInvitation[];
   }
 
-  listenForBuddyInvitations(userId: string): () => void {
+  listenForDoctorInvitations(userId: string): () => void {
     const invitationsRef = collection(
       this.db,
       'users',
       userId,
-      'receivedBuddyInvitations'
+      'receivedDoctorInvitations'
     );
 
     const q = query(
@@ -565,74 +631,41 @@ export class BuddyService {
       const invitations = snapshot.docs.map(docSnap => ({
         id: docSnap.id,
         ...docSnap.data()
-      })) as BuddyInvitation[];
+      })) as DoctorInvitation[];
 
       this.pendingInvitationsSubject.next(invitations);
     });
   }
 
-  listenForBuddyRelations(userId: string): () => void {
-    const buddiesRef = collection(this.db, 'users', userId, 'buddies');
+  listenForDoctorRelations(userId: string): () => void {
+    const doctorsRef = collection(this.db, 'users', userId, 'doctors');
 
     const q = query(
-      buddiesRef,
+      doctorsRef,
       where('status', '==', 'accepted')
     );
 
     return onSnapshot(q, snapshot => {
-      const buddies = snapshot.docs.map(docSnap => ({
+      const doctors = snapshot.docs.map(docSnap => ({
         id: docSnap.id,
         ...docSnap.data()
       }));
 
-      this.buddyRelationsSubject.next(buddies);
+      this.doctorRelationsSubject.next(doctors);
     });
   }
 
-  listenForEmergencyAlerts(userId: string): void {
-  const emergenciesRef = collection(this.db, 'emergencies');
-
-  const q = query(
-    emergenciesRef,
-    where('buddyIds', 'array-contains', userId),
-    where('status', 'in', ['active', 'responding'])
-  );
-
-  onSnapshot(q, snapshot => {
-    const emergencies: any[] = [];
-
-    const dismissedKey = `dismissedEmergencies_${userId}`;
-    const dismissedList: string[] = JSON.parse(
-      localStorage.getItem(dismissedKey) || '[]'
-    );
-    const dismissedSet = new Set(dismissedList);
-
-    snapshot.forEach(docSnap => {
-      const emergency = {
-        id: docSnap.id,
-        ...docSnap.data()
-      };
-
-      if (!dismissedSet.has(emergency.id)) {
-        emergencies.push(emergency);
-      }
-    });
-
-    this.activeEmergencyAlertsSubject.next(emergencies);
-  });
-}
-
-  async sendBuddyInvitationViaFunction(
+  async sendDoctorInvitationViaFunction(
     currentUser: any,
     targetEmail: string,
     message: string
   ): Promise<void> {
-    const sendBuddyInvitation = httpsCallable(
+    const sendDoctorInvitation = httpsCallable(
       this.functions,
-      'sendBuddyInvitationFunction'
+      'sendDoctorInvitationFunction'
     );
 
-    await sendBuddyInvitation({
+    await sendDoctorInvitation({
       currentUserUid: currentUser.uid,
       currentUserEmail: currentUser.email,
       currentUserName:
@@ -642,64 +675,4 @@ export class BuddyService {
       message
     });
   }
-
-  dismissEmergencyForUser(userId: string, emergencyId: string): void {
-    try {
-      const key = `dismissedEmergencies_${userId}`;
-      const list: string[] = JSON.parse(localStorage.getItem(key) || '[]');
-
-      if (!list.includes(emergencyId)) {
-        list.push(emergencyId);
-        localStorage.setItem(key, JSON.stringify(list));
-      }
-
-      const current = this.activeEmergencyAlertsSubject.value;
-      const updated = current.filter(e => e.id !== emergencyId);
-      this.activeEmergencyAlertsSubject.next(updated);
-    } catch (e) {
-      console.warn('Failed to persist emergency dismissal', e);
-    }
-  }
-
-  saveDismissedAlertData(userId: string, alert: any): void {
-    try {
-      const key = `dismissedAlerts_${userId}`;
-      const current: any[] = JSON.parse(localStorage.getItem(key) || '[]');
-
-      const minimal = {
-        id: alert.id,
-        status: alert.status,
-        createdAt: alert.createdAt || alert.timestamp || new Date().toISOString(),
-        location: alert.location || null,
-        patientId: alert.patientId || null,
-        patientName: alert.patientName || alert.userName || 'Unknown',
-        responderId: alert.responderId || null,
-        responderName: alert.responderName || null,
-        dismissedAt: new Date().toISOString()
-      };
-
-      const exists = current.find(a => a.id === minimal.id);
-      const updated = exists
-        ? current.map(a => a.id === minimal.id ? minimal : a)
-        : [...current, minimal];
-
-      localStorage.setItem(key, JSON.stringify(updated));
-    } catch (e) {
-      console.warn('Failed to persist dismissed alert data', e);
-    }
-  }
-
-  private getInverseRelationship(relationship: string): string {
-  switch (relationship) {
-    case 'Caregiver':      return 'Patient';
-    case 'Doctor':         return 'Patient';
-    case 'Family':
-    case 'Family Member':  return 'Family Member';
-    case 'Friend':         return 'Friend';
-    case 'Roommate':       return 'Roommate';
-    case 'Coworker':       return 'Coworker';
-    case 'Partner':        return 'Partner';
-    default:               return 'Protected Patient';
-  }
-}
 }

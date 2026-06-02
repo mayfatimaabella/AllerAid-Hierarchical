@@ -17,8 +17,6 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
 
   doctorEmail: string = '';
   doctorName: string = '';
-  userRole: string = '';
-  isNurse: boolean = false;
   patients: DoctorPatient[] = [];
   filteredPatients: DoctorPatient[] = [];
   
@@ -66,8 +64,6 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
         const userProfile = await this.userService.getUserProfile(currentUser.uid);
         this.doctorEmail = currentUser.email || '';
         this.doctorName = userProfile?.fullName || 'Healthcare Provider';
-        this.userRole = userProfile?.role || 'user';
-        this.isNurse = this.userRole === 'nurse';
       }
     } catch (error) {
       console.error('Error loading doctor info:', error);
@@ -157,10 +153,6 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
   }
 
   async addTreatmentOutcome(patient: DoctorPatient) {
-    if (this.isNurse) {
-      this.presentToast('Treatment outcome modification requires doctor privileges');
-      return;
-    }
     // This would open a modal for adding treatment outcomes
     this.presentToast('Treatment outcome feature - to be implemented');
   }
@@ -220,8 +212,7 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
       showBackdrop: true,
       componentProps: {
         doctorName: this.doctorName,
-        doctorEmail: this.doctorEmail,
-        userRole: this.userRole
+        doctorEmail: this.doctorEmail
       }
     });
 

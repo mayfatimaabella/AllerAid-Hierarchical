@@ -1,45 +1,44 @@
+:host {
+  display: block;
+  background: transparent;
+}
+
+ion-content {
+  --background: #e8f2f0 !important;
+  color: #000 !important;
+  height: 47vh;
+  max-height: 80vh;
+  border-radius: 5px;
+}
+
+ion-item {
+  --background: #cfeee6 !important;
+  color: #000 !important;
+  border-radius: 10px;
+}
+
 .doctor-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
 }
 
 .doctor-modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
+  width: 90vw;
+  max-width: 400px;
+  height: 55vh;
   max-height: 80vh;
-  overflow-y: auto;
-  animation: slideIn 0.3s ease-out;
+  z-index: 1001;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-ion-item {
-  --padding-start: 0;
-  --padding-end: 0;
-}
-
-.button-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 24px;
+ion-button.saveBtn {
+  --background: #036a5d !important;
+  --color: #fff !important;
 }
