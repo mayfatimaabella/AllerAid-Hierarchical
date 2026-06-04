@@ -31,8 +31,7 @@ export class EmergencyResponseNotificationComponent implements OnInit, OnDestroy
   }
   
   playNotificationSound() {
-    // Play a notification sound when the component is shown
-    const soundUrl = 'assets/audio/notification.mp3'; // Replace with your actual sound file
+    const soundUrl = 'assets/audio/notification.mp3';
     this.audio = new Audio(soundUrl);
     this.audio.play();
   }

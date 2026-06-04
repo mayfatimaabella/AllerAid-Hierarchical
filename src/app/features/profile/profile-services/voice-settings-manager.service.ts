@@ -1,12 +1,12 @@
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { VoiceRecordingService, AudioSettings } from '../../../core/services/voice-recording.service';
 import { ToastController, AlertController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
 })
-export class VoiceSettingsManagerService implements OnInit {
-  // State properties
+export class VoiceSettingsManagerService  {
+ 
   audioSettings: AudioSettings = { useCustomVoice: false, defaultVoice: 'female', speechRate: 1, volume: 1, selectedRecordingId: null };
   isRecording: boolean = false;
   recordingTime: number = 0;
@@ -20,10 +20,6 @@ export class VoiceSettingsManagerService implements OnInit {
     this.initializeRecordings();
   }
 
-  ngOnInit(): void {
-    this.initializeRecordings();
-  }
-
   /**
    * Initialize recordings from voice recording service
    */
@@ -31,6 +27,15 @@ export class VoiceSettingsManagerService implements OnInit {
     this.voiceRecordingService.recordings$.subscribe((recordings: any[]) => {
       this.recordings = recordings;
     });
+
+    this.voiceRecordingService.recordingState$.subscribe((state: boolean) => {
+      this.isRecording = state;
+    });
+
+    this.voiceRecordingService.recordingTime$.subscribe((time: number) => {
+      this.recordingTime = time;
+    });
+
     this.audioSettings = this.voiceRecordingService.getAudioSettings();
   }
 
@@ -52,8 +57,7 @@ export class VoiceSettingsManagerService implements OnInit {
     const recording = await this.voiceRecordingService.stopRecording();
     if (recording) {
       this.presentToast('Recording saved successfully');
-      this.isRecording = false;
-      this.recordings.push(recording);
+
     }
   }
 
@@ -82,14 +86,13 @@ export class VoiceSettingsManagerService implements OnInit {
       header: 'Delete Recording',
       message: `Are you sure you want to delete "${recording.name}"?`,
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
         {
           text: 'Delete', handler: async () => {
             await this.voiceRecordingService.deleteRecording(recording.id);
             this.presentToast('Recording deleted');
-            this.recordings = this.recordings.filter(r => r.id !== recording.id);
           }
-        }
+        },
+        { text: 'Cancel', role: 'cancel' }
       ]
     });
     await alert.present();

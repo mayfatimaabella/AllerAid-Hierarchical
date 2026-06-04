@@ -109,7 +109,7 @@ const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: '/tabs/home', // Default - will be overridden by role logic
+        redirectTo: '/tabs/home',
         pathMatch: 'full'
       }
     ]

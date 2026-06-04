@@ -19,6 +19,7 @@ export interface DoctorVerificationRequest extends AdminUser {
   hospital?: string;
   licenseURL?: string;
   professionalCredentials?: any;
+  verificationStatus?: 'pending' | 'approved' | 'rejected';
 }
 
 @Injectable({
@@ -57,10 +58,8 @@ export class AdminDoctorService {
       const credentialsSnap = await getDoc(credentialsRef);
       const credentials = credentialsSnap.exists() ? credentialsSnap.data() : null;
 
-      const verificationStatus =
-        credentials?.['verificationStatus'] ||
-        doctor.verificationStatus ||
-        'pending';
+      const verificationStatus: 'pending' | 'approved' | 'rejected' =
+        credentials?.['verificationStatus'] ?? 'pending';
 
       if (verificationStatus === 'pending') {
         pendingDoctors.push({

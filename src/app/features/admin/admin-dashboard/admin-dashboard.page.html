@@ -36,7 +36,7 @@
 
 <ion-list>
 
-  <ion-item button routerLink="/admin/users">
+  <ion-item button routerLink="/admin-dashboard/users">
     <ion-icon name="people-outline" slot="start"></ion-icon>
     <ion-label>Manage Users</ion-label>
   </ion-item>
@@ -55,6 +55,16 @@
     <ion-icon name="warning-outline" slot="start"></ion-icon>
     <ion-label>Emergency Logs</ion-label>
   </ion-item>
+
+  <ion-item button routerLink="/admin-dashboard/allergy-categories">
+  <ion-icon name="pricetags-outline" slot="start"></ion-icon>
+  <ion-label>Manage Allergy Categories</ion-label>
+</ion-item>
+
+<ion-item button routerLink="/admin-dashboard/emergency-hotlines">
+  <ion-icon name="call-outline" slot="start"></ion-icon>
+  <ion-label>Emergency Hotlines</ion-label>
+</ion-item>
 
   <ion-item button (click)="logout()">
 

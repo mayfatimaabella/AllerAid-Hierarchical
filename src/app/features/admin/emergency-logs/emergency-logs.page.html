@@ -17,104 +17,170 @@
     <p>Monitor emergency alerts, patient incidents, and responder activity.</p>
   </section>
 
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+
+    <ion-button
+      size="small"
+      [fill]="selectedFilter === 'all' ? 'solid' : 'outline'"
+      (click)="applyFilter('all')">
+      All
+      <ion-badge slot="end">{{ emergencies.length }}</ion-badge>
+    </ion-button>
+
+    <ion-button
+      size="small"
+      color="danger"
+      [fill]="selectedFilter === 'active' ? 'solid' : 'outline'"
+      (click)="applyFilter('active')">
+      Active
+      <ion-badge slot="end">{{ countByStatus('active') }}</ion-badge>
+    </ion-button>
+
+    <ion-button
+      size="small"
+      color="warning"
+      [fill]="selectedFilter === 'responding' ? 'solid' : 'outline'"
+      (click)="applyFilter('responding')">
+      Responding
+      <ion-badge slot="end">{{ countByStatus('responding') }}</ion-badge>
+    </ion-button>
+
+    <ion-button
+      size="small"
+      color="success"
+      [fill]="selectedFilter === 'resolved' ? 'solid' : 'outline'"
+      (click)="applyFilter('resolved')">
+      Resolved
+      <ion-badge slot="end">{{ countByStatus('resolved') }}</ion-badge>
+    </ion-button>
+
+    <ion-button
+      size="small"
+      color="medium"
+      [fill]="selectedFilter === 'archived' ? 'solid' : 'outline'"
+      (click)="applyFilter('archived')">
+      Archived
+      <ion-badge slot="end">{{ countByStatus('archived') }}</ion-badge>
+    </ion-button>
+
+  </div>
+
+  <!-- Loading State -->
   <div class="empty-state" *ngIf="isLoading">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Loading emergency reports...</p>
   </div>
 
-  <div class="empty-state" *ngIf="!isLoading && emergencies.length === 0">
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && filteredEmergencies.length === 0">
     <ion-icon name="warning-outline"></ion-icon>
-    <h2>No emergency reports yet</h2>
-    <p>Emergency alerts created by users will appear here.</p>
+    <h2>No {{ selectedFilter === 'all' ? '' : selectedFilter }} emergencies</h2>
+    <p>Nothing to show for this category.</p>
   </div>
 
-  <section class="logs-list" *ngIf="!isLoading && emergencies.length > 0">
+  <!-- Emergency Cards -->
+  <section class="logs-list" *ngIf="!isLoading && filteredEmergencies.length > 0">
 
-    <ion-card *ngFor="let emergency of emergencies">
+    <ion-card *ngFor="let emergency of filteredEmergencies">
       <ion-card-content>
 
+        <!-- Card Header -->
         <div class="log-header">
           <div>
             <h2>
               {{ emergency.patientName || emergency.userName || emergency.name || 'Unknown Patient' }}
             </h2>
-
-            <p>Status: {{ emergency.status || 'active' }}</p>
+            <p class="reported-at">
+              {{ emergency.createdAt?.toDate() | date:'medium' }}
+            </p>
           </div>
 
           <ion-badge
             [color]="
-              emergency.status === 'resolved' ? 'success' :
+              emergency.status === 'resolved'   ? 'success' :
               emergency.status === 'responding' ? 'warning' :
-              emergency.status === 'archived' ? 'medium' :
+              emergency.status === 'archived'   ? 'medium'  :
               'danger'
             ">
             {{ emergency.status || 'active' }}
           </ion-badge>
         </div>
 
-<div class="log-details">
+        <!-- Card Details -->
+        <div class="log-details">
 
-  <p>
-    <strong>Emergency ID:</strong>
-    {{ emergency.id }}
-  </p>
+          <p>
+            <strong>Emergency ID:</strong>
+            {{ emergency.id | slice:0:8 }}...
+          </p>
 
-  <p>
-    <strong>Allergies:</strong>
+          <p>
+            <strong>Allergies:</strong>
+            {{ getAllergies(emergency) }}
+          </p>
 
-    <span *ngIf="emergency.allergies?.length > 0">
-      {{ emergency.allergies.join(', ') }}
-    </span>
+          <p>
+            <strong>Instruction:</strong>
+            {{ emergency.instruction || emergency.message || emergency.emergencyMessage || 'No instruction provided' }}
+          </p>
 
-    <span *ngIf="!emergency.allergies?.length">
-      Not specified
-    </span>
-  </p>
+          <p>
+            <strong>Location:</strong>
+            <span *ngIf="emergency.location">
+              {{ emergency.location.latitude ?? emergency.location.lat }},
+              {{ emergency.location.longitude ?? emergency.location.lng }}
+            </span>
+            <span *ngIf="!emergency.location">Unknown location</span>
+          </p>
 
-  <p>
-    <strong>Instruction:</strong>
+          <p>
+            <strong>Contact:</strong>
+            {{ emergency.contactNumber || emergency.phone || 'Not provided' }}
+          </p>
 
-    {{ emergency.instruction || 'No instruction provided' }}
-  </p>
+          <p>
+            <strong>Reported By:</strong>
+            {{ emergency.userName || 'Unknown User' }}
+          </p>
 
-  <p>
-    <strong>Location:</strong>
+        </div>
 
-    <span *ngIf="emergency.location">
-      {{ emergency.location.latitude }},
-      {{ emergency.location.longitude }}
-    </span>
-
-    <span *ngIf="!emergency.location">
-      Unknown location
-    </span>
-  </p>
-
-  <p>
-    <strong>Reported By:</strong>
-
-    {{ emergency.userName || 'Unknown User' }}
-  </p>
-
-</div>
-
+        <!-- Actions -->
         <div class="actions">
-          <ion-button expand="block" fill="outline" (click)="viewDetails(emergency)">
+
+          <ion-button
+            expand="block"
+            fill="outline"
+            (click)="viewDetails(emergency)">
             View Details
           </ion-button>
 
-          <ion-button expand="block" color="warning" (click)="updateStatus(emergency, 'responding')">
+          <ion-button
+            expand="block"
+            color="warning"
+            *ngIf="emergency.status === 'active'"
+            (click)="updateStatus(emergency, 'responding')">
             Mark Responding
           </ion-button>
 
-          <ion-button expand="block" color="success" (click)="updateStatus(emergency, 'resolved')">
+          <ion-button
+            expand="block"
+            color="success"
+            *ngIf="emergency.status === 'active' || emergency.status === 'responding'"
+            (click)="updateStatus(emergency, 'resolved')">
             Mark Resolved
           </ion-button>
 
-          <ion-button expand="block" color="medium" fill="outline" (click)="updateStatus(emergency, 'archived')">
+          <ion-button
+            expand="block"
+            color="medium"
+            fill="outline"
+            *ngIf="emergency.status !== 'archived'"
+            (click)="updateStatus(emergency, 'archived')">
             Archive
           </ion-button>
+
         </div>
 
       </ion-card-content>

@@ -18,7 +18,7 @@ export class AdminEmergencyService {
   private firestore: Firestore;
 
   constructor(private firebase: FirebaseService) {
-    this.firestore = firebase.getDb();
+    this.firestore = this.firebase.getDb();
   }
 
   async getAllEmergencies(): Promise<any[]> {
@@ -47,7 +47,8 @@ export class AdminEmergencyService {
 
   async updateEmergencyStatus(
     emergencyId: string,
-    status: 'active' | 'responding' | 'resolved' | 'archived'
+    status: 'active' | 'responding' | 'resolved' | 'archived',
+    adminUid: string 
   ): Promise<void> {
     const emergencyRef = doc(this.firestore, `emergencies/${emergencyId}`);
 

@@ -53,6 +53,9 @@ export class ProfilePage implements OnInit, OnDestroy {
   allergyOptions: AllergyOption[] = [];
   allergiesCount: number = 0;
 
+  audioInstructionsEnabled: boolean = true;
+  showVoiceSettings: boolean = false;
+
   doctorStats: DoctorStats = {
     activePatients: 0,
     pendingRequests: 0,
@@ -342,6 +345,15 @@ async loadEmergencyProfile(event?: any): Promise<void> {
 
 async onEmergencyProfileRefresh(event?: any): Promise<void> {
   await this.loadEmergencyProfile(event);
+}
+
+async testAudioSettings(): Promise<void> {
+  const selectedId = this.profileVoiceFacade.audioSettings.selectedRecordingId;
+  if (!selectedId) {
+    await this.presentToast('No recording selected. Record and select one first.');
+    return;
+  }
+  await this.profileVoiceFacade.playRecording(selectedId);
 }
 
 }

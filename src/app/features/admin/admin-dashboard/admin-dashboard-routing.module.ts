@@ -24,6 +24,23 @@ const routes: Routes = [
   loadComponent: () =>
     import('../manage-allergies/manage-allergies.page')
       .then(m => m.ManageAllergiesPage)
+},
+{
+  path: 'users',
+    loadComponent: () =>
+      import('../manage-users/manage-users.page').then(m => m.ManageUsersPage)
+},
+{
+  path: 'allergy-categories',
+  loadComponent: () =>
+    import('../manage-allergy-categories/manage-allergy-categories.page')
+      .then(m => m.ManageAllergyCategoriesPage)
+},
+{
+  path: 'emergency-hotlines',
+  loadComponent: () =>
+    import('../manage-emergency-hotlines/manage-emergency-hotlines.page')
+      .then(m => m.ManageEmergencyHotlinesPage)
 }
 ];
 

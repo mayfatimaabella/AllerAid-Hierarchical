@@ -1,0 +1,135 @@
+<ion-header>
+  <ion-toolbar class="toolbar--teal">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Manage Users</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="addUser()">
+        <ion-icon slot="icon-only" name="person-add-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="loadUsers()">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar class="search-toolbar">
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="filterUsers()"
+      placeholder="Search by name or email..."
+      debounce="300">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="users-bg">
+
+  <section class="users-hero">
+    <h1>User Management</h1>
+    <p>View, edit, suspend, and remove registered users.</p>
+  </section>
+
+  <!-- FILTER CHIPS -->
+  <div class="filter-row">
+    <ion-chip
+      [color]="activeFilter === 'all' ? 'primary' : 'medium'"
+      (click)="setFilter('all')">
+      All
+    </ion-chip>
+    <ion-chip
+      [color]="activeFilter === 'user' ? 'primary' : 'medium'"
+      (click)="setFilter('user')">
+      Users
+    </ion-chip>
+    <ion-chip
+      [color]="activeFilter === 'doctor' ? 'primary' : 'medium'"
+      (click)="setFilter('doctor')">
+      Doctors
+    </ion-chip>
+    <ion-chip
+      [color]="activeFilter === 'admin' ? 'primary' : 'medium'"
+      (click)="setFilter('admin')">
+      Admins
+    </ion-chip>
+  </div>
+
+  <!-- LOADING -->
+  <div class="empty-state" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading users...</p>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="empty-state" *ngIf="!isLoading && filtered.length === 0">
+    <ion-icon name="people-outline"></ion-icon>
+    <h2>No users found</h2>
+    <p>Try adjusting your search or filter.</p>
+  </div>
+
+  <!-- USER LIST -->
+  <section class="user-list" *ngIf="!isLoading && filtered.length > 0">
+
+    <ion-card *ngFor="let user of filtered">
+      <ion-card-content>
+
+        <div class="user-header">
+          <div class="avatar">{{ getInitials(user) }}</div>
+          <div class="user-info">
+            <h2>{{ getDisplayName(user) }}</h2>
+            <p>{{ user.email }}</p>
+          </div>
+          <ion-badge [color]="roleBadgeColor(user.role)">
+            {{ user.role || 'user' }}
+          </ion-badge>
+        </div>
+
+        <div class="user-details">
+          <p *ngIf="user.phone">
+            <ion-icon name="call-outline"></ion-icon>
+            {{ user.phone }}
+          </p>
+          <p *ngIf="user.allergies && user.allergies.length > 0">
+            <ion-icon name="leaf-outline"></ion-icon>
+            {{ user.allergies!.join(', ') }}
+          </p>
+          <p>
+            <ion-icon
+              [name]="user.isActive === false ? 'ban-outline' : 'checkmark-circle-outline'"
+              [color]="user.isActive === false ? 'danger' : 'success'">
+            </ion-icon>
+            {{ user.isActive === false ? 'Suspended' : 'Active' }}
+          </p>
+        </div>
+
+        <div class="actions">
+          <ion-button fill="outline" size="small" (click)="editUser(user)">
+            <ion-icon slot="start" name="create-outline"></ion-icon>
+            Edit
+          </ion-button>
+
+          <ion-button
+            fill="outline"
+            size="small"
+            [color]="user.isActive === false ? 'success' : 'warning'"
+            (click)="toggleActive(user)">
+            <ion-icon
+              slot="start"
+              [name]="user.isActive === false ? 'checkmark-outline' : 'ban-outline'">
+            </ion-icon>
+            {{ user.isActive === false ? 'Restore' : 'Suspend' }}
+          </ion-button>
+
+          <ion-button fill="outline" size="small" color="danger" (click)="deleteUser(user)">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            Delete
+          </ion-button>
+        </div>
+
+      </ion-card-content>
+    </ion-card>
+
+  </section>
+
+</ion-content>

@@ -79,19 +79,6 @@
                   (ionChange)="profileVoiceFacade.onAudioSettingChange()"></ion-toggle>
     </div>
 
-    <div class="setting-item" *ngIf="!profileVoiceFacade.audioSettings.useCustomVoice">
-      <div class="setting-info">
-        <label>Default Voice</label>
-        <p>Choose text-to-speech voice type</p>
-      </div>
-      <ion-select [(ngModel)]="profileVoiceFacade.audioSettings.defaultVoice"
-                  (ionChange)="profileVoiceFacade.onAudioSettingChange()"
-                  interface="popover">
-        <ion-select-option value="female">Female</ion-select-option>
-        <ion-select-option value="male">Male</ion-select-option>
-      </ion-select>
-    </div>
-
     <div class="setting-item">
       <div class="setting-info">
         <label>Speech Rate ({{ profileVoiceFacade.audioSettings.speechRate }}x)</label>
@@ -106,19 +93,20 @@
       </ion-range>
     </div>
 
-    <div class="setting-item">
-      <div class="setting-info">
-        <label>Volume ({{ (profileVoiceFacade.audioSettings.volume * 100).toFixed(0) }}%)</label>
-        <p>Audio playback volume</p>
-      </div>
-      <ion-range [(ngModel)]="profileVoiceFacade.audioSettings.volume"
-                (ionChange)="profileVoiceFacade.onAudioSettingChange()"
-                min="0"
-                max="1"
-                step="0.1"
-                pin="true">
-      </ion-range>
-    </div>
+<div class="setting-item">
+  <div class="setting-info">
+    <label>Volume ({{ (profileVoiceFacade.audioSettings.volume * 100).toFixed(0) }}%)</label>
+    <p>Audio playback volume</p>
+  </div>
+
+  <ion-range [(ngModel)]="profileVoiceFacade.audioSettings.volume"
+             (ionChange)="profileVoiceFacade.onAudioSettingChange()"
+             min="0"
+             max="1"
+             step="0.1"
+             pin="true">
+  </ion-range>
+</div>
 
     <ion-button (click)="testAudioSettings()"
                 expand="block"

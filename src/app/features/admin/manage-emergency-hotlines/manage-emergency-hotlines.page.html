@@ -1,0 +1,142 @@
+<ion-header>
+  <ion-toolbar class="toolbar--teal">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Emergency Hotlines</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="addHotline()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="loadHotlines()">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar class="search-toolbar">
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="filterHotlines()"
+      placeholder="Search by name or number..."
+      debounce="300">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="hotlines-bg">
+
+  <section class="hotlines-hero">
+    <h1>Emergency Hotlines</h1>
+    <p>Manage hotline contacts shown to users during emergencies.</p>
+  </section>
+
+  <!-- FILTER CHIPS -->
+  <div class="filter-row">
+    <ion-chip
+      [color]="activeFilter === 'all' ? 'primary' : 'medium'"
+      (click)="setFilter('all')">
+      All
+    </ion-chip>
+    <ion-chip
+      [color]="activeFilter === 'active' ? 'primary' : 'medium'"
+      (click)="setFilter('active')">
+      Active
+    </ion-chip>
+    <ion-chip
+      [color]="activeFilter === 'inactive' ? 'primary' : 'medium'"
+      (click)="setFilter('inactive')">
+      Inactive
+    </ion-chip>
+  </div>
+
+  <!-- LOADING -->
+  <div class="empty-state" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading hotlines...</p>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="empty-state" *ngIf="!isLoading && filtered.length === 0">
+    <ion-icon name="call-outline"></ion-icon>
+    <h2>No hotlines found</h2>
+    <p>Try adjusting your search or add a new hotline.</p>
+  </div>
+
+  <!-- HOTLINE LIST -->
+  <section class="hotline-list" *ngIf="!isLoading && filtered.length > 0">
+
+    <ion-card *ngFor="let hotline of filtered">
+      <ion-card-content>
+
+        <div class="hotline-header">
+          <div class="avatar">{{ getInitials(hotline.name) }}</div>
+          <div class="hotline-info">
+            <h2>{{ hotline.name }}</h2>
+            <p>{{ hotline.number }}</p>
+          </div>
+          <ion-badge [color]="hotline.isActive ? 'success' : 'medium'">
+            {{ hotline.isActive ? 'Active' : 'Inactive' }}
+          </ion-badge>
+        </div>
+
+        <div class="hotline-details">
+          <p>
+            <ion-icon name="call-outline"></ion-icon>
+            <strong>Number:</strong>&nbsp;{{ hotline.number }}
+          </p>
+          <p>
+            <ion-icon name="reorder-four-outline"></ion-icon>
+            <strong>Order:</strong>&nbsp;{{ hotline.order }}
+          </p>
+          <p>
+            <ion-icon
+              [name]="hotline.defaultEnabled ? 'star' : 'star-outline'"
+              [color]="hotline.defaultEnabled ? 'warning' : 'medium'">
+            </ion-icon>
+            <strong>Default:</strong>&nbsp;{{ hotline.defaultEnabled ? 'Enabled for all users' : 'Not default' }}
+          </p>
+        </div>
+
+        <div class="actions">
+          <ion-button fill="outline" size="small" (click)="editHotline(hotline)">
+            <ion-icon slot="start" name="create-outline"></ion-icon>
+            Edit
+          </ion-button>
+
+          <ion-button
+            fill="outline"
+            size="small"
+            [color]="hotline.isActive ? 'warning' : 'success'"
+            (click)="toggleActive(hotline)">
+            <ion-icon
+              slot="start"
+              [name]="hotline.isActive ? 'ban-outline' : 'checkmark-outline'">
+            </ion-icon>
+            {{ hotline.isActive ? 'Deactivate' : 'Activate' }}
+          </ion-button>
+
+          <ion-button
+            fill="outline"
+            size="small"
+            [color]="hotline.defaultEnabled ? 'medium' : 'tertiary'"
+            (click)="toggleDefaultEnabled(hotline)">
+            <ion-icon
+              slot="start"
+              [name]="hotline.defaultEnabled ? 'star-outline' : 'star'">
+            </ion-icon>
+            {{ hotline.defaultEnabled ? 'Unset Default' : 'Set Default' }}
+          </ion-button>
+
+          <ion-button fill="outline" size="small" color="danger" (click)="deleteHotline(hotline)">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            Delete
+          </ion-button>
+        </div>
+
+      </ion-card-content>
+    </ion-card>
+
+  </section>
+
+</ion-content>

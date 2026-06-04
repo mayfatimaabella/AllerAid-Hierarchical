@@ -39,7 +39,6 @@ const routes: Routes = [
     data: { roles: ['user'] }
   },
   {
-
     path: 'profile',
     loadChildren: () => import('./features/profile/profile.module').then( m => m.ProfilePageModule)
   },
@@ -49,13 +48,11 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-
     path: 'buddy',
     loadChildren: () => import('./features/buddy/buddy.module').then( m => m.BuddyPageModule),
     canActivate: [AuthGuard]
   },
   {
-
     path: 'allergy-onboarding',
     loadChildren: () => import('./features/auth/onboarding/allergy-onboarding/allergy-onboarding.module').then( m => m.AllergyOnboardingPageModule)
   },
@@ -125,16 +122,11 @@ const routes: Routes = [
     path: 'patients-doctor',
     loadChildren: () => import('./features/patients-doctor/patients-doctor.module').then(m => m.PatientsDoctorPageModule),
   },
-
   {
     path: 'admin-dashboard',
-    loadChildren: () =>import('./features/admin/admin-dashboard/admin-dashboard.module').then(m => m.AdminDashboardPageModule),
+    loadChildren: () => import('./features/admin/admin-dashboard/admin-dashboard.module').then(m => m.AdminDashboardPageModule),
     canActivate: [AuthGuard, adminGuard],
     data: { roles: ['admin'] }
-  },
-  {
-    path: 'emergency-logs',
-    loadChildren: () => import('./features/admin/emergency-logs/emergency-logs.module').then( m => m.EmergencyLogsPageModule)
   },
   {
     path: 'medication',
@@ -144,13 +136,8 @@ const routes: Routes = [
     path: 'doctor-profile',
     loadChildren: () => import('./features/doctor/doctor-profile/doctor-profile.module').then( m => m.DoctorProfilePageModule),
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['doctor', 'nurse'] }
-  }
-
-
-
-
-
+    data: { roles: ['doctor'] }
+  },
 ];
 
 @NgModule({

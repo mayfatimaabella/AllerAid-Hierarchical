@@ -49,9 +49,7 @@ export class RoleGuard implements CanActivate {
           'User role not set. Please complete your profile setup.'
         );
 
-        this.router.navigate([
-          '/profile'
-        ], {
+        this.router.navigate(['/profile'], {
           queryParams: {
             tab: 'settings',
             setup: 'role'
@@ -67,8 +65,11 @@ export class RoleGuard implements CanActivate {
         return true;
       }
 
-      const hasRequiredRole =
-        requiredRoles.includes(userProfile.role);
+      if (userProfile.role === 'admin') {
+        return true;
+      }
+
+      const hasRequiredRole = requiredRoles.includes(userProfile.role);
 
       if (hasRequiredRole) {
         return true;
@@ -78,22 +79,16 @@ export class RoleGuard implements CanActivate {
         `RoleGuard: User role '${userProfile.role}' not authorized for this page. Required: ${requiredRoles.join(', ')}`
       );
 
-      if (userProfile.role !== 'admin') {
-
-        await this.presentToast(
-          `Access denied. This feature requires ${requiredRoles.join(' or ')} privileges.`
-        );
-      }
+      await this.presentToast(
+        `Access denied. This feature requires ${requiredRoles.join(' or ')} privileges.`
+      );
 
       switch (userProfile.role) {
-
-        case 'admin':
-          this.router.navigate(['/admin-dashboard']);
-          break;
 
         case 'doctor':
           this.router.navigate(['/tabs/doctor-dashboard']);
           break;
+
 
         case 'user':
           this.router.navigate(['/tabs/home']);

@@ -1,20 +1,118 @@
+// ─── Page Background ───────────────────────────────────────────────────────────
 .logs-bg {
   --background: #f4faf8;
 }
 
+// ─── Toolbar ───────────────────────────────────────────────────────────────────
 .toolbar--teal {
   --background: #036a5d;
   --color: #ffffff;
+
+  ion-back-button {
+    --color: #ffffff;
+  }
+
+  ion-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
 }
 
+// ─── Hero Section ──────────────────────────────────────────────────────────────
 .logs-hero {
-  padding: 24px 18px 12px;
+  padding: 28px 20px 16px;
+  background: linear-gradient(135deg, #036a5d 0%, #04887a 100%);
+  color: #ffffff;
+  margin-bottom: 4px;
 
   h1 {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
-    color: #0f2a26;
-    margin-bottom: 6px;
+    color: #ffffff;
+    margin: 0 0 6px;
+    letter-spacing: -0.3px;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+// ─── Filter Tabs ───────────────────────────────────────────────────────────────
+.filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 14px 10px;
+  background: #f4faf8;
+
+  ion-button {
+    --border-radius: 20px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    height: 34px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+
+    ion-badge {
+      margin-left: 6px;
+      font-size: 10px;
+      min-width: 18px;
+      padding: 2px 5px;
+      border-radius: 10px;
+    }
+  }
+}
+
+// ─── Loading State ─────────────────────────────────────────────────────────────
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  gap: 16px;
+
+  ion-spinner {
+    width: 40px;
+    height: 40px;
+    color: #036a5d;
+  }
+
+  p {
+    color: #65827c;
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+// ─── Empty State ───────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 70px 32px;
+
+  ion-icon {
+    font-size: 64px;
+    color: #036a5d;
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #163632;
+    margin: 0 0 8px;
+    text-transform: capitalize;
   }
 
   p {
@@ -22,29 +120,169 @@
     font-size: 14px;
     line-height: 1.5;
     margin: 0;
+    max-width: 260px;
   }
 }
 
-.empty-state {
-  text-align: center;
-  padding: 70px 24px;
+// ─── Cards List ────────────────────────────────────────────────────────────────
+.logs-list {
+  padding: 8px 14px 32px;
 
-  ion-icon {
-    font-size: 64px;
-    color: #036a5d;
-    margin-bottom: 14px;
+  ion-card {
+    border-radius: 18px;
+    box-shadow: 0 2px 16px rgba(3, 106, 93, 0.09);
+    margin: 0 0 16px;
+    overflow: hidden;
+    background: #ffffff;
+
+    ion-card-content {
+      padding: 18px 16px;
+    }
+  }
+}
+
+// ─── Card Header ───────────────────────────────────────────────────────────────
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  gap: 8px;
+
+  div {
+    flex: 1;
+    min-width: 0;
+
+    h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f2a26;
+      margin: 0 0 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .reported-at {
+      font-size: 11px;
+      color: #65827c;
+      margin: 0;
+      letter-spacing: 0.1px;
+    }
   }
 
-  h2 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #163632;
-    margin-bottom: 8px;
+  ion-badge {
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    text-transform: capitalize;
+    font-weight: 600;
+    flex-shrink: 0;
+    letter-spacing: 0.2px;
   }
+}
+
+// ─── Card Details ──────────────────────────────────────────────────────────────
+.log-details {
+  background: #f0f7f5;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-left: 3px solid #036a5d;
 
   p {
-    color: #65827c;
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 13px;
+    color: #2e4e49;
+    margin: 0 0 9px;
+    line-height: 1.55;
+    display: flex;
+    gap: 6px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    strong {
+      color: #036a5d;
+      font-weight: 600;
+      flex-shrink: 0;
+      min-width: 90px;
+    }
+
+    span {
+      color: #2e4e49;
+      word-break: break-word;
+    }
+  }
+}
+
+// ─── Action Buttons ────────────────────────────────────────────────────────────
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+
+  ion-button {
+    --border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+    height: 40px;
+    letter-spacing: 0.2px;
+
+    &[color="warning"] {
+      --color: #ffffff;
+    }
+  }
+}
+
+// ─── Status Badge Colors ───────────────────────────────────────────────────────
+ion-badge {
+  &[color="danger"] {
+    --background: #ff4444;
+    --color: #ffffff;
+  }
+
+  &[color="warning"] {
+    --background: #ffcc00;
+    --color: #1a1a1a;
+  }
+
+  &[color="success"] {
+    --background: #2dd36f;
+    --color: #ffffff;
+  }
+
+  &[color="medium"] {
+    --background: #92949c;
+    --color: #ffffff;
+  }
+}
+
+// ─── Responsive ────────────────────────────────────────────────────────────────
+@media (min-width: 768px) {
+  .logs-list {
+    padding: 12px 24px 40px;
+
+    ion-card {
+      max-width: 680px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  .filter-tabs {
+    padding: 16px 24px 10px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .logs-hero {
+    padding: 36px 24px 20px;
+
+    h1 {
+      font-size: 30px;
+    }
   }
 }

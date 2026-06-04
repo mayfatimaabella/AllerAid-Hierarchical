@@ -12,8 +12,6 @@ import {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// initializeAuth once with persistence — falls back to getAuth()
-// if auth was already initialized (e.g. during hot reload)
 let auth: Auth;
 try {
   auth = initializeAuth(app, { persistence: indexedDBLocalPersistence });

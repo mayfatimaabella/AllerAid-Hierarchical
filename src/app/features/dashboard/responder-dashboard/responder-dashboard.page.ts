@@ -198,7 +198,7 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  async confirmHelpCompleted() {
+async confirmHelpCompleted() {
   const alert = await this.alertController.create({
     header: 'Emergency Resolved',
     subHeader: 'Patient Status Report',
@@ -226,30 +226,74 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       }
     ],
     buttons: [
-      { text: 'Cancel', role: 'cancel' },
       {
         text: 'Submit & Finish',
         cssClass: 'submit-button',
         handler: async (data) => {
-          // 'data' is the value of the selected radio button ('stable', 'needs_ems', or 'unconscious')
           if (this.currentEmergency?.id && data) {
-            // Pass the data to the service
-            await this.emergencyService.resolveEmergency(this.currentEmergency.id, data);
-            
-            this.currentEmergency = null;
-            this.hasResponded = false;
-            
-            const modal = await this.modalController.getTop();
-            if (modal) {
-              await modal.dismiss(null, 'completed');
-            } else {
-              await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
+            try {
+              const user = await this.authService.waitForAuthInit();
+
+              let responderId = '';
+              let responderName = 'Responder';
+
+              if (user) {
+                responderId = user.uid;
+
+                const userProfile = await this.userService.getUserProfile(user.uid);
+
+                responderName = userProfile
+                  ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() || 'Responder'
+                  : 'Responder';
+              }
+
+              await this.emergencyService.resolveEmergency(
+                this.currentEmergency.id,
+                data,
+                responderId,
+                responderName
+              );
+
+              this.currentEmergency = null;
+              this.hasResponded = false;
+
+              const toast = await this.toastController.create({
+                message: 'Emergency marked as resolved.',
+                duration: 2000,
+                color: 'success',
+                position: 'top'
+              });
+              await toast.present();
+
+              const modal = await this.modalController.getTop();
+
+              if (modal) {
+                await modal.dismiss(null, 'completed');
+              } else {
+                await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
+              }
+
+            } catch (error) {
+              console.error('Error resolving emergency:', error);
+
+              const errorAlert = await this.alertController.create({
+                header: 'Error',
+                message: 'Failed to resolve emergency. Please try again.',
+                buttons: ['OK']
+              });
+
+              await errorAlert.present();
             }
           }
         }
+      },
+      {
+        text: 'Cancel',
+        role: 'cancel'
       }
     ]
   });
+
   await alert.present();
 }
   private async setupRealTimeListeners() {

@@ -681,29 +681,41 @@ export class EmergencyService {
   /**
    * Mark an emergency as resolved
    */
-  async resolveEmergency(emergencyId: string, patientCondition?: string): Promise<void> {
-    try {
-      const emergencyRef = doc(this.db, 'emergencies', emergencyId);
+async resolveEmergency(
+  emergencyId: string,
+  patientCondition?: string,
+  resolvedBy?: string,
+  resolvedByName?: string
+): Promise<void> {
+  try {
+    const emergencyRef = doc(this.db, 'emergencies', emergencyId);
 
-      const updateData: any = {
-        status: 'resolved',
-        resolvedAt: Timestamp.now()
-      };
+    const updateData: any = {
+      status: 'resolved',
+      resolvedAt: Timestamp.now()
+    };
 
-      if (patientCondition !== undefined) {
-        updateData.patientCondition = patientCondition;
-      }
-
-      await updateDoc(emergencyRef, updateData);
-
-      // FIX #4: stopLocationTracking now stops both patient and responder watches.
-      this.stopLocationTracking();
-    } catch (error) {
-      console.error('Error resolving emergency:', error);
-      throw error;
+    if (patientCondition !== undefined) {
+      updateData.patientCondition = patientCondition;
     }
-  }
 
+    if (resolvedBy) {
+      updateData.resolvedBy = resolvedBy;
+    }
+
+    if (resolvedByName) {
+      updateData.resolvedByName = resolvedByName;
+    }
+
+    await updateDoc(emergencyRef, updateData);
+
+    await this.stopLocationTracking();
+
+  } catch (error) {
+    console.error('Error resolving emergency:', error);
+    throw error;
+  }
+}
   /**
    * Get active emergencies for a specific buddy
    */

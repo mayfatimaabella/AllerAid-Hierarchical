@@ -1,0 +1,126 @@
+<ion-header>
+  <ion-toolbar class="toolbar--teal">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Allergy Categories</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="addCategory()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="loadCategories()">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar class="search-toolbar">
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="filterCategories()"
+      placeholder="Search categories..."
+      debounce="300">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="categories-bg">
+
+  <section class="categories-hero" >
+    <h1>Allergy Categories</h1>
+    <p>Manage the categories used to group allergy options.</p>
+  </section>
+
+  <!-- FILTER CHIPS -->
+  <div class="filter-row">
+    <ion-chip
+      [color]="activeFilter === 'all' ? 'primary' : 'medium'"
+      (click)="setFilter('all')">
+      All
+    </ion-chip>
+    <ion-chip
+      [color]="activeFilter === 'active' ? 'primary' : 'medium'"
+      (click)="setFilter('active')">
+      Active
+    </ion-chip>
+    <ion-chip
+      [color]="activeFilter === 'inactive' ? 'primary' : 'medium'"
+      (click)="setFilter('inactive')">
+      Inactive
+    </ion-chip>
+  </div>
+
+  <!-- LOADING -->
+  <div class="empty-state" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading categories...</p>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="empty-state" *ngIf="!isLoading && filtered.length === 0">
+    <ion-icon name="pricetags-outline"></ion-icon>
+    <h2>No categories found</h2>
+    <p>Try adjusting your search or add a new category.</p>
+  </div>
+
+  <!-- CATEGORY LIST -->
+  <section class="category-list" *ngIf="!isLoading && filtered.length > 0">
+
+    <ion-card *ngFor="let category of filtered">
+      <ion-card-content>
+
+        <div class="category-header">
+          <div class="avatar">{{ getInitials(category.name) }}</div>
+          <div class="category-info">
+            <h2>{{ category.name }}</h2>
+            <p>Display order: {{ category.order }}</p>
+          </div>
+          <ion-badge [color]="category.active ? 'success' : 'medium'">
+            {{ category.active ? 'Active' : 'Inactive' }}
+          </ion-badge>
+        </div>
+
+        <div class="category-details">
+          <p>
+            <ion-icon
+              [name]="category.active ? 'checkmark-circle-outline' : 'ban-outline'"
+              [color]="category.active ? 'success' : 'medium'">
+            </ion-icon>
+            {{ category.active ? 'Visible to users' : 'Hidden from users' }}
+          </p>
+          <p>
+            <ion-icon name="reorder-four-outline"></ion-icon>
+            Order position: {{ category.order }}
+          </p>
+        </div>
+
+        <div class="actions">
+          <ion-button fill="outline" size="small" (click)="editCategory(category)">
+            <ion-icon slot="start" name="create-outline"></ion-icon>
+            Edit
+          </ion-button>
+
+          <ion-button
+            fill="outline"
+            size="small"
+            [color]="category.active ? 'warning' : 'success'"
+            (click)="toggleActive(category)">
+            <ion-icon
+              slot="start"
+              [name]="category.active ? 'ban-outline' : 'checkmark-outline'">
+            </ion-icon>
+            {{ category.active ? 'Deactivate' : 'Activate' }}
+          </ion-button>
+
+          <ion-button fill="outline" size="small" color="danger" (click)="deleteCategory(category)">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            Delete
+          </ion-button>
+        </div>
+
+      </ion-card-content>
+    </ion-card>
+
+  </section>
+
+</ion-content>

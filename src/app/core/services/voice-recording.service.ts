@@ -113,7 +113,6 @@ export class VoiceRecordingService {
       };
 
       this.mediaRecorder!.stop();
-      this.cleanup();
     });
   }
 

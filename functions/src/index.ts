@@ -1,11 +1,20 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import * as nodemailer from 'nodemailer';
 
 if (!admin.apps.length) {
   admin.initializeApp();
 }
 
 const db = admin.firestore();
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: functions.config().email.user,
+    pass: functions.config().email.pass
+  }
+});
 
 interface PushMessagePayload {
   title: string;
@@ -225,4 +234,44 @@ export const sendBuddyInvitationHttp = functions.region('us-central1').https.onR
     console.error('sendBuddyInvitationHttp error:', error);
     res.status(500).json({ success: false, message: error?.message || 'Error sending buddy invitation' });
   }
+
 });
+
+export const sendDoctorWelcomeEmail = functions
+  .region('us-central1')
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'User must be authenticated'
+      );
+    }
+
+    const { email, firstName } = data as {
+      email: string;
+      firstName?: string;
+    };
+
+    if (!email) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Email is required'
+      );
+    }
+
+    await transporter.sendMail({
+      from: `"AllerAid" <${functions.config().gmail.email}>`,
+      to: email,
+      subject: 'Thank you for registering with AllerAid',
+      html: `
+        <h2>Welcome to AllerAid, Dr. ${firstName || ''}!</h2>
+        <p>Thank you for registering as a doctor in AllerAid.</p>
+        <p>Your medical license has been submitted for admin verification.</p>
+        <p>You will be notified once your doctor account is approved.</p>
+        <br>
+        <p>Thank you,<br>AllerAid Team</p>
+      `,
+    });
+
+    return { success: true };
+  });
