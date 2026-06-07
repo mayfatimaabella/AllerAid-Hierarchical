@@ -24,7 +24,6 @@ export class PatientMapPage implements OnInit, OnDestroy {
   @ViewChild('map', { static: false }) mapElement!: ElementRef;
   
   startNavigation: () => void = () => {};
-  openExternalNavigation: () => void = () => {};
 
   emergencyId: string | null = null;
   responderName = 'Responder';
@@ -89,6 +88,11 @@ export class PatientMapPage implements OnInit, OnDestroy {
           this.patientLat = emergency.location.latitude;
           this.patientLng = emergency.location.longitude;
         }
+      console.log('Emergency tracking data:', {
+        emergencyId: emergency.id,
+        patientLocation: emergency.location,
+        responderLocation: emergency.responderLocation
+      });
 
         // Update responder location (critical for tracking)
         if (emergency.responderLocation) {
@@ -103,8 +107,17 @@ export class PatientMapPage implements OnInit, OnDestroy {
         );
 
         // Update distance and ETA if both locations are available
-        if (this.responderLat !== undefined && this.responderLng !== undefined) {
+        if (
+          typeof this.patientLat === 'number' &&
+          typeof this.patientLng === 'number' &&
+          typeof this.responderLat === 'number' &&
+          typeof this.responderLng === 'number'
+        ) {
           this.updateDistanceAndEta();
+
+          if (this.map) {
+            this.startNavigation();
+          }
         }
       });
 
@@ -189,6 +202,16 @@ export class PatientMapPage implements OnInit, OnDestroy {
         { latitude: this.responderLat, longitude: this.responderLng }
       );
 
+      if (
+    typeof this.patientLat === 'number' &&
+    typeof this.patientLng === 'number' &&
+    typeof this.responderLat === 'number' &&
+    typeof this.responderLng === 'number'
+  ) {
+    this.startNavigation();
+    this.updateDistanceAndEta();
+  }
+
       this.mapAvailable = true;
       console.log('Patient map initialized successfully');
     } catch (e) {
@@ -272,7 +295,7 @@ export class PatientMapPage implements OnInit, OnDestroy {
             patientLatLng
           ],
           routeWhileDragging: false,
-          show: true,
+          show: false,
           addWaypoints: false,
           draggableWaypoints: false,
           fitSelectedRoutes: true,
@@ -301,52 +324,57 @@ export class PatientMapPage implements OnInit, OnDestroy {
         console.warn('Leaflet routing not available');
       }
     };
-
-    this.openExternalNavigation = () => {
-      if (!this.patientMarker || !this.responderMarker) {
-        console.warn('Cannot open external navigation: missing patient or responder location');
-        return;
-      }
-
-      const responderLatLng = this.responderMarker.getLatLng();
-      const patientLatLng = this.patientMarker.getLatLng();
-
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${responderLatLng.lat},${responderLatLng.lng}&destination=${patientLatLng.lat},${patientLatLng.lng}&travelmode=driving`;
-      window.open(url, '_blank');
-    };
   }
 
-  private updateDistanceAndEta() {
-    // Calculate distance between responder and patient using Haversine formula
-    if (
-      typeof this.responderLat === 'number' && typeof this.responderLng === 'number' &&
-      typeof this.patientLat === 'number' && typeof this.patientLng === 'number'
-    ) {
-      const toRad = (value: number) => value * Math.PI / 180;
-      const R = 6371; // Earth radius in km
-      const dLat = toRad(this.patientLat - this.responderLat);
-      const dLng = toRad(this.patientLng - this.responderLng);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(this.responderLat)) * Math.cos(toRad(this.patientLat)) *
-        Math.sin(dLng / 2) * Math.sin(dLng / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c;
-      
-      this.responderDistance = `${distance.toFixed(2)} km`;
-      
-      // ETA calculation (assume average speed 40 km/h)
-      const speed = 40; // km/h
-      const etaMinutes = distance > 0 ? Math.ceil((distance / speed) * 60) : 0;
-      this.estimatedArrivalTime = etaMinutes > 0 ? `${etaMinutes} min` : 'Arriving now';
-      
-      console.log(`Responder Distance: ${this.responderDistance}, ETA: ${this.estimatedArrivalTime}`);
-    } else {
-      this.responderDistance = 'Locating...';
-      this.estimatedArrivalTime = 'Calculating...';
-    }
+private updateDistanceAndEta() {
+  if (
+    typeof this.responderLat === 'number' &&
+    typeof this.responderLng === 'number' &&
+    typeof this.patientLat === 'number' &&
+    typeof this.patientLng === 'number'
+  ) {
+    const toRad = (value: number) => value * Math.PI / 180;
+    const R = 6371;
+
+    const dLat = toRad(this.patientLat - this.responderLat);
+    const dLng = toRad(this.patientLng - this.responderLng);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(this.responderLat)) *
+      Math.cos(toRad(this.patientLat)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+
+    this.responderDistance = `${distance.toFixed(2)} km`;
+
+    const speed = 40;
+    const etaMinutes = distance > 0 ? Math.ceil((distance / speed) * 60) : 0;
+
+    this.estimatedArrivalTime =
+      etaMinutes > 0 ? `${etaMinutes} min` : 'Arriving now';
+
+    console.log('Distance calculated:', {
+      responderDistance: this.responderDistance,
+      estimatedArrivalTime: this.estimatedArrivalTime
+    });
+
+    return;
   }
 
+  console.warn('Cannot calculate distance yet:', {
+    patientLat: this.patientLat,
+    patientLng: this.patientLng,
+    responderLat: this.responderLat,
+    responderLng: this.responderLng
+  });
+
+  this.responderDistance = 'Waiting for responder location...';
+  this.estimatedArrivalTime = '';
+}
   async close() {
     const topModal = await this.modalController.getTop();
     if (topModal) {

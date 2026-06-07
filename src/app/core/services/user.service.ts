@@ -294,6 +294,68 @@ async getUserProfile(uid: string, useCache: boolean = true): Promise<UserProfile
     }
   }
 
+// Search approved doctors by name or email
+async searchApprovedDoctors(
+  searchTerm: string,
+  excludeUserId?: string
+): Promise<UserProfile[]> {
+
+  if (!searchTerm || searchTerm.trim().length < 2) {
+    return [];
+  }
+
+  try {
+    const searchTermLower = searchTerm.toLowerCase().trim();
+
+    const usersRef = collection(this.db, 'users');
+
+    const q = query(
+      usersRef,
+      where('role', '==', 'doctor'),
+      where('verificationStatus', '==', 'approved')
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const results: UserProfile[] = [];
+
+    querySnapshot.docs.forEach(docSnap => {
+      const user = docSnap.data() as UserProfile;
+
+      const userEmail = (user.email || '').toLowerCase();
+      const userFullName = (user.fullName || '').toLowerCase();
+      const userFirstName = (user.firstName || '').toLowerCase();
+      const userLastName = (user.lastName || '').toLowerCase();
+
+      // Exclude current user
+      if (
+        excludeUserId &&
+        (user.uid || docSnap.id) === excludeUserId
+      ) {
+        return;
+      }
+
+      if (
+        userEmail.includes(searchTermLower) ||
+        userFullName.includes(searchTermLower) ||
+        userFirstName.includes(searchTermLower) ||
+        userLastName.includes(searchTermLower)
+      ) {
+        results.push({
+          ...user,
+          uid: user.uid || docSnap.id
+        });
+      }
+    });
+
+    return results;
+
+  } catch (error) {
+    console.error('Error searching approved doctors:', error);
+    return [];
+  }
+}
+
       // Get all doctors for doctor visit selection
   async getDoctors(): Promise<(UserProfile & { specialty?: string })[]> {
     try {

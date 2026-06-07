@@ -14,21 +14,15 @@ import { DoctorInviteModalComponent } from '../components/doctor-invite-modal.co
 export class PatientsDoctorPage implements OnInit {
   showDetailsModal = false;
   doctorToShowDetails: any = null;
-  
-  // Loading states to prevent multiple calls
+
+  // Loading guards to prevent duplicate calls
   private isLoadingDoctors = false;
   private isLoadingInvitations = false;
 
-  showDoctorDetails(doctor: any) {
-    this.doctorToShowDetails = doctor;
-    this.showDetailsModal = true;
-  }
+  // FIX: currentUserId stored at init so deleteDoctor can pass it explicitly
+  // instead of relying on the removed localStorage fallback.
+  private currentUserId: string = '';
 
-  closeDetailsModal() {
-    this.showDetailsModal = false;
-    this.doctorToShowDetails = null;
-  }
-  
   doctors: any[] = [];
   filteredDoctors: any[] = [];
   searchTerm: string = '';
@@ -44,23 +38,41 @@ export class PatientsDoctorPage implements OnInit {
     private userService: UserService,
     private doctorService: DoctorService,
     private toastController: ToastController,
-    private modalController: ModalController,
+    private modalController: ModalController
   ) {}
 
   async ngOnInit() {
+    // Resolve and cache the current user id once so all actions use the same value.
+    const currentUser = await this.authService.waitForAuthInit();
+    if (currentUser) {
+      this.currentUserId = currentUser.uid;
+    }
+
     await this.loadInvitationCount();
-    this.loadDoctors();
+    await this.loadDoctors();
   }
+
+  // ─── Details modal ────────────────────────────────────────────────────────────
+
+  showDoctorDetails(doctor: any) {
+    this.doctorToShowDetails = doctor;
+    this.showDetailsModal = true;
+  }
+
+  closeDetailsModal() {
+    this.showDetailsModal = false;
+    this.doctorToShowDetails = null;
+  }
+
+  // ─── Data loading ─────────────────────────────────────────────────────────────
 
   async loadInvitationCount() {
     if (this.isLoadingInvitations) return;
     this.isLoadingInvitations = true;
-    
     try {
-      const currentUser = await this.authService.waitForAuthInit();
-      if (currentUser) {
-        const receivedInvitations = await this.doctorService.getReceivedInvitations(currentUser.uid);
-        this.invitationCount = receivedInvitations.length;
+      if (this.currentUserId) {
+        const received = await this.doctorService.getReceivedInvitations(this.currentUserId);
+        this.invitationCount = received.length;
       }
     } catch (error) {
       console.error('Error loading invitation count:', error);
@@ -73,15 +85,11 @@ export class PatientsDoctorPage implements OnInit {
   async loadDoctors() {
     if (this.isLoadingDoctors) return;
     this.isLoadingDoctors = true;
-    
     try {
-      const currentUser = await this.authService.waitForAuthInit();
-      
-      if (currentUser) {
-        this.doctors = await this.doctorService.getUserDoctors(currentUser.uid);
+      if (this.currentUserId) {
+        this.doctors = await this.doctorService.getUserDoctors(this.currentUserId);
         this.filteredDoctors = [...this.doctors];
       } else {
-        console.log('No current user found - redirecting to login');
         this.doctors = [];
         this.filteredDoctors = [];
       }
@@ -93,20 +101,23 @@ export class PatientsDoctorPage implements OnInit {
     }
   }
 
+  // ─── Search ───────────────────────────────────────────────────────────────────
+
   searchDoctor() {
     if (!this.searchTerm) {
       this.filteredDoctors = this.doctors;
       return;
     }
-
     const term = this.searchTerm.toLowerCase();
     this.filteredDoctors = this.doctors.filter(doctor =>
-      (doctor.firstName && doctor.firstName.toLowerCase().includes(term)) ||
-      (doctor.lastName && doctor.lastName.toLowerCase().includes(term)) ||
-      (doctor.email && doctor.email.toLowerCase().includes(term)) ||
-      (doctor.specialty && doctor.specialty.toLowerCase().includes(term))
+      (doctor.firstName  && doctor.firstName.toLowerCase().includes(term))  ||
+      (doctor.lastName   && doctor.lastName.toLowerCase().includes(term))   ||
+      (doctor.email      && doctor.email.toLowerCase().includes(term))      ||
+      (doctor.specialty  && doctor.specialty.toLowerCase().includes(term))
     );
   }
+
+  // ─── Actions modal ────────────────────────────────────────────────────────────
 
   openDoctorActions(doctor: any) {
     this.selectedDoctor = doctor;
@@ -118,15 +129,11 @@ export class PatientsDoctorPage implements OnInit {
     this.selectedDoctor = null;
   }
 
+  // ─── Edit ─────────────────────────────────────────────────────────────────────
+
   onEditDoctor(doctor: any) {
     this.doctorToEdit = doctor;
     this.showEditModal = true;
-    this.closeDoctorActions();
-  }
-
-  onDeleteDoctor(doctor: any) {
-    this.doctorToEdit = doctor;
-    this.showDeleteModal = true;
     this.closeDoctorActions();
   }
 
@@ -135,33 +142,45 @@ export class PatientsDoctorPage implements OnInit {
     this.doctorToEdit = null;
   }
 
-  closeDeleteModal() {
-    this.showDeleteModal = false;
-    this.doctorToEdit = null;
-  }
-
   async onSaveEditDoctor(updatedDoctor: any) {
     try {
       await this.showToast('Doctor information saved', 'success');
       this.closeEditModal();
-      this.loadDoctors();
+      await this.loadDoctors();
     } catch (error) {
       console.error('Error updating doctor:', error);
       await this.showToast('Error updating doctor', 'danger');
     }
   }
 
+  // ─── Delete ───────────────────────────────────────────────────────────────────
+
+  onDeleteDoctor(doctor: any) {
+    this.doctorToEdit = doctor;
+    this.showDeleteModal = true;
+    this.closeDoctorActions();
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.doctorToEdit = null;
+  }
+
   async onConfirmDeleteDoctor(doctor: any) {
     try {
-      await this.doctorService.deleteDoctor(doctor);
+      // FIX: was calling deleteDoctor(doctor) with 1 arg — the method now requires
+      // currentUserId explicitly so it no longer falls back to localStorage.
+      await this.doctorService.deleteDoctor(doctor, this.currentUserId);
       await this.showToast('Doctor removed successfully', 'success');
       this.closeDeleteModal();
-      this.loadDoctors();
+      await this.loadDoctors();
     } catch (error) {
       console.error('Error deleting doctor:', error);
       await this.showToast('Error removing doctor', 'danger');
     }
   }
+
+  // ─── Invitations modal ────────────────────────────────────────────────────────
 
   async openInvitationsModal() {
     const modal = await this.modalController.create({
@@ -170,13 +189,15 @@ export class PatientsDoctorPage implements OnInit {
       backdropDismiss: true
     });
     await modal.present();
-    
+
     const { data } = await modal.onDidDismiss();
     if (data) {
-      this.loadDoctors();
+      await this.loadDoctors();
       await this.loadInvitationCount();
     }
   }
+
+  // ─── Pull-to-refresh ──────────────────────────────────────────────────────────
 
   async handleRefresh(event: any) {
     try {
@@ -188,6 +209,8 @@ export class PatientsDoctorPage implements OnInit {
       event.detail.complete();
     }
   }
+
+  // ─── Toast ────────────────────────────────────────────────────────────────────
 
   private async showToast(message: string, color: string) {
     const toast = await this.toastController.create({

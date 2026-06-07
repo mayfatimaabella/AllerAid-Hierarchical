@@ -13,21 +13,23 @@ import { AuthService } from '../../../core/services/auth.service';
 export class DoctorInviteModalComponent implements OnInit {
 
   selectedSegment: 'invite' | 'received' | 'sent' = 'invite';
-  
+
   // Send invitation form
   inviteEmail: string = '';
-  inviteMessage: string = 'Hi! I would like you to be my healthcare provider on AllerAid. Please accept this invitation to manage my allergy information and emergency care.';
-  
+  inviteMessage: string =
+    'Hi! I would like you to be my healthcare provider on AllerAid. ' +
+    'Please accept this invitation to manage my allergy information and emergency care.';
+
   // Search functionality
   searchResults: any[] = [];
   selectedUser: any = null;
   isSearching: boolean = false;
   showSearchDropdown: boolean = false;
-  
-  // Invitations lists
+
+  // Invitation lists
   receivedInvitations: any[] = [];
   sentInvitations: any[] = [];
-  
+
   isLoading: boolean = false;
   currentUserId: string = '';
 
@@ -38,7 +40,7 @@ export class DoctorInviteModalComponent implements OnInit {
     private userService: UserService,
     private doctorService: DoctorService,
     private authService: AuthService
-  ) { }
+  ) {}
 
   async ngOnInit() {
     try {
@@ -61,7 +63,6 @@ export class DoctorInviteModalComponent implements OnInit {
         this.doctorService.getReceivedInvitations(this.currentUserId),
         this.doctorService.getSentInvitations(this.currentUserId)
       ]);
-
       this.receivedInvitations = received;
       this.sentInvitations = sent;
     } catch (error) {
@@ -71,7 +72,7 @@ export class DoctorInviteModalComponent implements OnInit {
   }
 
   onSegmentChange() {
-    // Data is already loaded, no need to reload on tab switch
+    // Data already loaded; nothing to do here.
   }
 
   async searchUsers(searchTerm: string) {
@@ -84,7 +85,7 @@ export class DoctorInviteModalComponent implements OnInit {
     this.isSearching = true;
     try {
       const currentUser = await this.userService.getCurrentUserProfile();
-      const results = await this.userService.searchUsers(searchTerm, currentUser?.uid);
+      const results = await this.userService.searchApprovedDoctors(searchTerm, currentUser?.uid);
       this.searchResults = results;
       this.showSearchDropdown = true;
     } catch (error) {
@@ -113,7 +114,22 @@ export class DoctorInviteModalComponent implements OnInit {
       const currentUser = await this.userService.getCurrentUserProfile();
       if (!currentUser) {
         this.showToast('You must be logged in to send invitations', 'danger');
-        this.isLoading = false;
+        return;
+      }
+
+      // Duplicate check before sending
+      const duplicateCheck = await this.doctorService.checkDuplicateDoctorByEmail(
+        currentUser.uid,
+        this.selectedUser.email
+      );
+
+      if (duplicateCheck.isDuplicate) {
+        const messages: Record<string, string> = {
+          existing_doctor: `${duplicateCheck.details?.name} is already your connected doctor.`,
+          pending_sent_invitation: `You already have a pending invitation sent to ${duplicateCheck.details?.name}.`,
+          pending_received_invitation: `You already have a pending invitation from ${duplicateCheck.details?.name}.`
+        };
+        this.showToast(messages[duplicateCheck.type] || 'Duplicate invitation.', 'warning');
         return;
       }
 
@@ -127,9 +143,9 @@ export class DoctorInviteModalComponent implements OnInit {
       this.showToast('Invitation sent successfully', 'success');
       this.resetForm();
       await this.loadInvitations();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending invitation:', error);
-      this.showToast('Error sending invitation', 'danger');
+      this.showToast(error?.message || 'Error sending invitation', 'danger');
     } finally {
       this.isLoading = false;
     }
@@ -140,18 +156,23 @@ export class DoctorInviteModalComponent implements OnInit {
     this.selectedUser = null;
     this.searchResults = [];
     this.showSearchDropdown = false;
-    this.inviteMessage = 'Hi! I would like you to be my healthcare provider on AllerAid. Please accept this invitation to manage my allergy information and emergency care.';
+    this.inviteMessage =
+      'Hi! I would like you to be my healthcare provider on AllerAid. ' +
+      'Please accept this invitation to manage my allergy information and emergency care.';
   }
 
   async acceptInvitation(invitation: any) {
     try {
       this.isLoading = true;
-      await this.doctorService.acceptDoctorInvitationWithUser(invitation.id, this.currentUserId);
+      await this.doctorService.acceptDoctorInvitationWithUser(
+        invitation.id,
+        this.currentUserId
+      );
       this.showToast('Invitation accepted', 'success');
       await this.loadInvitations();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error accepting invitation:', error);
-      this.showToast('Error accepting invitation', 'danger');
+      this.showToast(error?.message || 'Error accepting invitation', 'danger');
     } finally {
       this.isLoading = false;
     }
@@ -160,12 +181,15 @@ export class DoctorInviteModalComponent implements OnInit {
   async rejectInvitation(invitation: any) {
     try {
       this.isLoading = true;
-      await this.doctorService.declineDoctorInvitationWithUser(invitation.id, this.currentUserId);
-      this.showToast('Invitation rejected', 'success');
+      await this.doctorService.declineDoctorInvitationWithUser(
+        invitation.id,
+        this.currentUserId
+      );
+      this.showToast('Invitation declined', 'success');
       await this.loadInvitations();
-    } catch (error) {
-      console.error('Error rejecting invitation:', error);
-      this.showToast('Error rejecting invitation', 'danger');
+    } catch (error: any) {
+      console.error('Error declining invitation:', error);
+      this.showToast(error?.message || 'Error declining invitation', 'danger');
     } finally {
       this.isLoading = false;
     }
@@ -173,24 +197,24 @@ export class DoctorInviteModalComponent implements OnInit {
 
   async cancelInvitation(invitation: any) {
     const alert = await this.alertController.create({
-      header: 'Cancel Invitation',
+      header: 'Cancel invitation',
       message: 'Are you sure you want to cancel this invitation?',
       buttons: [
-        {
-          text: 'No',
-          role: 'cancel'
-        },
+        { text: 'No', role: 'cancel' },
         {
           text: 'Yes',
           handler: async () => {
             try {
               this.isLoading = true;
-              await this.doctorService.cancelDoctorInvitationWithUser(invitation.id, this.currentUserId);
+              await this.doctorService.cancelDoctorInvitationWithUser(
+                invitation.id,
+                this.currentUserId
+              );
               this.showToast('Invitation cancelled', 'success');
               await this.loadInvitations();
-            } catch (error) {
+            } catch (error: any) {
               console.error('Error cancelling invitation:', error);
-              this.showToast('Error cancelling invitation', 'danger');
+              this.showToast(error?.message || 'Error cancelling invitation', 'danger');
             } finally {
               this.isLoading = false;
             }
@@ -208,7 +232,7 @@ export class DoctorInviteModalComponent implements OnInit {
   private async showToast(message: string, color: string) {
     const toast = await this.toastController.create({
       message,
-      duration: 2000,
+      duration: 2500,
       color,
       position: 'bottom'
     });

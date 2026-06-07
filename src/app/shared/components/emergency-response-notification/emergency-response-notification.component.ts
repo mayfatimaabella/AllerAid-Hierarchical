@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-emergency-response-notification',
@@ -17,7 +16,6 @@ export class EmergencyResponseNotificationComponent implements OnInit, OnDestroy
   
   private audio: HTMLAudioElement | null = null;
   
-  constructor(private router: Router) {}
   
   ngOnInit() {
     this.playNotificationSound();

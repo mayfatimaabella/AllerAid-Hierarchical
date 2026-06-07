@@ -12,20 +12,20 @@ import { UserService } from '../../../core/services/user.service';
 })
 export class PatientInvitePage implements OnInit, OnDestroy {
   selectedSegment: 'invite' | 'received' | 'sent' = 'invite';
-  
+
   // Search functionality
   searchEmail: string = '';
   searchResults: any[] = [];
   selectedUser: any = null;
   isSearching: boolean = false;
   showSearchDropdown: boolean = false;
-  
+
   inviteMessage: string = '';
   isSubmitting: boolean = false;
   showSuccessMessage: boolean = false;
   currentUserId: string = '';
 
-  // Invitations lists
+  // Invitation lists
   receivedInvitations: DoctorInvitation[] = [];
   sentInvitations: DoctorInvitation[] = [];
 
@@ -92,38 +92,36 @@ export class PatientInvitePage implements OnInit, OnDestroy {
       const currentUser = await this.userService.getCurrentUserProfile();
       if (!currentUser) {
         await this.showToast('You must be logged in to send invitations', 'danger');
-        this.isSubmitting = false;
         return;
       }
 
-      const duplicateCheck = await this.doctorService.checkDuplicateDoctorByEmail(currentUser.uid, this.selectedUser.email.trim());
-      
+      const duplicateCheck = await this.doctorService.checkDuplicateDoctorByEmail(
+        currentUser.uid,
+        this.selectedUser.email.trim()
+      );
+
       if (duplicateCheck.isDuplicate) {
         let alertMessage = '';
-        let alertHeader = 'Duplicate Patient';
-        
         switch (duplicateCheck.type) {
           case 'existing_doctor':
             alertMessage = `You already have ${duplicateCheck.details?.name || 'this person'} as a patient.`;
             break;
           case 'pending_sent_invitation':
-            alertMessage = `You have already sent a patient invitation to ${duplicateCheck.details?.name || this.selectedUser.email}. Please wait for them to respond.`;
+            alertMessage = `You already sent a patient invitation to ${duplicateCheck.details?.name || this.selectedUser.email}. Please wait for them to respond.`;
             break;
           case 'pending_received_invitation':
-            alertMessage = `${duplicateCheck.details?.name || 'This person'} has already sent you a patient invitation. Please check your invitations.`;
+            alertMessage = `${duplicateCheck.details?.name || 'This person'} has already sent you an invitation. Please check your received invitations.`;
             break;
           default:
-            alertMessage = `This email is already associated with a patient relationship.`;
+            alertMessage = 'This email is already associated with a patient relationship.';
         }
 
         const alert = await this.alertController.create({
-          header: alertHeader,
+          header: 'Duplicate patient',
           message: alertMessage,
           buttons: ['OK']
         });
-        
         await alert.present();
-        this.isSubmitting = false;
         return;
       }
 
@@ -135,8 +133,7 @@ export class PatientInvitePage implements OnInit, OnDestroy {
 
       this.showSuccessMessage = true;
       await this.showToast('Invitation sent successfully!', 'success');
-      
-      // Clear form
+
       this.searchEmail = '';
       this.selectedUser = null;
       this.searchResults = [];
@@ -146,14 +143,12 @@ export class PatientInvitePage implements OnInit, OnDestroy {
       await this.loadInvitations();
       this.selectedSegment = 'sent';
 
-      setTimeout(() => {
-        this.showSuccessMessage = false;
-      }, 2500);
+      setTimeout(() => { this.showSuccessMessage = false; }, 2500);
 
     } catch (error) {
       console.error('Error sending invitation:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Error sending invitation. Please try again.';
-      await this.showToast(errorMessage, 'danger');
+      const msg = error instanceof Error ? error.message : 'Error sending invitation. Please try again.';
+      await this.showToast(msg, 'danger');
     } finally {
       this.isSubmitting = false;
     }
@@ -161,104 +156,92 @@ export class PatientInvitePage implements OnInit, OnDestroy {
 
   async acceptInvitation(invitationId: string) {
     const alert = await this.alertController.create({
-      header: 'Accept Patient Invitation',
+      header: 'Accept patient invitation',
       message: 'Are you sure you want to accept this patient invitation?',
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
+        { text: 'Cancel', role: 'cancel' },
         {
           text: 'Accept',
           handler: async () => {
             try {
-              const currentUser = await this.userService.getCurrentUserProfile();
-              if (!currentUser) {
-                throw new Error('No current user found');
-              }
-              
               const accepted = this.receivedInvitations.find(inv => inv.id === invitationId);
               const doctorName = accepted?.fromUserName || 'The doctor';
-
-              await this.doctorService.acceptDoctorInvitationWithUser(invitationId, currentUser.uid);
+              await this.doctorService.acceptDoctorInvitationWithUser(invitationId, this.currentUserId);
               this.showToast(`${doctorName} is now your healthcare provider!`, 'success');
               await this.loadInvitations();
             } catch (error) {
               console.error('Error accepting invitation:', error);
-              const errorMessage = error instanceof Error ? error.message : 'Error accepting invitation';
-              this.showToast(errorMessage, 'danger');
+              const msg = error instanceof Error ? error.message : 'Error accepting invitation';
+              this.showToast(msg, 'danger');
             }
           }
         }
       ]
     });
-
     await alert.present();
   }
 
   async declineInvitation(invitationId: string) {
     const alert = await this.alertController.create({
-      header: 'Decline Patient Invitation',
+      header: 'Decline patient invitation',
       message: 'Are you sure you want to decline this patient invitation?',
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
+        { text: 'Cancel', role: 'cancel' },
         {
           text: 'Decline',
           handler: async () => {
             try {
-              await this.doctorService.declineDoctorInvitation(invitationId);
+              // FIX: was calling the removed declineDoctorInvitation (localStorage-based).
+              // Now calls declineDoctorInvitationWithUser with explicit userId.
+              await this.doctorService.declineDoctorInvitationWithUser(invitationId, this.currentUserId);
               this.showToast('Invitation declined', 'medium');
               await this.loadInvitations();
             } catch (error) {
               console.error('Error declining invitation:', error);
-              this.showToast('Error declining invitation', 'danger');
+              const msg = error instanceof Error ? error.message : 'Error declining invitation';
+              this.showToast(msg, 'danger');
             }
           }
         }
       ]
     });
-
     await alert.present();
   }
 
   async cancelInvitation(invitationId: string) {
     const alert = await this.alertController.create({
-      header: 'Cancel Invitation',
+      header: 'Cancel invitation',
       message: 'Are you sure you want to cancel this invitation?',
       buttons: [
+        { text: 'No', role: 'cancel' },
         {
-          text: 'No',
-          role: 'cancel'
-        },
-        {
-          text: 'Cancel Invitation',
+          text: 'Cancel invitation',
           handler: async () => {
             try {
-              await this.doctorService.cancelDoctorInvitation(invitationId);
+              // FIX: was calling the removed cancelDoctorInvitation (localStorage-based).
+              // Now calls cancelDoctorInvitationWithUser with explicit userId.
+              await this.doctorService.cancelDoctorInvitationWithUser(invitationId, this.currentUserId);
               this.showToast('Invitation cancelled', 'medium');
               await this.loadInvitations();
             } catch (error) {
               console.error('Error cancelling invitation:', error);
-              this.showToast('Error cancelling invitation', 'danger');
+              const msg = error instanceof Error ? error.message : 'Error cancelling invitation';
+              this.showToast(msg, 'danger');
             }
           }
         }
       ]
     });
-
     await alert.present();
   }
 
   getInvitationStatusColor(status: string): string {
     switch (status) {
-      case 'pending': return 'warning';
-      case 'accepted': return 'success';
-      case 'declined': return 'danger';
+      case 'pending':   return 'warning';
+      case 'accepted':  return 'success';
+      case 'declined':  return 'danger';
       case 'cancelled': return 'medium';
-      default: return 'medium';
+      default:          return 'medium';
     }
   }
 
@@ -268,7 +251,7 @@ export class PatientInvitePage implements OnInit, OnDestroy {
 
   async searchForUsers(searchTerm: string) {
     this.searchEmail = searchTerm;
-    
+
     if (!searchTerm || searchTerm.trim().length < 2) {
       this.searchResults = [];
       this.showSearchDropdown = false;
@@ -304,12 +287,11 @@ export class PatientInvitePage implements OnInit, OnDestroy {
 
   async showToast(message: string, color: string = 'medium') {
     const toast = await this.toastController.create({
-      message: message,
+      message,
       duration: color === 'success' ? 3000 : 2500,
-      color: color,
-      position: 'top',
+      color,
+      position: 'top'
     });
     await toast.present();
   }
 }
-

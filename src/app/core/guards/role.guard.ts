@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot } from '@angular/router';
+import {
+  CanActivate,
+  Router,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot
+} from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { ToastController } from '@ionic/angular';
@@ -16,10 +21,11 @@ export class RoleGuard implements CanActivate {
     private toastController: ToastController
   ) {}
 
-  async canActivate(route: ActivatedRouteSnapshot): Promise<boolean> {
-
+  async canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Promise<boolean> {
     try {
-
       const user = await this.authService.waitForAuthInit();
 
       if (!user) {
@@ -32,22 +38,14 @@ export class RoleGuard implements CanActivate {
 
       if (!userProfile) {
         console.log('RoleGuard: User profile not found');
-
-        await this.presentToast(
-          'User profile not found. Redirecting to complete setup.'
-        );
-
+        await this.presentToast('User profile not found. Redirecting to complete setup.');
         this.router.navigate(['/registration']);
         return false;
       }
 
       if (!userProfile.role) {
-
         console.log('RoleGuard: User role is undefined');
-
-        await this.presentToast(
-          'User role not set. Please complete your profile setup.'
-        );
+        await this.presentToast('User role not set. Please complete your profile setup.');
 
         this.router.navigate(['/profile'], {
           queryParams: {
@@ -75,26 +73,34 @@ export class RoleGuard implements CanActivate {
         return true;
       }
 
-      console.log(
-        `RoleGuard: User role '${userProfile.role}' not authorized for this page. Required: ${requiredRoles.join(', ')}`
-      );
+      console.log('Blocked route URL:', state.url);
+      console.log('User role:', userProfile.role);
+      console.log('Required roles:', requiredRoles);
+
+      const roleNames = requiredRoles
+        .map(role => {
+          if (role === 'user') return 'patient/user';
+          if (role === 'buddy') return 'responder';
+          return role;
+        })
+        .join(' or ');
 
       await this.presentToast(
-        `Access denied. This feature requires ${requiredRoles.join(' or ')} privileges.`
+        `Access denied. This feature requires ${roleNames} privileges.`
       );
 
       switch (userProfile.role) {
-
         case 'doctor':
           this.router.navigate(['/tabs/doctor-dashboard']);
           break;
-
 
         case 'user':
           this.router.navigate(['/tabs/home']);
           break;
 
+
         default:
+          
           this.router.navigate(['/login']);
           break;
       }
@@ -102,21 +108,14 @@ export class RoleGuard implements CanActivate {
       return false;
 
     } catch (error) {
-
       console.error('RoleGuard error:', error);
-
-      await this.presentToast(
-        'Error checking permissions. Please try again.'
-      );
-
+      await this.presentToast('Error checking permissions. Please try again.');
       this.router.navigate(['/login']);
-
       return false;
     }
   }
 
   private async presentToast(message: string) {
-
     const toast = await this.toastController.create({
       message,
       duration: 4000,

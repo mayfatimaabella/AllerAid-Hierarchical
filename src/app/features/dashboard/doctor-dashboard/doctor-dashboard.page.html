@@ -1,20 +1,14 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Doctor Dashboard</ion-title>
+
     <ion-buttons slot="end">
-      <!-- Role Chip - Hide on mobile -->
-      <ion-chip 
-        color="primary"
-        class="role-chip">
+      <ion-chip color="primary" class="role-chip">
         <ion-icon name="medical-outline"></ion-icon>
         <ion-label>Doctor</ion-label>
       </ion-chip>
-      
-      <!-- User Menu -->
-      <ion-button 
-        fill="clear" 
-        (click)="openUserMenu($event)"
-        size="small">
+
+      <ion-button fill="clear" (click)="openUserMenu($event)" size="small">
         <ion-icon name="person-circle-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -22,45 +16,40 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Welcome Section -->
   <div class="welcome-section">
     <h2>Welcome, Dr. {{ doctorName }}</h2>
-    <p>Professional Dashboard - {{ patients.length }} Active Patients</p>
+    <p>EHR Access Dashboard - {{ patients.length }} Accessible Patient Record(s)</p>
   </div>
 
-  <!-- Statistics Cards -->
   <div class="stats-grid">
     <ion-card class="stat-card">
       <ion-card-content>
         <div class="stat-number">{{ stats.totalPatients }}</div>
-        <div class="stat-label">Total Patients</div>
+        <div class="stat-label">Accessible Patients</div>
       </ion-card-content>
     </ion-card>
 
-    <ion-card class="stat-card emergency">
+    <ion-card class="stat-card">
       <ion-card-content>
-        <div class="stat-number">{{ stats.activeEmergencies }}</div>
-        <div class="stat-label">Active Emergencies</div>
+        <div class="stat-number">{{ stats.grantedEhrAccess }}</div>
+        <div class="stat-label">Granted EHR Access</div>
       </ion-card-content>
     </ion-card>
   </div>
 
-  <!-- Filters and Search -->
   <div class="filters-section">
-    <ion-searchbar 
+    <ion-searchbar
       [(ngModel)]="searchTerm"
       (ionInput)="onSearchChange($event)"
-      placeholder="Search patients...">
+      placeholder="Search accessible patient records...">
     </ion-searchbar>
   </div>
 
-  <!-- Loading State -->
   <div *ngIf="loading" class="loading-section">
     <ion-spinner></ion-spinner>
-    <p>Loading patient data...</p>
+    <p>Loading patient records...</p>
   </div>
 
-  <!-- Patient List -->
   <div *ngIf="!loading && filteredPatients.length > 0" class="patients-list">
     <ion-card *ngFor="let patient of filteredPatients" class="patient-card">
       <ion-card-header>
@@ -73,64 +62,61 @@
       </ion-card-header>
 
       <ion-card-content>
-        <!-- Patient Summary -->
         <div class="patient-summary">
           <div class="summary-item">
             <ion-icon name="medical-outline"></ion-icon>
-            <span>{{ patient.primaryAllergies.join(', ') || 'No allergies recorded' }}</span>
+            <span>
+              {{ patient.primaryAllergies.length ? patient.primaryAllergies.join(', ') : 'No allergies recorded' }}
+            </span>
           </div>
-          
+
           <div class="summary-item" *ngIf="patient.lastVisit">
             <ion-icon name="time-outline"></ion-icon>
             <span>Last visit: {{ getTimeSinceLastVisit(patient.lastVisit) }}</span>
           </div>
-          
-          
+
           <div class="summary-item">
             <ion-icon name="documents-outline"></ion-icon>
-            <span>{{ patient.totalVisits }} visit(s)</span>
+            <span>{{ patient.totalVisits || 0 }} visit log(s)</span>
           </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="patient-actions">
-          <ion-button 
-            fill="outline" 
-            size="small" 
-            (click)="viewPatientAnalysis(patient)">
-            <ion-icon name="analytics-outline" slot="start"></ion-icon>
-            View Analysis
+          <ion-button fill="outline" size="small" (click)="viewPatientEhr(patient)">
+            <ion-icon name="folder-open-outline" slot="start"></ion-icon>
+            View EHR
           </ion-button>
-          
-          <ion-button 
-            fill="outline" 
-            size="small" 
-            (click)="addTreatmentOutcome(patient)">
-            <ion-icon name="medical-outline" slot="start"></ion-icon>
-            Add Treatment
+
+          <ion-button fill="outline" size="small" (click)="viewVisitLogs(patient)">
+            <ion-icon name="document-text-outline" slot="start"></ion-icon>
+            Visit Logs
           </ion-button>
-          
+
+          <ion-button fill="outline" size="small" (click)="viewMedications(patient)">
+            <ion-icon name="medkit-outline" slot="start"></ion-icon>
+            Medications
+          </ion-button>
         </div>
       </ion-card-content>
     </ion-card>
   </div>
 
-  <!-- Empty State -->
   <div *ngIf="!loading && filteredPatients.length === 0" class="empty-state">
     <ion-icon name="people-outline" class="empty-icon"></ion-icon>
-    <h3>No Patients Found</h3>
+    <h3>No Patient Records Found</h3>
+
     <p *ngIf="searchTerm">
-      Try adjusting your search criteria.
+      Try adjusting your search.
     </p>
+
     <p *ngIf="!searchTerm">
       No patients have granted you access to their medical records yet.
     </p>
   </div>
 
-  <!-- Floating Action Button - Invite Patient -->
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button routerLink="/doctor/patient-invite" color="primary">
-      <ion-icon name="add"></ion-icon>
+      <ion-icon name="person-add-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>

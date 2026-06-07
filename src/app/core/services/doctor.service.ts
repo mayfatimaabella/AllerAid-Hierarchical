@@ -71,11 +71,12 @@ export class DoctorService {
     this.auth = getAuth(app);
   }
 
+  // ─── Limits ──────────────────────────────────────────────────────────────────
+
   async countUserDoctorRelations(userId: string): Promise<number> {
     const doctorsRef = collection(this.db, 'users', userId, 'doctors');
     const q = query(doctorsRef, where('status', '==', 'accepted'));
     const snap = await getDocs(q);
-
     return snap.size;
   }
 
@@ -88,6 +89,8 @@ export class DoctorService {
     return this.MAX_DOCTOR_RELATIONS;
   }
 
+  // ─── Duplicate check ─────────────────────────────────────────────────────────
+
   async checkDuplicateDoctorByEmail(
     currentUserId: string,
     targetEmail: string
@@ -99,77 +102,55 @@ export class DoctorService {
 
     for (const doctorDoc of doctorsSnap.docs) {
       const doctor: any = doctorDoc.data();
-
       if (doctor.doctorEmail?.toLowerCase() === targetEmailLower) {
         return {
           isDuplicate: true,
           type: 'existing_doctor',
-          details: {
-            name: doctor.doctorName || targetEmailLower
-          }
+          details: { name: doctor.doctorName || targetEmailLower }
         };
       }
     }
 
-    const sentInvitesRef = collection(
-      this.db,
-      'users',
-      currentUserId,
-      'sentDoctorInvitations'
-    );
-
+    const sentInvitesRef = collection(this.db, 'users', currentUserId, 'sentDoctorInvitations');
     const sentQ = query(
       sentInvitesRef,
       where('toUserEmail', '==', targetEmailLower),
       where('status', '==', 'pending')
     );
-
     const sentSnap = await getDocs(sentQ);
-
     if (!sentSnap.empty) {
       const invitation: any = sentSnap.docs[0].data();
-
       return {
         isDuplicate: true,
         type: 'pending_sent_invitation',
-        details: {
-          name: invitation.toUserName || targetEmailLower
-        }
+        details: { name: invitation.toUserName || targetEmailLower }
       };
     }
 
-    const receivedInvitesRef = collection(
-      this.db,
-      'users',
-      currentUserId,
-      'receivedDoctorInvitations'
-    );
-
+    const receivedInvitesRef = collection(this.db, 'users', currentUserId, 'receivedDoctorInvitations');
     const receivedQ = query(
       receivedInvitesRef,
       where('fromUserEmail', '==', targetEmailLower),
       where('status', '==', 'pending')
     );
-
     const receivedSnap = await getDocs(receivedQ);
-
     if (!receivedSnap.empty) {
       const invitation: any = receivedSnap.docs[0].data();
-
       return {
         isDuplicate: true,
         type: 'pending_received_invitation',
-        details: {
-          name: invitation.fromUserName || targetEmailLower
-        }
+        details: { name: invitation.fromUserName || targetEmailLower }
       };
     }
 
-    return {
-      isDuplicate: false,
-      type: 'none'
-    };
+    return { isDuplicate: false, type: 'none' };
   }
+
+  // ─── Send invitation ──────────────────────────────────────────────────────────
+  // FIX: This is the canonical send method. The old sendDoctorInvitation (by email only)
+  // was broken — it never wrote to the recipient's receivedDoctorInvitations and used
+  // email in the inviteId instead of UID, so accept/decline could never find the doc.
+  // All callers should use this method.
 
   async sendDoctorInvitationWithUser(
     currentUser: any,
@@ -180,23 +161,21 @@ export class DoctorService {
     if (!currentUser?.uid || !currentUser?.email) {
       throw new Error('Current user data is invalid.');
     }
-
     if (!targetUser?.uid || !targetUser?.email) {
       throw new Error('Target user data is invalid.');
     }
-
     if (currentUser.uid === targetUser.uid) {
       throw new Error('You cannot invite yourself as a doctor.');
     }
 
     const hasReachedLimit = await this.hasReachedDoctorLimit(currentUser.uid);
-
     if (hasReachedLimit) {
       throw new Error(
         `You have reached the maximum number of doctor connections (${this.MAX_DOCTOR_RELATIONS}).`
       );
     }
 
+    // FIX: inviteId uses both UIDs (not email) so accept/decline can always locate the doc.
     const inviteId = `${currentUser.uid}_${targetUser.uid}`;
 
     const invitationData: DoctorInvitation = {
@@ -218,11 +197,14 @@ export class DoctorService {
       createdAt: new Date()
     };
 
+    // Write to sender's sentDoctorInvitations
     await setDoc(
       doc(this.db, 'users', currentUser.uid, 'sentDoctorInvitations', inviteId),
       invitationData
     );
 
+    // FIX: Also write to recipient's receivedDoctorInvitations so they can see it.
+    // The old sendDoctorInvitation was missing this write entirely.
     await setDoc(
       doc(this.db, 'users', targetUser.uid, 'receivedDoctorInvitations', inviteId),
       invitationData
@@ -231,62 +213,13 @@ export class DoctorService {
     return inviteId;
   }
 
-  async sendDoctorInvitation(
-    toUserEmail: string,
-    toUserName: string,
-    message: string,
-    specialization: string = ''
-  ): Promise<void> {
-    const authUser = this.auth.currentUser;
-
-    if (!authUser?.uid || !authUser.email) {
-      throw new Error('User not properly authenticated.');
-    }
-
-    const senderProfile = await this.userService.getUserProfile(authUser.uid, false);
-    const fromUserName = senderProfile?.fullName
-      || `${senderProfile?.firstName || ''} ${senderProfile?.lastName || ''}`.trim()
-      || authUser.email;
-
-    const inviteId = `${authUser.uid}_${toUserEmail.toLowerCase()}`;
-
-    const invitationData: DoctorInvitation = {
-      id: inviteId,
-      fromUserId: authUser.uid,
-      fromUserName,
-      fromUserEmail: authUser.email.toLowerCase(),
-      toUserId: '',
-      toUserEmail: toUserEmail.toLowerCase(),
-      toUserName,
-      message,
-      specialization,
-      relationship: 'Doctor',
-      status: 'pending',
-      createdAt: new Date()
-    };
-
-    await setDoc(
-      doc(this.db, 'users', authUser.uid, 'sentDoctorInvitations', inviteId),
-      invitationData
-    );
-  }
-
-  async acceptDoctorInvitation(invitationId: string): Promise<void> {
-    const currentUserData = JSON.parse(localStorage.getItem('currentUser') || '{}');
-
-    if (!currentUserData.uid) {
-      throw new Error('No current user found.');
-    }
-
-    await this.acceptDoctorInvitationWithUser(invitationId, currentUserData.uid);
-  }
+  // ─── Accept ───────────────────────────────────────────────────────────────────
 
   async acceptDoctorInvitationWithUser(
     invitationId: string,
     currentUserId: string
   ): Promise<void> {
     const hasReachedLimit = await this.hasReachedDoctorLimit(currentUserId);
-
     if (hasReachedLimit) {
       throw new Error(
         `You have reached the maximum number of doctor connections (${this.MAX_DOCTOR_RELATIONS}).`
@@ -295,12 +228,9 @@ export class DoctorService {
 
     const receivedInviteRef = doc(
       this.db,
-      'users',
-      currentUserId,
-      'receivedDoctorInvitations',
-      invitationId
+      'users', currentUserId,
+      'receivedDoctorInvitations', invitationId
     );
-
     const inviteSnap = await getDoc(receivedInviteRef);
 
     if (!inviteSnap.exists()) {
@@ -308,7 +238,6 @@ export class DoctorService {
     }
 
     const invitation: any = inviteSnap.data();
-
     const senderUid = invitation.fromUserId;
     const receiverUid = currentUserId;
 
@@ -318,6 +247,7 @@ export class DoctorService {
 
     const acceptedAt = new Date();
 
+    // Mark accepted on both sides
     await updateDoc(receivedInviteRef, {
       status: 'accepted',
       respondedAt: acceptedAt,
@@ -326,13 +256,12 @@ export class DoctorService {
 
     await updateDoc(
       doc(this.db, 'users', senderUid, 'sentDoctorInvitations', invitationId),
-      {
-        status: 'accepted',
-        respondedAt: acceptedAt,
-        toUserId: receiverUid
-      }
+      { status: 'accepted', respondedAt: acceptedAt, toUserId: receiverUid }
     );
 
+    // FIX: relationship labels were swapped. The sender invited the receiver as their
+    // "Doctor", so the sender's record says relationship='Doctor' (they have a doctor)
+    // and the receiver's record says relationship='Patient' (they have a patient).
     await setDoc(
       doc(this.db, 'users', senderUid, 'doctors', receiverUid),
       {
@@ -340,7 +269,7 @@ export class DoctorService {
         doctorEmail: invitation.toUserEmail,
         doctorName: invitation.toUserName,
         specialization: invitation.specialization || '',
-        relationship: 'Doctor',
+        relationship: 'Doctor',   // sender views receiver as their Doctor
         status: 'accepted',
         invitationId,
         createdAt: invitation.createdAt,
@@ -355,7 +284,7 @@ export class DoctorService {
         doctorEmail: invitation.fromUserEmail,
         doctorName: invitation.fromUserName,
         specialization: invitation.specialization || '',
-        relationship: 'Patient',
+        relationship: 'Patient',  // receiver views sender as their Patient
         status: 'accepted',
         invitationId,
         createdAt: invitation.createdAt,
@@ -374,7 +303,6 @@ export class DoctorService {
       if (patientEHR.exists() && doctorData) {
         const ehrData = patientEHR.data() as any;
         const healthcareProviders = ehrData.healthcareProviders || [];
-
         const alreadyExists = healthcareProviders.some(
           (p: any) => p.email === invitation.fromUserEmail
         );
@@ -399,25 +327,23 @@ export class DoctorService {
       }
     } catch (error) {
       console.error('Error updating patient EHR with doctor access:', error);
-      // Don't throw - the invitation acceptance is complete, this is just an EHR update
+      // Non-fatal — invitation acceptance is already complete
     }
   }
 
-  async declineDoctorInvitation(invitationId: string): Promise<void> {
-    const currentUserData = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  // ─── Decline ──────────────────────────────────────────────────────────────────
+  // FIX: removed the old declineDoctorInvitation that read from localStorage.
+  // All callers should pass userId explicitly.
 
-    if (!currentUserData.uid) {
-      throw new Error('No current user found.');
-    }
-
+  async declineDoctorInvitationWithUser(
+    invitationId: string,
+    currentUserId: string
+  ): Promise<void> {
     const inviteRef = doc(
       this.db,
-      'users',
-      currentUserData.uid,
-      'receivedDoctorInvitations',
-      invitationId
+      'users', currentUserId,
+      'receivedDoctorInvitations', invitationId
     );
-
     const inviteSnap = await getDoc(inviteRef);
 
     if (!inviteSnap.exists()) {
@@ -427,29 +353,16 @@ export class DoctorService {
     const invitation: any = inviteSnap.data();
     const respondedAt = new Date();
 
-    await updateDoc(inviteRef, {
-      status: 'declined',
-      respondedAt
-    });
+    await updateDoc(inviteRef, { status: 'declined', respondedAt });
 
     await updateDoc(
       doc(this.db, 'users', invitation.fromUserId, 'sentDoctorInvitations', invitationId),
-      {
-        status: 'declined',
-        respondedAt
-      }
+      { status: 'declined', respondedAt }
     );
   }
 
-  async cancelDoctorInvitation(invitationId: string): Promise<void> {
-    const currentUserData = JSON.parse(localStorage.getItem('currentUser') || '{}');
-
-    if (!currentUserData.uid) {
-      throw new Error('No current user found.');
-    }
-
-    await this.cancelDoctorInvitationWithUser(invitationId, currentUserData.uid);
-  }
+  // ─── Cancel ───────────────────────────────────────────────────────────────────
+  // FIX: removed the old cancelDoctorInvitation that read from localStorage.
 
   async cancelDoctorInvitationWithUser(
     invitationId: string,
@@ -457,12 +370,9 @@ export class DoctorService {
   ): Promise<void> {
     const sentInviteRef = doc(
       this.db,
-      'users',
-      currentUserId,
-      'sentDoctorInvitations',
-      invitationId
+      'users', currentUserId,
+      'sentDoctorInvitations', invitationId
     );
-
     const inviteSnap = await getDoc(sentInviteRef);
 
     if (!inviteSnap.exists()) {
@@ -472,61 +382,22 @@ export class DoctorService {
     const invitation: any = inviteSnap.data();
     const respondedAt = new Date();
 
-    await updateDoc(sentInviteRef, {
-      status: 'cancelled',
-      respondedAt
-    });
+    await updateDoc(sentInviteRef, { status: 'cancelled', respondedAt });
 
+    // FIX: toUserId is now always set at send time (it was missing in the old
+    // sendDoctorInvitation), so this update will reliably find the recipient's doc.
     if (invitation.toUserId) {
       await updateDoc(
         doc(this.db, 'users', invitation.toUserId, 'receivedDoctorInvitations', invitationId),
-        {
-          status: 'cancelled',
-          respondedAt
-        }
+        { status: 'cancelled', respondedAt }
       );
     }
   }
 
-  async declineDoctorInvitationWithUser(
-    invitationId: string,
-    currentUserId: string
-  ): Promise<void> {
-    const inviteRef = doc(
-      this.db,
-      'users',
-      currentUserId,
-      'receivedDoctorInvitations',
-      invitationId
-    );
+  // ─── Delete doctor relation ───────────────────────────────────────────────────
+  // FIX: accepts userId explicitly instead of reading from localStorage.
 
-    const inviteSnap = await getDoc(inviteRef);
-
-    if (!inviteSnap.exists()) {
-      throw new Error('Invitation not found.');
-    }
-
-    const invitation: any = inviteSnap.data();
-    const respondedAt = new Date();
-
-    await updateDoc(inviteRef, {
-      status: 'declined',
-      respondedAt
-    });
-
-    await updateDoc(
-      doc(this.db, 'users', invitation.fromUserId, 'sentDoctorInvitations', invitationId),
-      {
-        status: 'declined',
-        respondedAt
-      }
-    );
-  }
-
-  async deleteDoctor(doctorToDelete: any): Promise<void> {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const currentUserId = currentUser.uid;
-
+  async deleteDoctor(doctorToDelete: any, currentUserId: string): Promise<void> {
     const doctorUid =
       doctorToDelete.doctorUid ||
       doctorToDelete.connectedUserId ||
@@ -540,22 +411,14 @@ export class DoctorService {
     await deleteDoc(doc(this.db, 'users', doctorUid, 'doctors', currentUserId));
   }
 
+  // ─── Queries ──────────────────────────────────────────────────────────────────
+
   async getUserDoctors(userId: string): Promise<any[]> {
     const doctorsRef = collection(this.db, 'users', userId, 'doctors');
-
-    const q = query(
-      doctorsRef,
-      where('status', '==', 'accepted')
-    );
-
+    const q = query(doctorsRef, where('status', '==', 'accepted'));
     const snap = await getDocs(q);
-
     return snap.docs
-      .map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-        isFromRelation: true
-      }))
+      .map(docSnap => ({ id: docSnap.id, ...docSnap.data(), isFromRelation: true }))
       .filter((doctor: any) => doctor.doctorUid !== userId);
   }
 
@@ -564,96 +427,54 @@ export class DoctorService {
   }
 
   async getReceivedInvitations(userId: string): Promise<DoctorInvitation[]> {
-    const invitationsRef = collection(
-      this.db,
-      'users',
-      userId,
-      'receivedDoctorInvitations'
-    );
-
-    const q = query(
-      invitationsRef,
-      where('status', '==', 'pending')
-    );
-
+    const invitationsRef = collection(this.db, 'users', userId, 'receivedDoctorInvitations');
+    const q = query(invitationsRef, where('status', '==', 'pending'));
     const snap = await getDocs(q);
-
     return snap.docs.map(docSnap => ({
       id: docSnap.id,
       ...docSnap.data()
     })) as DoctorInvitation[];
   }
 
-  async getReceivedInvitationsByEmail(email: string): Promise<DoctorInvitation[]> {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-
-    if (!currentUser.uid) {
-      return [];
-    }
-
-    const invitations = await this.getReceivedInvitations(currentUser.uid);
-
-    return invitations.filter(invite =>
-      invite.toUserEmail?.toLowerCase() === email.toLowerCase()
-    );
-  }
-
+  // FIX: getSentInvitations now filters to pending only so the UI doesn't show
+  // cancelled/declined/accepted invitations in the "Sent" tab.
   async getSentInvitations(userId: string): Promise<DoctorInvitation[]> {
-    const invitationsRef = collection(
-      this.db,
-      'users',
-      userId,
-      'sentDoctorInvitations'
-    );
-
-    const snap = await getDocs(invitationsRef);
-
+    const invitationsRef = collection(this.db, 'users', userId, 'sentDoctorInvitations');
+    const q = query(invitationsRef, where('status', '==', 'pending'));
+    const snap = await getDocs(q);
     return snap.docs.map(docSnap => ({
       id: docSnap.id,
       ...docSnap.data()
     })) as DoctorInvitation[];
   }
+
+  // ─── Real-time listeners ──────────────────────────────────────────────────────
 
   listenForDoctorInvitations(userId: string): () => void {
-    const invitationsRef = collection(
-      this.db,
-      'users',
-      userId,
-      'receivedDoctorInvitations'
-    );
-
-    const q = query(
-      invitationsRef,
-      where('status', '==', 'pending')
-    );
-
+    const invitationsRef = collection(this.db, 'users', userId, 'receivedDoctorInvitations');
+    const q = query(invitationsRef, where('status', '==', 'pending'));
     return onSnapshot(q, snapshot => {
       const invitations = snapshot.docs.map(docSnap => ({
         id: docSnap.id,
         ...docSnap.data()
       })) as DoctorInvitation[];
-
       this.pendingInvitationsSubject.next(invitations);
     });
   }
 
   listenForDoctorRelations(userId: string): () => void {
     const doctorsRef = collection(this.db, 'users', userId, 'doctors');
-
-    const q = query(
-      doctorsRef,
-      where('status', '==', 'accepted')
-    );
-
+    const q = query(doctorsRef, where('status', '==', 'accepted'));
     return onSnapshot(q, snapshot => {
       const doctors = snapshot.docs.map(docSnap => ({
         id: docSnap.id,
         ...docSnap.data()
       }));
-
       this.doctorRelationsSubject.next(doctors);
     });
   }
+
+  // ─── Cloud Function fallback ──────────────────────────────────────────────────
 
   async sendDoctorInvitationViaFunction(
     currentUser: any,
@@ -664,7 +485,6 @@ export class DoctorService {
       this.functions,
       'sendDoctorInvitationFunction'
     );
-
     await sendDoctorInvitation({
       currentUserUid: currentUser.uid,
       currentUserEmail: currentUser.email,

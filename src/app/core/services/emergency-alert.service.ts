@@ -78,13 +78,31 @@ export class EmergencyAlertService {
 
       console.log('Sending full emergency via EmergencyService from', alertType, 'trigger');
 
+
+      let locationData: {
+        latitude: number;
+        longitude: number;
+      } | null = null;
+
+      try {
+        const position = await this.emergencyService.getCurrentLocation();
+
+        locationData = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        };
+      } catch (error) {
+        console.warn('Location unavailable for emergency trigger:', error);
+}
+
       // Delegate to the main emergency pipeline so behavior matches the red button
       await this.emergencyService.sendEmergencyAlert(
         currentUser.uid,
         userName,
         buddyIds,
         [],
-        resolvedInstruction
+        resolvedInstruction,
+        locationData
       );
 
       console.log('Emergency alert sent successfully via EmergencyService');

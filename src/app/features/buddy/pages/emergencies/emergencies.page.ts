@@ -6,16 +6,14 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController } from '@ionic/angular';
-import { ResponderMapPageModule } from '../../../emergency/responder-map/responder-map.module';
-import { ResponderMapPage } from '../../../emergency/responder-map/responder-map.page';
+import { IonicModule } from '@ionic/angular';
 
 @Component({
   selector: 'app-emergencies',
   templateUrl: './emergencies.page.html',
   styleUrls: ['./emergencies.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, ResponderMapPageModule]
+  imports: [CommonModule, FormsModule, IonicModule]
 })
 export class EmergenciesPage implements OnInit, OnDestroy {
   activeEmergencies: EmergencyAlert[] = [];
@@ -34,7 +32,6 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     private emergencyService: EmergencyService,
     private buddyService: BuddyService,
     private authService: AuthService,
-    private modalController: ModalController
   ) { }
 
   async ngOnInit() {
@@ -232,23 +229,16 @@ export class EmergenciesPage implements OnInit, OnDestroy {
   }
 
   async viewOnMap(emergency: EmergencyAlert) {
-    const modal = await this.modalController.create({
-      component: ResponderMapPage,
-      componentProps: {
-        responder: {
+    await this.router.navigate(['/tabs/responder-dashboard'], {
+      state: {
+        emergencyData: {
           emergencyId: emergency.id,
-          responderName: emergency.responderName || 'Buddy Response'
+          alert: emergency,
+          userName: emergency.userName
         }
-      },
-      cssClass: 'responder-map-modal',
-      initialBreakpoint: 0.95,
-      breakpoints: [0.12, 0.5, 0.75, 0.95],
-      handle: true,
-      handleBehavior: 'cycle'
+      }
     });
-    await modal.present();
   }
-
   callPatient(emergency: EmergencyAlert) {
     // Trigger phone call - would need patient phone number from emergency data
     console.log('Calling patient for emergency:', emergency.id);

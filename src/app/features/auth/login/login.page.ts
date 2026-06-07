@@ -90,6 +90,10 @@ export class LoginPage implements OnInit {
 
         this.presentToast('Login successful!', 'success', 2500, 'checkmark-circle-outline');
 
+        const top = await this.loadingController.getTop();
+          if (top) await top.dismiss();
+
+
         if (userProfile.role === 'admin') {
             this.navCtrl.navigateRoot('/admin-dashboard');
             return;

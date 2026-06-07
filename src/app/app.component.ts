@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { MenuController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { AllergyService } from './core/services/allergy.service';
 import { AuthService } from './core/services/auth.service';
 import { UserService } from './core/services/user.service';
-import { EmergencyDetectorService } from './core/services/emergency-detector.service';
 import { PatientNotificationService } from './core/services/patient-notification.service';
 import { MedicationReminderService } from './core/services/medication-reminder.service';
 import { PushNotificationService } from './core/services/push-notification.service';
@@ -20,11 +18,9 @@ export class AppComponent implements OnInit {
 
   constructor(
     private menuController: MenuController, 
-    private allergyService: AllergyService,
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
-    private emergencyDetectorService: EmergencyDetectorService,
     private patientNotificationService: PatientNotificationService,
     private pushNotificationService: PushNotificationService,
     private medicationReminderService: MedicationReminderService

@@ -29,10 +29,6 @@
         <ion-label>Emergencies</ion-label>
         <ion-badge *ngIf="emergencyCount > 0" color="danger">{{ emergencyCount }}</ion-badge>
       </ion-tab-button>
-      <!-- <ion-tab-button tab="patients" [routerLink]="['/tabs/patients']">
-        <ion-icon name="medical-outline"></ion-icon>
-        <ion-label>Patients</ion-label>
-      </ion-tab-button> -->
       <ion-tab-button tab="buddy" [routerLink]="['/tabs/buddy']">
         <ion-icon name="mail-outline"></ion-icon>
         <ion-label>Invitations</ion-label>
@@ -44,7 +40,7 @@
       </ion-tab-button>
     </ng-container>
 
-    <!-- Doctor/Nurse Tabs -->
+    <!-- Doctor Tabs -->
     <ng-container *ngIf="userRole === 'doctor'">
       <ion-tab-button tab="doctor-dashboard" [routerLink]="['/tabs/doctor-dashboard']">
         <ion-icon name="medical-outline"></ion-icon>

@@ -26,7 +26,8 @@ const routes: Routes = [
   },
   {
     path: 'home',
-    loadChildren: () => import('./features/dashboard/home-dashboard/home.module').then( m => m.HomePageModule)
+    loadChildren: () => import('./features/dashboard/home-dashboard/home.module').then( m => m.HomePageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'login',
@@ -40,7 +41,8 @@ const routes: Routes = [
   },
   {
     path: 'profile',
-    loadChildren: () => import('./features/profile/profile.module').then( m => m.ProfilePageModule)
+    loadChildren: () => import('./features/profile/profile.module').then( m => m.ProfilePageModule),
+    canActivate: [AuthGuard]
   },
   {
     path: 'tabs',
@@ -92,13 +94,13 @@ const routes: Routes = [
     path: 'doctor-dashboard',
     loadChildren: () => import('./features/dashboard/doctor-dashboard/doctor-dashboard.module').then( m => m.DoctorDashboardPageModule),
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['doctor', 'nurse'] }
+    data: { roles: ['doctor'] }
   },
   {
     path: 'doctor',
     loadChildren: () => import('./features/doctor/doctor.module').then(m => m.DoctorModule),
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['doctor', 'nurse'] }
+    data: { roles: ['doctor'] }
   },
   {
     path: 'visit-details/:id',
@@ -125,7 +127,7 @@ const routes: Routes = [
   {
     path: 'admin-dashboard',
     loadChildren: () => import('./features/admin/admin-dashboard/admin-dashboard.module').then(m => m.AdminDashboardPageModule),
-    canActivate: [AuthGuard, adminGuard],
+    canActivate: [adminGuard],
     data: { roles: ['admin'] }
   },
   {

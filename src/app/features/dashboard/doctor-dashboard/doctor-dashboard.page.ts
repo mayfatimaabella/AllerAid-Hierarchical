@@ -1,8 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { EHRService, DoctorPatient, AllergicReaction, TreatmentOutcome, AccessRequest } from '../../../core/services/ehr.service';
+import { EHRService, DoctorPatient } from '../../../core/services/ehr.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
-import { ToastController, ModalController, MenuController, PopoverController, AlertController } from '@ionic/angular';
+import {
+  ToastController,
+  ModalController,
+  MenuController,
+  PopoverController
+} from '@ionic/angular';
 import { PatientAnalysisModal } from '../../../shared/modals/patient-analysis.modal';
 import { Router } from '@angular/router';
 import { UserMenuPopover } from './user-menu-popover.component';
@@ -14,20 +19,18 @@ import { UserMenuPopover } from './user-menu-popover.component';
   standalone: false,
 })
 export class DoctorDashboardPage implements OnInit, OnDestroy {
+  doctorEmail = '';
+  doctorName = '';
 
-  doctorEmail: string = '';
-  doctorName: string = '';
   patients: DoctorPatient[] = [];
   filteredPatients: DoctorPatient[] = [];
-  
-  // Dashboard statistics
+
   stats = {
     totalPatients: 0,
-    activeEmergencies: 0
+    grantedEhrAccess: 0
   };
 
-  // Filters and search
-  searchTerm: string = '';
+  searchTerm = '';
   sortBy: 'name' | 'lastVisit' = 'name';
 
   loading = true;
@@ -40,31 +43,32 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
     private modalController: ModalController,
     private menuController: MenuController,
     private popoverController: PopoverController,
-    private router: Router,
-    private alertController: AlertController
-  ) { }
+    private router: Router
+  ) {}
 
   async ngOnInit() {
-    // Disable the side menu for professional dashboard
     await this.menuController.enable(false, 'first');
-    
+
     await this.loadDoctorInfo();
     await this.loadPatients();
   }
 
   async ngOnDestroy() {
-    // Re-enable the side menu when leaving the page
     await this.menuController.enable(true, 'first');
   }
 
   async loadDoctorInfo() {
     try {
       const currentUser = await this.authService.waitForAuthInit();
-      if (currentUser) {
-        const userProfile = await this.userService.getUserProfile(currentUser.uid);
-        this.doctorEmail = currentUser.email || '';
-        this.doctorName = userProfile?.fullName || 'Healthcare Provider';
+
+      if (!currentUser) {
+        return;
       }
+
+      const userProfile = await this.userService.getUserProfile(currentUser.uid);
+
+      this.doctorEmail = currentUser.email || '';
+      this.doctorName = userProfile?.fullName || 'Healthcare Provider';
     } catch (error) {
       console.error('Error loading doctor info:', error);
     }
@@ -73,117 +77,145 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
   async loadPatients() {
     try {
       this.loading = true;
+
       this.patients = await this.ehrService.getDoctorPatients(this.doctorEmail);
+
       this.calculateStats();
       this.filterPatients();
     } catch (error) {
       console.error('Error loading patients:', error);
-      this.presentToast('Error loading patient data');
+      await this.presentToast('Error loading patient records');
     } finally {
       this.loading = false;
     }
   }
 
-
-
   calculateStats() {
     this.stats.totalPatients = this.patients.length;
-    this.stats.activeEmergencies = this.patients.filter(p => p.riskLevel === 'critical').length;
+    this.stats.grantedEhrAccess = this.patients.length;
   }
 
   filterPatients() {
     let filtered = [...this.patients];
 
-    // Apply search filter
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.patientName.toLowerCase().includes(term) ||
-        p.patientEmail.toLowerCase().includes(term) ||
-        p.primaryAllergies.some(a => a.toLowerCase().includes(term))
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase().trim();
+
+      filtered = filtered.filter(patient =>
+        patient.patientName?.toLowerCase().includes(term) ||
+        patient.patientEmail?.toLowerCase().includes(term) ||
+        patient.primaryAllergies?.some(allergy =>
+          allergy.toLowerCase().includes(term)
+        )
       );
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
-      switch (this.sortBy) {
-        case 'name':
-          return a.patientName.localeCompare(b.patientName);
-        case 'lastVisit':
-          return new Date(b.lastVisit || 0).getTime() - new Date(a.lastVisit || 0).getTime();
-        default:
-          return 0;
+      if (this.sortBy === 'lastVisit') {
+        return (
+          new Date(b.lastVisit || 0).getTime() -
+          new Date(a.lastVisit || 0).getTime()
+        );
       }
+
+      return a.patientName.localeCompare(b.patientName);
     });
 
     this.filteredPatients = filtered;
   }
 
   onSearchChange(event: any) {
-    this.searchTerm = event.target.value;
+    this.searchTerm = event.detail.value || '';
     this.filterPatients();
   }
-
-
 
   onSortChange(event: any) {
-    this.sortBy = event.target.value;
+    this.sortBy = event.detail.value;
     this.filterPatients();
   }
 
-
-
-  async viewPatientAnalysis(patient: DoctorPatient) {
+  async viewPatientEhr(patient: DoctorPatient) {
     try {
       const analysis = await this.ehrService.getPatientAnalysis(patient.patientId);
-      
+
       const modal = await this.modalController.create({
         component: PatientAnalysisModal,
         componentProps: {
-          patient: patient,
-          analysis: analysis
+          patient,
+          analysis
         }
       });
 
       await modal.present();
     } catch (error) {
-      console.error('Error loading patient analysis:', error);
-      this.presentToast('Error loading patient analysis');
+      console.error('Error loading patient EHR:', error);
+      await this.presentToast('Error loading patient EHR');
     }
   }
 
-  async addTreatmentOutcome(patient: DoctorPatient) {
-    // This would open a modal for adding treatment outcomes
-    this.presentToast('Treatment outcome feature - to be implemented');
+  async viewVisitLogs(patient: DoctorPatient) {
+    try {
+      const analysis = await this.ehrService.getPatientAnalysis(patient.patientId);
+
+      const modal = await this.modalController.create({
+        component: PatientAnalysisModal,
+        componentProps: {
+          patient,
+          analysis,
+          selectedSection: 'visits'
+        }
+      });
+
+      await modal.present();
+    } catch (error) {
+      console.error('Error loading visit logs:', error);
+      await this.presentToast('Error loading visit logs');
+    }
+  }
+
+  async viewMedications(patient: DoctorPatient) {
+    try {
+      const analysis = await this.ehrService.getPatientAnalysis(patient.patientId);
+
+      const modal = await this.modalController.create({
+        component: PatientAnalysisModal,
+        componentProps: {
+          patient,
+          analysis,
+          selectedSection: 'medications'
+        }
+      });
+
+      await modal.present();
+    } catch (error) {
+      console.error('Error loading medications:', error);
+      await this.presentToast('Error loading medications');
+    }
   }
 
   getTimeSinceLastVisit(lastVisit?: string): string {
-    if (!lastVisit) return 'No visits';
-    
+    if (!lastVisit) {
+      return 'No visits';
+    }
+
     const visitDate = new Date(lastVisit);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - visitDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return '1 day ago';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} week(s) ago`;
-    return `${Math.floor(diffDays / 30)} month(s) ago`;
-  }
 
-  getNextAppointmentStatus(nextAppointment?: string): string {
-    if (!nextAppointment) return '';
-    
-    const appointmentDate = new Date(nextAppointment);
-    const now = new Date();
-    const diffTime = appointmentDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return 'Overdue';
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    if (diffDays < 7) return `In ${diffDays} days`;
-    return `In ${Math.floor(diffDays / 7)} week(s)`;
+    if (diffDays === 1) {
+      return '1 day ago';
+    }
+
+    if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    }
+
+    if (diffDays < 30) {
+      return `${Math.floor(diffDays / 7)} week(s) ago`;
+    }
+
+    return `${Math.floor(diffDays / 30)} month(s) ago`;
   }
 
   async presentToast(message: string) {
@@ -192,6 +224,7 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
       duration: 3000,
       position: 'bottom'
     });
+
     await toast.present();
   }
 
@@ -199,15 +232,10 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
     await this.loadPatients();
   }
 
-
-
-  /**
-   * Open professional user menu popover
-   */
   async openUserMenu(event: any) {
     const popover = await this.popoverController.create({
       component: UserMenuPopover,
-      event: event,
+      event,
       translucent: true,
       showBackdrop: true,
       componentProps: {
@@ -219,14 +247,12 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
     await popover.present();
 
     const { data } = await popover.onDidDismiss();
+
     if (data?.action === 'logout') {
       await this.logout();
     }
   }
 
-  /**
-   * Professional logout functionality
-   */
   async logout() {
     try {
       await this.authService.signOut();
@@ -237,13 +263,4 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
       await this.presentToast('Error logging out. Please try again.');
     }
   }
-
-
 }
-
-
-
-
-
-
-

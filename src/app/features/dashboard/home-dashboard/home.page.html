@@ -51,23 +51,24 @@
         </div>   
 
         <div *ngIf="showBuddyBanner" class="buddy-banner">
-      <div class="buddy-banner-content">
-        <ion-icon name="person-circle-outline" class="buddy-banner-icon"></ion-icon>
-        <div class="buddy-banner-text">
-          <p class="buddy-banner-title">You don't have a buddy yet</p>
-          <p class="buddy-banner-sub">
-            A buddy can alert someone instantly in an emergency.
-          </p>
-          <ion-button
-            size="small"
-            fill="solid"
-            color="warning"
-            [routerLink]="['/tabs/buddy']">
-            <ion-icon name="person-add-outline" slot="start"></ion-icon>
-            Add a buddy
-          </ion-button>
+
+        <div class="buddy-banner-content">
+          <ion-icon name="person-circle-outline" class="buddy-banner-icon"></ion-icon>
+          <div class="buddy-banner-text">
+            <p class="buddy-banner-title">You don't have a buddy yet</p>
+            <p class="buddy-banner-sub"> A buddy can alert someone instantly in an emergency.</p>
+
+            <ion-button
+              size="small"
+              fill="solid"
+              color="warning"
+              [routerLink]="['/tabs/buddy']">
+              <ion-icon name="person-add-outline" slot="start"></ion-icon>
+              Add a buddy
+            </ion-button>
+          </div>
         </div>
-      </div>
+
       <ion-button
         fill="clear"
         size="small"
@@ -103,7 +104,7 @@
     <ion-card *ngIf="isEmergencyActive" class="emergency-status-card">
       <ion-card-header>
         <ion-card-title class="emergency-title-row">
-          <ion-icon name="alert-circle" color="danger"></ion-icon>
+          <ion-icon name="alert-circle" color="danger"></ion-icon>  
           EMERGENCY ACTIVE
         </ion-card-title>
         <ion-card-subtitle>Started: {{ emergencyStartTime | date: 'short' }}</ion-card-subtitle>
@@ -126,8 +127,23 @@
             <div class="response-list">
               <div *ngFor="let buddyId of getObjectKeys(buddyResponses)" class="response-item">
                 <div class="buddy-info">
-                  <span class="buddy-name">{{ buddyResponses[buddyId].name }}</span>
-                  <div class="buddy-status">
+                <span class="buddy-name">{{ buddyResponses[buddyId].name }}</span>
+
+                <div class="buddy-response-message">
+                  <span *ngIf="buddyResponses[buddyId].status === 'cannot_respond'">
+                    {{ buddyResponses[buddyId].name }} declined the emergency alert.
+                  </span>
+
+                  <span *ngIf="buddyResponses[buddyId].status === 'responded'">
+                    {{ buddyResponses[buddyId].name }} is responding.
+                  </span>
+
+                  <span *ngIf="buddyResponses[buddyId].status === 'sent'">
+                    Waiting for {{ buddyResponses[buddyId].name }} to respond.
+                  </span>
+                </div>
+
+                <div class="buddy-status">
                     <ion-badge class="status-badge" [color]="getBuddyResponseColor(buddyId)">
                       {{ getBuddyResponseStatus(buddyId) }}
                     </ion-badge>

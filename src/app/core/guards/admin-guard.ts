@@ -12,7 +12,7 @@ export const adminGuard: CanActivateFn = async () => {
 
   try {
 
-    const currentUser = await authService.getCurrentUser();
+    const currentUser = await authService.waitForAuthInit();
 
     if (!currentUser) {
       router.navigate(['/login']);
@@ -25,7 +25,7 @@ export const adminGuard: CanActivateFn = async () => {
       return true;
     }
 
-    router.navigate(['/home']);
+    router.navigate(['tabs/home']);
     return false;
 
   } catch (error) {

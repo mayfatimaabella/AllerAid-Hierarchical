@@ -13,7 +13,7 @@ const routes: Routes = [
         path: 'home', 
         loadChildren: () => import('../../features/dashboard/home-dashboard/home.module').then(m => m.HomePageModule),
         canActivate: [RoleGuard],
-        data: { roles: ['user', 'buddy'] }
+        data: { roles: ['user'] }
       },
       {
         path: 'scan',
@@ -33,19 +33,20 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: ['user'] }
       },
+
+      {
+        path: 'patients-doctor',
+        loadChildren: () => import('../../features/patients-doctor/patients-doctor.module').then(m => m.PatientsDoctorPageModule),
+        canActivate: [RoleGuard],
+        data: { roles: ['user'] }
+      },
       
       // Buddy Routes
       {
         path: 'emergencies',
         loadChildren: () => import('../../features/buddy/pages/emergencies/emergencies.module').then(m => m.EmergenciesPageModule),
         canActivate: [RoleGuard],
-        data: { roles: ['buddy'] }
-      },
-      {
-        path: 'patients',
-        loadChildren: () => import('../../features/buddy/pages/patients/patients.module').then(m => m.PatientsPageModule),
-        canActivate: [RoleGuard],
-        data: { roles: ['buddy'] }
+        data: { roles: ['user', 'buddy'] }
       },
       
       // Doctor Routes
@@ -53,13 +54,7 @@ const routes: Routes = [
         path: 'doctor-dashboard',
         loadChildren: () => import('../../features/dashboard/doctor-dashboard/doctor-dashboard.module').then(m => m.DoctorDashboardPageModule),
         canActivate: [RoleGuard],
-        data: { roles: ['doctor', 'nurse'] }
-      },
-      {
-        path: 'smartwatch',
-        loadChildren: () => import('../../features/smartwatch/smartwatch.module').then(m => m.SmartwatchPageModule),
-        canActivate: [RoleGuard],
-        data: { roles: ['doctor', 'nurse'] }
+        data: { roles: ['doctor'] }
       },
       {
         path: 'responder-dashboard',
@@ -83,10 +78,10 @@ const routes: Routes = [
         path: 'doctor-profile',
         loadChildren: () => import('../../features/doctor/doctor-profile/doctor-profile.module').then(m => m.DoctorProfilePageModule),
         canActivate: [RoleGuard],
-        data: { roles: ['doctor', 'nurse'] }
+        data: { roles: ['doctor'] }
       },
       
-      // Shared Routes (Available to multiple roles)
+      // Shared Routes
       {
         path: 'alerts',
         loadChildren: () => import('../../features/buddy/pages/emergencies/emergencies.module').then(m => m.EmergenciesPageModule)
@@ -106,11 +101,6 @@ const routes: Routes = [
       {
         path: 'pollen-map',
         loadChildren: () => import('../../features/pollen-map/pollen-map.module').then(m => m.PollenMapPageModule)
-      },
-      {
-        path: '',
-        redirectTo: '/tabs/home',
-        pathMatch: 'full'
       }
     ]
   }
