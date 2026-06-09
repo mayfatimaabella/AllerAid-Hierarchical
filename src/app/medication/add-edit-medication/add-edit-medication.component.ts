@@ -3,26 +3,27 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ToastController, ActionSheetController } from '@ionic/angular';
 import { MedicationService, Medication } from 'src/app/core/services/medication.service';
 
-
 @Component({
   selector: 'app-add-edit-medication',
   templateUrl: './add-edit-medication.component.html',
   styleUrls: ['./add-edit-medication.component.scss'],
   standalone: false,
 })
-export class AddEditMedicationComponent  implements OnInit {
-medication?: Medication; 
+export class AddEditMedicationComponent implements OnInit {
+  medication?: Medication;
   isEditMode: boolean = false;
   prescriptionImage: string | null = null;
   todayISO: string = new Date().toISOString();
 
-  med: Medication = {
+  // Added strength field to the model
+  med: any = {
     name: '', brandName: '', dosage: '', frequency: '', quantity: 0,
-    refillsRemaining: 0, startDate: new Date().toISOString(), startTime: '', 
+    refillsRemaining: 0, startDate: new Date().toISOString(), startTime: '',
     medicineExpiryDate: new Date().toISOString(), notes: '', category: 'other',
-    isActive: true, pillsPerDose: null as any, intervalHours: null as any, 
-    durationDays: null as any, dosageUnit: 'tablet(s)', medicationType: 'tablet', 
-    expiryDate: new Date().toISOString(), status: 'Ongoing'
+    isActive: true, pillsPerDose: null as any, intervalHours: null as any,
+    durationDays: null as any, dosageUnit: 'mg', medicationType: 'tablet',
+    expiryDate: new Date().toISOString(), status: 'Ongoing',
+    strength: '' 
   };
 
   constructor(
@@ -34,7 +35,6 @@ medication?: Medication;
   ) {}
 
   ngOnInit() {
-    // Check if we're editing by looking for ID in route params
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.isEditMode = true;
@@ -45,19 +45,40 @@ medication?: Medication;
     });
   }
 
+  // Determines units based on selected medication type
+  public getAvailableUnits(): string[] {
+    const type = this.med.medicationType || 'tablet';
+    const unitMap: Record<string, string[]> = {
+      tablet: ['mg', 'mcg', 'g', 'IU'],
+      capsule: ['mg', 'mcg', 'g', 'IU'],
+      liquid: ['ml', 'tsp', 'tbsp', 'mg/ml', '%'],
+      injection: ['ml', 'mg/ml', 'IU/ml'],
+      inhaler: ['puffs', 'mcg', 'mg'],
+      drops: ['drops', 'ml', '%'],
+      cream: ['g', 'mg/g', '%'],
+      other: ['mg', 'mcg', 'g', 'ml', '%', 'IU', 'puffs', 'drops']
+    };
+    return unitMap[type] || unitMap['other'];
+  }
+
+  // Ensures unit selection is valid when type changes
+  public onTypeChange() {
+    const units = this.getAvailableUnits();
+    if (!units.includes(this.med.dosageUnit)) {
+      this.med.dosageUnit = units[0];
+    }
+    this.onDateOrIntervalChange();
+  }
+
   private async loadMedication(medicationId: string): Promise<void> {
     try {
       const meds = await this.medService.getUserMedications();
       this.medication = meds.find(m => m.id === medicationId);
-      
       if (this.medication) {
         this.med = { ...this.medication };
+        if (!this.med.strength) this.med.strength = '';
         if (this.med.startDate) this.med.startDate = new Date(this.med.startDate).toISOString();
-        
-        if (!this.med.startTime && this.med.startDate) {
-          this.extractStartTimeFromDate();
-        }
-        if (this.med.medicineExpiryDate) this.med.medicineExpiryDate = new Date(this.med.medicineExpiryDate).toISOString();
+        if (!this.med.startTime && this.med.startDate) this.extractStartTimeFromDate();
         if (this.medication.prescriptionImageUrl) this.prescriptionImage = this.medication.prescriptionImageUrl;
         this.onDateOrIntervalChange();
       }
@@ -70,49 +91,26 @@ medication?: Medication;
   private initializeNewMedication(): void {
     this.med.startDate = this.todayISO;
     this.med.medicineExpiryDate = this.todayISO;
-    
-    if (!this.med.startTime) {
-      this.extractStartTimeFromDate();
-    }
-    this.onDateOrIntervalChange();
-  }
-
-  public onTypeChange() {
-    const unitMap: Record<string, string> = {
-      tablet: 'tablet(s)', capsule: 'capsule(s)', liquid: 'ml',
-      injection: 'unit(s)', inhaler: 'puff(s)', drops: 'drop(s)',
-      cream: 'application(s)', other: 'dose(s)'
-    };
-    this.med.dosageUnit = unitMap[this.med.medicationType] || 'dose(s)';
+    this.extractStartTimeFromDate();
     this.onDateOrIntervalChange();
   }
 
   public onDateOrIntervalChange() {
-  if (this.med.startDate && this.med.durationDays != null) {
-    const selectedDate = new Date(this.med.startDate);
-    
-    // 1. Update the startTime property whenever the Date picker changes
-    this.med.startTime = selectedDate.toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      hour12: true 
-    });
-    
-    // 2. Existing logic for Expiry Date
-    const days = parseFloat(this.med.durationDays.toString()) || 0;
-    const end = new Date(selectedDate.getTime() + (days * 24 * 60 * 60 * 1000));
-    this.med.expiryDate = end.toISOString();
-
-    this.calculateTotalPills();
-    this.med.frequency = `${days} day(s) (${this.getIntervalLabel(Number(this.med.intervalHours) || 24)})`;
+    if (this.med.startDate && this.med.durationDays != null) {
+      const selectedDate = new Date(this.med.startDate);
+      this.med.startTime = selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      const days = parseFloat(this.med.durationDays.toString()) || 0;
+      const end = new Date(selectedDate.getTime() + (days * 24 * 60 * 60 * 1000));
+      this.med.expiryDate = end.toISOString();
+      this.calculateTotalPills();
+      this.med.frequency = `${days} day(s) (${this.getIntervalLabel(Number(this.med.intervalHours) || 24)})`;
+    }
   }
-}
 
   private calculateTotalPills() {
     const interval = Number(this.med.intervalHours) || 24;
     const duration = parseFloat(this.med.durationDays?.toString() || '0');
     const perDose = Number(this.med.pillsPerDose) || 0;
-
     if (interval > 0 && duration >= 0 && perDose > 0) {
       this.med.quantity = Math.ceil((24 / interval) * duration * perDose);
     }
@@ -123,6 +121,7 @@ medication?: Medication;
       this.med.name?.trim() &&
       this.med.brandName?.trim() &&
       Number(this.med.pillsPerDose) > 0 &&
+      this.med.strength?.trim() &&
       this.med.dosageUnit &&
       Number(this.med.durationDays) >= 0 &&
       (Number(this.med.intervalHours) || 0) > 0
@@ -132,43 +131,11 @@ medication?: Medication;
   public async saveMedication() {
     if (!this.isFormValid) return;
 
-    this.med.dosage = `${this.med.pillsPerDose} ${this.med.dosageUnit}`;
-    
-    // FIX: Only overwrite if it was left empty by the user input
-    if (!this.med.startTime) {
-      this.extractStartTimeFromDate();
-    }
-    
-    if (!this.med.notes || this.med.notes.trim() === '') {
-      this.med.notes = '';
-    }
+    // Merge strength into dosage for backend compatibility
+    this.med.dosage = `${this.med.pillsPerDose} ${this.med.dosageUnit} (${this.med.strength})`;
 
-    // Calculate and store reminderTimes based on startTime and intervalHours
-    if (this.med.startTime && this.med.intervalHours) {
-      this.med.reminderTimes = this.calculateReminderTimes();
-    }
-
-    if (!this.isEditMode) {
-      // --- CORRECTED SYSTEM DEDUCTION LOGIC ---
-      const now = new Date().getTime();
-      const start = new Date(this.med.startDate).getTime();
-      const intervalHrs = Number(this.med.intervalHours) || 24;
-      
-      const timePassed = now - start;
-      const intervalMs = intervalHrs * 3600000;
-
-      let consumedAmount = 0;
-
-      if (timePassed >= 0) {
-        // Uses a 1-minute buffer window (60000ms) so that an exact current interval 
-        // match counts as an active present task rather than an auto-deducted past dose.
-        const intervalsPassed = Math.floor(Math.max(0, (timePassed - 60000) / intervalMs));
-        consumedAmount = (1 + intervalsPassed) * Number(this.med.pillsPerDose);
-      }
-
-      this.med.refillsRemaining = Math.max(0, Number(this.med.quantity) - consumedAmount);
-      this.med.status = 'Ongoing'; 
-    }
+    if (!this.med.startTime) this.extractStartTimeFromDate();
+    if (this.med.startTime && this.med.intervalHours) this.med.reminderTimes = this.calculateReminderTimes();
 
     try {
       const cleanMed = JSON.parse(JSON.stringify(this.med));
@@ -178,51 +145,31 @@ medication?: Medication;
       } else {
         await this.medService.addMedication(cleanMed, this.prescriptionImage || undefined);
       }
-      this.showToast(this.isEditMode ? 'Medication updated successfully!' : 'Medication added successfully!', 'success');
+      this.showToast(this.isEditMode ? 'Updated successfully!' : 'Saved successfully!', 'success');
       this.router.navigate(['/medication']);
     } catch (error) {
-      console.error("DEBUG: Firestore Rejection:", error);
-      this.showToast('Error saving: Check console for error details.', 'danger');
+      this.showToast('Error saving medication.', 'danger');
     }
   }
 
-  /**
-   * Calculate reminder times based on start time and interval hours
-   */
   private calculateReminderTimes(): string[] {
     if (!this.med.startTime || !this.med.intervalHours) return [];
-
     const times: string[] = [];
     const [startHour, startMin] = this.med.startTime.split(':').map(Number);
     const intervalMs = Number(this.med.intervalHours) * 60 * 60 * 1000;
-    
     let currentTime = new Date();
     currentTime.setHours(startHour, startMin, 0, 0);
-    
-    // Generate up to 5 reminder times (or until end of day)
     for (let i = 0; i < 5; i++) {
-      if (currentTime.getHours() >= 24) break; // Stop if past midnight
+      if (currentTime.getHours() >= 24) break;
       times.push(`${String(currentTime.getHours()).padStart(2, '0')}:${String(currentTime.getMinutes()).padStart(2, '0')}`);
       currentTime.setTime(currentTime.getTime() + intervalMs);
     }
-    
     return times;
   }
 
-  public getStatusLabel(): string {
-    if (this.medService.isExpired && this.medService.isExpired(this.med)) return 'Expired';
-    if ((this.med.refillsRemaining || 0) <= 0) return 'Completed';
-    return this.med.status || 'Ongoing';
-  }
-
-  public getStatusColor(): string {
-    const label = this.getStatusLabel();
-    return label === 'Completed' ? 'primary' : label === 'Expired' ? 'danger' : 'success';
-  }
-
   public get amountLabel(): string {
-    const types: any = { liquid: 'Amount (ml)', injection: 'Dose/Units', inhaler: 'Puffs', drops: 'Drops', cream: 'Application' };
-    return types[this.med.medicationType] || 'Pills Per Dose';
+    const types: any = { liquid: 'How many?', injection: 'How many?', inhaler: 'How many?', drops: 'How many?', cream: 'How many?' };
+    return types[this.med.medicationType] || 'How many?';
   }
 
   public getIntervalLabel(hours: number): string {
@@ -256,18 +203,11 @@ medication?: Medication;
 
   public removePrescriptionImage() { this.prescriptionImage = null; this.med.prescriptionImageUrl = undefined; }
   public dismiss() { this.router.navigate(['/tabs/medication']); }
-  
   private extractStartTimeFromDate() { 
     this.med.startTime = new Date(this.med.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }); 
   }
-  
   private async showToast(message: string, color: string = 'dark') {
-    const toast = await this.toastController.create({
-      message: message,
-      duration: 2000,
-      position: 'bottom',
-      color: color
-    });
+    const toast = await this.toastController.create({ message, duration: 2000, position: 'bottom', color });
     await toast.present();
   }
 }
