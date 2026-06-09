@@ -44,9 +44,10 @@ export class MedicalService {
     }
   }
 
-  /**
-   * Get the full medical/info document for a user.
+  /*
+   Get the full medical/info document for a user.
    */
+
   async getEmergencyInstruction(uid: string): Promise<any> {
     try {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);
@@ -58,7 +59,7 @@ export class MedicalService {
     }
   }
 
-  /**
+  /*
    * Update emergency message details.
    * Writes to medical/info.emergencyMessage.
    */
@@ -77,12 +78,10 @@ export class MedicalService {
     }
   }
 
-  /**
+  /*
    * Add or update the per-allergy emergency instruction.
-   * Canonical path: medical/info.allergyEmergencyInstructions[] (root array — NOT nested
-   * under emergencySettings). This replaces the old
-   * emergencySettings.emergencyInstructions write path.
    */
+
   async setEmergencyInstructionForAllergy(
     uid: string,
     allergyId: string,
@@ -97,11 +96,10 @@ export class MedicalService {
 
       if (userDoc.exists()) {
         const data = userDoc.data();
-        // Read from canonical root path only.
+        
         allergyEmergencyInstructions = data['allergyEmergencyInstructions'] ?? [];
       }
 
-      // Replace the entry for this allergy (upsert by allergyId)
       allergyEmergencyInstructions = allergyEmergencyInstructions.filter(
         ei => ei.allergyId !== allergyId
       );
@@ -183,7 +181,6 @@ export class MedicalService {
 
   /**
    * Get all emergency-relevant data for alert display.
-   * Reads from canonical paths only — no more emergencySettings fallback.
    */
   async getEmergencyData(uid: string): Promise<any> {
     try {

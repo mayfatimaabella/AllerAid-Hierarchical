@@ -43,7 +43,7 @@ export class EmergencyAlertService {
    */
   async triggerEmergencyAlert(alertType: 'shake' | 'power-button' | 'manual' = 'manual'): Promise<void> {
     try {
-      // Get current user
+
       const currentUser = await this.authService.waitForAuthInit();
       if (!currentUser) {
         throw new Error('No authenticated user found');
@@ -51,7 +51,6 @@ export class EmergencyAlertService {
 
       console.log(`Triggering ${alertType} emergency alert for user:`, currentUser.uid);
 
-      // Load latest profile for name and instructions
       const userProfile = await this.userService.getUserProfile(currentUser.uid);
 
       const fullNameParts: string[] = [];
@@ -64,7 +63,6 @@ export class EmergencyAlertService {
       const medicalData = await this.medicalService.getEmergencyData(currentUser.uid);
       const resolvedInstruction = medicalData?.emergencyInstruction?.trim() || '';
 
-      // Get patient's buddies and extract unique connected user IDs
       const buddies = await this.buddyService.getUserBuddies(currentUser.uid);
       const buddyIds = Array.from(new Set(
         buddies
@@ -73,7 +71,7 @@ export class EmergencyAlertService {
       ));
 
       if (buddyIds.length === 0) {
-        console.warn('No emergency buddies configured. Creating emergency without buddy recipients (hotline-only fallback).');
+        console.warn('No emergency buddies configured. Creating emergency without buddy recipients.');
       }
 
       console.log('Sending full emergency via EmergencyService from', alertType, 'trigger');
@@ -95,7 +93,6 @@ export class EmergencyAlertService {
         console.warn('Location unavailable for emergency trigger:', error);
 }
 
-      // Delegate to the main emergency pipeline so behavior matches the red button
       await this.emergencyService.sendEmergencyAlert(
         currentUser.uid,
         userName,
@@ -134,7 +131,7 @@ export class EmergencyAlertService {
         },
         (error) => {
           console.warn('Error getting location:', error);
-          resolve(null); // Don't fail the alert if location fails
+          resolve(null);
         },
         { timeout: 10000, enableHighAccuracy: true }
       );
@@ -146,8 +143,7 @@ export class EmergencyAlertService {
    */
   private async sendEmergencyNotification(buddy: any, alertMessage: string, location?: any): Promise<void> {
     try {
-      // Here you would integrate with your notification service
-      // For now, we'll log the notification
+
       console.log(`Sending emergency notification to buddy ${buddy.name}:`, alertMessage);
       
     } catch (error) {
@@ -166,7 +162,7 @@ export class EmergencyAlertService {
     buddies: any[]
   ): Promise<void> {
     try {
-      // Here you would save the alert to a dedicated emergency alerts collection
+
       const alertLog = {
         uid,
         alertType,
@@ -178,7 +174,7 @@ export class EmergencyAlertService {
       };
       
       console.log('Emergency alert logged:', alertLog);
-      // TODO: Save to Firestore emergency alerts collection
+
       
     } catch (error) {
       console.error('Error logging emergency alert:', error);
@@ -194,7 +190,6 @@ export class EmergencyAlertService {
     let display = `<div class="emergency-instruction-box">`;
     display += `<h3>Emergency Instructions for ${name}</h3>`;
     
-    // Use structured emergency instructions if available
     if (emergencyInstructions && emergencyInstructions.length > 0) {
       display += `<div class="emergency-instructions-list">`;
       emergencyInstructions.forEach((instruction: any) => {
@@ -204,7 +199,7 @@ export class EmergencyAlertService {
       });
       display += `</div>`;
     }
-    // Fallback to legacy single instruction
+
     else if (generalInstruction) {
       if (allergies && allergies !== 'None') {
         display += `<p><strong>Allergies:</strong> ${allergies}</p>`;
@@ -212,7 +207,6 @@ export class EmergencyAlertService {
       display += `<p><strong>Instructions:</strong> ${generalInstruction}</p>`;
     }
 
-    // Basic fallback
     else {
       display += `<p><strong>Instructions:</strong> Use EpiPen immediately if available. Call 911.</p>`;
     }
@@ -222,11 +216,11 @@ export class EmergencyAlertService {
   }
 
   /**
-   * Play audio emergency instructions (if available and enabled)
+   * Play audio emergency instructions
    */
   async playAudioInstructions(emergencyData: any): Promise<void> {
     try {
-      // Check if audio instructions are enabled for this user
+
       const currentUser = await this.authService.waitForAuthInit();
       if (currentUser) {
         const settings = await this.emergencySettingsService.getEmergencySettings(currentUser.uid);
@@ -245,7 +239,7 @@ export class EmergencyAlertService {
         await audio.play();
         console.log('Playing audio emergency instructions');
       } else {
-        // Use text-to-speech as fallback
+
         await this.speakInstructions(emergencyData);
       }
     } catch (error) {
@@ -258,7 +252,7 @@ export class EmergencyAlertService {
    */
   private async speakInstructions(emergencyData: any): Promise<void> {
     try {
-      // Ensure Web Speech API is actually available before using it.
+
       if (typeof window === 'undefined') {
         console.warn('Text-to-speech not available: window is undefined');
         return;
@@ -268,21 +262,20 @@ export class EmergencyAlertService {
       const hasUtteranceConstructor = typeof SpeechSynthesisUtterance !== 'undefined';
 
       if (hasSpeechSynthesis && hasUtteranceConstructor) {
-        // Stop any ongoing speech
+
         window.speechSynthesis.cancel();
         
         const { emergencyInstructions, emergencyInstruction, emergencyMessage, name, allergies } = emergencyData;
         
         let textToSpeak = '';
         
-        // Priority 1: Use structured emergency instructions if available
         if (emergencyInstructions && emergencyInstructions.length > 0) {
           textToSpeak = `Emergency alert for ${name || 'this person'}. Emergency instructions: `;
           emergencyInstructions.forEach((instruction: any, index: number) => {
             textToSpeak += `${instruction.allergyName}: ${instruction.instruction}. `;
           });
         }
-        // Priority 2: Use saved emergency instruction if available
+
         else if (emergencyInstruction) {
           textToSpeak = emergencyInstruction;
         } 
@@ -347,4 +340,3 @@ export class EmergencyAlertService {
     await toast.present();
   }
 }
-

@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.alleraid.app;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -117,6 +117,6 @@ export class PatientAnalysisModal implements OnInit {
   }
 
   hasCheckedAllergies(): boolean {
-    return (this.analysis.allergies || []).some(a => a.checked);
+    return (this.analysis.allergies || []).length > 0;
   }
 }

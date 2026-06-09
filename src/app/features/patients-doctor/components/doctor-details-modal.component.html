@@ -14,40 +14,30 @@
 
       <ion-content class="ion-padding">
         <div class="doctor-details">
-          <div class="doctor-avatar">
+          <div class="doctor-avatar"> 
             <ion-icon name="person-circle"></ion-icon>
           </div>
 
-          <h2>{{ doctor.firstName }} {{ doctor.lastName }}</h2>
+          <h2>{{ doctor?.doctorName || 'Unknown Doctor' }}</h2>
 
-          <div *ngIf="doctor.specialty" class="detail-item">
-            <ion-label>Specialty</ion-label>
-            <p>{{ doctor.specialty }}</p>
+          <div *ngIf="doctor?.specialization" class="detail-item">
+            <ion-label>Specialization</ion-label>
+            <p>{{ doctor.specialization }}</p>
           </div>
 
-          <div class="detail-item">
+          <div *ngIf="doctor?.doctorEmail" class="detail-item">
             <ion-label>Email</ion-label>
-            <p>{{ doctor.email }}</p>
+            <p>{{ doctor.doctorEmail }}</p>
           </div>
 
-          <div *ngIf="doctor.phone" class="detail-item">
-            <ion-label>Phone</ion-label>
-            <p>{{ doctor.phone }}</p>
-          </div>
-
-          <div *ngIf="doctor.hospital" class="detail-item">
-            <ion-label>Hospital/Clinic</ion-label>
-            <p>{{ doctor.hospital }}</p>
-          </div>
-
-          <div *ngIf="doctor.address" class="detail-item">
-            <ion-label>Address</ion-label>
-            <p>{{ doctor.address }}</p>
-          </div>
-
-          <div *ngIf="doctor.addedAt" class="detail-item">
+          <div *ngIf="doctor?.acceptedAt" class="detail-item">
             <ion-label>Added On</ion-label>
-            <p>{{ doctor.addedAt | date:'short' }}</p>
+            <p>{{ doctor.acceptedAt | date:'short' }}</p>
+          </div>
+
+          <div *ngIf="doctor?.relationship" class="detail-item">
+            <ion-label>Relationship</ion-label>
+            <p>{{ doctor.relationship }}</p>
           </div>
         </div>
       </ion-content>

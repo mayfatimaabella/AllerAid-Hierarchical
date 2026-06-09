@@ -107,12 +107,12 @@ const routes: Routes = [
         loadChildren: () => import('../../features/patients-doctor/patients-doctor.module').then(m => m.PatientsDoctorPageModule),
         canActivate: [RoleGuard],
         data: { roles: ['user'] }
-      },
-      {
-        path: '',
-        redirectTo: '/tabs/home',
-        pathMatch: 'full'
       }
+      // {
+      //   path: '',
+      //   redirectTo: '/tabs/home',
+      //   pathMatch: 'full'
+      // }
     ]
   }
 ];

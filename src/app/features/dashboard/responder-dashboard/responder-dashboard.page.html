@@ -1,16 +1,6 @@
 <ion-content [fullscreen]="true">
   <div class="mobile-container">
 
-    <div class="empty-emergency-state" *ngIf="!currentEmergency">
-      <ion-icon name="checkmark-done-circle"></ion-icon>
-      <h2>Emergency completed</h2>
-      <p>This alert has been resolved by the patient.</p>
-
-      <ion-button expand="block" routerLink="/tabs/home">
-        Go Home
-      </ion-button>
-    </div>
-
     <ng-container *ngIf="currentEmergency">
 
       <div class="emergency-header">

@@ -147,10 +147,6 @@ export class DoctorService {
   }
 
   // ─── Send invitation ──────────────────────────────────────────────────────────
-  // FIX: This is the canonical send method. The old sendDoctorInvitation (by email only)
-  // was broken — it never wrote to the recipient's receivedDoctorInvitations and used
-  // email in the inviteId instead of UID, so accept/decline could never find the doc.
-  // All callers should use this method.
 
   async sendDoctorInvitationWithUser(
     currentUser: any,
@@ -175,7 +171,6 @@ export class DoctorService {
       );
     }
 
-    // FIX: inviteId uses both UIDs (not email) so accept/decline can always locate the doc.
     const inviteId = `${currentUser.uid}_${targetUser.uid}`;
 
     const invitationData: DoctorInvitation = {
@@ -197,14 +192,11 @@ export class DoctorService {
       createdAt: new Date()
     };
 
-    // Write to sender's sentDoctorInvitations
     await setDoc(
       doc(this.db, 'users', currentUser.uid, 'sentDoctorInvitations', inviteId),
       invitationData
     );
 
-    // FIX: Also write to recipient's receivedDoctorInvitations so they can see it.
-    // The old sendDoctorInvitation was missing this write entirely.
     await setDoc(
       doc(this.db, 'users', targetUser.uid, 'receivedDoctorInvitations', inviteId),
       invitationData
@@ -241,42 +233,19 @@ export class DoctorService {
     const senderUid = invitation.fromUserId;
     const receiverUid = currentUserId;
 
-    if (senderUid === receiverUid) {
-      throw new Error('Invalid doctor relation.');
-    }
+    if (!senderUid) throw new Error('Invitation is missing fromUserId.');
+    if (senderUid === receiverUid) throw new Error('Invalid doctor relation.');
 
     const acceptedAt = new Date();
 
-    // Mark accepted on both sides
+    // ✅ Step 1 — Mark accepted on doctor's received invite (critical)
     await updateDoc(receivedInviteRef, {
       status: 'accepted',
       respondedAt: acceptedAt,
       toUserId: receiverUid
     });
 
-    await updateDoc(
-      doc(this.db, 'users', senderUid, 'sentDoctorInvitations', invitationId),
-      { status: 'accepted', respondedAt: acceptedAt, toUserId: receiverUid }
-    );
-
-    // FIX: relationship labels were swapped. The sender invited the receiver as their
-    // "Doctor", so the sender's record says relationship='Doctor' (they have a doctor)
-    // and the receiver's record says relationship='Patient' (they have a patient).
-    await setDoc(
-      doc(this.db, 'users', senderUid, 'doctors', receiverUid),
-      {
-        doctorUid: receiverUid,
-        doctorEmail: invitation.toUserEmail,
-        doctorName: invitation.toUserName,
-        specialization: invitation.specialization || '',
-        relationship: 'Doctor',   // sender views receiver as their Doctor
-        status: 'accepted',
-        invitationId,
-        createdAt: invitation.createdAt,
-        acceptedAt
-      }
-    );
-
+    // ✅ Step 2 — Write doctor's patient record (critical)
     await setDoc(
       doc(this.db, 'users', receiverUid, 'doctors', senderUid),
       {
@@ -284,7 +253,7 @@ export class DoctorService {
         doctorEmail: invitation.fromUserEmail,
         doctorName: invitation.fromUserName,
         specialization: invitation.specialization || '',
-        relationship: 'Patient',  // receiver views sender as their Patient
+        relationship: 'Patient',
         status: 'accepted',
         invitationId,
         createdAt: invitation.createdAt,
@@ -292,48 +261,90 @@ export class DoctorService {
       }
     );
 
-    // Update patient's EHR record to add doctor as healthcare provider
-    try {
-      const doctorDoc = await getDoc(doc(this.db, `users/${senderUid}`));
-      const doctorData = doctorDoc.data();
+    // ✅ Step 3 — Write patient's doctor record (critical)
+    await setDoc(
+      doc(this.db, 'users', senderUid, 'doctors', receiverUid),
+      {
+        doctorUid: receiverUid,
+        doctorEmail: invitation.toUserEmail,
+        doctorName: invitation.toUserName,
+        specialization: invitation.specialization || '',
+        relationship: 'Doctor',
+        status: 'accepted',
+        invitationId,
+        createdAt: invitation.createdAt,
+        acceptedAt
+      }
+    );
 
-      const patientEHRRef = doc(this.db, `users/${receiverUid}/healthRecords/summary`);
+    // ⚠️ Step 4 — Update patient's sent invite (non-critical)
+    try {
+      const sentInviteRef = doc(
+        this.db,
+        'users', senderUid,
+        'sentDoctorInvitations', invitationId
+      );
+      const sentSnap = await getDoc(sentInviteRef);
+      if (sentSnap.exists()) {
+        await updateDoc(sentInviteRef, {
+          status: 'accepted',
+          respondedAt: acceptedAt,
+          toUserId: receiverUid
+        });
+      }
+    } catch (error) {
+      console.warn('Could not update sentDoctorInvitations — non-fatal:', error);
+    }
+
+    // ⚠️ Step 5 — Update patient EHR (non-critical)
+    try {
+      const doctorUserDoc = await getDoc(doc(this.db, 'users', receiverUid));
+      const doctorUserData = doctorUserDoc.data() || {};
+
+      const patientEHRRef = doc(this.db, `users/${senderUid}/healthRecords/summary`);
       const patientEHR = await getDoc(patientEHRRef);
 
-      if (patientEHR.exists() && doctorData) {
+      const newProvider = {
+        email: invitation.toUserEmail,
+        role: 'doctor',
+        name: invitation.toUserName,
+        license: doctorUserData['license'] || '',
+        specialty: invitation.specialization || doctorUserData['specialty'] || '',
+        hospital: doctorUserData['hospital'] || '',
+        grantedAt: serverTimestamp(),
+        grantedBy: senderUid
+      };
+
+      if (patientEHR.exists()) {
         const ehrData = patientEHR.data() as any;
         const healthcareProviders = ehrData.healthcareProviders || [];
         const alreadyExists = healthcareProviders.some(
-          (p: any) => p.email === invitation.fromUserEmail
+          (p: any) => p.email === invitation.toUserEmail
         );
-
         if (!alreadyExists) {
-          healthcareProviders.push({
-            email: invitation.fromUserEmail,
-            role: 'doctor',
-            name: invitation.fromUserName,
-            license: doctorData['license'],
-            specialty: invitation.specialization || doctorData['specialty'],
-            hospital: doctorData['hospital'],
-            grantedAt: serverTimestamp(),
-            grantedBy: receiverUid
-          });
-
+          healthcareProviders.push(newProvider);
           await updateDoc(patientEHRRef, {
             healthcareProviders,
             lastUpdated: serverTimestamp()
           });
         }
+      } else {
+        await setDoc(patientEHRRef, {
+          patientId: senderUid,
+          healthcareProviders: [newProvider],
+          allergies: [],
+          medications: [],
+          accessibleBy: [invitation.toUserEmail],
+          createdAt: serverTimestamp(),
+          lastUpdated: serverTimestamp()
+        });
       }
     } catch (error) {
       console.error('Error updating patient EHR with doctor access:', error);
-      // Non-fatal — invitation acceptance is already complete
     }
   }
 
   // ─── Decline ──────────────────────────────────────────────────────────────────
-  // FIX: removed the old declineDoctorInvitation that read from localStorage.
-  // All callers should pass userId explicitly.
 
   async declineDoctorInvitationWithUser(
     invitationId: string,
@@ -355,14 +366,23 @@ export class DoctorService {
 
     await updateDoc(inviteRef, { status: 'declined', respondedAt });
 
-    await updateDoc(
-      doc(this.db, 'users', invitation.fromUserId, 'sentDoctorInvitations', invitationId),
-      { status: 'declined', respondedAt }
-    );
+    // Non-critical — wrap so a bad senderUid doesn't throw
+    try {
+      const sentInviteRef = doc(
+        this.db,
+        'users', invitation.fromUserId,
+        'sentDoctorInvitations', invitationId
+      );
+      const sentSnap = await getDoc(sentInviteRef);
+      if (sentSnap.exists()) {
+        await updateDoc(sentInviteRef, { status: 'declined', respondedAt });
+      }
+    } catch (error) {
+      console.warn('Could not update sentDoctorInvitations on decline — non-fatal:', error);
+    }
   }
 
   // ─── Cancel ───────────────────────────────────────────────────────────────────
-  // FIX: removed the old cancelDoctorInvitation that read from localStorage.
 
   async cancelDoctorInvitationWithUser(
     invitationId: string,
@@ -384,18 +404,24 @@ export class DoctorService {
 
     await updateDoc(sentInviteRef, { status: 'cancelled', respondedAt });
 
-    // FIX: toUserId is now always set at send time (it was missing in the old
-    // sendDoctorInvitation), so this update will reliably find the recipient's doc.
     if (invitation.toUserId) {
-      await updateDoc(
-        doc(this.db, 'users', invitation.toUserId, 'receivedDoctorInvitations', invitationId),
-        { status: 'cancelled', respondedAt }
-      );
+      try {
+        const receivedInviteRef = doc(
+          this.db,
+          'users', invitation.toUserId,
+          'receivedDoctorInvitations', invitationId
+        );
+        const receivedSnap = await getDoc(receivedInviteRef);
+        if (receivedSnap.exists()) {
+          await updateDoc(receivedInviteRef, { status: 'cancelled', respondedAt });
+        }
+      } catch (error) {
+        console.warn('Could not update receivedDoctorInvitations on cancel — non-fatal:', error);
+      }
     }
   }
 
   // ─── Delete doctor relation ───────────────────────────────────────────────────
-  // FIX: accepts userId explicitly instead of reading from localStorage.
 
   async deleteDoctor(doctorToDelete: any, currentUserId: string): Promise<void> {
     const doctorUid =
@@ -415,15 +441,22 @@ export class DoctorService {
 
   async getUserDoctors(userId: string): Promise<any[]> {
     const doctorsRef = collection(this.db, 'users', userId, 'doctors');
-    const q = query(doctorsRef, where('status', '==', 'accepted'));
+    const q = query(doctorsRef,
+      where('status', '==', 'accepted'),
+      where('relationship', '==', 'Doctor')
+    );
     const snap = await getDocs(q);
-    return snap.docs
-      .map(docSnap => ({ id: docSnap.id, ...docSnap.data(), isFromRelation: true }))
-      .filter((doctor: any) => doctor.doctorUid !== userId);
+    return snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
   }
 
-  async getConnectedDoctors(userId: string): Promise<any[]> {
-    return this.getUserDoctors(userId);
+  async getDoctorPatients(userId: string): Promise<any[]> {
+    const doctorsRef = collection(this.db, 'users', userId, 'doctors');
+    const q = query(doctorsRef,
+      where('status', '==', 'accepted'),
+      where('relationship', '==', 'Patient')
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
   }
 
   async getReceivedInvitations(userId: string): Promise<DoctorInvitation[]> {
@@ -436,8 +469,6 @@ export class DoctorService {
     })) as DoctorInvitation[];
   }
 
-  // FIX: getSentInvitations now filters to pending only so the UI doesn't show
-  // cancelled/declined/accepted invitations in the "Sent" tab.
   async getSentInvitations(userId: string): Promise<DoctorInvitation[]> {
     const invitationsRef = collection(this.db, 'users', userId, 'sentDoctorInvitations');
     const q = query(invitationsRef, where('status', '==', 'pending'));

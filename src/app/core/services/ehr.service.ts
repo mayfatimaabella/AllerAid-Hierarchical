@@ -155,8 +155,29 @@ export class EHRService {
   }
 
   private healthRecordsCollectionPath(uid: string, collectionName: string): string {
-    return `users/${uid}/healthRecords/${collectionName}`;
+    return `users/${uid}/healthRecords/summary/${collectionName}`;
   }
+
+  private async getMedicalInfoForPatient(patientId: string): Promise<any | null> {
+  const medicalRef = doc(this.db, `users/${patientId}/medical/info`);
+  const medicalSnap = await getDoc(medicalRef);
+
+  return medicalSnap.exists() ? medicalSnap.data() : null;
+}
+
+private async getProfileForPatient(patientId: string): Promise<any | null> {
+  const profileRef = doc(this.db, `users/${patientId}/profile/details`);
+  const profileSnap = await getDoc(profileRef);
+
+  return profileSnap.exists() ? profileSnap.data() : null;
+}
+
+private async getUserInfoForPatient(patientId: string): Promise<any | null> {
+  const userRef = doc(this.db, `users/${patientId}`);
+  const userSnap = await getDoc(userRef);
+
+  return userSnap.exists() ? userSnap.data() : null;
+}
 
   async createOrUpdateEHR(ehrData: Partial<EHRRecord>): Promise<void> {
     const currentUser = await this.authService.waitForAuthInit();
@@ -521,43 +542,69 @@ export class EHRService {
     });
   }
 
-  async getPatientAnalysis(patientId: string): Promise<{
-    personalInfo: any;
-    allergies: any[];
-    recentReactions: AllergicReaction[];
-    treatmentHistory: TreatmentOutcome[];
-    visitHistory: DoctorVisit[];
-    medicalHistory: MedicalHistory[];
-    riskFactors: string[];
-    recommendations: string[];
-  }> {
-    const ehrRef = doc(this.db, this.healthRecordsSummaryPath(patientId));
-    const ehrSnap = await getDoc(ehrRef);
+async getPatientAnalysis(patientId: string): Promise<{
+  personalInfo: any;
+  allergies: any[];
+  visitHistory: DoctorVisit[];
+  medicalHistory: MedicalHistory[];
+}> {
+  const ehrRef = doc(this.db, this.healthRecordsSummaryPath(patientId));
+  const ehrSnap = await getDoc(ehrRef);
 
-    if (!ehrSnap.exists()) {
-      throw new Error('Patient EHR not found');
-    }
+  const ehrData: EHRRecord = ehrSnap.exists()
+    ? ehrSnap.data() as EHRRecord
+    : {
+        patientId,
+        personalInfo: {
+          firstName: '',
+          lastName: '',
+          dateOfBirth: '',
+          gender: 'other',
+          bloodType: '',
+          phoneNumber: '',
+          email: '',
+          address: ''
+        },
+        allergies: [],
+        medications: [],
+        accessibleBy: [],
+        healthcareProviders: []
+      };
 
-    const ehrData = ehrSnap.data() as EHRRecord;
+  const [
+    userInfo,
+    profileInfo,
+    medicalInfo,
+    visits,
+    medicalHistory
+  ] = await Promise.all([
+    this.getUserInfoForPatient(patientId),
+    this.getProfileForPatient(patientId),
+    this.getMedicalInfoForPatient(patientId),
+    this.getDoctorVisitsForPatient(patientId),
+    this.getMedicalHistoryForPatient(patientId)
+  ]);
 
-    const [reactions, outcomes, visits, medicalHistory] = await Promise.all([
-      this.getAllergicReactionsForPatient(patientId),
-      this.getTreatmentOutcomesForPatient(patientId),
-      this.getDoctorVisitsForPatient(patientId),
-      this.getMedicalHistoryForPatient(patientId)
-    ]);
+  const allergies = medicalInfo?.allergies || ehrData.allergies || [];
 
-    return {
-      personalInfo: ehrData.personalInfo,
-      allergies: ehrData.allergies || [],
-      recentReactions: reactions.slice(0, 5),
-      treatmentHistory: outcomes.slice(0, 10),
-      visitHistory: visits.slice(0, 10),
-      medicalHistory,
-      riskFactors: this.generateRiskFactors(ehrData, reactions, outcomes),
-      recommendations: this.generateRecommendations(ehrData, reactions, outcomes, visits)
-    };
-  }
+  const personalInfo = {
+    firstName: userInfo?.firstName || profileInfo?.firstName || ehrData.personalInfo?.firstName || '',
+    lastName: userInfo?.lastName || profileInfo?.lastName || ehrData.personalInfo?.lastName || '',
+    dateOfBirth: profileInfo?.dateOfBirth || ehrData.personalInfo?.dateOfBirth || '',
+    gender: profileInfo?.gender || ehrData.personalInfo?.gender || 'other',
+    bloodType: profileInfo?.bloodType || ehrData.personalInfo?.bloodType || '',
+    phoneNumber: profileInfo?.phone || profileInfo?.phoneNumber || ehrData.personalInfo?.phoneNumber || '',
+    email: userInfo?.email || ehrData.personalInfo?.email || '',
+    address: profileInfo?.address || ehrData.personalInfo?.address || ''
+  };
+
+  return {
+    personalInfo,
+    allergies,
+    visitHistory: visits.slice(0, 10),
+    medicalHistory
+  };
+}
 
   private async getAllergicReactionsForPatient(patientId: string): Promise<AllergicReaction[]> {
     const q = query(

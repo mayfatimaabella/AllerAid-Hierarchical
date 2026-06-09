@@ -1,12 +1,12 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.yourcompany.alleraid2',
+  appId: 'com.alleraid.app',
   appName: 'AllerAid',
   webDir: 'www',
   plugins: {
     '@capacitor-mlkit/barcode-scanning': {
-      // Enable all barcode formats
+
       formats: [
         'QR_CODE', 
         'EAN_13', 
@@ -24,7 +24,7 @@ const config: CapacitorConfig = {
         'AZTEC', 
         'DATA_MATRIX'
       ]
-      // Remove module installation config - let the app handle it
+
     }
   }
 };
