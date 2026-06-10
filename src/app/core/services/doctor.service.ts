@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
 import { firebaseConfig } from './firebase.config';
-import { UserService } from './user.service';
 
 import {
   getFirestore,
@@ -33,7 +31,7 @@ export interface DoctorInvitation {
   message: string;
   specialization?: string;
   relationship?: string;
-  status: 'pending' | 'accepted' | 'declined' | 'cancelled';
+  status: 'pending' | 'accepted' | 'declined' ;
   createdAt: Date;
   respondedAt?: Date;
 }
@@ -44,7 +42,6 @@ export interface DoctorInvitation {
 export class DoctorService {
   private db;
   private functions;
-  private auth;
 
   private readonly MAX_DOCTOR_RELATIONS = 10;
 
@@ -64,14 +61,12 @@ export class DoctorService {
     this.notifiedAcceptances.add(doctorUid);
   }
 
-  constructor(private userService: UserService) {
+  constructor() {
     const app = initializeApp(firebaseConfig);
     this.db = getFirestore(app);
     this.functions = getFunctions(app, 'us-central1');
-    this.auth = getAuth(app);
   }
 
-  // ─── Limits ──────────────────────────────────────────────────────────────────
 
   async countUserDoctorRelations(userId: string): Promise<number> {
     const doctorsRef = collection(this.db, 'users', userId, 'doctors');
@@ -89,7 +84,6 @@ export class DoctorService {
     return this.MAX_DOCTOR_RELATIONS;
   }
 
-  // ─── Duplicate check ─────────────────────────────────────────────────────────
 
   async checkDuplicateDoctorByEmail(
     currentUserId: string,
@@ -146,7 +140,6 @@ export class DoctorService {
     return { isDuplicate: false, type: 'none' };
   }
 
-  // ─── Send invitation ──────────────────────────────────────────────────────────
 
   async sendDoctorInvitationWithUser(
     currentUser: any,
@@ -205,8 +198,6 @@ export class DoctorService {
     return inviteId;
   }
 
-  // ─── Accept ───────────────────────────────────────────────────────────────────
-
   async acceptDoctorInvitationWithUser(
     invitationId: string,
     currentUserId: string
@@ -238,14 +229,13 @@ export class DoctorService {
 
     const acceptedAt = new Date();
 
-    // ✅ Step 1 — Mark accepted on doctor's received invite (critical)
+
     await updateDoc(receivedInviteRef, {
       status: 'accepted',
       respondedAt: acceptedAt,
       toUserId: receiverUid
     });
 
-    // ✅ Step 2 — Write doctor's patient record (critical)
     await setDoc(
       doc(this.db, 'users', receiverUid, 'doctors', senderUid),
       {
@@ -261,7 +251,6 @@ export class DoctorService {
       }
     );
 
-    // ✅ Step 3 — Write patient's doctor record (critical)
     await setDoc(
       doc(this.db, 'users', senderUid, 'doctors', receiverUid),
       {
@@ -277,7 +266,6 @@ export class DoctorService {
       }
     );
 
-    // ⚠️ Step 4 — Update patient's sent invite (non-critical)
     try {
       const sentInviteRef = doc(
         this.db,
@@ -296,7 +284,6 @@ export class DoctorService {
       console.warn('Could not update sentDoctorInvitations — non-fatal:', error);
     }
 
-    // ⚠️ Step 5 — Update patient EHR (non-critical)
     try {
       const doctorUserDoc = await getDoc(doc(this.db, 'users', receiverUid));
       const doctorUserData = doctorUserDoc.data() || {};
@@ -344,8 +331,6 @@ export class DoctorService {
     }
   }
 
-  // ─── Decline ──────────────────────────────────────────────────────────────────
-
   async declineDoctorInvitationWithUser(
     invitationId: string,
     currentUserId: string
@@ -366,7 +351,6 @@ export class DoctorService {
 
     await updateDoc(inviteRef, { status: 'declined', respondedAt });
 
-    // Non-critical — wrap so a bad senderUid doesn't throw
     try {
       const sentInviteRef = doc(
         this.db,
@@ -382,7 +366,6 @@ export class DoctorService {
     }
   }
 
-  // ─── Cancel ───────────────────────────────────────────────────────────────────
 
   async cancelDoctorInvitationWithUser(
     invitationId: string,
@@ -437,8 +420,6 @@ export class DoctorService {
     await deleteDoc(doc(this.db, 'users', doctorUid, 'doctors', currentUserId));
   }
 
-  // ─── Queries ──────────────────────────────────────────────────────────────────
-
   async getUserDoctors(userId: string): Promise<any[]> {
     const doctorsRef = collection(this.db, 'users', userId, 'doctors');
     const q = query(doctorsRef,
@@ -479,7 +460,6 @@ export class DoctorService {
     })) as DoctorInvitation[];
   }
 
-  // ─── Real-time listeners ──────────────────────────────────────────────────────
 
   listenForDoctorInvitations(userId: string): () => void {
     const invitationsRef = collection(this.db, 'users', userId, 'receivedDoctorInvitations');
@@ -505,7 +485,6 @@ export class DoctorService {
     });
   }
 
-  // ─── Cloud Function fallback ──────────────────────────────────────────────────
 
   async sendDoctorInvitationViaFunction(
     currentUser: any,

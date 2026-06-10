@@ -1,7 +1,7 @@
 <ion-content [fullscreen]="true">
   <div class="mobile-container">
 
-    <ng-container *ngIf="currentEmergency">
+    <ng-container *ngIf="currentEmergency; else noEmergency">
 
       <div class="emergency-header">
         <div class="hdr-left">
@@ -142,6 +142,21 @@
 
       </div>
     </ng-container>
+
+    <!-- Shown briefly while navigating away after help is completed -->
+    <ng-template #noEmergency>
+      <div class="all-clear-container">
+        <ion-icon name="checkmark-circle" class="all-clear-icon"></ion-icon>
+        <p class="all-clear-title">All clear</p>
+        <p class="all-clear-sub">No active emergencies. Returning home…</p>
+
+        <button class="btn btn-home" (click)="goHome()">
+          <ion-icon name="home"></ion-icon>
+          Back to Home
+        </button>     
+
+      </div>
+    </ng-template>
 
   </div>
 </ion-content>

@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastController, AlertController } from '@ionic/angular';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileDetailService } from '../../../core/services/profile-details.service';
@@ -31,7 +30,6 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
   constructor(
     private formBuilder: FormBuilder,
     private toastController: ToastController,
-    private alertController: AlertController,
     private userService: UserService,
     private authService: AuthService,
     private profileDetailService: ProfileDetailService

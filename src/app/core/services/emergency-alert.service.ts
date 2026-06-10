@@ -185,7 +185,7 @@ export class EmergencyAlertService {
    * Format emergency instruction for display
    */
   formatEmergencyInstructionForDisplay(emergencyData: any): string {
-    const { emergencyInstructions, generalInstruction, emergencyProfile, name, allergies } = emergencyData;
+    const { emergencyInstructions, generalInstruction, name, allergies } = emergencyData;
     
     let display = `<div class="emergency-instruction-box">`;
     display += `<h3>Emergency Instructions for ${name}</h3>`;

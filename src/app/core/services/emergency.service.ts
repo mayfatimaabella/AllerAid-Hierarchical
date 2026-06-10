@@ -115,7 +115,6 @@ export class EmergencyService {
     instruction: string = '',
     locationData: { latitude: number; longitude: number } | null
   ): Promise<string> {
-    // FIX #4: Prevent duplicate emergencies
     const existing = await this.getUserEmergenciesByStatus(userId, ['active', 'responding']);
     if (existing.length > 0) {
       console.warn('An active emergency already exists. Returning existing ID.');

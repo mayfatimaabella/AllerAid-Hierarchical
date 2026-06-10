@@ -10,7 +10,7 @@
         <div class="icon-badge">
           <ion-icon name="information-circle-outline"></ion-icon>
         </div>
-
+ 
         <div class="header-text">
           <div class="emergency-title">Emergency Information</div>
           <div class="emergency-subtitle">Tap to view complete emergency details</div>
@@ -26,7 +26,7 @@
           <div class="emergency-label">Phone Number</div>
           <div class="emergency-value">
           <ng-container *ngIf="hasValidPhone; else noPhone">
-            {{ formattedPhone }}
+            {{ profileDetails.phone }}
           </ng-container>
             <ng-template #noPhone><i>No phone number added</i></ng-template>
           </div>

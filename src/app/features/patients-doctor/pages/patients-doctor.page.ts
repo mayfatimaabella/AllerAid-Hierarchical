@@ -14,12 +14,9 @@ export class PatientsDoctorPage implements OnInit {
   showDetailsModal = false;
   doctorToShowDetails: any = null;
 
-  // Loading guards to prevent duplicate calls
   private isLoadingDoctors = false;
   private isLoadingInvitations = false;
 
-  // FIX: currentUserId stored at init so deleteDoctor can pass it explicitly
-  // instead of relying on the removed localStorage fallback.
   private currentUserId: string = '';
 
   doctors: any[] = [];
