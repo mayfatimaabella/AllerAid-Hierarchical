@@ -159,9 +159,8 @@
 
               [openEditEmergencyMessageModal]="openEditProfileModal"
               [openManageInstructionsModal]="openAddInstructionModal"
-              
               (close)="activeModal = null"
-              (testAudio)="testAudioInstructions()"
+              
               (addInstruction)="openAddInstructionModal()"
               (editInstruction)="openEditProfileModal()"
               (openEditAllergies)="openEditAllergiesModal()"> 
@@ -251,13 +250,6 @@
           [isOpen]="activeModal === 'examples'"
           (closeModal)="activeModal = null">
         </app-emergency-examples-modal>
-
-        <app-profile-settings
-          [audioInstructionsEnabled]="profileEmergencySettings.emergencySettings.audioInstructions"
-          [showVoiceSettings]="profileEmergencySettings.showVoiceSettings"
-          [profileVoiceFacade]="profileVoiceFacade"
-          [testAudioSettings]="testAudioInstructions"
-        ></app-profile-settings>
 
       </ng-container>
     </section>

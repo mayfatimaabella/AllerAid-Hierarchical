@@ -26,14 +26,12 @@
 
           <ion-item>
             <ion-icon slot="start" name="people-outline"></ion-icon>
-            <ion-select 
-              placeholder="Select Role" 
-              [(ngModel)]="role" 
-              interface="popover" 
-              >
+
+            <ion-select placeholder="Select Role"[(ngModel)]="role" interface="popover">
               <ion-select-option value="user">Patient</ion-select-option>
               <ion-select-option value="doctor">Doctor</ion-select-option>
             </ion-select>
+
           </ion-item>
 
           <!-- License Upload for Doctors -->
@@ -43,7 +41,6 @@
               <div class="upload-content">
                 <ion-label class="upload-label">Upload Medical License <span class="thin">(Proof of Identity)</span></ion-label>
 
-                <!-- Use a visually-hidden file input but keep it accessible; clicking the button opens file picker -->
                 <input 
                   type="file" 
                   accept="image/*,application/pdf" 

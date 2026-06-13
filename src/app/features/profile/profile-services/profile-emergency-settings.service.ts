@@ -295,23 +295,6 @@ export class ProfileEmergencySettingsService {
     this.showVoiceSettings = !this.showVoiceSettings;
   }
 
-  async runTest(
-    type: 'alert' | 'shake' | 'power' | 'audio',
-    notify: (message: string) => Promise<void> | void
-  ): Promise<void> {
-    try {
-      const messages: Record<typeof type, string> = {
-        alert: 'Emergency alert test triggered',
-        shake: 'Shake detection test triggered',
-        power: 'Power button detection test triggered',
-        audio: 'Audio instructions test triggered'
-      };
-      await notify(messages[type]);
-    } catch (e) {
-      console.error('Emergency test error:', e);
-      await this.presentToast('Emergency test failed');
-    }
-  }
 
   private async presentToast(message: string): Promise<void> {
     const toast = await this.toastController.create({
@@ -321,4 +304,14 @@ export class ProfileEmergencySettingsService {
     });
     await toast.present();
   }
+
+  async loadEmergencySettings(uid: string): Promise<void> {
+  const settings = await this.emergencySettingsService.getEmergencySettings(uid);
+
+  this.emergencySettings = settings ?? {
+    shakeToAlert: false,
+    powerButtonAlert: false,
+    audioInstructions: true
+  };
+}
 }

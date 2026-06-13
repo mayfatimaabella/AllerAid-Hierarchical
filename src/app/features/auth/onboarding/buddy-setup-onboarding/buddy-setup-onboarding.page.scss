@@ -1,4 +1,4 @@
-// ─── Shared tokens ──────────────────────────────────────────────────────────
+@use "sass:color";
 $teal: #036a5d;
 $teal-light: #eaf5f2;
 $teal-mid: #04856f;
@@ -11,14 +11,12 @@ $border: #e4e4e0;
 $field-bg: #f7f7f5;
 $field-border: #e8e8e4;
 
-// ─── Page background ─────────────────────────────────────────────────────────
 ion-content.onboarding-bg {
   --background: #{$page-bg};
 }
 
-// ─── Hero ────────────────────────────────────────────────────────────────────
 .onboarding-hero {
-  background: linear-gradient(155deg, $teal 0%, darken($teal, 6%) 100%);
+ background: linear-gradient(155deg, $teal 0%, color.adjust($teal, $lightness: -6%) 100%);
   padding: 52px 20px 20px;
   position: relative;
 }
@@ -68,7 +66,6 @@ ion-content.onboarding-bg {
   line-height: 1.5;
 }
 
-// ─── Progress bar ────────────────────────────────────────────────────────────
 .progress-wrap {
   margin-top: 4px;
 }
@@ -111,7 +108,6 @@ ion-content.onboarding-bg {
   }
 }
 
-// ─── States ──────────────────────────────────────────────────────────────────
 .state-container {
   display: flex;
   flex-direction: column;
@@ -129,12 +125,10 @@ ion-content.onboarding-bg {
   line-height: 1.5;
 }
 
-// ─── Body ─────────────────────────────────────────────────────────────────────
 .body-content {
   padding: 20px 16px 120px;
 }
 
-// ─── Buddy cards ─────────────────────────────────────────────────────────────
 .buddy-card {
   background: $white;
   border: 1px solid $border;
@@ -203,7 +197,6 @@ ion-content.onboarding-bg {
   }
 }
 
-// ─── Fields ──────────────────────────────────────────────────────────────────
 .field {
   display: flex;
   flex-direction: column;
@@ -238,7 +231,6 @@ ion-content.onboarding-bg {
   --placeholder-color: #{$text-muted};
 }
 
-// ─── Invite ───────────────────────────────────────────────────────────────────
 .invite-row {
   display: flex;
   justify-content: flex-end;
@@ -276,7 +268,6 @@ ion-content.onboarding-bg {
   }
 }
 
-// ─── Add secondary button ─────────────────────────────────────────────────────
 .add-secondary {
   display: flex;
   align-items: center;
@@ -311,7 +302,6 @@ ion-content.onboarding-bg {
   flex-shrink: 0;
 }
 
-// ─── Footer ──────────────────────────────────────────────────────────────────
 .onboarding-footer {
   position: fixed;
   bottom: 0;

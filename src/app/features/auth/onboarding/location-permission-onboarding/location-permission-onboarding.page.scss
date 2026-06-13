@@ -1,4 +1,5 @@
-// ─── Shared tokens ──────────────────────────────────────────────────────────
+@use "sass:color";
+
 $teal: #036a5d;
 $teal-light: #eaf5f2;
 $teal-mid: #04856f;
@@ -13,14 +14,12 @@ $field-border: #e8e8e4;
 $green: #10b981;
 $red: #ef4444;
 
-// ─── Page background ─────────────────────────────────────────────────────────
 ion-content.onboarding-bg {
   --background: #{$page-bg};
 }
 
-// ─── Hero ────────────────────────────────────────────────────────────────────
 .onboarding-hero {
-  background: linear-gradient(155deg, $teal 0%, darken($teal, 6%) 100%);
+  background: linear-gradient(155deg, $teal 0%, color.adjust($teal, $lightness: -6%) 100%);
   padding: 52px 20px 20px;
   position: relative;
 }
@@ -75,7 +74,6 @@ ion-content.onboarding-bg {
   line-height: 1.4;
 }
 
-// ─── Progress bar ────────────────────────────────────────────────────────────
 .progress-wrap {
   margin-top: 20px;
 }
@@ -119,7 +117,6 @@ ion-content.onboarding-bg {
   }
 }
 
-// ─── State containers ────────────────────────────────────────────────────────
 .state-container {
   display: flex;
   flex-direction: column;
@@ -150,13 +147,11 @@ ion-content.onboarding-bg {
   margin: 0;
 }
 
-// ─── Body content ────────────────────────────────────────────────────────────
 .body-content {
   padding: 20px;
   padding-bottom: 40px;
 }
 
-// ─── Location hero card ──────────────────────────────────────────────────────
 .location-hero-card {
   background: $white;
   border: 1px solid $border;
@@ -188,8 +183,6 @@ ion-content.onboarding-bg {
   margin: 0;
   line-height: 1.5;
 }
-
-// ─── Benefits section ────────────────────────────────────────────────────────
 .benefits-section {
   margin-bottom: 20px;
 }
@@ -247,7 +240,6 @@ ion-content.onboarding-bg {
   line-height: 1.4;
 }
 
-// ─── Permission status card ──────────────────────────────────────────────────
 .permission-card {
   background: $white;
   border: 2px solid $border;
@@ -300,7 +292,6 @@ ion-content.onboarding-bg {
   line-height: 1.4;
 }
 
-// ─── Action buttons ──────────────────────────────────────────────────────────
 .action-buttons {
   display: flex;
   flex-direction: column;
@@ -335,7 +326,6 @@ ion-content.onboarding-bg {
   border: 2px solid;
 }
 
-// ─── Info note ───────────────────────────────────────────────────────────────
 .info-note {
   font-size: 12px;
   color: $text-muted;
@@ -354,8 +344,6 @@ ion-content.onboarding-bg {
     flex-shrink: 0;
   }
 }
-
-// ─── Spinner override ────────────────────────────────────────────────────────
 ion-spinner {
   --ion-color-base: currentColor !important;
 }

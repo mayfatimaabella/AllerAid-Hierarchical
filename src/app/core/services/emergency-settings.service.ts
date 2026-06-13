@@ -98,7 +98,6 @@ private initializeAuthListener(): void {
       : null;
   }
 
-  // ─── Public write API ─────────────────────────────────────────────────────
 
   async initializeDefaults(uid: string): Promise<void> {
     await setDoc(

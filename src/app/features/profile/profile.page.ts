@@ -142,6 +142,13 @@ export class ProfilePage implements OnInit, OnDestroy {
     try {
       const data = await this.profileDataLoader.loadMedicalData();
 
+      this.profileEmergencySettings.emergencySettings =
+      data.emergencySettings ?? {
+        shakeToAlert: false,
+        powerButtonAlert: false,
+        audioInstructions: true
+      };
+
       this.profileEHRManager.doctorVisits = data.doctorVisits;
       this.profileEHRManager.medicalHistory = data.medicalHistory;
       this.profileEHRManager.ehrAccessList = data.ehrAccessList;
@@ -275,15 +282,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     }
   }
 
-  private runEmergencyTest(type: 'alert' | 'shake' | 'power' | 'audio') {
-    return this.profileEmergencySettings.runTest(type, (msg) => this.presentToast(msg));
-  }
-
-  testEmergencyAlert = () => this.runEmergencyTest('alert');
-  testShakeDetection = () => this.runEmergencyTest('shake');
-  testPowerButtonDetection = () => this.runEmergencyTest('power');
-  testAudioInstructions = () => this.runEmergencyTest('audio');
-
   isEmergencyMedicationBind = this.profileMedicationManager.isEmergencyMedication.bind(this.profileMedicationManager);
   isExpiringSoonBind = this.profileMedicationManager.isExpiringSoon.bind(this.profileMedicationManager);
 
@@ -347,13 +345,5 @@ async onEmergencyProfileRefresh(event?: any): Promise<void> {
   await this.loadEmergencyProfile(event);
 }
 
-async testAudioSettings(): Promise<void> {
-  const selectedId = this.profileVoiceFacade.audioSettings.selectedRecordingId;
-  if (!selectedId) {
-    await this.presentToast('No recording selected. Record and select one first.');
-    return;
-  }
-  await this.profileVoiceFacade.playRecording(selectedId);
-}
 
 }

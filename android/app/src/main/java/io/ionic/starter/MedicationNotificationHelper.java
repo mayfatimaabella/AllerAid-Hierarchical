@@ -1,5 +1,7 @@
 package io.ionic.starter;
 
+import com.alleraid.app.MainActivity;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;

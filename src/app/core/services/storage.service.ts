@@ -31,12 +31,11 @@ export class StorageService {
     try {
       const base64String = await this.fileToBase64(file);
       
-      // Validate size (Firestore has ~1MB limit per field, be conservative with 500KB)
-      const sizeInBytes = base64String.length * 0.75; // Approximate base64 size
-      const maxSizeBytes = 500 * 1024; // 500KB limit for safety
+      const sizeInBytes = base64String.length * 0.75;
+      const maxSizeBytes = 700 * 1024;
       
       if (sizeInBytes > maxSizeBytes) {
-        throw new Error(`File too large. Maximum size is 500KB. Current size: ${(sizeInBytes / 1024).toFixed(2)}KB`);
+        throw new Error(`File too large. Maximum size is 700KB. Current size: ${(sizeInBytes / 1024).toFixed(2)}KB`);
       }
       
       return base64String;

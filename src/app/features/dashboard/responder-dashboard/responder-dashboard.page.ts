@@ -107,8 +107,8 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       this.miniMap.remove();
     }
   }
-  goHome() {
-  this.router.navigate(['/tabs/home']);
+  async goHome() {
+  await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
 }
 
   private loadMiniMap() {
