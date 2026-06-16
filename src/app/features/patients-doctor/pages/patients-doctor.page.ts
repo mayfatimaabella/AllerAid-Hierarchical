@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController, ModalController } from '@ionic/angular';
 import { AuthService } from '../../../core/services/auth.service';
-import { UserService } from '../../../core/services/user.service';
 import { DoctorService } from '../../../core/services/doctor.service';
 import { DoctorInviteModalComponent } from '../components/doctor-invite-modal.component';
 
@@ -15,12 +14,9 @@ export class PatientsDoctorPage implements OnInit {
   showDetailsModal = false;
   doctorToShowDetails: any = null;
 
-  // Loading guards to prevent duplicate calls
   private isLoadingDoctors = false;
   private isLoadingInvitations = false;
 
-  // FIX: currentUserId stored at init so deleteDoctor can pass it explicitly
-  // instead of relying on the removed localStorage fallback.
   private currentUserId: string = '';
 
   doctors: any[] = [];
@@ -35,14 +31,13 @@ export class PatientsDoctorPage implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private userService: UserService,
     private doctorService: DoctorService,
     private toastController: ToastController,
     private modalController: ModalController
   ) {}
 
   async ngOnInit() {
-    // Resolve and cache the current user id once so all actions use the same value.
+    
     const currentUser = await this.authService.waitForAuthInit();
     if (currentUser) {
       this.currentUserId = currentUser.uid;
@@ -88,6 +83,7 @@ export class PatientsDoctorPage implements OnInit {
     try {
       if (this.currentUserId) {
         this.doctors = await this.doctorService.getUserDoctors(this.currentUserId);
+        console.log('Loaded doctors:', this.doctors);
         this.filteredDoctors = [...this.doctors];
       } else {
         this.doctors = [];
@@ -168,8 +164,7 @@ export class PatientsDoctorPage implements OnInit {
 
   async onConfirmDeleteDoctor(doctor: any) {
     try {
-      // FIX: was calling deleteDoctor(doctor) with 1 arg — the method now requires
-      // currentUserId explicitly so it no longer falls back to localStorage.
+
       await this.doctorService.deleteDoctor(doctor, this.currentUserId);
       await this.showToast('Doctor removed successfully', 'success');
       this.closeDeleteModal();

@@ -200,7 +200,6 @@ export class DoctorInviteModalComponent implements OnInit {
       header: 'Cancel invitation',
       message: 'Are you sure you want to cancel this invitation?',
       buttons: [
-        { text: 'No', role: 'cancel' },
         {
           text: 'Yes',
           handler: async () => {
@@ -219,7 +218,9 @@ export class DoctorInviteModalComponent implements OnInit {
               this.isLoading = false;
             }
           }
-        }
+        },
+         { text: 'No', role: 'cancel' }
+
       ]
     });
     await alert.present();

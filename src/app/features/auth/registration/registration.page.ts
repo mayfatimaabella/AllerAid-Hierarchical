@@ -11,6 +11,7 @@ import { StorageService } from '../../../core/services/storage.service';
   standalone: false,
 })
 export class RegistrationPage {
+
   firstName = '';
   lastName = '';
   email = '';
@@ -35,7 +36,6 @@ export class RegistrationPage {
     return lengthOk && hasUpper && hasNumber && hasSpecial;
   }
 
-  // Useful for template binding
   get isPasswordValid(): boolean {
     return this.isPasswordStrong(this.password);
   }
@@ -62,18 +62,23 @@ export class RegistrationPage {
       const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
       if (!allowedTypes.includes(file.type)) {
         this.presentToast('Invalid file type. Please upload an image (PNG, JPG) or PDF.','danger');
-        this.fileInput.nativeElement.value = ''; // Clear the input
-        return;
-      }
-
-      // Validate file size (max 10MB)
-      const maxSizeMB = 10;
-      const maxSizeBytes = maxSizeMB * 1024 * 1024;
-      if (file.size > maxSizeBytes) {
-        this.presentToast(`File is too large. Maximum size is ${maxSizeMB}MB.`,'danger');
         this.fileInput.nativeElement.value = '';
         return;
       }
+
+      // Validate file size (max 500KB)
+        const maxSizeKB = 500;
+        const maxSizeBytes = maxSizeKB * 1024;
+
+        if (file.size > maxSizeBytes) {
+          this.presentToast(
+            `File is too large. Maximum size is ${maxSizeKB}KB.`,
+            'danger'
+          );
+
+          this.fileInput.nativeElement.value = '';
+          return;
+        }
 
       this.selectedFile = file;
       this.selectedFileName = file.name;
@@ -113,7 +118,6 @@ export class RegistrationPage {
       //  Create user in Firebase Auth
       const userCredential = await this.authService.signUp(this.email, this.password);
 
-
       if (userCredential.user) {
         const uid = userCredential.user.uid;
         console.log('User created in Firebase Auth:', uid);
@@ -126,19 +130,24 @@ export class RegistrationPage {
             this.presentToast('License uploaded successfully.', 'success', 2500);
           } catch (uploadErr) {
             console.error('License upload failed:', uploadErr);
-            this.presentToast('License upload failed. Please try again.');
+            this.presentToast('License upload failed. Please try again.', 'danger', 3000);
             this.licenseURL = '';
+            return;
           }
         }
 
 
-        // Create Firestore profile — only include licenseURL when it's a non-empty string
+        // Create Firestore profile
         const profileData: any = {
           email: this.email,
           firstName: this.firstName,
           lastName: this.lastName,
           role: this.role,
         };
+
+        if (this.role === 'doctor') {
+          profileData.verificationStatus = 'pending';
+        }
 
         if (this.licenseURL && this.licenseURL.length > 0) {
           profileData.licenseURL = this.licenseURL;
@@ -156,11 +165,29 @@ export class RegistrationPage {
 
         // Navigate to verify-email page
         if (verificationEmailSent) {
-          this.presentToast('Registration successful! Check your email to verify your account.', 'success', 3000);
+          if (this.role === 'doctor') {
+            await this.presentToast(
+              'Registration successful! Check your email to verify your account. Your doctor account is pending admin approval.',
+              'success',
+              4000
+            );
+          } else {
+            await this.presentToast(
+              'Registration successful! Check your email to verify your account.',
+              'success',
+              3000
+            );
+          }
         } else {
-          this.presentToast('Account created. Verification email could not be sent yet. Please use Resend on the next page.', 'warning', 3500);
-        }
-        this.navCtrl.navigateForward('/verify-email');
+          await this.presentToast(
+            'Account created. Verification email could not be sent yet. Please use Resend on the next page.',
+            'warning',
+            3500
+          );
+              }
+            await this.navCtrl.navigateRoot(['/verify-email'], {
+              queryParams: { role: this.role,},
+            });
       }
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -185,6 +212,6 @@ export class RegistrationPage {
       color,
       icon
     });
-    toast.present();
+    await toast.present();
   }
 }

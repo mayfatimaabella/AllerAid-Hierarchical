@@ -13,7 +13,7 @@
   <form (ngSubmit)="saveVisit()">
     <div class="form-fields">
       <!-- Registered Doctor Dropdown -->
-      <ion-item class="medication-field" lines="none" *ngIf=availableDoctors.length >
+<ion-item class="medication-field" lines="none" *ngIf="availableDoctors.length > 0">
         <ion-label position="stacked">Doctor *</ion-label>
         <ion-select 
           [(ngModel)]="selectedDoctorEmail" 
@@ -88,23 +88,27 @@
     </div>
 
     <div class="action-buttons">
-      <ion-button 
-        expand="block" 
-        type="submit" 
-        class="teal-modal-btn"
-        [disabled]="!visitData.doctorName.trim() || !visitData.chiefComplaint.trim()">
-        <ion-icon [name]="isEditMode ? 'checkmark-outline' : 'add-outline'" slot="start"></ion-icon>
-        {{ isEditMode ? 'Update Visit' : 'Save Visit' }}
-      </ion-button>
+    <ion-button 
+      expand="block" 
+      type="submit" 
+      class="teal-modal-btn"
+      [disabled]="isSaving || !visitData.doctorName.trim() || !visitData.chiefComplaint.trim()">
+      <ion-icon 
+        [name]="isEditMode ? 'checkmark-outline' : 'add-outline'" 
+        slot="start">
+      </ion-icon>
+      {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Visit' : 'Save Visit') }}
+    </ion-button>
 
-      <ion-button 
-        expand="block" 
-        fill="outline" 
-        color="medium"
-        (click)="dismiss()">
-        <ion-icon name="close-outline" slot="start"></ion-icon>
-        Cancel
-      </ion-button>
+    <ion-button 
+      expand="block" 
+      fill="outline" 
+      color="medium"
+      type="button"
+      (click)="dismiss()">
+      <ion-icon name="close-outline" slot="start"></ion-icon>
+      Cancel
+    </ion-button>
     </div>
   </form>
 </ion-content>

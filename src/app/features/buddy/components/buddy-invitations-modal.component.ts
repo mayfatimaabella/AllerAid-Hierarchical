@@ -12,7 +12,7 @@ import { UserService } from '../../../core/services/user.service';
 export class BuddyInvitationsModal implements OnInit, OnDestroy {
 
   selectedSegment: 'invite' | 'received' | 'sent' = 'invite';
-  
+
   // Send invitation form
   inviteEmail: string = '';
   inviteMessage: string = 'Hi! I\'d like you to be my emergency buddy. This will help us stay connected during allergy emergencies.';
@@ -23,11 +23,11 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
   selectedUser: any = null;
   isSearching: boolean = false;
   showSearchDropdown: boolean = false;
-  
+
   // Invitations lists
   receivedInvitations: BuddyInvitation[] = [];
   sentInvitations: BuddyInvitation[] = [];
-  
+
   isLoading: boolean = false;
   currentUserId: string = '';
   private relationsSubscription?: any;
@@ -47,26 +47,29 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
 
   async ngOnInit() {
     const currentUser = await this.userService.getCurrentUserProfile();
+
     if (currentUser) {
       this.currentUserId = currentUser.uid;
       this.listenForAcceptedInvitations(currentUser.uid);
     }
+
     // Ensure initial invitations are loaded immediately when modal opens
     try {
       await this.loadInvitations();
     } catch (e) {
       console.warn('Failed to load invitations on init', e);
     }
+
     // Use realtime listeners so UI reflects invites immediately
     if (currentUser) {
       this.pendingListenerUnsubscribe = this.buddyService.listenForBuddyInvitations(currentUser.uid);
       this.pendingSubscription = this.buddyService.pendingInvitations$.subscribe(invs => {
-        this.receivedInvitations = invs || [];
+        this.receivedInvitations = (invs || []).map(inv => this.normalizeInvitation(inv));
       });
 
       this.sentListenerUnsubscribe = this.buddyService.listenForSentInvitations(currentUser.uid);
       this.sentSubscription = this.buddyService.sentInvitations$.subscribe(invs => {
-        this.sentInvitations = invs || [];
+        this.sentInvitations = (invs || []).map(inv => this.normalizeInvitation(inv));
       });
     }
   }
@@ -75,76 +78,71 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
     this.relationsSubscription?.unsubscribe();
     this.pendingSubscription?.unsubscribe();
     this.sentSubscription?.unsubscribe();
+
     if (this.pendingListenerUnsubscribe) {
       try { this.pendingListenerUnsubscribe(); } catch {}
     }
+
     if (this.sentListenerUnsubscribe) {
       try { this.sentListenerUnsubscribe(); } catch {}
     }
+
     this.buddyService.stopBuddyRelationsListener();
   }
 
   listenForAcceptedInvitations(userId: string): void {
+    this.buddyService.listenForBuddyRelations(userId);
 
-  this.buddyService.listenForBuddyRelations(userId);
+    this.relationsSubscription =
+      this.buddyService.buddyRelations$
+        .subscribe(relations => {
 
-  this.relationsSubscription =
-    this.buddyService.buddyRelations$
-      .subscribe(relations => {
+          // Skip the initial Firestore load
+          if (!this.initialRelationsLoaded) {
+            this.initialRelationsLoaded = true;
 
-        // Skip the initial Firestore load
-        if (!this.initialRelationsLoaded) {
+            // Mark existing accepted buddies as already notified
+            relations.forEach((rel: any) => {
+              const buddyUid = this.getBuddyRelationUserId(rel);
 
-          this.initialRelationsLoaded = true;
+              if (buddyUid) {
+                this.buddyService.markAsNotified(buddyUid);
+              }
+            });
 
-          // Mark existing accepted buddies as already notified
-          relations.forEach((rel: any) => {
-
-            const buddyUid = this.getBuddyRelationUserId(rel);
-
-            if (buddyUid) {
-              this.buddyService.markAsNotified(buddyUid);
-            }
-
-          });
-
-          return;
-        }
-
-        // Only notify for new changes
-        relations.forEach((rel: any) => {
-
-          const buddyUid = this.getBuddyRelationUserId(rel);
-
-          if (
-            this.isRequesterSideRelation(rel, userId) &&
-            buddyUid &&
-            !this.buddyService.hasBeenNotified(buddyUid)
-          ) {
-
-            this.showToast(
-              `${rel.buddyName} accepted your invitation.`,
-              'success'
-            );
-
-            this.buddyService.markAsNotified(
-              buddyUid
-            );
-
+            return;
           }
 
+          // Only notify for new changes
+          relations.forEach((rel: any) => {
+            const buddyUid = this.getBuddyRelationUserId(rel);
+
+            if (
+              this.isRequesterSideRelation(rel, userId) &&
+              buddyUid &&
+              !this.buddyService.hasBeenNotified(buddyUid)
+            ) {
+              this.showToast(
+                `${rel.buddyName} accepted your invitation.`,
+                'success'
+              );
+
+              this.buddyService.markAsNotified(buddyUid);
+            }
+          });
         });
-
-      });
-
-}
+  }
 
   async loadInvitations() {
     try {
       const currentUser = await this.userService.getCurrentUserProfile();
+
       if (currentUser) {
-        this.receivedInvitations = await this.buddyService.getReceivedInvitations(currentUser.uid);
-        this.sentInvitations = await this.buddyService.getSentInvitations(currentUser.uid);
+        const received = await this.buddyService.getReceivedInvitations(currentUser.uid);
+        const sent = await this.buddyService.getSentInvitations(currentUser.uid);
+
+        this.receivedInvitations = received.map(inv => this.normalizeInvitation(inv));
+        this.sentInvitations = sent.map(inv => this.normalizeInvitation(inv));
       }
     } catch (error) {
       console.error('Error loading invitations:', error);
@@ -170,12 +168,15 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
         return;
       }
 
-      const duplicateCheck = await this.buddyService.checkDuplicateBuddyByEmail(currentUser.uid, this.selectedUser.email.trim());
-      
+      const duplicateCheck = await this.buddyService.checkDuplicateBuddyByEmail(
+        currentUser.uid,
+        this.selectedUser.email.trim()
+      );
+
       if (duplicateCheck.isDuplicate) {
         let alertMessage = '';
-        let alertHeader = 'Duplicate Buddy';
-        
+        const alertHeader = 'Duplicate Buddy';
+
         switch (duplicateCheck.type) {
           case 'existing_buddy':
             alertMessage = `You already have ${duplicateCheck.details?.name || 'this person'} as a buddy.`;
@@ -190,7 +191,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
             alertMessage = `You already have ${duplicateCheck.details?.name || 'this person'} as a buddy in your contacts.`;
             break;
           default:
-            alertMessage = `This email is already associated with a buddy relationship.`;
+            alertMessage = 'This email is already associated with a buddy relationship.';
         }
 
         const alert = await this.alertController.create({
@@ -198,7 +199,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
           message: alertMessage,
           buttons: ['OK']
         });
-        
+
         await alert.present();
         this.isLoading = false;
         return;
@@ -212,7 +213,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
       );
 
       this.showToast('Invitation sent successfully!', 'success');
-      
+
       // Clear form
       this.inviteEmail = '';
       this.selectedUser = null;
@@ -247,7 +248,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
               if (!currentUser) {
                 throw new Error('No current user found');
               }
-              
+
               const accepted = this.receivedInvitations.find(inv => inv.id === invitationId);
               const buddyName = accepted?.fromUserName || 'Your buddy';
 
@@ -262,7 +263,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
             }
           }
         },
-                {
+        {
           text: 'Cancel',
           role: 'cancel'
         },
@@ -277,7 +278,6 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
       header: 'Decline Buddy Invitation',
       message: 'Are you sure you want to decline this buddy invitation?',
       buttons: [
-
         {
           text: 'Decline',
           handler: async () => {
@@ -291,7 +291,8 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
               this.showToast('Error declining invitation', 'danger');
             }
           }
-        },        {
+        },
+        {
           text: 'Cancel',
           role: 'cancel'
         },
@@ -319,7 +320,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
             }
           }
         },
-             {
+        {
           text: 'No',
           role: 'cancel'
         }
@@ -349,7 +350,7 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
 
   async searchForUsers(searchTerm: string) {
     this.inviteEmail = searchTerm;
-    
+
     if (!searchTerm || searchTerm.trim().length < 2) {
       this.searchResults = [];
       this.showSearchDropdown = false;
@@ -407,5 +408,31 @@ export class BuddyInvitationsModal implements OnInit, OnDestroy {
       invitationChanged: actionType ? true : false,
       action: actionType
     });
+  }
+
+  private normalizeInvitation(invitation: BuddyInvitation): BuddyInvitation {
+    return {
+      ...invitation,
+      createdAt: this.convertTimestamp((invitation as any).createdAt) as any,
+      respondedAt: this.convertTimestamp((invitation as any).respondedAt) as any,
+    };
+  }
+
+  private convertTimestamp(value: any): Date | null {
+    if (!value) return null;
+
+    if (value instanceof Date) {
+      return value;
+    }
+
+    if (typeof value.toDate === 'function') {
+      return value.toDate();
+    }
+
+    if (value.seconds) {
+      return new Date(value.seconds * 1000);
+    }
+
+    return null;
   }
 }

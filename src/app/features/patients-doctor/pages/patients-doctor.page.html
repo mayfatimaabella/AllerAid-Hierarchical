@@ -53,9 +53,15 @@
         <ion-list>
           <ion-item *ngFor="let doctor of filteredDoctors">
             <ion-label (click)="showDoctorDetails(doctor)" style="cursor:pointer; color:#036a5d; font-weight:500;">
-              <h2>{{ doctor.firstName }} {{ doctor.lastName }}</h2>
-              <p *ngIf="doctor.specialty">{{ doctor.specialty }}</p>
-              <p *ngIf="doctor.email">{{ doctor.email }}</p>
+            <h2>{{ doctor.doctorName }}</h2>
+
+            <p *ngIf="doctor.specialization">
+              {{ doctor.specialization }}
+            </p>
+
+            <p *ngIf="doctor.doctorEmail">
+              {{ doctor.doctorEmail }}
+            </p>
             </ion-label>
             <ion-button fill="clear" slot="end" (click)="openDoctorActions(doctor)">
               <ion-icon name="ellipsis-vertical"></ion-icon>

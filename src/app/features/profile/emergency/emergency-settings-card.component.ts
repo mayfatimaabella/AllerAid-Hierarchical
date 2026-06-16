@@ -20,16 +20,10 @@ export interface EmergencySettings {
 })
 export class EmergencySettingsCardComponent {
   @Input() emergencySettings: EmergencySettings = {} as EmergencySettings;
-  @Input() showVoiceSettings: boolean = false;
+  @Input() showVoiceSettings = false;
   @Input() profileVoiceFacade: any;
   @Input() getAudioSourceClass!: () => string;
   @Input() getAudioSourceText!: () => string;
   @Input() openVoiceRecordingModal!: () => void;
   @Input() saveEmergencySettings!: () => void;
-  @Input() testAudioSettings!: () => Promise<void>;
-
-  testWatchConnection(): void {
-    console.log('Testing smartwatch connection...');
-    // TODO: Implement smartwatch connection test logic
-  }
 }

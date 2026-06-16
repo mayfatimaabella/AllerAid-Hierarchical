@@ -1,16 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  deleteDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  serverTimestamp
-} from 'firebase/firestore';
+import {doc, setDoc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, serverTimestamp} from 'firebase/firestore';
 import { FirebaseService } from './firebase.service';
 import { AuthService } from './auth.service';
 import { UserProfile } from './models/user-profile.model';
@@ -44,20 +33,25 @@ export class UserService {
       license?: string;
       specialty?: string;
       hospital?: string;
+      
     }
   ): Promise<void> {
     
     try {
-      const baseProfile = {
+      const baseProfile: UserProfile = {
         uid,
         email: userData.email,
         firstName: userData.firstName,
         lastName: userData.lastName,
         fullName: `${userData.firstName} ${userData.lastName}`.trim(),
-        role: userData.role,
+        role: userData.role as 'user' | 'doctor' | 'admin',
         dateCreated: serverTimestamp(),
-        isActive: true
+        isActive: true,
       };
+
+      if (userData.role === 'doctor') {
+        baseProfile.verificationStatus = 'pending';
+      }
 
       // Base user doc
       await setDoc(doc(this.db, 'users', uid), baseProfile);
@@ -458,27 +452,5 @@ async searchApprovedDoctors(
     } else {
       this.userProfileCache.clear();
     }
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  } 
 }

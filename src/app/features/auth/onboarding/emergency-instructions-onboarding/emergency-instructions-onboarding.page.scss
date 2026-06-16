@@ -1,4 +1,4 @@
-// ─── Shared tokens ──────────────────────────────────────────────────────────
+@use "sass:color";
 $teal: #036a5d;
 $teal-light: #eaf5f2;
 $page-bg: #f0ede6;
@@ -8,14 +8,12 @@ $text-mid: #555;
 $text-muted: #999;
 $border: #e4e4e0;
 
-// ─── Page background ─────────────────────────────────────────────────────────
 ion-content.onboarding-bg {
   --background: #{$page-bg};
 }
 
-// ─── Hero ────────────────────────────────────────────────────────────────────
 .onboarding-hero {
-  background: linear-gradient(155deg, $teal 0%, darken($teal, 6%) 100%);
+  background: linear-gradient(155deg, $teal 0%, color.adjust($teal, $lightness: -6%) 100%);
   padding: 52px 20px 20px;
   position: relative;
 }
@@ -65,7 +63,6 @@ ion-content.onboarding-bg {
   line-height: 1.5;
 }
 
-// ─── Progress bar ────────────────────────────────────────────────────────────
 .progress-wrap {
   margin-top: 4px;
 }
@@ -108,7 +105,6 @@ ion-content.onboarding-bg {
   }
 }
 
-// ─── States ──────────────────────────────────────────────────────────────────
 .state-container {
   display: flex;
   flex-direction: column;
@@ -144,7 +140,6 @@ ion-content.onboarding-bg {
   margin-top: 4px;
 }
 
-// ─── Body ─────────────────────────────────────────────────────────────────────
 .body-content {
   padding: 20px 16px 120px;
 }
@@ -158,7 +153,6 @@ ion-content.onboarding-bg {
   margin: 0 0 10px;
 }
 
-// ─── Instruction cards ────────────────────────────────────────────────────────
 .instr-card {
   background: $white;
   border: 1px solid $border;
@@ -205,7 +199,6 @@ ion-content.onboarding-bg {
   margin: 6px 0 0;
 }
 
-// ─── Footer ──────────────────────────────────────────────────────────────────
 .onboarding-footer {
   position: fixed;
   bottom: 0;
@@ -262,7 +255,6 @@ ion-content.onboarding-bg {
   line-height: 1.4;
 }
 
-// ─── General card ─────────────────────────────────────────────────────────────
 .general-card {
   border-color: rgba($teal, 0.3);
   background: $teal-light;
@@ -286,7 +278,6 @@ ion-content.onboarding-bg {
   }
 }
 
-// ─── Tips toggle ──────────────────────────────────────────────────────────────
 .tips-toggle {
   display: flex;
   align-items: center;
@@ -320,7 +311,6 @@ ion-content.onboarding-bg {
   }
 }
 
-// ─── Tips panel ───────────────────────────────────────────────────────────────
 .tips-panel {
   background: $white;
   border: 1px solid $border;

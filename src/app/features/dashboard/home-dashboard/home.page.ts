@@ -39,7 +39,6 @@ interface ResponderInfo {
 })
 export class HomePage implements OnDestroy {
 
-
   userBuddies: any[] = [];
   userAllergies: any[] = [];
   userName = '';
@@ -70,6 +69,7 @@ export class HomePage implements OnDestroy {
   private subscriptions: Subscription[] = [];
   private buddyStatusKeyMap = new Map<string, string>();
   private emergencyConfirmationTimer: ReturnType<typeof setInterval> | null = null;
+ 
 
   constructor(
     private alertController: AlertController,

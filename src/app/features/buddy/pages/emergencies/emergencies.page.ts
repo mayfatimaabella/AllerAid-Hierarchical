@@ -48,21 +48,18 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     try {
       const user = await this.authService.waitForAuthInit();
       if (user) {
-        // Start listening for emergency alerts for this buddy
+        
         this.buddyService.listenForEmergencyAlerts(user.uid);
         
-        // Subscribe to the emergency alerts observable from buddy service
         this.emergencySubscription = this.buddyService.activeEmergencyAlerts$.subscribe(async emergencies => {
-          // Load resolved emergencies (where this user is a buddy)
+        
           this.resolvedEmergencies = await this.emergencyService.getBuddyEmergenciesByStatus(user.uid, ['resolved']);
 
-          // Also load emergencies this user initiated (patient view of their own alerts)
           const userInitiated = await this.emergencyService.getUserEmergenciesByStatus(
             user.uid,
             ['active', 'responding', 'resolved']
           );
 
-          // Compute active emergencies as union of buddy alerts and user-initiated active/responding
           const buddyActive = emergencies
             .filter(e => (e.status === 'active' || e.status === 'responding'))
             .filter(e => !this.dismissedEmergencyIds.has(e.id!));
@@ -78,7 +75,6 @@ export class EmergenciesPage implements OnInit, OnDestroy {
 
           this.activeEmergencies = Array.from(activeMerged.values());
 
-          // Merge all emergency sources into a single list, de-duplicated by id
           const merged = new Map<string, EmergencyAlert>();
           [...emergencies, ...this.resolvedEmergencies, ...userInitiated].forEach((e) => {
             if (e.id) {
@@ -88,7 +84,6 @@ export class EmergenciesPage implements OnInit, OnDestroy {
 
           this.allEmergencies = Array.from(merged.values());
 
-          // Enrich emergencies with human-readable addresses
           await this.populateAddresses(this.allEmergencies);
           this.filterEmergencies();
         });
@@ -102,14 +97,14 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     try {
       const user = await this.authService.waitForAuthInit();
       if (user && emergency.id) {
-        // Persist dismissal so future pop-ups are suppressed
+
         this.buddyService.dismissEmergencyForUser(user.uid, emergency.id);
-        // Save a snapshot of the dismissed alert for local history
+
         this.buddyService.saveDismissedAlertData(user.uid, emergency);
-        // Update lists immediately without waiting for next snapshot
+
         this.dismissedEmergencyIds.add(emergency.id);
         this.activeEmergencies = this.activeEmergencies.filter(e => e.id !== emergency.id);
-        // Track in local dismissed history ids (no type change)
+
         this.dismissedHistoryIds.add(emergency.id);
         this.filterEmergencies();
       }
@@ -130,7 +125,7 @@ export class EmergenciesPage implements OnInit, OnDestroy {
         this.filteredEmergencies = this.getDismissedAlertsForCurrentUser();
         break;
       default:
-        // All = active history (resolved/responding/etc.) + dismissed history
+
         const dismissed = this.getDismissedAlertsForCurrentUser();
         const merged = new Map<string, EmergencyAlert>();
 
@@ -142,8 +137,7 @@ export class EmergenciesPage implements OnInit, OnDestroy {
 
         dismissed.forEach(e => {
           if (e.id) {
-            // Dismissed entries override same-id entries so their status
-            // is shown as 'dismissed' in the All view
+
             merged.set(e.id, e);
           }
         });
@@ -153,14 +147,13 @@ export class EmergenciesPage implements OnInit, OnDestroy {
   }
 
   onTabChange() {
-    // Reset filter when switching tabs
     this.selectedFilter = 'all';
     this.filterEmergencies();
   }
 
   private getDismissedAlertsForCurrentUser(): EmergencyAlert[] {
     try {
-      // Prefer auth service for reliable UID
+
       const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
       const uid = user?.uid;
       if (!uid) {
@@ -168,13 +161,12 @@ export class EmergenciesPage implements OnInit, OnDestroy {
       }
       const key = `dismissedAlerts_${uid}`;
       const stored = JSON.parse(localStorage.getItem(key) || '[]');
-      // Map stored minimal objects back to EmergencyAlert-like shape where possible,
-      // enrich with known fields from current allEmergencies list
+
       return stored.map((a: any) => {
         const match = this.allEmergencies.find(e => e.id === a.id);
         return {
           id: a.id,
-          // Always mark these as 'dismissed' for the Dismissed segment label
+
           status: 'dismissed',
           timestamp: match?.timestamp || a.createdAt,
           location: a.location || match?.location,
@@ -215,7 +207,7 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     try {
       const user = await this.authService.waitForAuthInit();
       if (user) {
-        // Update emergency status and navigate to map
+
         await this.emergencyService.respondToEmergency(
           emergency.id!, 
           user.uid, 
@@ -240,13 +232,13 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     });
   }
   callPatient(emergency: EmergencyAlert) {
-    // Trigger phone call - would need patient phone number from emergency data
+
     console.log('Calling patient for emergency:', emergency.id);
-    // TODO: Implement phone integration when patient phone numbers are available
+
   }
 
   viewEmergencyDetails(emergency: EmergencyAlert) {
-    // Show detailed emergency information
+
     this.router.navigate(['/emergency-details', emergency.id]);
   }
 
@@ -270,12 +262,12 @@ export class EmergenciesPage implements OnInit, OnDestroy {
           const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${loc.latitude}&lon=${loc.longitude}`;
           const response = await fetch(url);
           const data = await response.json();
-          // Prefer human-readable address; fall back to coordinates
+
           const address: string = data?.display_name || this.getLocationDisplay(loc);
           this.locationAddressCache.set(key, address);
           (e as any).displayAddress = address;
         } catch {
-          // If reverse geocoding fails, still show coordinates
+
           (e as any).displayAddress = this.getLocationDisplay(loc);
         }
       })());

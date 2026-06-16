@@ -159,18 +159,12 @@ export class TabsPage implements OnInit, OnDestroy {
       return;
     }
 
-    // if (this.userRole === 'admin') {
-    //   this.router.navigate(['/admin-dashboard']);
-    //   return;
-    // }
-
     this.router.navigate(['/tabs/home']);
   }
 
   private async handleInitialNavigation() {
      const currentUrl = this.router.url;
 
-  // Do not redirect if already inside a valid tabs page
   if (currentUrl.startsWith('/tabs/')) {
     return;
   }

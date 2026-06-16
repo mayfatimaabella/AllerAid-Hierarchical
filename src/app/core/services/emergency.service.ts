@@ -104,7 +104,7 @@ export class EmergencyService {
     userId: string,
     userName: string,
     buddyIds: string[],
-    allergies: string[] = [],
+    allergies: string[] = [],s
     instruction: string = '',
     locationData: { latitude: number; longitude: number; accuracy?: number }
   ): Promise<string> {

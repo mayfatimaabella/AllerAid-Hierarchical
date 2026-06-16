@@ -53,62 +53,104 @@
     </ion-popover>
 
     <!-- View Mode -->
-    <ng-container *ngIf="!isEditing">
-      <section class="profile-card">
-        <ion-card class="info-card">
-          <ion-card-header>
-            <ion-card-title>Professional Information</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-item lines="inset">
-              <ion-label>First Name</ion-label>
-              <ion-text slot="end">{{ doctorProfileForm.get('firstName')?.value }}</ion-text>
-            </ion-item>
-            <ion-item lines="inset">
-              <ion-label>Last Name</ion-label>
-              <ion-text slot="end">{{ doctorProfileForm.get('lastName')?.value }}</ion-text>
-            </ion-item>
-            <ion-item lines="inset">
-              <ion-label>Specialization</ion-label>
-              <ion-text slot="end">{{ doctorProfileForm.get('specialization')?.value }}</ion-text>
-            </ion-item>
-            <ion-item lines="inset">
-              <ion-label>License Number</ion-label>
-              <ion-text slot="end">{{ doctorProfileForm.get('licenseNumber')?.value }}</ion-text>
-            </ion-item>
-            <ion-item>
-              <ion-label>Hospital</ion-label>
-              <ion-text slot="end">{{ doctorProfileForm.get('hospital')?.value }}</ion-text>
-            </ion-item>
-          </ion-card-content>
-        </ion-card>
+<!-- View Mode -->
+<ng-container *ngIf="!isEditing">
+  <section class="profile-card">
 
-        <ion-card class="info-card">
-          <ion-card-header>
-            <ion-card-title>Contact Information</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-item lines="inset">
-              <ion-label>Email</ion-label>
-              <ion-text slot="end">{{ doctorProfileForm.get('email')?.value }}</ion-text>
-            </ion-item>
-            <ion-item>
-              <ion-label>Phone</ion-label>
-              <ion-text slot="end">{{ doctorProfileForm.get('phoneNumber')?.value }}</ion-text>
-            </ion-item>
-          </ion-card-content>
-        </ion-card>
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Professional Information</ion-card-title>
+      </ion-card-header>
 
-        <ion-card class="info-card" *ngIf="doctorProfileForm.get('bio')?.value">
-          <ion-card-header>
-            <ion-card-title>Bio</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <p class="bio-text">{{ doctorProfileForm.get('bio')?.value }}</p>
-          </ion-card-content>
-        </ion-card>
-      </section>
-    </ng-container>
+      <ion-card-content>
+        <ion-item lines="inset">
+          <ion-label>Specialization</ion-label>
+          <ion-text slot="end">
+            {{ doctorProfileForm.get('specialization')?.value || 'Not set' }}
+          </ion-text>
+        </ion-item>
+
+        <ion-item lines="inset">
+          <ion-label>PRC License Number</ion-label>
+          <ion-text slot="end">
+            {{ doctorProfileForm.get('licenseNumber')?.value || 'Not set' }}
+          </ion-text>
+        </ion-item>
+
+        <ion-item lines="inset">
+          <ion-label>Hospital</ion-label>
+          <ion-text slot="end">
+            {{ doctorProfileForm.get('hospital')?.value || 'Not set' }}
+          </ion-text>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Verification Status</ion-label>
+          <ion-text slot="end">
+            {{ doctorProfileForm.get('verificationStatus')?.value || 'Pending Review' }}
+          </ion-text>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Personal Information</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-item lines="inset">
+          <ion-label>First Name</ion-label>
+          <ion-text slot="end">
+            {{ doctorProfileForm.get('firstName')?.value || 'Not set' }}
+          </ion-text>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Last Name</ion-label>
+          <ion-text slot="end">
+            {{ doctorProfileForm.get('lastName')?.value || 'Not set' }}
+          </ion-text>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Contact Information</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-item lines="inset">
+          <ion-label>Email</ion-label>
+          <ion-text slot="end">
+            {{ doctorProfileForm.get('email')?.value || 'Not set' }}
+          </ion-text>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Phone</ion-label>
+          <ion-text slot="end">
+            {{ doctorProfileForm.get('phoneNumber')?.value || 'Not set' }}
+          </ion-text>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>About</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content class="about-content">
+        <p class="bio-text">
+          {{ doctorProfileForm.get('bio')?.value || 'No bio added yet.' }}
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+  </section>
+</ng-container>
 
     <!-- Edit Mode -->
     <ng-container *ngIf="isEditing">
@@ -116,7 +158,7 @@
         <form [formGroup]="doctorProfileForm">
           <ion-card class="info-card">
             <ion-card-header>
-              <ion-card-title>Professional Information</ion-card-title>
+              <ion-card-title>Personal Information</ion-card-title>
             </ion-card-header>
             <ion-card-content>
               <ion-item lines="none">

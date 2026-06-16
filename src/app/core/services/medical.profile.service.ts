@@ -43,9 +43,10 @@ export class MedicalService {
     }
   }
 
-  /**
-   * Get the full medical/info document for a user.
+  /*
+   Get the full medical/info document for a user.
    */
+
   async getEmergencyInstruction(uid: string): Promise<any> {
     try {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);
@@ -57,7 +58,7 @@ export class MedicalService {
     }
   }
 
-  /**
+  /*
    * Update emergency message details.
    * Writes to medical/info.emergencyMessage.
    */
@@ -73,9 +74,10 @@ export class MedicalService {
     }
   }
 
-  /**
+  /*
    * Add or update the per-allergy emergency instruction.
    */
+
   async setEmergencyInstructionForAllergy(
     uid: string,
     allergyId: string,
@@ -174,7 +176,6 @@ export class MedicalService {
 
   /**
    * Get all emergency-relevant data for alert display.
-   * Reads from canonical paths only — no more emergencySettings fallback.
    */
   async getEmergencyData(uid: string): Promise<any> {
     try {

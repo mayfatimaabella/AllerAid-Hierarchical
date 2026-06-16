@@ -79,7 +79,7 @@
       <div class="dosage-input-group animate__animated animate__fadeIn" *ngIf="med.medicationType">
         <ion-item class="medication-field dosage-amount-field" lines="none">
           <!-- Dynamically updates via the amountLabel getter -->
-          <ion-label position="stacked">{{ amountLabel }} *</ion-label>
+          <ion-label position="stacked">{{ amountLabel }}*</ion-label>
           <ion-input  
             type="number" 
             [(ngModel)]="med.pillsPerDose" 
@@ -93,22 +93,20 @@
           </ion-input>
         </ion-item>
 
-        <ion-item class="medication-field dosage-unit-field" lines="none">
-          <ion-label position="stacked">Unit *</ion-label>
-          <ion-select 
-            [(ngModel)]="med.dosageUnit" 
-            name="dosageUnit"
-            interface="popover"
-            (ionChange)="onDateOrIntervalChange()"
-            required>
-            <ion-select-option value="tablet(s)">tablet(s)</ion-select-option>
-            <ion-select-option value="capsule(s)">capsule(s)</ion-select-option>
-            <ion-select-option value="ml">ml</ion-select-option>
-            <ion-select-option value="unit(s)">unit(s)</ion-select-option>
-            <ion-select-option value="puff(s)">puff(s)</ion-select-option>
-            <ion-select-option value="drop(s)">drop(s)</ion-select-option>
-            <ion-select-option value="application(s)">application(s)</ion-select-option>
-          </ion-select>
+        <ion-item class="medication-field" lines="none">
+          <ion-label position="stacked">Strength & Unit *</ion-label>
+          <ion-grid class="ion-no-padding">
+            <ion-row class="ion-align-items-center">
+              <ion-col size="7">
+                <ion-input [(ngModel)]="med.strength" name="strength" placeholder="e.g. 500" required></ion-input>
+              </ion-col>
+              <ion-col size="5">
+                <ion-select [(ngModel)]="med.dosageUnit" name="dosageUnit" interface="popover" (ionChange)="onDateOrIntervalChange()" required>
+                  <ion-select-option *ngFor="let u of getAvailableUnits()" [value]="u">{{ u }}</ion-select-option>
+                </ion-select>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </ion-item>
       </div>
 
@@ -206,7 +204,7 @@
 
       <!-- Physical Medicine Expiration -->
       <ion-item class="medication-field date-field" lines="none">
-        <ion-label position="stacked">Medicine Expiry Date</ion-label>
+        <ion-label position="stacked">Medicine Expiry Date *</ion-label>
         <ion-datetime-button datetime="medicineExpiryDate"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>

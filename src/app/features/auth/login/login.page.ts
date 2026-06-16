@@ -88,7 +88,7 @@ export class LoginPage implements OnInit {
           role: userProfile.role
         }));
 
-        this.presentToast('Login successful!', 'success', 2500, 'checkmark-circle-outline');
+        this.presentToast('Login successful!', 'success', 2500);
 
         const top = await this.loadingController.getTop();
           if (top) await top.dismiss();

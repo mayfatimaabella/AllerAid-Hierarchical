@@ -136,13 +136,13 @@
           [profileDetails]="vm.profileDetails"
           [userProfile]="vm.profile"
           [emergencyInstructions]="vm.emergencyInstructions || []"
+
           [openEditEmergencyMessageModal]="openEditProfileModal"
           (openEditAllergies)="openEditAllergiesModal()"
           (openEmergencyInfo)="activeModal = 'emergencyInfo'">
         </app-profile-overview-section>
           
         </ng-container>
-        
         
         <!-- Detailed Emergency Info Modal -->
          <ion-modal [isOpen]="activeModal === 'emergencyInfo'" (didDismiss)="activeModal = null" [initialBreakpoint]="1" [breakpoints]="[0, 1]" [handle]="false">
@@ -156,10 +156,11 @@
               [dateOfBirth]="vm.profileDetails?.dateOfBirth || ''"
               [gender]="vm.profileDetails?.gender || ''"
               [bloodType]="vm.profileDetails?.bloodType || ''"
+
               [openEditEmergencyMessageModal]="openEditProfileModal"
               [openManageInstructionsModal]="openAddInstructionModal"
               (close)="activeModal = null"
-              (testAudio)="testAudioInstructions()"
+              
               (addInstruction)="openAddInstructionModal()"
               (editInstruction)="openEditProfileModal()"
               (openEditAllergies)="openEditAllergiesModal()"> 
@@ -249,13 +250,6 @@
           [isOpen]="activeModal === 'examples'"
           (closeModal)="activeModal = null">
         </app-emergency-examples-modal>
-
-        <app-profile-settings
-          [audioInstructionsEnabled]="profileEmergencySettings.emergencySettings.audioInstructions"
-          [showVoiceSettings]="profileEmergencySettings.showVoiceSettings"
-          [profileVoiceFacade]="profileVoiceFacade"
-          [testAudioSettings]="testAudioInstructions"
-        ></app-profile-settings>
 
       </ng-container>
     </section>

@@ -94,7 +94,6 @@ export class EditEmergencyProfileModalComponent implements OnInit {
       return;
     }
 
-    // Ask for confirmation first
     const alert = await this.alertController.create({
       header: 'Confirm Save',
       message: 'Save changes to the emergency message?',

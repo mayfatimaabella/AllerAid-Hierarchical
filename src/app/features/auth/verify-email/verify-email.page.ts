@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ToastController, NavController } from '@ionic/angular';
 
@@ -14,53 +16,71 @@ import { ToastController, NavController } from '@ionic/angular';
 })
 export class VerifyEmailPage implements OnInit, OnDestroy {
   email: string | null = null;
+
+  role: 'user' | 'doctor' = 'user';
+
   resendDisabled = false;
   resendCountdown = 0;
   resendInterval: any;
 
-  // Poll for verification so the user gets auto-redirected once they click the link
   private pollInterval: any;
   private readonly POLL_INTERVAL_MS = 4000;
 
   constructor(
     private authService: AuthService,
     private toastController: ToastController,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
     this.email = this.authService.getCurrentUserEmail();
-    // Don't check immediately — user just registered and the email is never
-    // verified at this point. Start polling silently instead.
+
+    const roleParam = this.route.snapshot.queryParamMap.get('role');
+    this.role = roleParam === 'doctor' ? 'doctor' : 'user';
+
     this.startVerificationPolling();
   }
 
   ngOnDestroy() {
     this.stopVerificationPolling();
+
     if (this.resendInterval) {
       clearInterval(this.resendInterval);
     }
   }
 
-  /**
-   * Poll Firebase every few seconds. Once the user clicks the link in their
-   * inbox and we detect verification, redirect them automatically.
-   */
+  get isDoctor(): boolean {
+    return this.role === 'doctor';
+  }
+
   private startVerificationPolling(): void {
     this.pollInterval = setInterval(async () => {
       try {
-        const user = await this.authService.getCurrentUser();
-        // Force-reload the token so Firebase reflects the latest verified state
+        const user = this.authService.getCurrentUser();
+
         if (user) {
           await user.reload();
         }
+
         if (user?.emailVerified) {
           this.stopVerificationPolling();
-          await this.presentToast('Email verified! Redirecting…', 'success');
+
+          if (this.isDoctor) {
+            await this.presentToast(
+              'Email verified! Your doctor account is pending admin approval.',
+              'success'
+            );
+          } else {
+            await this.presentToast(
+              'Email verified! You may now log in.',
+              'success'
+            );
+          }
+
           this.navCtrl.navigateRoot('/login');
         }
       } catch (error) {
-        // Silently ignore polling errors — user can still manually proceed
         console.error('Verification poll error:', error);
       }
     }, this.POLL_INTERVAL_MS);
@@ -75,16 +95,29 @@ export class VerifyEmailPage implements OnInit, OnDestroy {
 
   async resendVerificationEmail() {
     if (this.resendDisabled) return;
+
     try {
       await this.authService.resendVerificationEmail();
-      await this.presentToast('Verification email resent. Please check your inbox.');
+
+      await this.presentToast(
+        'Verification email resent. Please check your inbox or spam folder.',
+        'success'
+      );
+
       this.startResendCooldown(60);
     } catch (error: any) {
       console.error('Error resending verification email:', error);
+
       if (error.code === 'auth/too-many-requests') {
-        await this.presentToast('Too many requests. Please wait and try again later.');
+        await this.presentToast(
+          'Too many requests. Please wait and try again later.',
+          'warning'
+        );
       } else {
-        await this.presentToast('Failed to resend verification email.');
+        await this.presentToast(
+          'Failed to resend verification email.',
+          'danger'
+        );
       }
     }
   }
@@ -92,8 +125,10 @@ export class VerifyEmailPage implements OnInit, OnDestroy {
   startResendCooldown(seconds: number) {
     this.resendDisabled = true;
     this.resendCountdown = seconds;
+
     this.resendInterval = setInterval(() => {
       this.resendCountdown--;
+
       if (this.resendCountdown <= 0) {
         this.resendDisabled = false;
         clearInterval(this.resendInterval);
@@ -116,6 +151,7 @@ export class VerifyEmailPage implements OnInit, OnDestroy {
       position: 'bottom',
       color,
     });
+
     await toast.present();
   }
 }

@@ -101,7 +101,18 @@ const routes: Routes = [
       {
         path: 'pollen-map',
         loadChildren: () => import('../../features/pollen-map/pollen-map.module').then(m => m.PollenMapPageModule)
+      },
+      {
+        path: 'patients-doctor',
+        loadChildren: () => import('../../features/patients-doctor/patients-doctor.module').then(m => m.PatientsDoctorPageModule),
+        canActivate: [RoleGuard],
+        data: { roles: ['user'] }
       }
+      // {
+      //   path: '',
+      //   redirectTo: '/tabs/home',
+      //   pathMatch: 'full'
+      // }
     ]
   }
 ];
