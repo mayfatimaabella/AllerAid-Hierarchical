@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:125756003828:android:100285423e7216f43a95a1",
+        "android_client_info": {
+          "package_name": "com.alleraid.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2N8BySn6GaapIr0h51k7AXILk8eZyelw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:125756003828:android:abf0fb051b5b773a3a95a1",
         "android_client_info": {
           "package_name": "com.yourcompany.alleraid2"

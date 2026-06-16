@@ -11,7 +11,6 @@ import { LocationPermissionService } from '../../../core/services/location-permi
 import { AllergyService } from '../../../core/services/allergy.service';
 import { EmergencyInfoModalComponent } from '../../../shared/components/emergency-info-modal/emergency-info-modal.component';
 
-// Fix for default markers in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
@@ -45,7 +44,7 @@ export class ResponderMapPage implements OnInit, OnDestroy {
   responderName: string = 'Your buddy';
   estimatedArrivalTime: string = '';
   responderDistance: string = '';
-  mapAvailable: boolean = true; // Leaflet is always available
+  mapAvailable: boolean = true;
 
   patientName: string = 'Patient';
   patientInstructions: string = '';
@@ -53,7 +52,6 @@ export class ResponderMapPage implements OnInit, OnDestroy {
   
   constructor(
     private router: Router,
-    private route: ActivatedRoute,
     private emergencyService: EmergencyService,
     private loadingController: LoadingController,
     private authService: AuthService,

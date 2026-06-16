@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.alleraid.app;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -19,7 +19,7 @@ import androidx.core.app.NotificationManagerCompat;
 public class MedicationNotificationReceiver extends BroadcastReceiver {
 
     private static final String TAG = "MedicationNotifReceiver";
-    private static final String ACTION_MEDICATION_REMINDER = "io.ionic.starter.MEDICATION_REMINDER";
+    private static final String ACTION_MEDICATION_REMINDER = "com.alleraid.app.MEDICATION_REMINDER";
 
     @Override
     public void onReceive(Context context, Intent intent) {

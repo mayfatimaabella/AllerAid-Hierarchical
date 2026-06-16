@@ -13,7 +13,6 @@ export type { EmergencyLocation } from './models/emergency-location.model';
 export type { EmergencySettings } from './models/emergency-settings.model';
 export type { ProfessionalCredentials } from './models/professional-credentials.model';
 export type { EmergencyInstruction } from './models/emergency-instruction.model';
-export type { EmergencyMessage } from './models/emergency-message.model';
 export type { MedicalRecord } from './models/medical-record.model';
 
 export { AuthService } from './auth.service';

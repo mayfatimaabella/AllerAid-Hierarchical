@@ -51,32 +51,62 @@
         </div>   
 
         <div *ngIf="showBuddyBanner" class="buddy-banner">
+          <div class="buddy-banner-content">
+            <ion-icon
+              [name]="buddyBannerState === 'pending' ? 'time-outline' : 'person-circle-outline'"
+              class="buddy-banner-icon">
+            </ion-icon>
 
-        <div class="buddy-banner-content">
-          <ion-icon name="person-circle-outline" class="buddy-banner-icon"></ion-icon>
-          <div class="buddy-banner-text">
-            <p class="buddy-banner-title">You don't have a buddy yet</p>
-            <p class="buddy-banner-sub"> A buddy can alert someone instantly in an emergency.</p>
+            <div class="buddy-banner-text">
 
-            <ion-button
-              size="small"
-              fill="solid"
-              color="warning"
-              [routerLink]="['/tabs/buddy']">
-              <ion-icon name="person-add-outline" slot="start"></ion-icon>
-              Add a buddy
-            </ion-button>
+              <!-- Pending buddy request -->
+              <ng-container *ngIf="buddyBannerState === 'pending'; else noBuddyYet">
+                <p class="buddy-banner-title">Buddy request pending</p>
+                <p class="buddy-banner-sub">
+                  You invited
+                  {{ pendingBuddyInviteCount }}
+                  {{ pendingBuddyInviteCount === 1 ? 'buddy' : 'buddies' }}.
+                  Waiting for confirmation.
+                </p>
+
+                <ion-button
+                  size="small"
+                  fill="solid"
+                  color="warning"
+                  [routerLink]="['/tabs/buddy']">
+                  <ion-icon name="time-outline" slot="start"></ion-icon>
+                  View request
+                </ion-button>
+              </ng-container>
+
+              <!-- No buddy and no pending request -->
+              <ng-template #noBuddyYet>
+                <p class="buddy-banner-title">You don't have a buddy yet</p>
+                <p class="buddy-banner-sub">
+                  A buddy can respond quickly when you trigger an emergency alert.
+                </p>
+
+                <ion-button
+                  size="small"
+                  fill="solid"
+                  color="warning"
+                  [routerLink]="['/tabs/buddy']">
+                  <ion-icon name="person-add-outline" slot="start"></ion-icon>
+                  Add a buddy
+                </ion-button>
+              </ng-template>
+
+            </div>
           </div>
-        </div>
 
-      <ion-button
-        fill="clear"
-        size="small"
-        class="buddy-banner-close"
-        (click)="showBuddyBanner = false">
-        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </div>
+          <ion-button
+            fill="clear"
+            size="small"
+            class="buddy-banner-close"
+            (click)="showBuddyBanner = false">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
 
     <div class="emergency-wrapper">
       <p class="emergency-label">Emergency Trigger</p>

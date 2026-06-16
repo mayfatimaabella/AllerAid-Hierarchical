@@ -9,174 +9,250 @@ export interface LocationPermissionResult {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LocationPermissionService {
-
   constructor(
     private alertController: AlertController,
     private toastController: ToastController
   ) {}
 
   /**
-   * Request location permissions with user-friendly handling
+   * Main permission request method.
+   * Mobile app = Capacitor native permission.
+   * ionic serve = browser permission fallback.
    */
   async requestLocationPermissions(): Promise<LocationPermissionResult> {
     if (Capacitor.isNativePlatform()) {
       return this.requestNativePermissions();
-    } else {
-      return this.checkBrowserPermissions();
     }
+
+    return this.requestBrowserPermissions();
   }
 
   /**
-   * Handle native (mobile) location permissions
+   * Check if location permission is already granted.
+   * This is used when the onboarding page loads.
+   */
+  async isLocationAvailable(): Promise<boolean> {
+    if (Capacitor.isNativePlatform()) {
+      return this.isNativeLocationGranted();
+    }
+
+    return this.isBrowserLocationGranted();
+  }
+
+  /**
+   * Native Android/iOS permission request.
    */
   private async requestNativePermissions(): Promise<LocationPermissionResult> {
     try {
-      // Check if geolocation is available
       if (!Capacitor.isPluginAvailable('Geolocation')) {
         return {
           granted: false,
-          message: 'Location services are not available on this device'
+          message: 'Location services are not available on this device.',
         };
       }
 
-      // Request permissions
       const permissions = await Geolocation.requestPermissions();
-      
-      if (permissions.location === 'granted') {
-        return { granted: true };
-      } else if (permissions.location === 'denied') {
-        await this.showPermissionDeniedAlert();
+
+      const preciseGranted = permissions.location === 'granted';
+      const coarseGranted = permissions.coarseLocation === 'granted';
+
+      if (preciseGranted || coarseGranted) {
         return {
-          granted: false,
-          message: 'Location permission denied. Please enable in device settings.'
-        };
-      } else {
-        return {
-          granted: false,
-          message: 'Location permission not granted'
+          granted: true,
+          message: preciseGranted
+            ? 'Location permission granted.'
+            : 'Approximate location permission granted.',
         };
       }
-    } catch (error) {
-      console.error('Error requesting location permissions:', error);
+
+      if (permissions.location === 'denied') {
+        await this.showNativePermissionDeniedAlert();
+
+        return {
+          granted: false,
+          message: 'Location permission denied. Please enable it in device settings.',
+        };
+      }
+
       return {
         granted: false,
-        message: 'Error requesting location permissions'
+        message: 'Location permission was not granted.',
+      };
+    } catch (error) {
+      console.error('Error requesting native location permission:', error);
+
+      return {
+        granted: false,
+        message: 'Error requesting location permission.',
       };
     }
   }
 
   /**
-   * Check browser location permissions
+   * Native Android/iOS permission check.
    */
-  private async checkBrowserPermissions(): Promise<LocationPermissionResult> {
+  private async isNativeLocationGranted(): Promise<boolean> {
+    try {
+      if (!Capacitor.isPluginAvailable('Geolocation')) {
+        return false;
+      }
+
+      const permissions = await Geolocation.checkPermissions();
+
+      return (
+        permissions.location === 'granted' ||
+        permissions.coarseLocation === 'granted'
+      );
+    } catch (error) {
+      console.error('Error checking native location permission:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Browser permission request.
+   * Used only for ionic serve/testing.
+   */
+  private async requestBrowserPermissions(): Promise<LocationPermissionResult> {
     if (!navigator.geolocation) {
       return {
         granted: false,
-        message: 'Location services are not supported by this browser'
+        message: 'Location services are not supported by this browser.',
       };
     }
 
-    // For browsers, we can't directly request permissions
-    // The permission dialog appears when we first call getCurrentPosition or watchPosition
-    // We'll test with a quick position check
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         () => {
-          resolve({ granted: true });
+          resolve({
+            granted: true,
+            message: 'Location permission granted.',
+          });
         },
         async (error) => {
           if (error.code === error.PERMISSION_DENIED) {
-            await this.showBrowserPermissionAlert();
+            await this.showBrowserPermissionDeniedAlert();
+
             resolve({
               granted: false,
-              message: 'Location access denied. Please allow location access in your browser.'
+              message: 'Location access denied. Please allow location access in your browser.',
             });
-          } else if (error.code === error.POSITION_UNAVAILABLE) {
-            resolve({
-              granted: false,
-              message: 'Location information is unavailable. Please check your location settings.'
-            });
-          } else if (error.code === error.TIMEOUT) {
-            resolve({
-              granted: false,
-              message: 'Location request timed out. Please try again.'
-            });
-          } else {
-            resolve({
-              granted: false,
-              message: 'Unable to retrieve location. Please check your location settings.'
-            });
+            return;
           }
+
+          if (error.code === error.POSITION_UNAVAILABLE) {
+            resolve({
+              granted: false,
+              message: 'Location information is unavailable. Please check your location settings.',
+            });
+            return;
+          }
+
+          if (error.code === error.TIMEOUT) {
+            resolve({
+              granted: false,
+              message: 'Location request timed out. Please try again.',
+            });
+            return;
+          }
+
+          resolve({
+            granted: false,
+            message: 'Unable to retrieve location. Please check your location settings.',
+          });
         },
         {
-          enableHighAccuracy: false,
-          timeout: 5000,
-          maximumAge: 60000
+          enableHighAccuracy: true,
+          timeout: 8000,
+          maximumAge: 60000,
         }
       );
     });
   }
 
   /**
-   * Show alert for native permission denial
+   * Browser permission check.
+   * Used only for ionic serve/testing.
+   *
+   * Important:
+   * Do not return true just because navigator.geolocation exists.
+   * That only means the browser supports location, not that permission is granted.
    */
-  private async showPermissionDeniedAlert() {
+  private async isBrowserLocationGranted(): Promise<boolean> {
+    if (!navigator.geolocation) {
+      return false;
+    }
+
+    if ('permissions' in navigator) {
+      try {
+        const permissionStatus = await navigator.permissions.query({
+          name: 'geolocation' as PermissionName,
+        });
+
+        return permissionStatus.state === 'granted';
+      } catch (error) {
+        console.error('Error checking browser location permission:', error);
+        return false;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Alert shown when native permission is denied.
+   */
+  private async showNativePermissionDeniedAlert(): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Location Permission Required',
-      message: 'AllerAid needs location access to provide emergency assistance. Please enable location permissions in your device settings.',
+      message:
+        'AllerAid needs location access so your buddies can find you during an emergency. Please enable location permission in your device settings.',
+      backdropDismiss: false,
       buttons: [
         {
           text: 'Cancel',
-          role: 'cancel'
+          role: 'cancel',
         },
         {
-          text: 'Open Settings',
+          text: 'How to Enable',
           handler: () => {
-            // On mobile, this would open the app settings
-            // The exact implementation depends on the platform
-            this.openAppSettings();
-          }
-        }
-      ]
+            this.showNativeSettingsInstructions();
+          },
+        },
+      ],
     });
 
     await alert.present();
   }
 
   /**
-   * Show alert for browser permission issues
+   * Alert shown when browser permission is denied.
    */
-  private async showBrowserPermissionAlert() {
+  private async showBrowserPermissionDeniedAlert(): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Location Access Required',
-      message: 'AllerAid needs location access to provide emergency assistance. Please allow location access when prompted by your browser, or check that location services are enabled.',
+      message:
+        'AllerAid needs location access for emergency assistance. Please allow location access in your browser settings.',
       buttons: [
         {
           text: 'OK',
-          role: 'cancel'
+          role: 'cancel',
         },
-        {
-          text: 'Try Again',
-          handler: () => {
-            // Trigger another permission request
-            this.requestLocationPermissions();
-          }
-        }
-      ]
+      ],
     });
 
     await alert.present();
   }
 
   /**
-   * Show informative toast about location requirements
+   * Toast for location-required situations.
    */
-  async showLocationRequiredToast() {
+  async showLocationRequiredToast(): Promise<void> {
     const toast = await this.toastController.create({
-      message: 'Location access is required for emergency tracking',
+      message: 'Location access is needed during emergencies.',
       duration: 4000,
       position: 'bottom',
       color: 'warning',
@@ -185,52 +261,29 @@ export class LocationPermissionService {
           text: 'Enable',
           handler: () => {
             this.requestLocationPermissions();
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await toast.present();
   }
 
   /**
-   * Open app settings (platform-specific)
+   * Manual settings instructions.
+   *
+   * For now, this shows instructions instead of opening settings directly.
+   * Opening app settings needs an extra plugin.
    */
-  private openAppSettings() {
-    if (Capacitor.isNativePlatform()) {
-      // This would require additional Capacitor plugins like @capacitor/app
-      // For now, just show a toast with instructions
-      this.showSettingsInstructions();
-    }
-  }
-
-  /**
-   * Show instructions for manually enabling location
-   */
-  private async showSettingsInstructions() {
+  private async showNativeSettingsInstructions(): Promise<void> {
     const toast = await this.toastController.create({
-      message: 'Go to Settings > Privacy & Security > Location Services > AllerAid > Allow Location Access',
+      message:
+        'Open your phone Settings > Apps > AllerAid > Permissions > Location > Allow.',
       duration: 8000,
       position: 'bottom',
-      color: 'primary'
+      color: 'primary',
     });
 
     await toast.present();
-  }
-
-  /**
-   * Check if location is currently available (quick test)
-   */
-  async isLocationAvailable(): Promise<boolean> {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const permissions = await Geolocation.checkPermissions();
-        return permissions.location === 'granted';
-      } catch (error) {
-        return false;
-      }
-    } else {
-      return navigator.geolocation !== undefined;
-    }
   }
 }

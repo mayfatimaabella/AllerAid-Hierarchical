@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.alleraid.app;
 
 import android.app.Service;
 import android.content.Intent;

@@ -61,12 +61,11 @@ export class BuddyService {
   private notifiedAcceptances = new Set<string>();
 
   
-
   private relationsListenerUnsubscribe?: () => void;
 
-  hasBeenNotified(buddyUid: string): boolean {
-  return this.notifiedAcceptances.has(buddyUid);
-}
+  hasBeenNotified(buddyUid: string): boolean { 
+    return this.notifiedAcceptances.has(buddyUid);
+  }
 
   markAsNotified(buddyUid: string): void {
     this.notifiedAcceptances.add(buddyUid);
@@ -120,18 +119,9 @@ export class BuddyService {
       }
     }
 
-    const sentInvitesRef = collection(
-      this.db,
-      'users',
-      currentUserId,
-      'sentBuddyInvitations'
-    );
+    const sentInvitesRef = collection(this.db,'users',currentUserId,'sentBuddyInvitations');
 
-    const sentQ = query(
-      sentInvitesRef,
-      where('toUserEmail', '==', targetEmailLower),
-      where('status', '==', 'pending')
-    );
+    const sentQ = query(sentInvitesRef, where('toUserEmail', '==', targetEmailLower),where('status', '==', 'pending'));
 
     const sentSnap = await getDocs(sentQ);
 
@@ -147,18 +137,9 @@ export class BuddyService {
       };
     }
 
-    const receivedInvitesRef = collection(
-      this.db,
-      'users',
-      currentUserId,
-      'receivedBuddyInvitations'
-    );
+    const receivedInvitesRef = collection(this.db,'users',currentUserId,'receivedBuddyInvitations');
 
-    const receivedQ = query(
-      receivedInvitesRef,
-      where('fromUserEmail', '==', targetEmailLower),
-      where('status', '==', 'pending')
-    );
+    const receivedQ = query(receivedInvitesRef,where('fromUserEmail', '==', targetEmailLower),where('status', '==', 'pending'));
 
     const receivedSnap = await getDocs(receivedQ);
 
@@ -226,15 +207,9 @@ export class BuddyService {
       createdAt: new Date()
     };
 
-    await setDoc(
-      doc(this.db, 'users', currentUser.uid, 'sentBuddyInvitations', inviteId),
-      invitationData
-    );
+    await setDoc(doc(this.db, 'users', currentUser.uid, 'sentBuddyInvitations', inviteId),invitationData);
 
-    await setDoc(
-      doc(this.db, 'users', targetUser.uid, 'receivedBuddyInvitations', inviteId),
-      invitationData
-    );
+    await setDoc(doc(this.db, 'users', targetUser.uid, 'receivedBuddyInvitations', inviteId),invitationData);
 
     return inviteId;
   }
@@ -270,10 +245,7 @@ export class BuddyService {
       createdAt: new Date()
     };
 
-    await setDoc(
-      doc(this.db, 'users', authUser.uid, 'sentBuddyInvitations', inviteId),
-      invitationData
-    );
+    await setDoc(doc(this.db, 'users', authUser.uid, 'sentBuddyInvitations', inviteId),invitationData);
   }
 
   async acceptBuddyInvitation(invitationId: string): Promise<void> {

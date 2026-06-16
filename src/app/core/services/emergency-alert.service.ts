@@ -41,78 +41,99 @@ export class EmergencyAlertService {
   /**
    * Trigger emergency alert
    */
-  async triggerEmergencyAlert(alertType: 'shake' | 'power-button' | 'manual' = 'manual'): Promise<void> {
-    try {
-      // Get current user
-      const currentUser = await this.authService.waitForAuthInit();
-      if (!currentUser) {
-        throw new Error('No authenticated user found');
-      }
+  async triggerEmergencyAlert(
+  alertType: 'shake' | 'power-button' | 'manual' = 'manual'
+): Promise<void> {
+  try {
+    const currentUser = await this.authService.waitForAuthInit();
 
-      console.log(`Triggering ${alertType} emergency alert for user:`, currentUser.uid);
+    if (!currentUser) {
+      throw new Error('No authenticated user found');
+    }
 
-      // Load latest profile for name and instructions
-      const userProfile = await this.userService.getUserProfile(currentUser.uid);
+    console.log(`Triggering ${alertType} emergency alert for user:`, currentUser.uid);
 
-      const fullNameParts: string[] = [];
-      if (userProfile?.firstName) fullNameParts.push(userProfile.firstName);
-      if (userProfile?.lastName) fullNameParts.push(userProfile.lastName);
-      const derivedName = fullNameParts.join(' ').trim();
-      const userName = (userProfile?.fullName || derivedName || currentUser.email || 'User').trim();
+    const userProfile = await this.userService.getUserProfile(currentUser.uid);
 
+    const fullNameParts: string[] = [];
 
-      const medicalData = await this.medicalService.getEmergencyData(currentUser.uid);
-      const resolvedInstruction = medicalData?.emergencyInstruction?.trim() || '';
+    if (userProfile?.firstName) {
+      fullNameParts.push(userProfile.firstName);
+    }
 
-      // Get patient's buddies and extract unique connected user IDs
-      const buddies = await this.buddyService.getUserBuddies(currentUser.uid);
-      const buddyIds = Array.from(new Set(
+    if (userProfile?.lastName) {
+      fullNameParts.push(userProfile.lastName);
+    }
+
+    const derivedName = fullNameParts.join(' ').trim();
+
+    const userName =
+      (userProfile?.fullName || derivedName || currentUser.email || 'User').trim();
+
+    const medicalData = await this.medicalService.getEmergencyData(currentUser.uid);
+    const resolvedInstruction = medicalData?.emergencyInstruction?.trim() || '';
+
+    const buddies = await this.buddyService.getUserBuddies(currentUser.uid);
+
+    const buddyIds = Array.from(
+      new Set(
         buddies
-          .map(buddy => buddy.connectedUserId)
+          .map(buddy => buddy.connectedUserId || buddy.buddyUid || buddy.id)
           .filter(id => !!id && id !== currentUser.uid)
-      ));
+      )
+    );
 
-      if (buddyIds.length === 0) {
-        console.warn('No emergency buddies configured. Creating emergency without buddy recipients (hotline-only fallback).');
-      }
+    if (buddyIds.length === 0) {
+      console.warn(
+        'No emergency buddies configured. Emergency will use hotline-only fallback.'
+      );
+    }
 
-      console.log('Sending full emergency via EmergencyService from', alertType, 'trigger');
+    console.log('Getting current location before sending emergency alert...');
 
+    let locationData: {
+      latitude: number;
+      longitude: number;
+      accuracy?: number;
+    };
 
-      let locationData: {
-        latitude: number;
-        longitude: number;
-      } | null = null;
+    try {
+      const position = await this.emergencyService.getCurrentLocation();
 
-      try {
-        const position = await this.emergencyService.getCurrentLocation();
+      locationData = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+      };
+    } catch (error) {
+      console.warn('Emergency alert blocked because location is unavailable:', error);
 
-        locationData = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        };
-      } catch (error) {
-        console.warn('Location unavailable for emergency trigger:', error);
-}
-
-      // Delegate to the main emergency pipeline so behavior matches the red button
-      await this.emergencyService.sendEmergencyAlert(
-        currentUser.uid,
-        userName,
-        buddyIds,
-        [],
-        resolvedInstruction,
-        locationData
+      await this.showToast(
+        'Could not get your current location. Emergency alert was not sent.',
+        'danger'
       );
 
-      console.log('Emergency alert sent successfully via EmergencyService');
-      
-    } catch (error) {
-      console.error('Error triggering emergency alert:', error);
-      throw error;
+      throw new Error('Location is required before sending an emergency alert.');
     }
-  }
 
+    console.log('Sending full emergency via EmergencyService from', alertType, 'trigger');
+
+    await this.emergencyService.sendEmergencyAlert(
+      currentUser.uid,
+      userName,
+      buddyIds,
+      [],
+      resolvedInstruction,
+      locationData
+    );
+
+    console.log('Emergency alert sent successfully via EmergencyService');
+
+  } catch (error) {
+    console.error('Error triggering emergency alert:', error);
+    throw error;
+  }
+}
   /**
    * Get current device location
    */

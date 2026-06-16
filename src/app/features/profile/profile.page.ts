@@ -4,7 +4,7 @@ import { combineLatest } from 'rxjs';
 import { ToastController, ModalController } from '@ionic/angular';
 
 import { UserProfile } from '../../core/services/models/user-profile.model';
-import { EmergencyMessage } from '../../core/services/models/emergency-message.model';
+
 import { Medication } from '../../core/services/medication.service';
 
 import { AllergyManagerService } from '../../core/services/allergy-manager.service';
@@ -33,12 +33,6 @@ import {
   ProfessionalSettings,
 } from './profile.types';
 
-
-const EMPTY_EMERGENCY_MESSAGE: EmergencyMessage = {
-  name: '',
-  allergies: '',
-  location: ''
-};
 
 @Component({
   selector: 'app-profile',
@@ -79,7 +73,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   vm$ = combineLatest({
     profile: this.profileDataLoader.userProfile$,
     allergies: this.profileDataLoader.userAllergies$,
-    emergencyMessage: this.profileDataLoader.emergencyMessage$,
+    emergencyProfile: this.profileDataLoader.emergencyProfile$,
     emergencyInstructions: this.profileDataLoader.emergencyInstructions$,
     profileDetails: this.profileDataLoader.profileDetails$
 
@@ -189,12 +183,13 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   openEditProfileModal = async (): Promise<void> => {
     await this.closeEmergencyModalIfOpen();
+
     await this.profileEmergencySettings.openEditProfileModal(
-      this.profileDataLoader.emergencyMessageValue || EMPTY_EMERGENCY_MESSAGE,
       this.profileDataLoader.userProfileValue,
       this.profileDataLoader.profileDetailsValue,
       (message: EmergencyMessageFormData) => this.saveEditedEmergencyMessage(message),
-      () => this.profileDataLoader.loadAllData()
+      () => this.profileDataLoader.loadAllData(),
+      this.profileDataLoader.emergencyProfileValue
     );
   };
 
@@ -202,7 +197,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     await this.profileEmergencySettings.saveEditedEmergencyMessage(
       message,
       this.profileDataLoader.userProfileValue,
-      (msg: EmergencyMessage) => { this.profileDataLoader.setEmergencyMessage(msg); },
+      (msg: any) => { this.profileDataLoader.setEmergencyProfile(msg); },
       (profile: UserProfile) => { this.profileDataLoader.setUserProfile(profile); },
       () => this.profileDataLoader.loadAllData(),
       (toastMessage: string) => this.presentToast(toastMessage)
@@ -222,9 +217,8 @@ export class ProfilePage implements OnInit, OnDestroy {
   getEmergencyInstructionEntries(): { label: string; text: string }[] {
     return this.profileEmergencySettings.getEmergencyInstructionEntries(
       this.profileDataLoader.emergencyInstructionsValue,
-      this.profileDataLoader.emergencyMessageValue ?? EMPTY_EMERGENCY_MESSAGE,
       this.profileEmergencySettings.emergencySettings,
-      this.profileDataLoader.emergencyMessageValue?.instructions
+      this.profileDataLoader.emergencyProfileValue?.instructions
     );
   }
 

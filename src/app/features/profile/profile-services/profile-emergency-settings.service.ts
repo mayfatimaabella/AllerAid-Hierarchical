@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { MedicalService } from '../../../core/services/medical.profile.service';
-import { EmergencyMessage } from '../../../core/services/models/emergency-message.model';
 import { UserService } from '../../../core/services/user.service';
 import { UserProfile } from '../../../core/services/models/user-profile.model';
 import { EditEmergencyProfileModalComponent } from '../overview/modals/edit-profile-message/edit-emergency-profile-modal.component';
@@ -75,18 +74,26 @@ export class ProfileEmergencySettingsService {
   }
 
   async openEditProfileModal(
-    emergencyMessage: EmergencyMessage,
     userProfile: UserProfile | null,
     profileDetails: any,
     onSave: (message: any) => Promise<void>,
-    onRefresh: () => Promise<void>
+    onRefresh: () => Promise<void>,
+    emergencyProfile?: any  // ← add this
   ): Promise<void> {
     const modal = await this.modalController.create({
       component: EditEmergencyProfileModalComponent,
       componentProps: {
-        emergencyMessage,
+        mode: 'edit',
         userProfile,
-        profileDetails
+        profileDetails,
+        emergencyMessage: {
+          name: userProfile?.fullName || '',
+          instructions: emergencyProfile?.instructions || '',
+          allergies: emergencyProfile?.allergies || '',
+          location: emergencyProfile?.location || '',
+          contactPhone: profileDetails?.phone || '',
+          profile_picture: profileDetails?.profile_picture || null,
+        }
       },
       cssClass: 'force-white-modal',
       handle: false,
@@ -97,6 +104,7 @@ export class ProfileEmergencySettingsService {
     modal.onDidDismiss().then(async (result: any) => {
       if (result?.data) {
         await onSave(result.data);
+        await onRefresh();
       }
     });
 
@@ -137,11 +145,6 @@ export class ProfileEmergencySettingsService {
       const currentDetails =
         await this.profileDetailService.getUserProfileDetails(uid);
 
-      const emergencyMessage: EmergencyMessage = {
-        name: message.name || '',
-        allergies: message.allergies || '',
-        location: message.location || '',
-      };
 
       const updatedFullName =
         message.name || userProfile.fullName || '';
@@ -184,10 +187,7 @@ export class ProfileEmergencySettingsService {
       });
 
       // Update emergency message
-      await this.medicalService.updateEmergencyMessage(
-        uid,
-        emergencyMessage
-      );
+      await this.medicalService.updateEmergencyMessage(uid);
 
       // Update emergency instructions
       await this.medicalService.setEmergencyInstruction(
@@ -196,10 +196,7 @@ export class ProfileEmergencySettingsService {
       );
 
       // Update local state
-      setEmergencyMessage({
-        ...emergencyMessage,
-        instructions: message.instructions || ''
-      });
+      setEmergencyMessage({instructions: message.instructions || ''});
 
       setUserProfile({
         ...userProfile,
@@ -236,16 +233,10 @@ export class ProfileEmergencySettingsService {
 
     const uid = userProfile.uid;
 
-    const emergencyMessage: EmergencyMessage = {
-      name: message?.name || '',
-      allergies: message?.allergies || '',
-      location: message?.location || ''
-    };
-
     try {
       const parsedName = this.parseName(message?.name);
 
-      await this.medicalService.updateEmergencyMessage(uid, emergencyMessage);
+      await this.medicalService.updateEmergencyMessage(uid);
 
       await this.userService.updateUserProfile(uid, {
         ...(parsedName.fullName ? { fullName: parsedName.fullName } : {}),
@@ -269,7 +260,6 @@ export class ProfileEmergencySettingsService {
 
   getEmergencyInstructionEntries(
     emergencyInstructions: any[],
-    emergencyMessage: EmergencyMessage,
     emergencySettings?: any,
     generalInstruction?: string
   ): { label: string; text: string }[] {

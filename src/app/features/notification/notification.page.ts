@@ -42,7 +42,6 @@ export class NotificationPage implements OnInit, OnDestroy {
     LocalNotifications.removeAllListeners();
   }
 
-  // --- Helper Methods moved inside the class ---
 
   nowTime(): number {
     return new Date().getTime();

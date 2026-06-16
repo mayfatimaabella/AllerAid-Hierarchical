@@ -66,21 +66,18 @@ export class EmergencyService {
 
   private backgroundLocationWatchId: string | null = null;
   private cachedLocation: Position | null = null;
-  private cachedLocationTimestamp: number | null = null; // FIX #12: track cache age
-  private isBackgroundTrackingActive = false;
+  private cachedLocationTimestamp: number | null = null;
 
   private userEmergencySubject = new BehaviorSubject<EmergencyAlert | null>(null);
   userEmergency$ = this.userEmergencySubject.asObservable();
 
   private emergencyResponseSubject = new BehaviorSubject<any | null>(null);
   emergencyResponse$ = this.emergencyResponseSubject.asObservable();
-
-  // FIX #2: Store the unsubscribe function returned by onSnapshot
+  
   private emergencySnapshotUnsubscribe: (() => void) | null = null;
 
-  // FIX #8: Track last geocode time to debounce Nominatim calls
   private lastGeocodeTime: number = 0;
-  private readonly GEOCODE_DEBOUNCE_MS = 30_000; // at most once per 30 s
+  private readonly GEOCODE_DEBOUNCE_MS = 30_000;
 
   constructor(
     private emergencyNotificationService?: EmergencyNotificationService,
@@ -90,9 +87,6 @@ export class EmergencyService {
     this.db = getFirestore(app);
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Single helper for resolving the emergency instruction string.
-  // ─────────────────────────────────────────────────────────────────────────────
   resolveEmergencyInstruction(medicalProfile: any, fallback: string = ''): string {
     const fromMessage = (medicalProfile as any)?.emergencyMessage?.instructions;
     return (
@@ -105,7 +99,6 @@ export class EmergencyService {
 
   /**
    * Send an emergency alert to the user's buddies with automatic notifications.
-   * Guard added — throws if an active emergency already exists for this user.
    */
   async sendEmergencyAlert(
     userId: string,
@@ -113,9 +106,9 @@ export class EmergencyService {
     buddyIds: string[],
     allergies: string[] = [],
     instruction: string = '',
-    locationData: { latitude: number; longitude: number } | null
+    locationData: { latitude: number; longitude: number; accuracy?: number }
   ): Promise<string> {
-    // FIX #4: Prevent duplicate emergencies
+    
     const existing = await this.getUserEmergenciesByStatus(userId, ['active', 'responding']);
     if (existing.length > 0) {
       console.warn('An active emergency already exists. Returning existing ID.');
@@ -125,9 +118,19 @@ export class EmergencyService {
     try {
       console.log('Starting emergency alert process...');
 
-      const location = locationData
-        ? { latitude: locationData.latitude, longitude: locationData.longitude }
-        : null;
+    if (
+      !locationData ||
+      typeof locationData.latitude !== 'number' ||
+      typeof locationData.longitude !== 'number'
+    ) {
+      throw new Error('Location is required before sending an emergency alert.');
+    }
+
+    const location = {
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
+      accuracy: locationData.accuracy,
+    };
 
       const emergencyData: EmergencyAlert = {
         userId,
@@ -401,7 +404,6 @@ export class EmergencyService {
       const position = await this.getCurrentLocation();
       this.cachedLocation = position;
       this.cachedLocationTimestamp = Date.now();
-      this.isBackgroundTrackingActive = true;
       console.log(
         'Location cached for emergency use:',
         position.coords.latitude,
@@ -421,7 +423,6 @@ export class EmergencyService {
         clearInterval(parseInt(this.backgroundLocationWatchId));
       }
       this.backgroundLocationWatchId = null;
-      this.isBackgroundTrackingActive = false;
       console.log('Background location tracking stopped');
     }
   }

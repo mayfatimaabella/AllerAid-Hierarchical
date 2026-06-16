@@ -151,27 +151,25 @@
         <button
           class="section-row-btn"
           aria-label="Edit instruction"
-          *ngIf="openEditEmergencyMessageModal"
-          (click)="openEditEmergencyMessageModal()">
+          *ngIf="openManageInstructionsModal"
+          (click)="handleOpenManageInstructionsModal()">
           <ion-icon name="create-outline"></ion-icon>
         </button>
       </div>
 
-     <ng-container *ngIf="instructionEntries.length; else noGeneralInstruction">
-        <ng-container *ngFor="let entry of instructionEntries">
-          <div *ngIf="entry.label === 'General'" class="instr-card critical">
-            <div class="instr-tag-row">
-              <span class="instr-priority">
-                <ion-icon name="warning-outline"></ion-icon>
-                Emergency Action Plan
-              </span>
-            </div>
-
-            <div class="instr-body">
-              {{ entry.text || 'No emergency instructions added' }}
-            </div>
+      <ng-container *ngIf="generalInstruction; else noGeneralInstruction">
+        <div class="instr-card critical">
+          <div class="instr-tag-row">
+            <span class="instr-priority">
+              <ion-icon name="warning-outline"></ion-icon>
+              Emergency Action Plan
+            </span>
           </div>
-        </ng-container>
+
+          <div class="instr-body">
+            {{ generalInstruction.text || 'No emergency instructions added' }}
+          </div>
+        </div>
       </ng-container>
 
       <ng-template #noGeneralInstruction>
@@ -194,21 +192,21 @@
         </button>
       </div>
 
-      <ng-container *ngIf="hasSpecificInstructions; else noSpecificInstructions">
-        <ng-container *ngFor="let entry of instructionEntries">
-          <div *ngIf="entry.label !== 'General'" class="instr-card">
-            <div class="instr-tag-row">
-              <span class="instr-pill">
-                {{ entry.label || 'Specific allergy' }}
-              </span>
-            </div>
-
-            <div class="instr-body">
-              {{ entry.text || 'No specific instructions added' }}
-            </div>
+    <ng-container *ngIf="hasSpecificInstructions; else noSpecificInstructions">
+      <ng-container *ngFor="let entry of instructionEntries">
+        <div *ngIf="entry.label !== 'General'" class="instr-card">
+          <div class="instr-tag-row">
+            <span class="instr-pill">
+              {{ entry.label || 'Specific allergy' }}
+            </span>
           </div>
-        </ng-container>
+
+          <div class="instr-body">
+            {{ entry.text || 'No specific instructions added' }}
+          </div>
+        </div>
       </ng-container>
+    </ng-container>
 
       <ng-template #noSpecificInstructions>
         <div class="instr-card">

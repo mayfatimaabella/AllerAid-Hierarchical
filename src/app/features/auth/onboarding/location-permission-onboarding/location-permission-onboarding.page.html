@@ -94,58 +94,61 @@
       </div>
     </div>
 
+
     <!-- Action buttons -->
-    <div class="action-buttons">
-      
-      <!-- If permission not granted, show request button -->
-      <ion-button 
-        *ngIf="!locationPermissionGranted"
-        class="btn-primary"
-        fill="solid"
-        (click)="requestLocationPermission()"
-        [disabled]="isSaving">
-        <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
-        <span>{{ isSaving ? 'Requesting...' : 'Enable Location Access' }}</span>
-      </ion-button>
+      <div class="action-buttons">
+        
+        <!-- If permission not granted, show request button -->
+        <ion-button 
+          *ngIf="!locationPermissionGranted"
+          class="btn-primary"
+          fill="solid"
+          (click)="requestLocationPermission()"
+          [disabled]="isSaving">
 
-      <!-- If permission already granted, show finish button -->
-      <ion-button 
-        *ngIf="locationPermissionGranted && !hasPermissionAttempted"
-        class="btn-primary"
-        fill="solid"
-        (click)="finishWithPermission()"
-        [disabled]="isSaving">
-        <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
-        <span>{{ isSaving ? 'Finishing...' : 'Complete Setup' }}</span>
-      </ion-button>
+          <ion-spinner
+            *ngIf="isSaving"
+            name="crescent"
+            slot="start">
+          </ion-spinner>
 
-      <!-- After user attempts to enable, show continue button -->
-      <ion-button 
-        *ngIf="hasPermissionAttempted && locationPermissionGranted"
-        class="btn-primary"
-        fill="solid"
-        (click)="finishWithPermission()"
-        [disabled]="isSaving">
-        <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
-        <span>{{ isSaving ? 'Finishing...' : 'Complete Setup' }}</span>
-      </ion-button>
+          <span>{{ isSaving ? 'Requesting...' : 'Enable Location Access' }}</span>
+        </ion-button>
 
-      <!-- Skip option -->
-      <ion-button 
-        class="btn-outline"
-        fill="outline"
-        (click)="continueWithoutPermission()"
-        [disabled]="isSaving">
-        {{ isSaving ? 'Continuing...' : 'Enable Later' }}
-      </ion-button>
-    </div>
+        <!-- If permission granted, show finish button -->
+        <ion-button 
+          *ngIf="locationPermissionGranted"
+          class="btn-primary"
+          fill="solid"
+          (click)="finishWithPermission()"
+          [disabled]="isSaving">
 
+          <ion-spinner
+            *ngIf="isSaving"
+            name="crescent"
+            slot="start">
+          </ion-spinner>
+
+          <span>{{ isSaving ? 'Finishing...' : 'Complete Setup' }}</span>
+        </ion-button>
+
+        <!-- Enable later only if permission is not granted -->
+        <ion-button 
+          *ngIf="!locationPermissionGranted"
+          class="btn-outline"
+          fill="outline"
+          (click)="continueWithoutPermission()"
+          [disabled]="isSaving">
+
+          {{ isSaving ? 'Continuing...' : 'Enable Later' }}
+        </ion-button>
     <!-- Information note -->
     <p class="info-note">
       <ion-icon name="information-circle-outline"></ion-icon>
       You can enable or disable location sharing anytime in your app settings.
     </p>
 
+  </div>
   </div>
 
 </ion-content>

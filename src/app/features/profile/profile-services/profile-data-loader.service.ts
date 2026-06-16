@@ -19,13 +19,13 @@ export class ProfileDataLoaderService {
 
   private userProfileSubject = new BehaviorSubject<UserProfile | null>(null);
   private userAllergiesSubject = new BehaviorSubject<any[]>([]);
-  private emergencyMessageSubject = new BehaviorSubject<any | null>(null);
+  private emergencyProfileSubject = new BehaviorSubject<any | null>(null);
   private emergencyInstructionsSubject = new BehaviorSubject<any[]>([]);
   private profileDetailsSubject = new BehaviorSubject<any | null>(null);
 
   userProfile$: Observable<UserProfile | null> = this.userProfileSubject.asObservable();
   userAllergies$: Observable<any[]> = this.userAllergiesSubject.asObservable();
-  emergencyMessage$: Observable<any | null> = this.emergencyMessageSubject.asObservable();
+  emergencyProfile$: Observable<any | null> = this.emergencyProfileSubject.asObservable();
   emergencyInstructions$: Observable<any[]> = this.emergencyInstructionsSubject.asObservable();
   profileDetails$: Observable<any | null> = this.profileDetailsSubject.asObservable();
 
@@ -42,37 +42,52 @@ export class ProfileDataLoaderService {
 
   get userProfileValue(): UserProfile | null { return this.userProfileSubject.value; }
   get userAllergiesValue(): any[] { return this.userAllergiesSubject.value; }
-  get emergencyMessageValue(): any | null { return this.emergencyMessageSubject.value; }
+  get emergencyProfileValue(): any | null {  return this.emergencyProfileSubject.value; }
   get emergencyInstructionsValue(): any[] { return this.emergencyInstructionsSubject.value; }
   get profileDetailsValue(): any | null { return this.profileDetailsSubject.value;}
 
   setUserProfile(profile: UserProfile | null): void { this.userProfileSubject.next(profile); }
-  setEmergencyMessage(message: any): void { this.emergencyMessageSubject.next(message); }
+  setEmergencyProfile(profile: any | null): void {this.emergencyProfileSubject.next(profile);}
   setUserAllergies(allergies: any[]): void { this.userAllergiesSubject.next(allergies); }
 
-async loadAllData(): Promise<void> {
+  async loadAllData(): Promise<void> {
   const user = await this.authService.waitForAuthInit();
-  if (!user) return;
 
-  const [profile, medicalInfo, emergencyData, instructions, profileDetails] = await Promise.all([
+  if (!user) {
+    this.userProfileSubject.next(null);
+    this.profileDetailsSubject.next(null);
+    this.userAllergiesSubject.next([]);
+    this.emergencyProfileSubject.next(null);
+    this.emergencyInstructionsSubject.next([]);
+    return;
+  }
+
+  const [profile, medicalInfo, instructions, profileDetails] = await Promise.all([
     this.userService.getUserProfile(user.uid),
     this.medicalService.getUserMedicalProfile(user.uid),
-    this.medicalService.getEmergencyData(user.uid),
     this.medicalService.getEmergencyInstructions(user.uid),
     this.profileDetailService.getUserProfileDetails(user.uid)
   ]);
 
+  const checkedAllergies = (medicalInfo?.allergies || []).filter((a: any) => a.checked);
+
   this.userProfileSubject.next(profile);
   this.profileDetailsSubject.next(profileDetails ?? null);
-  this.userAllergiesSubject.next(
-    (medicalInfo?.allergies || []).filter((a: any) => a.checked)
-  );
-  this.emergencyMessageSubject.next({
-    name: emergencyData?.name || profile?.fullName || '',
-    allergies: emergencyData?.allergies || '',
-    instructions: emergencyData?.generalEmergencyInstruction || '',
-    emergencyContactPhone: emergencyData?.emergencyMessage?.emergencyContactPhone || ''
+  this.userAllergiesSubject.next(checkedAllergies);
+
+  this.emergencyProfileSubject.next({
+    name: profile?.fullName || '',
+    allergies: checkedAllergies
+      .map((a: any) => a.label || a.value || a.name)
+      .join(', '),
+    instructions: medicalInfo?.generalEmergencyInstruction || '',
+    emergencyContactPhone: profileDetails?.phone || '',
+    dateOfBirth: profileDetails?.dateOfBirth || '',
+    gender: profileDetails?.gender || '',
+    bloodType: profileDetails?.bloodType || '',
+    profile_picture: profileDetails?.profile_picture || null
   });
+
   this.emergencyInstructionsSubject.next(instructions || []);
 }
 
@@ -112,11 +127,14 @@ async refreshAllergies(currentUid: string): Promise<any[]> {
     const allergies = userAllergyDocs.filter((a: any) => a.checked);
 
     this.userAllergiesSubject.next(allergies);
-    const currentMsg = this.emergencyMessageSubject.value;
-    if (currentMsg) {
-      this.emergencyMessageSubject.next({
-        ...currentMsg,
-        allergies: allergies.map(a => a.label || a.name).join(', ')
+    const currentProfile = this.emergencyProfileSubject.value;
+
+    if (currentProfile) {
+      this.emergencyProfileSubject.next({
+        ...currentProfile,
+        allergies: allergies
+          .map(a => a.label || a.value || a.name)
+          .join(', ')
       });
     }
     return allergies;

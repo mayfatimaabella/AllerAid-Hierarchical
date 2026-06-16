@@ -10,17 +10,19 @@ import {
   query,
   setDoc,
 } from 'firebase/firestore';
+
 import { AuthService } from '../../../../core/services/auth.service';
 import { BuddyService } from '../../../../core/services/buddy.service';
 import { UserService } from '../../../../core/services/user.service';
 import { FirebaseService } from '../../../../core/services/firebase.service';
-import { Subscription } from 'rxjs';
 import { MedicalService } from '../../../../core/services/medical.profile.service';
+
+import { Subscription } from 'rxjs';
 
 interface BuddySetupEntry {
   fullName: string;
   relationship: string;
-  contactNumber: string; 
+  contactNumber: string;
   email: string;
 }
 
@@ -40,9 +42,15 @@ interface Hotline {
   name: string;
   number: string;
   enabled: boolean;
+  isActive?: boolean;
 }
 
-type InviteStatus = 'sent' | 'already_exists' | 'failed' | 'skipped' | 'accepted';
+type InviteStatus =
+  | 'pending'
+  | 'already_exists'
+  | 'failed'
+  | 'skipped'
+  | 'accepted';
 
 @Component({
   selector: 'app-buddy-setup-onboarding',
@@ -63,43 +71,31 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
   fallbackContact: FallbackContact = {
     name: '',
     phone: '',
-    customHotline: ''
+    customHotline: '',
   };
 
   hotlines: Hotline[] = [];
 
   externalInvite: ExternalBuddyInvite = {
     email: '',
-    phone: ''
+    phone: '',
   };
 
   primaryBuddy: BuddySetupEntry = {
     fullName: '',
     relationship: '',
     contactNumber: '',
-    email: ''
+    email: '',
   };
 
-  secondaryBuddy: BuddySetupEntry = {
-    fullName: '',
-    relationship: '',
-    contactNumber: '',
-    email: ''
-  };
-
-  includeSecondary = false;
   isLoading = true;
   isSaving = false;
   isSendingPrimaryInvite = false;
-  isSendingSecondaryInvite = false;
 
   primaryInviteStatus: InviteStatus | null = null;
-  secondaryInviteStatus: InviteStatus | null = null;
 
   private backButtonSubscription?: Subscription;
-  private invitationUnsubscribe?: () => void;
   private db;
-  private buddyRelationsSubscription?: Subscription;
 
   constructor(
     private router: Router,
@@ -117,15 +113,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     await this.loadHotlines();
     await this.loadExistingSetup();
-
-    const currentUser = await this.authService.waitForAuthInit();
-
-    if (currentUser) {
-      await this.listenForPrimaryInviteAcceptance(currentUser.uid);
-      this.buddyService.listenForBuddyRelations(currentUser.uid);
-    }
   }
-
 
   ionViewDidEnter(): void {
     this.enableBackNavigationBlock();
@@ -137,8 +125,6 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.disableBackNavigationBlock();
-    this.invitationUnsubscribe?.();
-    this.buddyRelationsSubscription?.unsubscribe();
   }
 
   private onPopState = (): void => {
@@ -148,7 +134,10 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
   private enableBackNavigationBlock(): void {
     this.disableBackNavigationBlock();
 
-    this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(9999, () => {});
+    this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(
+      9999,
+      () => {}
+    );
 
     history.pushState(null, '', window.location.href);
     window.addEventListener('popstate', this.onPopState);
@@ -162,7 +151,34 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
 
   async goBack(): Promise<void> {
     this.disableBackNavigationBlock();
-    await this.router.navigate(['/emergency-instructions-onboarding'], { replaceUrl: true });
+    await this.router.navigate(['/emergency-instructions-onboarding'], {
+      replaceUrl: true,
+    });
+  }
+
+  hasLockedPrimaryInvite(): boolean {
+    return (
+      this.primaryInviteStatus === 'pending' ||
+      this.primaryInviteStatus === 'accepted'
+    );
+  }
+
+  canEditPrimaryBuddy(): boolean {
+    return !this.hasLockedPrimaryInvite();
+  }
+
+  getPrimaryActionLabel(): string {
+    if (this.primaryInviteStatus === 'pending') {
+      return 'Continue to Location';
+    }
+
+    if (this.primaryInviteStatus === 'accepted') {
+      return 'Continue to Location';
+    }
+
+    return this.isExternalBuddy
+      ? 'Save Invite & Continue'
+      : 'Send Request & Continue';
   }
 
   private async loadExistingSetup(): Promise<void> {
@@ -170,24 +186,31 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
       this.isLoading = true;
 
       const currentUser = await this.authService.waitForAuthInit();
-      if (!currentUser) return;
+
+      if (!currentUser) {
+        return;
+      }
 
       const medicalRef = doc(this.db, 'users', currentUser.uid, 'medical', 'info');
       const snap = await getDoc(medicalRef);
 
-      if (!snap.exists()) return;
+      if (!snap.exists()) {
+        return;
+      }
 
       const data = snap.data();
       const existing = data?.['buddySetupOnboarding'];
 
-      if (!existing) return;
+      if (!existing) {
+        return;
+      }
 
       if (existing.primaryBuddy) {
         this.primaryBuddy = {
           fullName: existing.primaryBuddy.fullName || '',
           relationship: existing.primaryBuddy.relationship || '',
           contactNumber: existing.primaryBuddy.contactNumber || '',
-          email: existing.primaryBuddy.email || ''
+          email: existing.primaryBuddy.email || '',
         };
 
         this.buddySearchEmail = this.primaryBuddy.email;
@@ -196,43 +219,33 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
         this.foundBuddy = {
           uid: existing.primaryBuddy.buddyUid || '',
           email: this.primaryBuddy.email,
-          firstName: this.primaryBuddy.fullName || this.deriveNameFromEmail(this.primaryBuddy.email),
-          lastName: ''
+          firstName:
+            existing.primaryBuddy.fullName ||
+            this.deriveNameFromEmail(this.primaryBuddy.email),
+          lastName: '',
         };
 
         if (existing.primaryBuddy.inviteStatus) {
-          this.primaryInviteStatus = existing.primaryBuddy.inviteStatus as InviteStatus;
+          this.primaryInviteStatus =
+            existing.primaryBuddy.inviteStatus as InviteStatus;
+        } else if (existing.primaryBuddy.status) {
+          this.primaryInviteStatus =
+            existing.primaryBuddy.status as InviteStatus;
         }
       }
 
       if (existing.externalInvite) {
         this.externalInvite = {
           email: existing.externalInvite.email || '',
-          phone: existing.externalInvite.phone || ''
+          phone: existing.externalInvite.phone || '',
         };
 
         this.isExternalBuddy = true;
       }
 
-      if (existing.secondaryBuddy) {
-        this.includeSecondary = true;
-
-        this.secondaryBuddy = {
-          fullName: existing.secondaryBuddy.fullName || '',
-          relationship: existing.secondaryBuddy.relationship || '',
-          contactNumber: existing.secondaryBuddy.contactNumber || '',
-          email: existing.secondaryBuddy.email || ''
-        };
-
-        if (existing.secondaryBuddy.inviteStatus) {
-          this.secondaryInviteStatus = existing.secondaryBuddy.inviteStatus as InviteStatus;
-        }
-      }
-
       if (existing.skippedBuddySetup) {
         this.showFallback = true;
       }
-
     } catch (error) {
       console.error('Error loading buddy setup onboarding:', error);
     } finally {
@@ -240,27 +253,17 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
     }
   }
 
-  private async listenForPrimaryInviteAcceptance(currentUserUid: string): Promise<void> {
-    const currentUserProfile = await this.userService.getUserProfile(currentUserUid);
-    if (!currentUserProfile?.email) return;
-
-    this.invitationUnsubscribe?.();
-    this.buddyRelationsSubscription?.unsubscribe();
-
-    this.invitationUnsubscribe = this.buddyService.listenForBuddyInvitations(currentUserUid);
-
-    this.buddyRelationsSubscription =
-      this.buddyService.buddyRelations$.subscribe(relations => {
-        if (
-          this.foundBuddy &&
-          relations.some((r: any) => r.buddyUid === this.foundBuddy.uid)
-        ) {
-          this.primaryInviteStatus = 'accepted';
-        }
-      });
-  }
-
   async searchBuddyByEmail(): Promise<void> {
+    if (this.hasLockedPrimaryInvite()) {
+      await this.showToast(
+        this.primaryInviteStatus === 'pending'
+          ? 'You already have a pending buddy request.'
+          : 'This buddy request has already been accepted.',
+        'warning'
+      );
+      return;
+    }
+
     const email = this.buddySearchEmail.trim().toLowerCase();
 
     if (!this.isValidEmail(email)) {
@@ -275,7 +278,11 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
       this.primaryInviteStatus = null;
 
       const currentUser = await this.authService.waitForAuthInit();
-      if (!currentUser) return;
+
+      if (!currentUser) {
+        await this.showToast('You must be logged in.', 'danger');
+        return;
+      }
 
       if (currentUser.email?.toLowerCase() === email) {
         await this.showToast('You cannot add yourself as your buddy.', 'warning');
@@ -292,13 +299,24 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
         return;
       }
 
-      const duplicate = await this.buddyService.checkDuplicateBuddyByEmail(currentUser.uid, email);
+      const duplicate = await this.buddyService.checkDuplicateBuddyByEmail(
+        currentUser.uid,
+        email
+      );
 
       if (duplicate.isDuplicate) {
+        if (duplicate.type === 'pending_sent_invitation') {
+          this.primaryInviteStatus = 'pending';
+        }
+
+        if (duplicate.type === 'accepted_relation') {
+          this.primaryInviteStatus = 'accepted';
+        }
+
         const msg =
           duplicate.type === 'pending_sent_invitation'
-            ? `You already sent a request to ${duplicate.details?.name}.`
-            : `${duplicate.details?.name} is already your buddy.`;
+            ? `You already sent a request to ${duplicate.details?.name || email}.`
+            : `${duplicate.details?.name || email} is already your buddy.`;
 
         await this.showToast(msg, 'warning');
         return;
@@ -311,23 +329,33 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
           uid: matchedUser.uid,
           email: matchedUser.email,
           firstName: matchedUser.firstName,
-          lastName: matchedUser.lastName
+          lastName: matchedUser.lastName,
         };
 
         this.primaryBuddy = {
-          fullName: `${matchedUser.firstName} ${matchedUser.lastName}`.trim(),
+          fullName: `${matchedUser.firstName || ''} ${matchedUser.lastName || ''}`.trim(),
           relationship: this.primaryRelationship,
           contactNumber: '',
-          email: matchedUser.email
+          email: matchedUser.email,
         };
 
-        await this.showToast(`Found ${this.primaryBuddy.fullName}. Select relationship and continue.`, 'success');
+        await this.showToast(
+          `Found ${this.primaryBuddy.fullName || matchedUser.email}. Select relationship and continue.`,
+          'success'
+        );
       } else {
         this.isExternalBuddy = true;
-        this.externalInvite.email = email;
-        await this.showToast('This email is not on AllerAid yet. We will send them an invite.', 'warning');
-      }
 
+        this.externalInvite = {
+          ...this.externalInvite,
+          email,
+        };
+
+        await this.showToast(
+          'This email is not on AllerAid yet. We will save an invite for them.',
+          'warning'
+        );
+      }
     } catch (error) {
       console.error('Error searching buddy by email:', error);
       await this.showToast('Could not search for buddy. Try again.', 'danger');
@@ -337,6 +365,16 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
   }
 
   async sendPrimaryInvite(): Promise<boolean> {
+    if (this.hasLockedPrimaryInvite()) {
+      await this.showToast(
+        this.primaryInviteStatus === 'pending'
+          ? 'You already have a pending buddy request.'
+          : 'This buddy request has already been accepted.',
+        'warning'
+      );
+      return false;
+    }
+
     if (!this.foundBuddy) {
       await this.showToast('Please enter a buddy email first.', 'warning');
       return false;
@@ -357,6 +395,25 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
         return false;
       }
 
+      const duplicate = await this.buddyService.checkDuplicateBuddyByEmail(
+        currentUser.uid,
+        this.foundBuddy.email
+      );
+
+      if (duplicate.isDuplicate) {
+        if (duplicate.type === 'pending_sent_invitation') {
+          this.primaryInviteStatus = 'pending';
+          await this.showToast('You already have a pending request for this buddy.', 'warning');
+          return false;
+        }
+
+        if (duplicate.type === 'accepted_relation') {
+          this.primaryInviteStatus = 'accepted';
+          await this.showToast('This user is already your buddy.', 'warning');
+          return false;
+        }
+      }
+
       const currentUserProfile = await this.userService.getUserProfile(currentUser.uid);
 
       if (!currentUserProfile) {
@@ -371,12 +428,13 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
         this.primaryRelationship
       );
 
-      this.primaryInviteStatus = 'sent';
+      this.primaryInviteStatus = 'pending';
+
       await this.showToast('Buddy request sent successfully.', 'success');
       return true;
-
     } catch (error: any) {
       console.error('Error sending primary buddy invite:', error);
+
       this.primaryInviteStatus = 'failed';
 
       const msg = error?.message?.includes('maximum')
@@ -385,7 +443,6 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
 
       await this.showToast(msg, 'danger');
       return false;
-
     } finally {
       this.isSendingPrimaryInvite = false;
     }
@@ -416,10 +473,10 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
               email,
               phone,
               status: 'pending_signup',
-              createdAt: new Date()
+              createdAt: new Date(),
             },
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         },
         { merge: true }
       );
@@ -452,9 +509,21 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
         return;
       }
 
-      if (this.foundBuddy && this.primaryInviteStatus !== 'sent') {
+      /*
+       * Important:
+       * If status is pending or accepted, DO NOT send again.
+       * Just keep the saved request and continue.
+       */
+      if (
+        this.foundBuddy &&
+        this.primaryInviteStatus !== 'pending' &&
+        this.primaryInviteStatus !== 'accepted'
+      ) {
         const inviteSent = await this.sendPrimaryInvite();
-        if (!inviteSent) return;
+
+        if (!inviteSent) {
+          return;
+        }
       }
 
       if (this.isExternalBuddy) {
@@ -476,10 +545,15 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
             primaryBuddy: this.foundBuddy
               ? {
                   ...this.primaryBuddy,
+                  fullName:
+                    this.primaryBuddy.fullName ||
+                    `${this.foundBuddy.firstName || ''} ${this.foundBuddy.lastName || ''}`.trim(),
                   relationship: this.primaryRelationship,
                   buddyUid: this.foundBuddy?.uid || '',
-                  status: 'pending',
-                  inviteStatus: this.primaryInviteStatus,
+                  email: this.foundBuddy?.email || this.primaryBuddy.email,
+                  contactNumber: this.primaryBuddy.contactNumber || '',
+                  status: this.primaryInviteStatus || 'pending',
+                  inviteStatus: this.primaryInviteStatus || 'pending',
                 }
               : null,
 
@@ -491,13 +565,6 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
                 }
               : null,
 
-            secondaryBuddy: this.includeSecondary
-              ? {
-                  ...this.secondaryBuddy,
-                  inviteStatus: this.secondaryInviteStatus || 'skipped',
-                }
-              : null,
-
             updatedAt: new Date(),
           },
         },
@@ -506,84 +573,28 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
 
       await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
 
-      await this.showToast('Buddy setup complete.', 'success');
-      await this.router.navigate(['/location-permission-onboarding'], { replaceUrl: true });
+      if (this.primaryInviteStatus === 'pending') {
+        await this.showToast(
+          'Buddy request is already pending. Continuing setup.',
+          'success'
+        );
+      } else if (this.primaryInviteStatus === 'accepted') {
+        await this.showToast(
+          'Buddy already connected. Continuing setup.',
+          'success'
+        );
+      } else {
+        await this.showToast('Buddy setup complete.', 'success');
+      }
 
+      await this.router.navigate(['/location-permission-onboarding'], {
+        replaceUrl: true,
+      });
     } catch (error) {
       console.error('Error saving buddy setup onboarding:', error);
       await this.showToast('Failed to save buddy setup. Please try again.', 'danger');
     } finally {
       this.isSaving = false;
-    }
-  }
-
-  async sendSecondaryInvite(): Promise<void> {
-    if (!this.hasRequiredValues(this.secondaryBuddy)) {
-      await this.showToast('Secondary buddy details must be complete before saving.', 'warning');
-      return;
-    }
-
-    try {
-      this.isSendingSecondaryInvite = true;
-
-      const currentUser = await this.authService.waitForAuthInit();
-
-      if (!currentUser) {
-        await this.showToast('You must be logged in.', 'danger');
-        return;
-      }
-
-      await setDoc(
-        doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
-        {
-          buddySetupOnboarding: {
-            secondaryBuddy: {
-              ...this.secondaryBuddy,
-              status: 'pending',
-              inviteStatus: 'sent',
-              createdAt: new Date()
-            },
-            updatedAt: new Date()
-          }
-        },
-        { merge: true }
-      );
-
-      this.secondaryInviteStatus = 'sent';
-      await this.showToast('Secondary buddy request saved.', 'success');
-
-    } catch (error) {
-      console.error('Error saving secondary buddy request:', error);
-      this.secondaryInviteStatus = 'failed';
-      await this.showToast('Could not save secondary buddy request.', 'danger');
-    } finally {
-      this.isSendingSecondaryInvite = false;
-    }
-  }
-
-  getInviteButtonLabel(status: InviteStatus | null): string {
-    if (status === 'sent') return 'Saved';
-    if (status === 'already_exists') return 'Already Connected';
-    return 'Save Secondary Buddy';
-  }
-
-  isInviteButtonDisabled(status: InviteStatus | null, isSending: boolean): boolean {
-    if (isSending) return true;
-    return status === 'sent' || status === 'already_exists';
-  }
-
-  onContactInput(event: any, target: 'primary' | 'secondary'): void {
-    const rawValue = event?.detail?.value ?? '';
-    const normalizedValue = this.normalizeContactNumber(rawValue);
-
-    if (target === 'primary') {
-      this.primaryBuddy.contactNumber = normalizedValue;
-    } else {
-      this.secondaryBuddy.contactNumber = normalizedValue;
-    }
-
-    if (event?.target) {
-      event.target.value = normalizedValue;
     }
   }
 
@@ -601,15 +612,24 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
   }
 
   hasFallback(): boolean {
-    const hasContact = !!(this.fallbackContact.name?.trim() && this.fallbackContact.phone?.trim());
-    const hasHotline = this.hotlines.some(h => h.enabled) || !!this.fallbackContact.customHotline?.trim();
+    const hasContact = !!(
+      this.fallbackContact.name?.trim() &&
+      this.fallbackContact.phone?.trim()
+    );
+
+    const hasHotline =
+      this.hotlines.some(h => h.enabled) ||
+      !!this.fallbackContact.customHotline?.trim();
 
     return hasContact || hasHotline;
   }
 
   async saveFallbackAndContinue(): Promise<void> {
     if (!this.hasFallback()) {
-      await this.showToast('Please add at least one trusted contact or hotline.', 'warning');
+      await this.showToast(
+        'Please add at least one trusted contact or hotline.',
+        'warning'
+      );
       return;
     }
 
@@ -646,9 +666,12 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
       );
 
       await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
-      await this.showToast('Emergency setup saved.', 'success');
-      await this.router.navigate(['/location-permission-onboarding'], { replaceUrl: true });
 
+      await this.showToast('Emergency setup saved.', 'success');
+
+      await this.router.navigate(['/location-permission-onboarding'], {
+        replaceUrl: true,
+      });
     } catch (error) {
       console.error('Error saving fallback setup:', error);
       await this.showToast('Failed to save fallback setup.', 'danger');
@@ -682,9 +705,15 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
       );
 
       await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
-      await this.showToast('Setup complete. Add a buddy anytime from your profile.', 'success');
-      await this.router.navigate(['/location-permission-onboarding'], { replaceUrl: true });
 
+      await this.showToast(
+        'Setup complete. Add a buddy anytime from your profile.',
+        'success'
+      );
+
+      await this.router.navigate(['/location-permission-onboarding'], {
+        replaceUrl: true,
+      });
     } catch (error) {
       console.error('Error finishing without buddy:', error);
       await this.showToast('Something went wrong. Please try again.', 'danger');
@@ -693,21 +722,63 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
     }
   }
 
-  private hasRequiredValues(entry: BuddySetupEntry): boolean {
-    const normalizedContact = this.normalizeContactNumber(entry.contactNumber);
+  async loadHotlines(): Promise<void> {
+    try {
+      const hotlineQuery = query(
+        collection(this.db, 'emergency_hotlines'),
+        orderBy('order', 'asc')
+      );
 
-    return !!entry.fullName.trim()
-      && !!entry.relationship
-      && this.isValidContactNumber(normalizedContact)
-      && this.isValidEmail(entry.email);
+      const snapshot = await getDocs(hotlineQuery);
+
+      this.hotlines = snapshot.docs
+        .map(hotlineDoc => {
+          const data = hotlineDoc.data();
+
+          return {
+            id: hotlineDoc.id,
+            name: data['name'] || '',
+            number: data['number'] || '',
+            enabled: data['defaultEnabled'] === true,
+            isActive: data['isActive'] === true,
+          };
+        })
+        .filter(h => h.isActive);
+
+      console.log('Loaded hotlines:', this.hotlines);
+    } catch (error) {
+      console.error('Error loading hotlines:', error);
+
+      this.hotlines = [
+        { name: 'Emergency (PH)', number: '911', enabled: true },
+        { name: 'Red Cross PH', number: '143', enabled: true },
+        { name: 'DOH Hotline', number: '1555', enabled: true },
+      ];
+    }
   }
 
-  private normalizeContactNumber(value: string): string {
-    return (value || '').replace(/\D/g, '').slice(0, 11);
+  onFallbackPhoneInput(event: any): void {
+    const rawValue = event?.detail?.value || '';
+
+    const cleaned = rawValue.replace(/\D/g, '').slice(0, 11);
+
+    this.fallbackContact.phone = cleaned;
+
+    if (event.target) {
+      event.target.value = cleaned;
+    }
   }
 
-  private isValidContactNumber(value: string): boolean {
-    return /^\d{11}$/.test(value);
+  onNameInput(event: any): void {
+    const rawValue = event?.detail?.value || '';
+
+    const cleaned = rawValue.replace(/[^a-zA-Z\s.'-]/g, '');
+
+    this.fallbackContact.name = cleaned;
+
+    if (event.target) {
+      event.target.value = cleaned;
+    }
   }
 
   private isValidEmail(email: string): boolean {
@@ -731,73 +802,9 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
       message,
       duration: 2600,
       color,
-      position: 'bottom'
+      position: 'bottom',
     });
 
     await toast.present();
-  }
-
-  async loadHotlines(): Promise<void> {
-  try {
-    const hotlineQuery = query(
-      collection(this.db, 'emergency_hotlines'),
-      orderBy('order', 'asc')
-    );
-
-    const snapshot = await getDocs(hotlineQuery);
-
-    this.hotlines = snapshot.docs
-      .map(hotlineDoc => {
-        const data = hotlineDoc.data();
-
-        return {
-          id: hotlineDoc.id,
-          name: data['name'] || '',
-          number: data['number'] || '',
-          enabled: data['defaultEnabled'] === true,
-          isActive: data['isActive'] === true
-        };
-      })
-      .filter(h => h.isActive);
-
-    console.log('Loaded hotlines:', this.hotlines);
-
-  } catch (error) {
-    console.error('Error loading hotlines:', error);
-
-    this.hotlines = [
-      { name: 'Emergency (PH)', number: '911', enabled: true },
-      { name: 'Red Cross PH', number: '143', enabled: true },
-      { name: 'DOH Hotline', number: '1555', enabled: true }
-    ];
-  }
-}
-
-  onFallbackPhoneInput(event: any): void {
-    const rawValue = event?.detail?.value || '';
-
-    // keep numbers only and max 11 digits
-    const cleaned = rawValue
-      .replace(/\D/g, '')
-      .slice(0, 11);
-
-    this.fallbackContact.phone = cleaned;
-
-    if (event.target) {
-      event.target.value = cleaned;
-    }
-  }
-
-  onNameInput(event: any): void {
-    const rawValue = event?.detail?.value || '';
-
-    // allow letters, spaces, dots, apostrophes
-    const cleaned = rawValue.replace(/[^a-zA-Z\s.'-]/g, '');
-
-    this.fallbackContact.name = cleaned;
-
-    if (event.target) {
-      event.target.value = cleaned;
-    }
   }
 }

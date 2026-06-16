@@ -50,7 +50,7 @@ export class HomePage implements OnDestroy {
   currentEmergencyId: string | null = null;
 
   buddyResponses: Record<string, BuddyResponse> = {};
-  emergencyLocation: { latitude: number; longitude: number } | null = null;
+  emergencyLocation: { latitude: number; longitude: number; accuracy?: number } | null = null;
   emergencyAddress = '';
   isEmergencyAddressLoading = false;
 
@@ -61,6 +61,9 @@ export class HomePage implements OnDestroy {
 
   showBuddyBanner = false;
   showAllergyBanner = false;
+
+  buddyBannerState: 'none' | 'pending' | 'accepted' = 'none';
+  pendingBuddyInviteCount = 0;
 
   emergencyConfirmationTimeLeft = EMERGENCY_CONFIRMATION_SECONDS;
 
@@ -112,8 +115,7 @@ export class HomePage implements OnDestroy {
 
       this.userName = userProfile?.fullName ?? 'User';
 
-      this.emergencyInstruction =
-        this.emergencyService.resolveEmergencyInstruction(medicalInfo);
+      this.emergencyInstruction = this.emergencyService.resolveEmergencyInstruction(medicalInfo);
 
       this.userAllergies = Array.isArray(medicalInfo?.allergies)
         ? medicalInfo.allergies.filter((a: any) => a.checked)
@@ -124,7 +126,13 @@ export class HomePage implements OnDestroy {
       this.userBuddies = await this.buddyService.getUserBuddies(currentUser.uid);
 
       this.rebuildBuddyStatusKeyMap();
-      this.showBuddyBanner = this.userBuddies.length === 0;
+
+      const pendingInvites = await this.buddyService.getSentInvitations(currentUser.uid);
+      this.pendingBuddyInviteCount = pendingInvites.filter(
+        (invite: any) => invite.status === 'pending'
+      ).length;
+
+      this.updateBuddyBannerState();
 
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -205,25 +213,56 @@ export class HomePage implements OnDestroy {
       return;
     }
 
-    await this.requestLocationPermission();
+    const hasLocationPermission = await this.ensureLocationPermission();
+
+    if (!hasLocationPermission) {
+      await this.presentToast(
+        'Location permission is required before sending an emergency alert.',
+        'danger'
+      );
+      return;
+    }
 
     const loading = await this.loadingController.create({
       message: 'Getting location and sending emergency alert...',
       duration: 15_000,
     });
+
     await loading.present();
 
     try {
       const currentUser = await this.authService.waitForAuthInit();
-      if (!currentUser) throw new Error('User not authenticated');
+
+      if (!currentUser) {
+        await loading.dismiss();
+
+        await this.presentToast(
+          'You must be logged in to send an emergency alert.',
+          'danger'
+        );
+        await this.router.navigate(['/login']);
+        return;
+      }
 
       const latestMedical = await this.medicalService.getUserMedicalProfile(currentUser.uid);
-      this.emergencyInstruction =
-        this.emergencyService.resolveEmergencyInstruction(latestMedical, this.emergencyInstruction);
+
+      this.emergencyInstruction = this.emergencyService.resolveEmergencyInstruction(latestMedical,this.emergencyInstruction);
 
       const buddyIds = this.resolveBuddyIds(currentUser.uid);
       const allergyStrings = this.resolveAllergyStrings();
+
       const locationData = await this.resolveLocation();
+
+      if (!locationData) {
+        await loading.dismiss();
+
+        await this.presentToast(
+          'Could not get your current location. Emergency alert was not sent.',
+          'danger'
+        );
+
+        return;
+      }
 
       this.currentEmergencyId = await this.emergencyService.sendEmergencyAlert(
         currentUser.uid,
@@ -231,7 +270,7 @@ export class HomePage implements OnDestroy {
         buddyIds,
         allergyStrings,
         this.emergencyInstruction,
-        locationData,
+        locationData
       );
 
       this.activateEmergencyState(locationData);
@@ -243,17 +282,36 @@ export class HomePage implements OnDestroy {
 
     } catch (error) {
       await loading.dismiss();
+
       console.error('Error sending emergency alert:', error);
-      await this.presentToast('Failed to send emergency alert. Please try again.');
+
+      await this.presentToast(
+        'Failed to send emergency alert. Please try again.',
+        'danger'
+      );
     }
   }
 
-  private async requestLocationPermission(): Promise<void> {
+  private async ensureLocationPermission(): Promise<boolean> {
     try {
+      const alreadyGranted = await this.locationPermissionService.isLocationAvailable();
+
+      if (alreadyGranted) {
+        return true;
+      }
+
       const result = await this.locationPermissionService.requestLocationPermissions();
-      if (!result.granted) console.warn('Location permission not granted:', result.message);
-    } catch (err) {
-      console.warn('Error requesting location permission:', err);
+
+      if (!result.granted) {
+        console.warn('Location permission not granted:', result.message);
+        return false;
+      }
+
+      return true;
+
+    } catch (error) {
+      console.warn('Error checking/requesting location permission:', error);
+      return false;
     }
   }
 
@@ -271,31 +329,40 @@ export class HomePage implements OnDestroy {
       .filter(Boolean);
   }
 
-  private async resolveLocation(): Promise<{ latitude: number; longitude: number } | null> {
+  private async resolveLocation(): Promise<{ latitude: number; longitude: number; accuracy?: number } | null> {
     try {
       const position = await this.emergencyService.getCurrentLocation();
+
       const locationData = {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
       };
+
       this.emergencyLocation = locationData;
       this.isEmergencyAddressLoading = true;
+
       return locationData;
-    } catch {
-      console.warn('Location unavailable — alert will continue without precise location.');
+    } catch (error) {
+      console.warn('Location unavailable — emergency alert will not be sent.', error);
+
       this.emergencyLocation = null;
       this.isEmergencyAddressLoading = false;
+
       return null;
     }
   }
 
   private activateEmergencyState(
-    locationData: { latitude: number; longitude: number } | null,
+    locationData: { latitude: number; longitude: number; accuracy?: number },
   ): void {
     this.isEmergencyActive = true;
     this.emergencyStartTime = new Date();
     this.buddyResponses = {};
-    if (locationData) this.emergencyLocation = locationData;
+    this.emergencyLocation = locationData;
+
+    this.emergencyAddress = 'GPS location available';
+    this.isEmergencyAddressLoading = false;
   }
 
   private seedInitialBuddyResponses(currentUid: string): void {
@@ -713,5 +780,21 @@ export class HomePage implements OnDestroy {
       estimatedArrival: source.estimatedArrival ?? 0,
       emergencyId: source.emergencyId ?? source.id ?? '',
     };
+  }
+
+  private updateBuddyBannerState(): void {
+    if (this.userBuddies.length > 0) {
+      this.buddyBannerState = 'accepted';
+      this.showBuddyBanner = false;
+      return;
+    }
+
+    this.showBuddyBanner = true;
+
+    if (this.pendingBuddyInviteCount > 0) {
+      this.buddyBannerState = 'pending';
+    } else {
+      this.buddyBannerState = 'none';
+    }
   }
 }

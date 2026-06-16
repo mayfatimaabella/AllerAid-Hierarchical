@@ -8,7 +8,6 @@ import {
 import { FirebaseService } from './firebase.service';
 import { MedicalInfo } from './models/medical-info.model';
 import { EmergencyInstruction } from './models/emergency-instruction.model';
-import { EmergencyMessage } from './models/emergency-message.model';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +23,7 @@ export class MedicalService {
 
   /**
    * Set the general emergency instruction string for a user.
-   * Writes to medical/info.emergencyInstruction (root field).
+   * Writes to medical/info.generalEmergencyInstruction (root field).
    */
   async setEmergencyInstruction(uid: string, instruction: string): Promise<void> {
     try {
@@ -64,12 +63,9 @@ export class MedicalService {
    */
   async updateEmergencyMessage(
     uid: string,
-    emergencyMessage: EmergencyMessage
   ): Promise<void> {
     try {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);
-
-      await updateDoc(medicalRef, {emergencyMessage,updatedAt: new Date()});
       
     } catch (error) {
       console.error('Error updating emergency message:', error);
@@ -79,9 +75,6 @@ export class MedicalService {
 
   /**
    * Add or update the per-allergy emergency instruction.
-   * Canonical path: medical/info.allergyEmergencyInstructions[] (root array — NOT nested
-   * under emergencySettings). This replaces the old
-   * emergencySettings.emergencyInstructions write path.
    */
   async setEmergencyInstructionForAllergy(
     uid: string,
@@ -97,11 +90,10 @@ export class MedicalService {
 
       if (userDoc.exists()) {
         const data = userDoc.data();
-        // Read from canonical root path only.
+        
         allergyEmergencyInstructions = data['allergyEmergencyInstructions'] ?? [];
       }
 
-      // Replace the entry for this allergy (upsert by allergyId)
       allergyEmergencyInstructions = allergyEmergencyInstructions.filter(
         ei => ei.allergyId !== allergyId
       );
@@ -119,7 +111,6 @@ export class MedicalService {
 
   /**
    * Get per-allergy emergency instructions.
-   * Reads from canonical root path: medical/info.allergyEmergencyInstructions[].
    */
   async getEmergencyInstructions(uid: string): Promise<EmergencyInstruction[]> {
     try {

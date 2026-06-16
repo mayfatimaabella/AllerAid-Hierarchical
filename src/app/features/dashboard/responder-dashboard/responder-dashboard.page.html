@@ -6,7 +6,7 @@
       <h2>Emergency completed</h2>
       <p>This alert has been resolved by the patient.</p>
 
-      <ion-button expand="block" routerLink="/tabs/home">
+      <ion-button expand="block" (click)="goHome()">
         Go Home
       </ion-button>
     </div>
@@ -104,10 +104,11 @@
         </div>
 
         <div class="instructions-card">
-          <div class="emergency-plan-box" *ngIf="profileEmergencyInstruction || eventSpecificInstruction">
-            <span class="plan-label">Emergency plan</span>
+
+          <div class="emergency-plan-box" *ngIf="hasEmergencyInstruction">
+            <span class="plan-label">General emergency instruction</span>
             <div class="plan-text">
-              {{ eventSpecificInstruction || profileEmergencyInstruction }}
+              {{ displayedEmergencyInstruction }}
             </div>
           </div>
 
@@ -116,6 +117,7 @@
               <strong>{{ instr.label }}:</strong> {{ instr.text || 'None' }}
             </div>
           </div>
+
         </div>
 
         <div class="footer-actions">

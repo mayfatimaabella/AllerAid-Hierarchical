@@ -37,15 +37,21 @@ export class EmergencyDetailsModalComponent implements OnInit {
 
   ngOnInit() {}
 
+  get generalInstruction(): EmergencyInstructionEntry | null {
+  return this.instructionEntries.find(entry => entry.label === 'General') || null;
+}
+
+  get specificInstructionEntries(): EmergencyInstructionEntry[] {
+    return this.instructionEntries.filter(entry => entry.label !== 'General');
+  }
+  get hasSpecificInstructions(): boolean {
+    return this.specificInstructionEntries.length > 0;
+  }
+
   get hasInstructionEntries(): boolean {
     return Array.isArray(this.instructionEntries) && this.instructionEntries.length > 0;
   }
-
-  get hasSpecificInstructions(): boolean {
-    return Array.isArray(this.instructionEntries) && 
-           this.instructionEntries.some(entry => entry.label !== 'General');
-  }
-
+  
   get formattedDateOfBirth(): string {
     const rawValue = (this.dateOfBirth || '').trim();
     if (!rawValue) {

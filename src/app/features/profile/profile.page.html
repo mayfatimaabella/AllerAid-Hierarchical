@@ -47,7 +47,7 @@
           <div class="profile-info">
            
              <div class="profile-name">
-              {{ (vm.emergencyMessage?.name || profile.fullName || 'User') }}
+              {{ (vm.emergencyProfile?.name || profile.fullName || 'User') }}
             </div>
             <div class="profile-email">
               {{ profile.email || '' }}
@@ -132,7 +132,7 @@
 
         <app-profile-overview-section
           [userAllergies]="vm.allergies || []"
-          [emergencyMessage]="vm.emergencyMessage"
+          [emergencyMessage]="vm.emergencyProfile"
           [profileDetails]="vm.profileDetails"
           [userProfile]="vm.profile"
           [emergencyInstructions]="vm.emergencyInstructions || []"
@@ -148,11 +148,11 @@
          <ion-modal [isOpen]="activeModal === 'emergencyInfo'" (didDismiss)="activeModal = null" [initialBreakpoint]="1" [breakpoints]="[0, 1]" [handle]="false">
           <ng-template>
             <app-emergency-details-modal
-              [emergencyMessageName]="(vm.emergencyMessage?.name || vm.profile?.fullName || 'User')"
+              [emergencyMessageName]="(vm.emergencyProfile?.name || vm.profile?.fullName || 'User')"
               [userAllergies]="vm.allergies || []"
               [instructionEntries]="getEmergencyInstructionEntries()"
               [emergencyContactPhone]="vm.profileDetails?.phone || ''"
-              [emergencyLocation]="vm.emergencyMessage?.location || ''"
+              [emergencyLocation]="vm.emergencyProfile?.location || ''"
               [dateOfBirth]="vm.profileDetails?.dateOfBirth || ''"
               [gender]="vm.profileDetails?.gender || ''"
               [bloodType]="vm.profileDetails?.bloodType || ''"
@@ -299,7 +299,7 @@
   (didDismiss)="profileEmergencySettings.showEditEmergencyMessageModal = false">
 
   <app-edit-emergency-profile-modal
-    [emergencyMessage]="vm.emergencyMessage"
+    [emergencyMessage]="vm.emergencyProfile"
     [userProfile]="vm.profile"
     [profileDetails]="vm.profileDetails"
     [mode]="'edit'"

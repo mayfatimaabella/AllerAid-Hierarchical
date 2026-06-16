@@ -83,7 +83,12 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
         userName: this.responderData.userName || this.responderData.alert.userName,
         location: this.responderData.alert.location,
         status: this.responderData.alert.status,
-        timestamp: this.responderData.alert.timestamp
+        timestamp: this.responderData.alert.timestamp, 
+        instruction: this.responderData.alert.instruction || '',
+        emergencyInstruction:
+          this.responderData.alert.emergencyInstruction ||
+          this.responderData.alert.instruction ||
+          ''
       } as EmergencyAlert;
 
       await this.loadProfileInstructionFallback(this.currentEmergency.userId);
@@ -270,7 +275,7 @@ async confirmHelpCompleted() {
               if (modal) {
                 await modal.dismiss(null, 'completed');
               } else {
-                await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
+                await this.goHome();
               }
 
             } catch (error) {
@@ -312,6 +317,19 @@ async confirmHelpCompleted() {
             }
 
             this.currentEmergency = nextEmergency;
+
+            const currentUser = await this.authService.waitForAuthInit();
+
+            if (currentUser && (nextEmergency as any).buddyResponses) {
+              const myResponse = (nextEmergency as any).buddyResponses[currentUser.uid];
+
+              this.hasResponded =
+                myResponse?.status === 'responded' ||
+                myResponse?.status === 'cannot_respond';
+            } else {
+              this.hasResponded = false;
+            }
+
             await this.loadProfileInstructionFallback(nextEmergency.userId);
             this.loadMiniMap();
             
@@ -378,6 +396,7 @@ private async loadProfileInstructionFallback(userId?: string): Promise<void> {
     const medicalInfo = completeProfile.medicalInfo || {};
 
     this.profileInstructionFallback =
+      medicalInfo.generalEmergencyInstruction ||
       medicalInfo.emergencyInstruction ||
       medicalInfo.generalInstruction ||
       '';
@@ -414,7 +433,7 @@ private async loadProfileInstructionFallback(userId?: string): Promise<void> {
 
   get profileEmergencyInstruction(): string { return this.profileInstructionFallback; }
   get hasEmergencyInstruction(): boolean { return !!(this.eventSpecificInstruction || this.profileEmergencyInstruction); }
-  get eventSpecificInstruction(): string { return (this.currentEmergency as any)?.emergencyInstruction || ''; }
+  get eventSpecificInstruction(): string {  return ((this.currentEmergency as any)?.emergencyInstruction || (this.currentEmergency as any)?.instruction || ''); }
   get displayedEmergencyInstruction(): string { return this.eventSpecificInstruction || this.profileEmergencyInstruction || 'No instructions available'; }
 
   speakAlert() {
@@ -487,7 +506,7 @@ private async loadProfileInstructionFallback(userId?: string): Promise<void> {
               if (this.currentEmergency?.id) {
                 const user = await this.authService.waitForAuthInit();
                 if (user) {
-                  // Resolve buddy name from profile so the patient sees who cannot respond
+                  
                   const userProfile = await this.userService.getUserProfile(user.uid);
                   const buddyName = userProfile
                     ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() || 'Buddy'
@@ -515,7 +534,7 @@ private async loadProfileInstructionFallback(userId?: string): Promise<void> {
               if (modal) {
                 await modal.dismiss(null, 'cancel');
               } else {
-                await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
+                await this.goHome();
               }
             }
           }
@@ -527,4 +546,49 @@ private async loadProfileInstructionFallback(userId?: string): Promise<void> {
   }
 
   viewPatients() { this.router.navigate(['/tabs/patients']); }
+
+  async goHome() {
+  try {
+    const user = await this.authService.waitForAuthInit();
+
+    if (!user) {
+      await this.navCtrl.navigateRoot(['/login'], { replaceUrl: true });
+      return;
+    }
+
+    const profile = await this.userService.getUserProfile(user.uid);
+    const role = (profile as any)?.role;
+
+    if (role === 'buddy' || role === 'responder') {
+      await this.navCtrl.navigateRoot(['/tabs/responder-dashboard'], {
+        replaceUrl: true
+      });
+      return;
+    }
+
+    if (role === 'doctor') {
+      await this.navCtrl.navigateRoot(['/tabs/doctor-dashboard'], {
+        replaceUrl: true
+      });
+      return;
+    }
+
+    if (role === 'admin') {
+      await this.navCtrl.navigateRoot(['/tabs/admin-dashboard'], {
+        replaceUrl: true
+      });
+      return;
+    }
+
+    await this.navCtrl.navigateRoot(['/tabs/home'], {
+      replaceUrl: true
+    });
+
+  } catch (error) {
+    console.error('Error going home:', error);
+    await this.navCtrl.navigateRoot(['/tabs/home'], {
+      replaceUrl: true
+    });
+  }
+}
 }

@@ -53,7 +53,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
-                <action android:name="io.ionic.starter.MEDICATION_REMINDER" />
+                <action android:name="com.alleraid.app.MEDICATION_REMINDER" />
             </intent-filter>
         </receiver>
 

@@ -126,7 +126,7 @@ export class AppComponent implements OnInit {
       console.log('User logged out successfully');
     } catch (error) {
       console.error('Logout error:', error);
-      // Still close menu and navigate even if there's an error
+      
       await this.menuController.close();
       await this.router.navigate(['/login'], { replaceUrl: true });
     }

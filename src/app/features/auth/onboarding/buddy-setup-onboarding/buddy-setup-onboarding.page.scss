@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // ─── Shared tokens ──────────────────────────────────────────────────────────
 $teal: #036a5d;
 $teal-light: #eaf5f2;
@@ -18,7 +20,7 @@ ion-content.onboarding-bg {
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
 .onboarding-hero {
-  background: linear-gradient(155deg, $teal 0%, darken($teal, 6%) 100%);
+  background: linear-gradient(155deg, $teal 0%, color.adjust($teal, $lightness: -6%) 100%);
   padding: 52px 20px 20px;
   position: relative;
 }
@@ -238,20 +240,7 @@ ion-content.onboarding-bg {
   --placeholder-color: #{$text-muted};
 }
 
-// ─── Invite ───────────────────────────────────────────────────────────────────
-.invite-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 4px;
-}
-
-.invite-btn {
-  --border-color: #{$teal};
-  --color: #{$teal};
-  --border-radius: 10px;
-  font-size: 12px;
-}
-
+// ─── Invite status ──────────────────────────────────────────────────────────
 .invite-status {
   display: flex;
   align-items: center;
@@ -276,40 +265,6 @@ ion-content.onboarding-bg {
   }
 }
 
-// ─── Add secondary button ─────────────────────────────────────────────────────
-.add-secondary {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 12px 14px;
-  background: transparent;
-  border: 1px dashed $border;
-  border-radius: 14px;
-  cursor: pointer;
-  font-size: 13px;
-  color: $text-muted;
-  font-family: inherit;
-  margin-bottom: 10px;
-  transition: border-color 0.15s;
-
-  &:hover {
-    border-color: $teal;
-    color: $teal;
-  }
-}
-
-.add-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #f0ede6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  flex-shrink: 0;
-}
 
 // ─── Footer ──────────────────────────────────────────────────────────────────
 .onboarding-footer {
@@ -388,34 +343,8 @@ ion-content.onboarding-bg {
   }
 }
 
-.skip-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin: 4px 0 16px;
-}
 
-.skip-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  color: var(--ion-color-medium);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 8px 16px;
 
-  ion-icon { font-size: 14px; }
-}
-
-.skip-hint {
-  font-size: 12px;
-  color: var(--ion-color-medium);
-  margin: 0;
-  text-align: center;
-}
 
 .fallback-card {
   border-left: 3px solid var(--ion-color-warning);
