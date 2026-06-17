@@ -80,6 +80,7 @@ export class EmergencyAlertService {
             .filter((id: any) => !!id && id !== currentUser.uid)
         )
       );
+
       if (buddyIds.length === 0) {
         console.warn('No emergency buddies configured.');
         await this.showToast(
@@ -89,6 +90,7 @@ export class EmergencyAlertService {
       }
 
       console.log('Getting current location before sending emergency alert...');
+
 
       let locationData: { latitude: number; longitude: number; accuracy?: number } | undefined;
 
@@ -107,6 +109,7 @@ export class EmergencyAlertService {
 
       console.log('Sending full emergency via EmergencyService from', alertType, 'trigger');
 
+  
       await this.emergencyService.sendEmergencyAlert(
         currentUser.uid,
         userName,
@@ -151,7 +154,7 @@ export class EmergencyAlertService {
     alertType: string,
     location: { latitude: number; longitude: number; accuracy?: number } | undefined,
     emergencyData: EmergencyData,
-    buddies: any[]
+    buddies: { id: string }[]
   ): Promise<void> {
     try {
       const alertLog: Partial<EmergencyAlert> = {
@@ -169,18 +172,15 @@ export class EmergencyAlertService {
     }
   }
 
-
   private sanitizeText(input: string): string {
     const div = document.createElement('div');
     div.appendChild(document.createTextNode(input));
     return div.innerHTML;
   }
 
-
   formatEmergencyInstructionForDisplay(emergencyData: EmergencyData): string {
     const { emergencyInstructions, emergencyInstruction, name, allergies } = emergencyData;
 
-   
     const safeName = this.sanitizeText(name || 'Unknown');
 
     let display = `<div class="emergency-instruction-box">`;
@@ -211,7 +211,6 @@ export class EmergencyAlertService {
     return display;
   }
 
-
   async playAudioInstructions(emergencyData: EmergencyData): Promise<void> {
     try {
       const currentUser = await this.authService.waitForAuthInit();
@@ -233,7 +232,6 @@ export class EmergencyAlertService {
         await this.speakInstructions(emergencyData);
       }
     } catch (error) {
-      // Fix #9: Surface audio failure to the user instead of silently swallowing it
       console.error('Error playing audio instructions:', error);
       await this.showToast('Could not play audio instructions. Please read the on-screen instructions.', 'warning');
     }

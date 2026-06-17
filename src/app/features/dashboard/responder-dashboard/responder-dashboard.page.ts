@@ -73,14 +73,14 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
 
     await this.setupRealTimeListeners();
 
-    if (this.responderData && this.responderData.alert) {
+    if (this.responderData?.alert) {
       this.currentEmergency = {
         id: this.responderData.emergencyId || this.responderData.alert.id,
         userId: this.responderData.alert.userId,
         userName: this.responderData.userName || this.responderData.alert.userName,
         location: this.responderData.alert.location,
         status: this.responderData.alert.status,
-        timestamp: this.responderData.alert.timestamp, 
+        timestamp: this.responderData.alert.timestamp,
         instruction: this.responderData.alert.instruction || '',
         emergencyInstruction:
           this.responderData.alert.emergencyInstruction ||
@@ -89,6 +89,7 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       } as EmergencyAlert;
 
       await this.loadProfileInstructionFallback(this.currentEmergency.userId);
+
       if (this.currentEmergency?.location) {
         await this.fetchAddressFromCoords(
           this.currentEmergency.location.latitude,
@@ -112,59 +113,54 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       this.miniMap.remove();
     }
   }
-  async goHome() {
-  await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
-}
 
   private loadMiniMap() {
     setTimeout(() => {
-      if (this.currentEmergency?.location && this.miniMapElement) {
-        const { latitude, longitude } = this.currentEmergency.location;
+      if (!this.currentEmergency?.location || !this.miniMapElement) return;
 
-        if (this.miniMap) {
-          this.miniMap.remove();
-        }
+      const { latitude, longitude } = this.currentEmergency.location;
 
-        this.miniMap = L.map(this.miniMapElement.nativeElement, {
-          center: [latitude, longitude],
-          zoom: 15,
-          zoomControl: false,
-          attributionControl: false
-        });
+      if (this.miniMap) {
+        this.miniMap.remove();
+      }
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.miniMap);
+      this.miniMap = L.map(this.miniMapElement.nativeElement, {
+        center: [latitude, longitude],
+        zoom: 15,
+        zoomControl: false,
+        attributionControl: false
+      });
 
-        L.marker([latitude, longitude], {
-          icon: L.icon({
-            iconUrl: 'assets/leaflet/marker-icon.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41]
-          })
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.miniMap);
+
+      L.marker([latitude, longitude], {
+        icon: L.icon({
+          iconUrl: 'assets/leaflet/marker-icon.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41]
         })
-          .addTo(this.miniMap)
-          .bindPopup('Patient');
+      })
+        .addTo(this.miniMap)
+        .bindPopup('Patient');
 
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(position => {
-            const resLat = position.coords.latitude;
-            const resLng = position.coords.longitude;
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const resLat = position.coords.latitude;
+          const resLng = position.coords.longitude;
 
-            L.marker([resLat, resLng], {
-              icon: L.icon({
-                iconUrl: 'assets/leaflet/marker-icon-2x.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41]
-              })
+          L.marker([resLat, resLng], {
+            icon: L.icon({
+              iconUrl: 'assets/leaflet/marker-icon-2x.png',
+              iconSize: [25, 41],
+              iconAnchor: [12, 41]
             })
-              .addTo(this.miniMap)
-              .bindPopup('You');
+          })
+            .addTo(this.miniMap)
+            .bindPopup('You');
 
-            this.startAutomaticRouting(resLat, resLng, latitude, longitude);
-            this.fetchResponderAddress(resLat, resLng);
-          });
-        }
-
-        this.fetchAddressFromCoords(latitude, longitude);
+          this.startAutomaticRouting(resLat, resLng, latitude, longitude);
+          this.fetchResponderAddress(resLat, resLng);
+        });
       }
     }, 500);
   }
@@ -212,24 +208,23 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
 
   async acceptEmergency() {
     try {
-      if (this.currentEmergency?.id) {
-        const user = await this.authService.waitForAuthInit();
-        if (user) {
-          const userProfile = await this.userService.getUserProfile(user.uid);
-          const responderName = userProfile
-            ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() ||
-              'Responder'
-            : 'Responder';
+      if (!this.currentEmergency?.id) return;
 
-          await this.emergencyService.respondToEmergency(
-            this.currentEmergency.id,
-            user.uid,
-            responderName
-          );
+      const user = await this.authService.waitForAuthInit();
+      if (!user) return;
 
-          this.hasResponded = true;
-        }
-      }
+      const userProfile = await this.userService.getUserProfile(user.uid);
+      const responderName = userProfile
+        ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() || 'Responder'
+        : 'Responder';
+
+      await this.emergencyService.respondToEmergency(
+        this.currentEmergency.id,
+        user.uid,
+        responderName
+      );
+
+      this.hasResponded = true;
     } catch (error) {
       console.error('Error accepting emergency:', error);
       const alert = await this.alertController.create({
@@ -250,30 +245,25 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
           text: 'Decline',
           handler: async () => {
             try {
-              if (this.currentEmergency?.id) {
-                const user = await this.authService.waitForAuthInit();
-                if (user) {
-                  const userProfile = await this.userService.getUserProfile(user.uid);
-                  const buddyName = userProfile
-                    ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() ||
-                      'Buddy'
-                    : 'Buddy';
+              if (!this.currentEmergency?.id) return;
 
-                  await this.emergencyService.recordBuddyCannotRespond(
-                    this.currentEmergency.id,
-                    user.uid,
-                    buddyName
-                  );
+              const user = await this.authService.waitForAuthInit();
+              if (!user) return;
 
-                  this.buddyService.dismissEmergencyForUser(user.uid, this.currentEmergency.id);
-                  this.buddyService.saveDismissedAlertData(
-                    user.uid,
-                    this.currentEmergency as any
-                  );
+              const userProfile = await this.userService.getUserProfile(user.uid);
+              const buddyName = userProfile
+                ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() || 'Buddy'
+                : 'Buddy';
 
-                  this.hasResponded = true;
-                }
-              }
+              await this.emergencyService.recordBuddyCannotRespond(
+                this.currentEmergency.id,
+                user.uid,
+                buddyName
+              );
+
+              this.buddyService.dismissEmergencyForUser(user.uid, this.currentEmergency.id);
+              this.buddyService.saveDismissedAlertData(user.uid, this.currentEmergency as any);
+              this.hasResponded = true;
             } catch (error) {
               console.error('Error declining:', error);
             } finally {
@@ -299,25 +289,9 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       message: 'Please provide a quick status of the patient.',
       cssClass: 'custom-emergency-alert',
       inputs: [
-        {
-          name: 'status',
-          type: 'radio',
-          label: 'Stable / OK',
-          value: 'stable',
-          checked: true
-        },
-        {
-          name: 'status',
-          type: 'radio',
-          label: 'Needs Medical Assistance',
-          value: 'needs_ems'
-        },
-        {
-          name: 'status',
-          type: 'radio',
-          label: 'Unconscious',
-          value: 'unconscious'
-        }
+        { name: 'status', type: 'radio', label: 'Stable / OK', value: 'stable', checked: true },
+        { name: 'status', type: 'radio', label: 'Needs Medical Assistance', value: 'needs_ems' },
+        { name: 'status', type: 'radio', label: 'Unconscious', value: 'unconscious' }
       ],
       buttons: [
         {
@@ -336,8 +310,7 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
                 responderId = user.uid;
                 const userProfile = await this.userService.getUserProfile(user.uid);
                 responderName = userProfile
-                  ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() ||
-                    'Responder'
+                  ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() || 'Responder'
                   : 'Responder';
               }
 
@@ -359,11 +332,11 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
               await toast.present();
               await toast.onDidDismiss();
 
-              await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
-
               this.currentEmergency = null;
               this.hasResponded = false;
               this.isResolving = false;
+
+              await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
 
               const modal = await this.modalController.getTop();
               if (modal) {
@@ -372,7 +345,6 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
             } catch (error) {
               this.isResolving = false;
               console.error('Error resolving emergency:', error);
-
               const errorAlert = await this.alertController.create({
                 header: 'Error',
                 message: 'Failed to resolve emergency. Please try again.',
@@ -385,25 +357,18 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
         { text: 'Cancel', role: 'cancel' }
       ]
     });
-
     await alert.present();
   }
 
   speakAlert() {
     if (!this.currentEmergency) return;
 
-    const text = `Emergency alert from ${this.currentEmergency.userName}. ${this.displayedEmergencyInstruction}. Patient location is ${this.address}.`;
-
-    if (typeof window === 'undefined') {
-      console.warn('Text-to-speech not available: window is undefined');
-      return;
-    }
-
-    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
       console.warn('Text-to-speech not supported on this device');
       return;
     }
 
+    const text = `Emergency alert from ${this.currentEmergency.userName}. ${this.displayedEmergencyInstruction}. Patient location is ${this.address}.`;
     window.speechSynthesis.cancel();
     const message = new SpeechSynthesisUtterance(text);
     window.speechSynthesis.speak(message);
@@ -413,6 +378,31 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
     this.router.navigate(['/tabs/patients']);
   }
 
+  async goHome() {
+    try {
+      const user = await this.authService.waitForAuthInit();
+      if (!user) {
+        await this.navCtrl.navigateRoot(['/login'], { replaceUrl: true });
+        return;
+      }
+
+      const profile = await this.userService.getUserProfile(user.uid);
+      const role = (profile as any)?.role;
+
+      const roleRoutes: Record<string, string> = {
+        buddy: '/tabs/responder-dashboard',
+        responder: '/tabs/responder-dashboard',
+        doctor: '/tabs/doctor-dashboard',
+        admin: '/tabs/admin-dashboard'
+      };
+
+      const route = roleRoutes[role] || '/tabs/home';
+      await this.navCtrl.navigateRoot([route], { replaceUrl: true });
+    } catch (error) {
+      console.error('Error going home:', error);
+      await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
+    }
+  }
 
   private async setupRealTimeListeners() {
     try {
@@ -438,10 +428,8 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
             this.currentEmergency = nextEmergency;
 
             const currentUser = await this.authService.waitForAuthInit();
-
             if (currentUser && (nextEmergency as any).buddyResponses) {
               const myResponse = (nextEmergency as any).buddyResponses[currentUser.uid];
-
               this.hasResponded =
                 myResponse?.status === 'responded' ||
                 myResponse?.status === 'cannot_respond';
@@ -454,9 +442,7 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
 
             this.isAllergiesLoading = true;
             const allergies = await this.allergyService.getUserAllergies(nextEmergency.userId);
-            this.emergencyAllergies = allergies
-              ? allergies.filter((a: any) => a.checked)
-              : [];
+            this.emergencyAllergies = allergies ? allergies.filter((a: any) => a.checked) : [];
 
             const emergencyInstructions = await this.medicalService.getEmergencyInstructions(
               nextEmergency.userId
@@ -467,7 +453,6 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
 
             this.isAllergiesLoading = false;
           } else {
-
             if (!this.isResolving) {
               this.currentEmergency = null;
             }
@@ -478,7 +463,6 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       console.error('Error setting up listeners:', error);
     }
   }
-
 
   private async fetchAddressFromCoords(lat: number, lng: number) {
     try {
@@ -509,7 +493,6 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-
   private async loadProfileInstructionFallback(userId?: string): Promise<void> {
     if (!userId) return;
 
@@ -520,10 +503,8 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       const profileDetails = completeProfile.profileDetails || {};
       const medicalInfo = completeProfile.medicalInfo || {};
 
-    this.profileInstructionFallback =
-      medicalInfo.emergencyInstruction ||
-      medicalInfo.generalInstruction ||
-      '';
+      this.profileInstructionFallback =
+        medicalInfo.generalEmergencyInstruction || medicalInfo.emergencyInstruction ||  medicalInfo.generalInstruction || '';
 
       this.patientAvatar = profileDetails.profile_picture || null;
       this.emergencyContactPhone = profileDetails.phone || null;
@@ -542,119 +523,23 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  get profileEmergencyInstruction(): string { return this.profileInstructionFallback; }
-  get hasEmergencyInstruction(): boolean { return !!(this.eventSpecificInstruction || this.profileEmergencyInstruction); }
-  get eventSpecificInstruction(): string { return (this.currentEmergency as any)?.emergencyInstruction || ''; }
-  get displayedEmergencyInstruction(): string { return this.eventSpecificInstruction || this.profileEmergencyInstruction || 'No instructions available'; }
-
-  speakAlert() {
-    if (!this.currentEmergency) return;
-    const text = `Emergency alert from ${this.currentEmergency.userName}. ${this.displayedEmergencyInstruction}. Patient location is ${this.address}.`;
-
-    // Safely use Web Speech API only when fully supported
-    if (typeof window === 'undefined') {
-      console.warn('Text-to-speech not available: window is undefined');
-      return;
-    }
-
-    const hasSpeechSynthesis = 'speechSynthesis' in window;
-    const hasUtteranceConstructor = typeof SpeechSynthesisUtterance !== 'undefined';
-
-    if (!hasSpeechSynthesis || !hasUtteranceConstructor) {
-      console.warn('Text-to-speech not supported on this device');
-      return;
-    }
-
-    // Stop any ongoing speech before starting a new one
-    window.speechSynthesis.cancel();
-
-    const message = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(message);
+  get profileEmergencyInstruction(): string {
+    return this.profileInstructionFallback;
   }
 
-  async acceptEmergency() {
-    try {
-      if (this.currentEmergency?.id) {
-        const user = await this.authService.waitForAuthInit();
-        if (user) {
-          // Get responder profile for their name
-          const userProfile = await this.userService.getUserProfile(user.uid);
-          const responderName = userProfile
-            ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() || 'Responder'
-            : 'Responder';
-
-          // Respond to the emergency - this will notify the patient automatically
-          await this.emergencyService.respondToEmergency(
-            this.currentEmergency.id,
-            user.uid,
-            responderName
-          );
-
-          // Update UI state
-          this.hasResponded = true;
-        }
-      }
-    } catch (error) {
-      console.error('Error accepting emergency:', error);
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Failed to accept emergency. Please try again.',
-        buttons: ['OK']
-      });
-      await alert.present();
-    }
+  get hasEmergencyInstruction(): boolean {
+    return !!(this.eventSpecificInstruction || this.profileEmergencyInstruction);
   }
 
-  async cannotRespond() {
-    const alert = await this.alertController.create({
-      header: 'Decline Emergency',
-      message: 'Are you sure you cannot respond to this emergency?',
-      buttons: [
-        {
-          text: 'Decline',
-          handler: async () => {
-            try {
-              if (this.currentEmergency?.id) {
-                const user = await this.authService.waitForAuthInit();
-                if (user) {
-                  // Resolve buddy name from profile so the patient sees who cannot respond
-                  const userProfile = await this.userService.getUserProfile(user.uid);
-                  const buddyName = userProfile
-                    ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() || 'Buddy'
-                    : 'Buddy';
-
-                  await this.emergencyService.recordBuddyCannotRespond(
-                    this.currentEmergency.id,
-                    user.uid,
-                    buddyName
-                  );
-
-                  // Mark this emergency as dismissed for this buddy and
-                  // save a snapshot so it appears in the Emergencies history.
-                  this.buddyService.dismissEmergencyForUser(user.uid, this.currentEmergency.id);
-                  this.buddyService.saveDismissedAlertData(user.uid, this.currentEmergency as any);
-
-                  // Update UI state to hide buttons
-                  this.hasResponded = true;
-                }
-              }
-            } catch (error) {
-              console.error('Error declining:', error);
-            } finally {
-              const modal = await this.modalController.getTop();
-              if (modal) {
-                await modal.dismiss(null, 'cancel');
-              } else {
-                await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
-              }
-            }
-          }
-        },
-        { text: 'Cancel', role: 'cancel' }
-      ]
-    });
-    await alert.present();
+  get eventSpecificInstruction(): string {
+    return (this.currentEmergency as any)?.emergencyInstruction || '';
   }
 
-  viewPatients() { this.router.navigate(['/tabs/patients']); }
+  get displayedEmergencyInstruction(): string {
+    return (
+      this.eventSpecificInstruction ||
+      this.profileEmergencyInstruction ||
+      'No instructions available'
+    );
+  }
 }

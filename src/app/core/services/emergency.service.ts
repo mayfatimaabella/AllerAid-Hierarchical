@@ -99,14 +99,15 @@ export class EmergencyService {
 
   /**
    * Send an emergency alert to the user's buddies with automatic notifications.
+   * locationData is optional — alert proceeds without location if unavailable.
    */
   async sendEmergencyAlert(
     userId: string,
     userName: string,
     buddyIds: string[],
-    allergies: string[] = [],s
+    allergies: string[] = [],
     instruction: string = '',
-    locationData: { latitude: number; longitude: number; accuracy?: number }
+    locationData?: { latitude: number; longitude: number; accuracy?: number }
   ): Promise<string> {
     
     const existing = await this.getUserEmergenciesByStatus(userId, ['active', 'responding']);
@@ -118,19 +119,20 @@ export class EmergencyService {
     try {
       console.log('Starting emergency alert process...');
 
-    if (
-      !locationData ||
-      typeof locationData.latitude !== 'number' ||
-      typeof locationData.longitude !== 'number'
-    ) {
-      throw new Error('Location is required before sending an emergency alert.');
-    }
+      const location =
+        locationData &&
+        typeof locationData.latitude === 'number' &&
+        typeof locationData.longitude === 'number'
+          ? {
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
+              accuracy: locationData.accuracy,
+            }
+          : null;
 
-    const location = {
-      latitude: locationData.latitude,
-      longitude: locationData.longitude,
-      accuracy: locationData.accuracy,
-    };
+      if (!location) {
+        console.warn('No valid location provided — emergency will be created without location.');
+      }
 
       const emergencyData: EmergencyAlert = {
         userId,
@@ -150,7 +152,6 @@ export class EmergencyService {
       console.log('Emergency alert created in Firestore:', emergencyId);
 
       if (location) {
-       
         this.debouncedReverseGeocodeAndSave(emergencyId, location.latitude, location.longitude);
       }
 
@@ -388,7 +389,7 @@ export class EmergencyService {
    * Cache the user's last known location.
    */
   async startBackgroundLocationTracking(): Promise<void> {
-    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+    const CACHE_TTL_MS = 5 * 60 * 1000;
     const now = Date.now();
 
     const cacheIsStale =
@@ -437,7 +438,7 @@ export class EmergencyService {
     try {
       const freshPosition = await this.getCurrentLocation();
       this.cachedLocation = freshPosition;
-      this.cachedLocationTimestamp = Date.now(); // FIX #12
+      this.cachedLocationTimestamp = Date.now();
 
       await this.updateEmergencyLocation(emergencyId, {
         latitude: freshPosition.coords.latitude,
@@ -481,7 +482,6 @@ export class EmergencyService {
    * Listen for Firestore changes on the emergency document.
    */
   listenForResponses(emergencyId: string, userId: string): void {
-    // FIX #2: Clean up any existing listener first
     if (this.emergencySnapshotUnsubscribe) {
       this.emergencySnapshotUnsubscribe();
       this.emergencySnapshotUnsubscribe = null;
@@ -508,13 +508,11 @@ export class EmergencyService {
       }
     });
 
-    // FIX #2: Store so it can be cleaned up later
     this.emergencySnapshotUnsubscribe = unsubscribe;
   }
 
   /**
    * Stop listening to the active emergency document.
-   * Call this when the emergency resolves or the component destroys.
    */
   stopListeningForResponses(): void {
     if (this.emergencySnapshotUnsubscribe) {
@@ -580,7 +578,7 @@ export class EmergencyService {
     }
   }
 
-  /** Track the responder's live location. Uses a separate watch ID from patient tracking. */
+  /** Track the responder's live location. */
   async startResponderLocationTracking(emergencyId: string, responderId: string): Promise<void> {
     if (Capacitor.isNativePlatform()) {
       if (!Capacitor.isPluginAvailable('Geolocation')) {
@@ -684,7 +682,6 @@ export class EmergencyService {
 
       await updateDoc(emergencyRef, updateData);
 
-      // Also stop the Firestore listener on resolve
       this.stopListeningForResponses();
       await this.stopLocationTracking();
     } catch (error) {
@@ -703,9 +700,6 @@ export class EmergencyService {
       where('status', 'in', ['active', 'responding'])
     );
 
-    // Store and expose the unsubscribe function via a WeakMap or
-    // return it alongside the observable. For now we attach it to the subject
-    // so callers can tear it down if needed.
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const emergencies: EmergencyAlert[] = [];
       querySnapshot.forEach((d) => {
@@ -714,12 +708,10 @@ export class EmergencyService {
       emergenciesSubject.next(emergencies);
     });
 
-    // Expose cleanup by completing the subject when the observable errors
     emergenciesSubject.subscribe({ error: () => unsubscribe() });
 
     return new Observable<EmergencyAlert[]>((subscriber) => {
       const innerSub = emergenciesSubject.subscribe(subscriber);
-      // FIX #15: Unsubscribe from Firestore when the caller unsubscribes
       return () => {
         innerSub.unsubscribe();
         unsubscribe();
@@ -789,6 +781,7 @@ export class EmergencyService {
       throw error;
     }
   }
+
   private debouncedReverseGeocodeAndSave(
     emergencyId: string,
     latitude: number,
@@ -853,7 +846,7 @@ export class EmergencyService {
   }
 
   private calculateETA(distanceKm: number): number {
-    const averageSpeed = 30; // km/h
+    const averageSpeed = 30;
     const timeHours = distanceKm / averageSpeed;
     const timeMinutes = Math.round(timeHours * 60);
     return Math.max(timeMinutes, 2);

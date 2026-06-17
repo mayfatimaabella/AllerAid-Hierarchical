@@ -1,17 +1,6 @@
 <ion-content [fullscreen]="true">
   <div class="mobile-container">
 
-    <div class="empty-emergency-state" *ngIf="!currentEmergency">
-      <ion-icon name="checkmark-done-circle"></ion-icon>
-      <h2>Emergency completed</h2>
-      <p>This alert has been resolved by the patient.</p>
-
-      <ion-button expand="block" (click)="goHome()">
-        Go Home
-      </ion-button>
-    </div>
-
-    <ng-container *ngIf="currentEmergency">
     <ng-container *ngIf="currentEmergency; else noEmergency">
 
       <div class="emergency-header">
@@ -105,7 +94,6 @@
         </div>
 
         <div class="instructions-card">
-
           <div class="emergency-plan-box" *ngIf="hasEmergencyInstruction">
             <span class="plan-label">General emergency instruction</span>
             <div class="plan-text">
@@ -118,7 +106,6 @@
               <strong>{{ instr.label }}:</strong> {{ instr.text || 'None' }}
             </div>
           </div>
-
         </div>
 
         <div class="footer-actions">
@@ -156,18 +143,15 @@
       </div>
     </ng-container>
 
-    <!-- Shown briefly while navigating away after help is completed -->
     <ng-template #noEmergency>
-      <div class="all-clear-container">
-        <ion-icon name="checkmark-circle" class="all-clear-icon"></ion-icon>
-        <p class="all-clear-title">All clear</p>
-        <p class="all-clear-sub">No active emergencies. Returning home…</p>
+      <div class="empty-emergency-state">
+        <ion-icon name="checkmark-done-circle"></ion-icon>
+        <h2>Emergency completed</h2>
+        <p>This alert has been resolved by the patient.</p>
 
-        <button class="btn btn-home" (click)="goHome()">
-          <ion-icon name="home"></ion-icon>
-          Back to Home
-        </button>     
-
+        <ion-button expand="block" (click)="goHome()">
+          Go Home
+        </ion-button>
       </div>
     </ng-template>
 
