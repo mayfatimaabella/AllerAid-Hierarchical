@@ -1,88 +1,232 @@
 ion-toolbar {
-  --background: #035348 !important;
-  color: #fff !important;
+  --background: #035348;
+  --color: #ffffff;
 }
 
 ion-content {
-  --background: linear-gradient(0deg, #013b34 0%, #036a5d 100%) !important;
+  --background: linear-gradient(180deg, #036a5d 0%, #013b34 100%);
+}
+
+/* Segment */
+ion-segment {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 5px;
+  margin-bottom: 20px;
+}
+
+ion-segment-button {
+  --color: #dff7f3;
+  --color-checked: #035348;
+  --indicator-color: transparent;
+  min-height: 44px;
+  border-radius: 10px;
 }
 
 ion-segment-button.segment-button-checked {
-  background: #fff !important;
-  color: #035348 !important;
-  border-radius: 5px;
-}
-
-ion-segment-button.segment-button-checked ion-label {
-  color: #035348 !important;
+  background: #ffffff;
+  color: #035348;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 ion-segment-button ion-label {
-  font-size: 11px !important;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.2;
   white-space: normal;
   text-align: center;
 }
 
+/* Sections */
 .invite-section,
 .received-section,
 .sent-section {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
-.invitation-card {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
+h3 {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+
+/* Form Fields */
+ion-item {
+  --background: #ffffff;
+  --color: #123c36;
+  --border-radius: 14px;
+  --padding-start: 14px;
+  --inner-padding-end: 14px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+}
+
+ion-label {
+  color: #035348 !important;
+  font-weight: 700;
+}
+
+ion-input,
+ion-textarea,
+ion-select {
+  color: #123c36;
+}
+
+/* Submit Button */
+ion-button[type="submit"] {
+  --background: #ffffff;
+  --color: #035348;
+  --border-radius: 14px;
+  height: 48px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+ion-button[type="submit"][disabled] {
+  opacity: 0.55;
+}
+
+/* Search */
+.search-container {
+  position: relative;
   margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: calc(100% - 8px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 0 0 14px 14px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.search-results {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #edf2f1;
+  cursor: pointer;
+}
+
+.search-result-item:hover,
+.search-result-item.selected {
+  background: #e7f7f4;
+}
+
+.user-info h4,
+.user-details h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #123c36;
+}
+
+.user-email,
+.sender-email,
+.recipient-email {
+  margin: 0;
+  color: #5d746f;
+  font-size: 12px;
+}
+
+.user-specialty {
+  margin: 2px 0 0;
+  color: #7a8f8a;
+  font-size: 11px;
+  font-style: italic;
+}
+
+/* Selected User */
+.selected-user-card {
+  background: #ffffff;
+  border: 2px solid #4caf50;
+  border-radius: 16px;
+  padding: 12px;
+  margin: 16px 0 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+
+.user-card-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  font-size: 42px;
+  color: #4caf50;
+  flex-shrink: 0;
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Invitation Cards */
+.invitation-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
 }
 
 .invitation-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
 .sender-info,
 .recipient-info {
   flex: 1;
+  min-width: 0;
 }
 
 .sender-info h4,
 .recipient-info h4 {
-  margin: 0 0 4px 0;
-  font-weight: 600;
-  color: #333;
-}
-
-.sender-email,
-.recipient-email {
-  margin: 0;
-  color: #666;
-  font-size: 14px;
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #123c36;
 }
 
 .invitation-message {
-  background: #f8f9fa;
+  background: #f3faf8;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin: 12px 0;
-  font-style: italic;
-  color: #555;
-  border-left: 3px solid var(--ion-color-primary);
+  color: #35534d;
+  border-left: 4px solid #036a5d;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .invitation-date {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #888;
+  color: #7a8f8a;
   font-size: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .invitation-actions {
@@ -91,104 +235,52 @@ ion-segment-button ion-label {
   justify-content: flex-end;
 }
 
+.invitation-actions ion-button {
+  --border-radius: 12px;
+  font-weight: 700;
+}
+
+/* Empty State */
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
-  color: #666;
+  padding: 48px 20px;
+  color: #ffffff;
 }
 
 .empty-icon {
-  font-size: 48px;
-  color: #ccc;
-  margin-bottom: 16px;
+  font-size: 54px;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 14px;
 }
 
-.search-container {
-  position: relative;
-  margin-bottom: 16px;
+.empty-state p {
+  color: #edf8f6 !important;
+  font-weight: 600;
 }
 
-.search-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  max-height: 300px;
-  overflow-y: auto;
-  z-index: 100;
-  margin-top: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+/* Mobile */
+@media (max-width: 480px) {
+  ion-segment-button ion-label {
+    font-size: 10px;
+  }
 
-.selected-doctor-card {
-  margin-bottom: 16px;
-}
+  .invitation-header {
+    flex-direction: column;
+  }
 
-ion-card {
-  margin: 0 0 16px 0;
-}
+  .invitation-actions {
+    flex-direction: column;
+  }
 
-.message-container {
-  margin-bottom: 16px;
-}
+  .invitation-actions ion-button {
+    width: 100%;
+  }
 
-.message-container ion-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-}
+  .user-card-content {
+    align-items: flex-start;
+  }
 
-.message-preview {
-  color: #666;
-  font-size: 0.875rem;
-  margin: 8px 0;
-  font-style: italic;
-}
-
-.status {
-  margin: 8px 0;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: inline-block;
-}
-
-.status-pending {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.status-accepted {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-declined {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.status-cancelled {
-  background: #e2e3e5;
-  color: #383d41;
-}
-
-.no-invitations {
-  text-align: center;
-  padding: 32px 16px;
-  color: #999;
-}
-
-ion-buttons {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-ion-button {
-  flex: 1;
+  h3 {
+    font-size: 18px;
+  }
 }

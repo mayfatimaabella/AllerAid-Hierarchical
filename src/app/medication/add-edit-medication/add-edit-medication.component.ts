@@ -146,7 +146,7 @@ export class AddEditMedicationComponent implements OnInit {
         await this.medService.addMedication(cleanMed, this.prescriptionImage || undefined);
       }
       this.showToast(this.isEditMode ? 'Updated successfully!' : 'Saved successfully!', 'success');
-      this.router.navigate(['/medication']);
+      this.router.navigate(['/tabs/medication']);
     } catch (error) {
       this.showToast('Error saving medication.', 'danger');
     }

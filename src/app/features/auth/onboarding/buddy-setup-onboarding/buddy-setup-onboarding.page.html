@@ -62,15 +62,41 @@
         <label class="field-label">Buddy email</label>
 
         <div class="search-row">
-          <ion-input
-            class="field-input search-input"
-            type="email"
-            placeholder="maria@email.com"
-            [(ngModel)]="buddySearchEmail"
-            name="buddySearchEmail"
-            [disabled]="primaryInviteStatus === 'pending' || primaryInviteStatus === 'accepted'"
-            (keyup.enter)="searchBuddyByEmail()">
-          </ion-input>
+          <div class="search-input-wrapper">
+            <ion-input
+              class="field-input search-input"
+              type="email"
+              placeholder="maria@email.com"
+              [(ngModel)]="buddySearchEmail"
+              name="buddySearchEmail"
+              [disabled]="primaryInviteStatus === 'pending' || primaryInviteStatus === 'accepted'"
+              (ngModelChange)="onBuddyEmailInput()"
+              (keyup.enter)="searchBuddyByEmail()">
+            </ion-input>
+
+            <!-- Search Results Dropdown -->
+            <div *ngIf="showSearchDropdown && searchResults.length > 0" class="search-dropdown">
+              <div
+                class="dropdown-item"
+                *ngFor="let user of searchResults"
+                (click)="selectBuddyFromDropdown(user)">
+                <div class="dropdown-item-info">
+                  <div class="dropdown-item-name">
+                    {{ user.firstName }} {{ user.lastName }}
+                  </div>
+                  <div class="dropdown-item-email">
+                    {{ user.email }}
+                  </div>
+                </div>
+                <ion-icon name="chevron-forward-outline" class="dropdown-item-icon"></ion-icon>
+              </div>
+            </div>
+
+            <!-- No Results Message -->
+            <div *ngIf="showSearchDropdown && searchResults.length === 0 && buddySearchEmail.length >= 2" class="search-dropdown no-results">
+              <p class="no-results-text">No users found</p>
+            </div>
+          </div>
 
           <ion-button
             class="search-btn"

@@ -1,31 +1,6 @@
-.cancelBtn {
-  --color: #036a5d !important;
-  color: #036a5d !important;
-}
-
-ion-icon {
-  color: #036a5d !important;
-}
-
-.doctor-modal-content h2,
-.doctor-modal-content p {
-  color: #000 !important;
-}
-
 :host {
   display: block;
   background: transparent;
-}
-
-ion-content {
-  --background: #eaf1ee !important;
-  color: #000 !important;
-}
-
-ion-item {
-  --background: #e3ece7 !important;
-  color: #000 !important;
-  border-radius: 32px;
 }
 
 .doctor-modal-backdrop {
@@ -44,12 +19,96 @@ ion-item {
 .doctor-modal-content {
   width: 90vw;
   max-width: 400px;
-  height: 45vh;
+  min-height: 450px;
   max-height: 80vh;
   z-index: 1001;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.delete-content {
+  --background: #ffffff;
+  --padding: 32px 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.delete-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.delete-header ion-icon {
+  font-size: 52px;
+  color: #e82829;
+}
+
+.delete-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #036a5d;
+}
+
+.delete-header p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b827e;
+  line-height: 1.6;
+}
+
+.doctor-name-highlight {
+  color: #036a5d;
+  font-weight: 700;
+}
+
+.warning-text {
+  margin: 0 0 24px;
+  text-align: center;
+  font-size: 13px;
+  color: #e82829;
+  font-weight: 600;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
 }
 
 .deleteBtn {
-  --background: #e12826 !important;
+  --background: #e82829 !important;
   --color: #fff !important;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.cancelBtn {
+  --background: transparent !important;
+  --border-color: #036a5d !important;
+  --color: #036a5d !important;
+  border: 2px solid #036a5d;
+  font-weight: 600;
+  text-transform: none;
+
+  &:disabled {
+    --color: #c0c0c0 !important;
+    --border-color: #d0d0d0 !important;
+    opacity: 0.6;
+  }
+}
+
+ion-spinner {
+  margin-right: 8px;
+  --color: #fff;
 }

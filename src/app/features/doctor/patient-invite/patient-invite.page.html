@@ -1,62 +1,97 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/doctor-dashboard"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/doctor-dashboard"></ion-back-button>
     </ion-buttons>
     <ion-title>Patient Invitations</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen class="ion-padding">
-  <h3>Received Invitations</h3>
-
-  <div *ngIf="receivedInvitations.length > 0; else noInvitations">
-    <div *ngFor="let invitation of receivedInvitations" class="invitation-card">
-      <div class="invitation-header">
-        <div class="sender-info">
-          <h4>{{ invitation.fromUserName }}</h4>
-          <p class="sender-email">{{ invitation.fromUserEmail }}</p>
-        </div>
-
-        <ion-chip [color]="getInvitationStatusColor(invitation.status)">
-          {{ invitation.status | titlecase }}
-        </ion-chip>
-      </div>
-
-      <p class="invitation-message" *ngIf="invitation.message">
-        "{{ invitation.message }}"
-      </p>
-
-      <div class="invitation-date">
-        <ion-icon name="time-outline"></ion-icon>
-        <small>{{ invitation.createdAt | date:'medium' }}</small>
-      </div>
-
-      <div *ngIf="invitation.status === 'pending'" class="invitation-actions">
-        <ion-button
-          size="small"
-          color="success"
-          (click)="acceptInvitation(invitation.id!)">
-          <ion-icon name="checkmark-outline" slot="start"></ion-icon>
-          Accept
-        </ion-button>
-
-        <ion-button
-          size="small"
-          fill="outline"
-          color="danger"
-          (click)="declineInvitation(invitation.id!)">
-          <ion-icon name="close-outline" slot="start"></ion-icon>
-          Decline
-        </ion-button>
-      </div>
-    </div>
+<ion-content fullscreen>
+  <div class="page-header">
+    <h1>Received Invitations</h1>
+    <p class="header-subtitle">Manage your patient collaboration requests</p>
   </div>
 
-  <ng-template #noInvitations>
-    <div class="empty-state">
-      <ion-icon name="mail-outline" class="empty-icon"></ion-icon>
-      <p style="color: #ececec">No invitations received</p>
+  <div class="invitations-container ion-padding">
+    <div *ngIf="receivedInvitations.length > 0; else noInvitations">
+      <div
+        *ngFor="let invitation of receivedInvitations"
+        class="invitation-card"
+        [class.accepted]="invitation.status === 'accepted'"
+        [class.declined]="invitation.status === 'declined'">
+        <div class="card-header">
+          <div class="sender-info">
+            <div class="sender-avatar">
+              <ion-icon name="person-circle"></ion-icon>
+            </div>
+            <div class="sender-details">
+              <h3 class="sender-name">{{ invitation.fromUserName }}</h3>
+              <p class="sender-email">{{ invitation.fromUserEmail }}</p>
+            </div>
+          </div>
+
+          <div class="status-badge" [ngClass]="invitation.status">
+            <span class="status-indicator"></span>
+            {{ invitation.status | titlecase }}
+          </div>
+        </div>
+
+        <div class="card-content">
+          <p class="invitation-message" *ngIf="invitation.message">
+            <ion-icon name="chatbubble-outline"></ion-icon>
+            {{ invitation.message }}
+          </p>
+
+          <div class="invitation-date">
+            <ion-icon name="time-outline"></ion-icon>
+            <small>{{ invitation.createdAt | date: 'MMM d, y' }}</small>
+          </div>
+        </div>
+
+        <div
+          *ngIf="invitation.status === 'pending'"
+          class="card-actions">
+          <ion-button
+            expand="block"
+            color="success"
+            class="accept-btn"
+            (click)="acceptInvitation(invitation.id!)">
+            <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+            Accept
+          </ion-button>
+
+          <ion-button
+            expand="block"
+            fill="outline"
+            color="danger"
+            class="decline-btn"
+            (click)="declineInvitation(invitation.id!)">
+            <ion-icon name="close-circle" slot="start"></ion-icon>
+            Decline
+          </ion-button>
+        </div>
+
+        <div *ngIf="invitation.status !== 'pending'" class="card-status-footer">
+          <span *ngIf="invitation.status === 'accepted'" class="status-text accepted">
+            <ion-icon name="checkmark-done"></ion-icon>
+            Accepted on {{ invitation.respondedAt | date: 'MMM d, y' }}
+          </span>
+          <span *ngIf="invitation.status === 'declined'" class="status-text declined">
+            <ion-icon name="close"></ion-icon>
+            Declined on {{ invitation.respondedAt | date: 'MMM d, y' }}
+          </span>
+        </div>
+      </div>
     </div>
-  </ng-template>
+
+    <ng-template #noInvitations>
+      <div class="empty-state">
+        <ion-icon name="mail-open-outline" class="empty-icon"></ion-icon>
+        <h2>No Invitations Yet</h2>
+        <p>You don't have any patient collaboration requests at this time.</p>
+        <p class="empty-hint">When patients invite you, they'll appear here.</p>
+      </div>
+    </ng-template>
+  </div>
 </ion-content>

@@ -6,15 +6,52 @@
 ion-content {
   --background: #e8f2f0 !important;
   color: #000 !important;
-  height: 47vh;
+  height: 55vh;
   max-height: 80vh;
-  border-radius: 5px;
+  border-radius: 22px;
+  overflow-y: auto;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-title {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #036a5d;
 }
 
 ion-item {
   --background: #cfeee6 !important;
+  --padding-start: 12px !important;
+  --inner-padding-end: 8px !important;
   color: #000 !important;
-  border-radius: 10px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+
+ion-item ion-label {
+  color: #036a5d !important;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+ion-input {
+  --color: #000 !important;
+  --placeholder-color: #9ba9a6;
+  font-size: 14px;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .doctor-modal-backdrop {
@@ -32,13 +69,30 @@ ion-item {
 
 .doctor-modal-content {
   width: 90vw;
-  max-width: 400px;
-  height: 55vh;
-  max-height: 80vh;
+  max-width: 420px;
+  height: auto;
+  max-height: 85vh;
   z-index: 1001;
+  border-radius: 22px;
+  overflow: hidden;
 }
 
 ion-button.saveBtn {
   --background: #036a5d !important;
   --color: #fff !important;
+  font-weight: 600;
+  text-transform: none;
+}
+
+ion-button.cancelBtn {
+  --background: transparent !important;
+  --border-color: #036a5d !important;
+  --color: #036a5d !important;
+  border: 2px solid #036a5d;
+  font-weight: 600;
+  text-transform: none;
+}
+
+ion-spinner {
+  margin-right: 8px;
 }
