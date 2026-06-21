@@ -16,7 +16,7 @@ export interface EmergencyAlert {
     longitude: number;
     address?: string;
   };
-  alertType: 'shake' | 'power-button' | 'manual' | 'buddy-request';
+  alertType: 'shake' | 'volume-button' | 'manual' | 'buddy-request';
   status: 'active' | 'resolved' | 'cancelled';
   emergencyData: EmergencyData;
   notifiedBuddies: string[];
@@ -50,7 +50,7 @@ export class EmergencyAlertService {
   ) {}
 
   async triggerEmergencyAlert(
-    alertType: 'shake' | 'power-button' | 'manual' = 'manual'
+    alertType: 'shake' | 'volume-button' | 'manual' = 'manual'
   ): Promise<void> {
     try {
       const currentUser = await this.authService.waitForAuthInit();

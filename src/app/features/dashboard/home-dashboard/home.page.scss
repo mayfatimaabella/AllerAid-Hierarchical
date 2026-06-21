@@ -26,7 +26,7 @@ ion-content {
   text-align: left;
 }
 
-/* BANNERS */
+//Banners
 .buddy-banner {
   display: flex;
   align-items: flex-start;
@@ -92,7 +92,7 @@ ion-content {
   border-left-color: var(--ion-color-warning-shade);
 }
 
-/* EMERGENCY BUTTON AREA */
+// Emergency Button Area
 .emergency-wrapper {
   display: flex;
   flex-direction: column;
@@ -166,11 +166,8 @@ ion-content {
   font-weight: 600;
 }
 
-.bottom-text {
-  display: none;
-}
 
-/* EMERGENCY ACTIVE CARD */
+//Emergency Active Card
 .emergency-status-card {
   border-radius: 24px;
   border: 1px solid rgba(211, 47, 47, 0.18);
@@ -216,7 +213,7 @@ ion-content {
   margin-top: 16px;
 }
 
-/* HEALTH OVERVIEW */
+//Health Overview
 .health-overview-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -273,7 +270,7 @@ ion-content {
   letter-spacing: 0.5px;
 }
 
-/* BUDDY RESPONSE LIST */
+//Buddy Response List
 .buddy-responses {
   margin-top: 16px;
 }
@@ -323,7 +320,7 @@ ion-content {
   color: #6c7c79;
 }
 
-/* MOBILE */
+//Mobile
 @media (max-width: 380px) {
   .page-title {
     font-size: 19px;
@@ -355,9 +352,7 @@ ion-content {
   }
 }
 
-/* ===============================
-   RESPONSIVE DASHBOARD
-   =============================== */
+//Responsive Dashboard
 
 /* Safe layout for all screens */
 .wrapper {
@@ -573,4 +568,32 @@ ion-content {
   .count-number {
     font-size: 28px;
   }
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.clickable-card:active {
+  transform: scale(0.97);
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-header-row ion-icon {
+  color: #ffffff;
+  font-size: 20px;
+  opacity: 0.9;
+}
+
+.card-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #ffffff;
+  opacity: 0.85;
 }

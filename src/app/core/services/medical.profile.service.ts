@@ -161,6 +161,8 @@ export class MedicalService {
   /**
    * Get the user's complete medical/info document.
    */
+
+  //10. GET from Firebase
   async getUserMedicalProfile(uid: string): Promise<MedicalInfo | null> {
     try {
       const medicalRef = doc(this.db, `users/${uid}/medical/info`);

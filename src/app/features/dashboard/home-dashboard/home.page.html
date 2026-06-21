@@ -15,6 +15,7 @@
       <ion-button fill="clear" size="small" (click)="openNotifications()">
         <img src="assets/icon/bell.png" alt="bell" class="notif-icon" />
       </ion-button>
+
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -24,6 +25,7 @@
     <h2 class="page-title">Welcome, {{ userName }}!</h2>
 
         <div *ngIf="showAllergyBanner" class="buddy-banner allergy-banner">
+          
           <div class="buddy-banner-content">
             <ion-icon name="warning-outline" class="buddy-banner-icon"></ion-icon>
             <div class="buddy-banner-text">
@@ -31,6 +33,7 @@
               <p class="buddy-banner-sub">
                Add allergens so responders know what to avoid.
               </p>
+
               <ion-button
                 size="small"
                 fill="solid"
@@ -39,8 +42,10 @@
                 <ion-icon name="add-outline" slot="start"></ion-icon>
                 Add allergens
               </ion-button>
+
             </div>
           </div>
+
           <ion-button
             fill="clear"
             size="small"
@@ -48,6 +53,7 @@
             (click)="showAllergyBanner = false">
             <ion-icon name="close-outline" slot="icon-only"></ion-icon>
           </ion-button>
+
         </div>   
 
         <div *ngIf="showBuddyBanner" class="buddy-banner">
@@ -220,34 +226,54 @@
       </ion-card-content>
     </ion-card>
 
-    <div class="health-overview-container">
-      <ion-card class="health-card">
-        <ion-card-header>
-          <ion-card-title class="allergen-title">
-            ALLERGENS
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="count-display">
-            <span class="count-number">{{ getAllergensCount() }}</span>
-          </div>
-          <p class="count-label">recorded</p>
-        </ion-card-content>
-      </ion-card>
+<div class="health-overview-container">
 
-      <ion-card class="health-card">
-        <ion-card-header>
-          <ion-card-title class="emergency-contact-title">
-            CONTACTS
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="count-display">
-            <span class="count-number">{{ getBuddiesCount() }}</span>
-          </div>
-          <p class="count-label">buddies</p>
-        </ion-card-content>
-      </ion-card>
-    </div>
+  <ion-card
+    class="health-card clickable-card"
+    button="true"
+    [routerLink]="['/tabs/profile']">
+
+    <ion-card-header>
+      <div class="card-header-row">
+        <ion-card-title class="allergen-title">
+          ALLERGENS
+        </ion-card-title>
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </div>
+    </ion-card-header>
+
+    <ion-card-content>
+      <div class="count-display">
+        <span class="count-number">{{ getAllergensCount() }}</span>
+      </div>
+      <p class="count-label">recorded</p>
+      <p class="card-hint">View medical profile</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card
+    class="health-card clickable-card"
+    button="true"
+    [routerLink]="['/tabs/buddy']">
+
+    <ion-card-header>
+      <div class="card-header-row">
+        <ion-card-title class="emergency-contact-title">
+          EMERGENCY CONTACTS
+        </ion-card-title>
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </div>
+    </ion-card-header>
+
+    <ion-card-content>
+      <div class="count-display">
+        <span class="count-number">{{ getBuddiesCount() }}</span>
+      </div>
+      <p class="count-label">buddies</p>
+      <p class="card-hint">Manage responders</p>
+    </ion-card-content>
+  </ion-card>
+
+</div>
   </div>
 </ion-content>

@@ -1,5 +1,6 @@
 export interface EmergencySettings {
   shakeToAlert: boolean;
-  powerButtonAlert: boolean;
+  volumeButtonAlert: boolean;
   audioInstructions: boolean;
+  [key: string]: any;
 }

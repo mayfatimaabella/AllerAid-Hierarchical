@@ -13,7 +13,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 export interface EmergencySettings {
   shakeToAlert: boolean;
-  powerButtonAlert: boolean;
+  volumeButtonAlert: boolean;
   audioInstructions: boolean;
 }
 
@@ -34,7 +34,7 @@ export class EmergencySettingsService implements OnDestroy {
 
   private readonly DEFAULTS: EmergencySettings = {
     shakeToAlert: false,
-    powerButtonAlert: false,
+    volumeButtonAlert: false,
     audioInstructions: false,
   };
 
@@ -47,18 +47,18 @@ export class EmergencySettingsService implements OnDestroy {
 
   // ─── Auth listener ────────────────────────────────────────────────────────
 
-private initializeAuthListener(): void {
-  onAuthStateChanged(this.firebaseService.getAuth(), user => {
-    if (user) {
-      this.currentUserId = user.uid;
-      this.startListener(user.uid);
-    } else {
-      this.currentUserId = null;
-      this.stopListener();
-      this.settingsSubject.next(null);
-    }
-  });
-}
+  private initializeAuthListener(): void {
+    onAuthStateChanged(this.firebaseService.getAuth(), user => {
+      if (user) {
+        this.currentUserId = user.uid;
+        this.startListener(user.uid);
+      } else {
+        this.currentUserId = null;
+        this.stopListener();
+        this.settingsSubject.next(null);
+      }
+    });
+  }
 
   // ─── Realtime listener ────────────────────────────────────────────────────
 
@@ -69,8 +69,8 @@ private initializeAuthListener(): void {
 
     this.unsubscribe = onSnapshot(prefsRef, snap => {
       if (snap.exists()) {
-        const emergencySettings = snap.data()?.['emergencySettings'] ?? this.DEFAULTS;
-        this.settingsSubject.next(emergencySettings as EmergencySettings);
+        const raw = snap.data()?.['emergencySettings'];
+        this.settingsSubject.next(this.normalize(raw));
       } else {
         this.settingsSubject.next(this.DEFAULTS);
       }
@@ -84,6 +84,23 @@ private initializeAuthListener(): void {
     }
   }
 
+  /**
+   * Normalizes raw Firestore data into the current EmergencySettings shape.
+   * Falls back to the legacy `powerButtonAlert` field name for documents
+   * that were written before the field was renamed to `volumeButtonAlert`,
+   * so existing users don't silently lose their saved preference.
+   */
+  private normalize(raw: any): EmergencySettings {
+    if (!raw) return this.DEFAULTS;
+
+    return {
+      shakeToAlert: raw.shakeToAlert ?? this.DEFAULTS.shakeToAlert,
+      volumeButtonAlert:
+        raw.volumeButtonAlert ?? raw.powerButtonAlert ?? this.DEFAULTS.volumeButtonAlert,
+      audioInstructions: raw.audioInstructions ?? this.DEFAULTS.audioInstructions,
+    };
+  }
+
   // ─── Public read API ──────────────────────────────────────────────────────
 
   getSettings(): Observable<EmergencySettings | null> {
@@ -94,10 +111,9 @@ private initializeAuthListener(): void {
   async getEmergencySettings(uid: string): Promise<EmergencySettings | null> {
     const snap = await getDoc(doc(this.db, 'users', uid, 'settings', 'preferences'));
     return snap.exists()
-      ? (snap.data()?.['emergencySettings'] as EmergencySettings) ?? null
+      ? this.normalize(snap.data()?.['emergencySettings'])
       : null;
   }
-
 
   async initializeDefaults(uid: string): Promise<void> {
     await setDoc(
@@ -121,7 +137,7 @@ private initializeAuthListener(): void {
       {
         emergencySettings: {
           shakeToAlert: patch.shakeToAlert ?? currentSettings.shakeToAlert,
-          powerButtonAlert: patch.powerButtonAlert ?? currentSettings.powerButtonAlert,
+          volumeButtonAlert: patch.volumeButtonAlert ?? currentSettings.volumeButtonAlert,
           audioInstructions: patch.audioInstructions ?? currentSettings.audioInstructions,
         }
       },
@@ -133,8 +149,17 @@ private initializeAuthListener(): void {
     await this.update({ shakeToAlert: enabled });
   }
 
+  async setVolumeButtonAlert(enabled: boolean): Promise<void> {
+    await this.update({ volumeButtonAlert: enabled });
+  }
+
+  /**
+   * @deprecated Renamed to setVolumeButtonAlert. Kept temporarily as an alias
+   * so any other call sites still using the old name don't break — remove
+   * once those call sites are updated.
+   */
   async setPowerButtonAlert(enabled: boolean): Promise<void> {
-    await this.update({ powerButtonAlert: enabled });
+    await this.setVolumeButtonAlert(enabled);
   }
 
   async setAudioInstructions(enabled: boolean): Promise<void> {
@@ -158,7 +183,6 @@ private initializeAuthListener(): void {
       { merge: true }
     );
   }
-
 
   ngOnDestroy(): void {
     this.stopListener();

@@ -1,6 +1,4 @@
-// =====================
-// TOOLBAR
-// =====================
+//Toolbar
 ion-toolbar.toolbar--teal {
   --background: #0F6E56;
   --color: #ffffff;
@@ -16,16 +14,12 @@ ion-toolbar.toolbar--teal {
   }
 }
 
-// =====================
-// PAGE BACKGROUND
-// =====================
+//Page Background
 ion-content.allergy-bg {
   --background: #f4f7f6;
 }
 
-// =====================
-// HERO
-// =====================
+//Hero
 .hero {
   padding: 20px 16px 16px;
   background: #ffffff;
@@ -47,9 +41,7 @@ ion-content.allergy-bg {
   }
 }
 
-// =====================
-// TABS
-// =====================
+//Tabs
 .tab-bar {
   display: flex;
   background: #ffffff;
@@ -97,16 +89,12 @@ ion-content.allergy-bg {
   }
 }
 
-// =====================
-// SECTION
-// =====================
+//Section
 .section {
   padding: 12px 16px;
 }
 
-// =====================
-// ADD BUTTON
-// =====================
+//Add Button
 .add-btn {
   --background: #0F6E56;
   --background-activated: #085041;
@@ -118,9 +106,7 @@ ion-content.allergy-bg {
   height: 48px;
 }
 
-// =====================
-// COUNT BAR
-// =====================
+//Count Bar
 .count-bar {
   display: flex;
   align-items: center;
@@ -133,9 +119,7 @@ ion-content.allergy-bg {
   }
 }
 
-// =====================
-// ALLERGY OPTION CARD
-// =====================
+//Allergy Option Card
 .allergy-card {
   background: #ffffff;
   border: 0.5px solid rgba(0, 0, 0, 0.08);
@@ -168,9 +152,7 @@ ion-content.allergy-bg {
   }
 }
 
-// =====================
-// CATEGORY PILLS
-// =====================
+//Category Pills
 .pill {
   display: inline-flex;
   align-items: center;
@@ -201,9 +183,7 @@ ion-content.allergy-bg {
   }
 }
 
-// =====================
-// ICON BUTTONS
-// =====================
+//Icon Buttons
 .icon-btn {
   width: 34px;
   height: 34px;
@@ -234,9 +214,7 @@ ion-content.allergy-bg {
   }
 }
 
-// =====================
-// SUGGESTION CARD
-// =====================
+//Suggestion Card
 .suggestion-card {
   background: #ffffff;
   border: 0.5px solid rgba(0, 0, 0, 0.08);
@@ -313,9 +291,7 @@ ion-content.allergy-bg {
   }
 }
 
-// =====================
-// EMPTY STATE
-// =====================
+//Empty State
 .empty-state {
   text-align: center;
   padding: 40px 16px;
@@ -334,9 +310,7 @@ ion-content.allergy-bg {
   }
 }
 
-// =====================
-// LOADING
-// =====================
+//Empty State
 .loading-box {
   display: flex;
   flex-direction: column;

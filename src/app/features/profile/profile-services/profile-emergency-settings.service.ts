@@ -47,7 +47,7 @@ export class ProfileEmergencySettingsService {
   }
 
   /**
-   * Save emergency toggle settings (shakeToAlert, powerButtonAlert, audioInstructions).
+   * Save emergency toggle settings (shakeToAlert, volumeButtonAlert, audioInstructions).
    * These booleans live exclusively in settings/preferences.emergencySettings.
    */
   async saveEmergencySettings(): Promise<void> {
@@ -59,7 +59,7 @@ export class ProfileEmergencySettingsService {
 
       const settings = {
         shakeToAlert: !!this.emergencySettings?.shakeToAlert,
-        powerButtonAlert: !!this.emergencySettings?.powerButtonAlert,
+        volumeButtonAlert: !!this.emergencySettings?.volumeButtonAlert,
         audioInstructions: this.emergencySettings?.audioInstructions !== false
       };
 
@@ -298,10 +298,16 @@ export class ProfileEmergencySettingsService {
   async loadEmergencySettings(uid: string): Promise<void> {
   const settings = await this.emergencySettingsService.getEmergencySettings(uid);
 
-  this.emergencySettings = settings ?? {
+  const loadedSettings = settings ?? {
     shakeToAlert: false,
-    powerButtonAlert: false,
+    volumeButtonAlert: false,
     audioInstructions: true
+  };
+
+  this.emergencySettings = {
+    shakeToAlert: loadedSettings.shakeToAlert ?? false,
+    volumeButtonAlert: loadedSettings.volumeButtonAlert ?? loadedSettings['volumeButtonAlert'] ?? false,
+    audioInstructions: loadedSettings.audioInstructions ?? true
   };
 }
 }

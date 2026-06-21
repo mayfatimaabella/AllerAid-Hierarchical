@@ -136,13 +136,17 @@ export class ProfilePage implements OnInit, OnDestroy {
     try {
       const data = await this.profileDataLoader.loadMedicalData();
 
-      this.profileEmergencySettings.emergencySettings =
-      data.emergencySettings ?? {
+      const loadedSettings = data.emergencySettings ?? {
         shakeToAlert: false,
-        powerButtonAlert: false,
+        volumeButtonAlert: false,
         audioInstructions: true
       };
 
+    this.profileEmergencySettings.emergencySettings = {
+      shakeToAlert: loadedSettings.shakeToAlert ?? false,
+      volumeButtonAlert: loadedSettings.volumeButtonAlert ?? loadedSettings.powerButtonAlert ?? false,
+      audioInstructions: loadedSettings.audioInstructions ?? true
+    };
       this.profileEHRManager.doctorVisits = data.doctorVisits;
       this.profileEHRManager.medicalHistory = data.medicalHistory;
       this.profileEHRManager.ehrAccessList = data.ehrAccessList;

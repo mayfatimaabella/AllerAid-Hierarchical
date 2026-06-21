@@ -6,7 +6,7 @@ import { ProfileSettingsComponent } from './voice-settings-section/profile-setti
 
 export interface EmergencySettings {
   shakeToAlert: boolean;
-  powerButtonAlert: boolean;
+  volumeButtonAlert: boolean;
   audioInstructions: boolean;
   [key: string]: any;
 }

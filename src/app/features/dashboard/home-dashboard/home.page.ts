@@ -11,7 +11,7 @@ import { LocationPermissionService } from '../../../core/services/location-permi
 import { Subscription } from 'rxjs';
 import { AllergyManagerService } from '../../../core/services/allergy-manager.service';
 import { AllergyModalService } from '../../profile/profile-services/allergy-modal.service';
-
+import { ModalController } from '@ionic/angular';
 
 const EMERGENCY_CONFIRMATION_SECONDS = 5;
 const HOTLINE_FALLBACK_DELAY_MS = 60_000;
@@ -85,6 +85,7 @@ export class HomePage implements OnDestroy {
     private allergyManager: AllergyManagerService,
     private allergyModalService: AllergyModalService,
     private locationPermissionService: LocationPermissionService,
+    private modalController: ModalController
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
@@ -150,10 +151,13 @@ export class HomePage implements OnDestroy {
 
 
   triggerEmergency(): void {
+
+    //1. Check if there's an active alert
     if (this.isEmergencyActive) {
       this.presentToast('An emergency alert is already active.', 'warning');
       return;
     }
+    //2. Five second timer for user to cancel
     this.presentEmergencyConfirmation();
   }
 
@@ -166,6 +170,7 @@ export class HomePage implements OnDestroy {
 
     let alertRef: HTMLIonAlertElement;
 
+    //3. Once the time is up, show alert to confirm; Click 'Send Alert' to send emergency alert
     alertRef = await this.alertController.create({
       header: 'EMERGENCY ALERT!',
       message: buildMessage(),
@@ -186,7 +191,7 @@ export class HomePage implements OnDestroy {
     });
 
     await alertRef.present();
-
+    //Countdown logic
     this.emergencyConfirmationTimer = setInterval(() => {
       this.emergencyConfirmationTimeLeft--;
 
@@ -207,14 +212,16 @@ export class HomePage implements OnDestroy {
       this.emergencyConfirmationTimer = null;
     }
   }
+  //4. Also check if theres an active alert 
   async sendEmergencyAlert(): Promise<void> {
     if (this.isEmergencyActive) {
       await this.presentToast('An emergency alert is already active.', 'warning');
       return;
     }
-
+    //5. If True, get Location Permission 
     const hasLocationPermission = await this.ensureLocationPermission();
 
+    //6. Check if theres LocationPermission, if FALSE then present toast
     if (!hasLocationPermission) {
       await this.presentToast(
         'Location permission is required before sending an emergency alert.',
@@ -222,13 +229,15 @@ export class HomePage implements OnDestroy {
       );
       return;
     }
-
+    //7. If TRUEM open loadingController 
     const loading = await this.loadingController.create({
       message: 'Getting location and sending emergency alert...',
       duration: 15_000,
     });
 
     await loading.present();
+
+    //8. Check TRUE current user, if not dismiss and toast 
 
     try {
       const currentUser = await this.authService.waitForAuthInit();
@@ -244,7 +253,11 @@ export class HomePage implements OnDestroy {
         return;
       }
 
+      //9. Get latestMedical data from medicalService.getUserMedicalProfile
+
       const latestMedical = await this.medicalService.getUserMedicalProfile(currentUser.uid);
+
+      //11/ Get emergencyInstructions
 
       this.emergencyInstruction = this.emergencyService.resolveEmergencyInstruction(latestMedical,this.emergencyInstruction);
 
@@ -797,4 +810,5 @@ export class HomePage implements OnDestroy {
       this.buddyBannerState = 'none';
     }
   }
+
 }

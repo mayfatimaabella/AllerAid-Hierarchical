@@ -23,7 +23,7 @@ try {
   providedIn: 'root'
 })
 export class FirebaseService {
-  private db: Firestore = getFirestore(app);
+  private db: Firestore = getFirestore(app)
   private storage: FirebaseStorage = getStorage(app);
   private auth: Auth = auth;
 
