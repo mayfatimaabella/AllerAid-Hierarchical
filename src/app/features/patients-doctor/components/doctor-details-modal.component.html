@@ -1,43 +1,59 @@
 <ng-container>
   <div class="doctor-modal-backdrop" (click)="close()">
     <div class="doctor-modal-content" (click)="$event.stopPropagation()">
-      <ion-header>
+      <ion-header class="modal-header">
         <ion-toolbar>
+          <ion-title class="modal-title">Doctor Details</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="close()">
+            <ion-button fill="clear" (click)="close()" class="close-btn">
               <ion-icon name="close"></ion-icon>
             </ion-button>
           </ion-buttons>
-          <ion-title>Doctor Details</ion-title>
         </ion-toolbar>
       </ion-header>
 
-      <ion-content class="ion-padding">
+      <ion-content class="ion-padding details-content">
         <div class="doctor-details">
-          <div class="doctor-avatar"> 
-            <ion-icon name="person-circle"></ion-icon>
+          <div class="doctor-avatar-section">
+            <div class="doctor-avatar">
+              <ion-icon name="person-circle-outline"></ion-icon>
+            </div>
           </div>
 
-          <h2>{{ doctor?.doctorName || 'Unknown Doctor' }}</h2>
+          <h2 class="doctor-name">{{ doctor?.doctorName || 'Unknown Doctor' }}</h2>
 
-          <div *ngIf="doctor?.specialization" class="detail-item">
-            <ion-label>Specialization</ion-label>
-            <p>{{ doctor.specialty }}</p>
-          </div>
+          <div class="details-grid">
+            <div *ngIf="doctor?.specialization" class="detail-item">
+              <ion-icon name="briefcase-outline" class="detail-icon"></ion-icon>
+              <div class="detail-content">
+                <span class="detail-label">Specialization</span>
+                <p class="detail-value">{{ doctor.specialization }}</p>
+              </div>
+            </div>
 
-          <div *ngIf="doctor?.doctorEmail" class="detail-item">
-            <ion-label>Email</ion-label>
-            <p>{{ doctor.doctorEmail }}</p>
-          </div>
+            <div *ngIf="doctor?.doctorEmail" class="detail-item">
+              <ion-icon name="mail-outline" class="detail-icon"></ion-icon>
+              <div class="detail-content">
+                <span class="detail-label">Email</span>
+                <p class="detail-value">{{ doctor.doctorEmail }}</p>
+              </div>
+            </div>
 
-          <div *ngIf="doctor?.acceptedAt" class="detail-item">
-            <ion-label>Added On</ion-label>
-            <p>{{ doctor.acceptedAt | date:'short' }}</p>
-          </div>
+            <div *ngIf="doctor?.phoneNumber" class="detail-item">
+              <ion-icon name="call-outline" class="detail-icon"></ion-icon>
+              <div class="detail-content">
+                <span class="detail-label">Phone</span>
+                <p class="detail-value">{{ doctor.phoneNumber }}</p>
+              </div>
+            </div>
 
-          <div *ngIf="doctor?.relationship" class="detail-item">
-            <ion-label>Relationship</ion-label>
-            <p>{{ doctor.relationship }}</p>
+            <div *ngIf="doctor?.acceptedAt" class="detail-item">
+              <ion-icon name="calendar-outline" class="detail-icon"></ion-icon>
+              <div class="detail-content">
+                <span class="detail-label">Connected Since</span>
+                <p class="detail-value">{{ convertTimestamp(doctor.acceptedAt) | date:'short' }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </ion-content>

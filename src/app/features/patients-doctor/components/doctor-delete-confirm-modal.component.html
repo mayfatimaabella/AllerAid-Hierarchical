@@ -1,24 +1,29 @@
 <ng-container>
   <div class="doctor-modal-backdrop" (click)="cancel()">
     <div class="doctor-modal-content" (click)="$event.stopPropagation()">
-      <div class="delete-icon">
-        <ion-icon name="trash-outline"></ion-icon>
-      </div>
-      <ion-title class="ion-text-center">Remove Doctor</ion-title>
-      <p class="ion-text-center delete-message">
-        Are you sure you want to remove <strong>{{ doctor.firstName }} {{ doctor.lastName }}</strong> from your doctors list?
-      </p>
-      <p class="ion-text-center warning-text">
-        This action cannot be undone.
-      </p>
-      
-      <div class="button-container">
-        <ion-button color="danger" expand="block" (click)="confirmDelete()" [disabled]="isLoading">
-          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-          {{ isLoading ? 'Removing...' : 'Yes, Remove' }}
-        </ion-button>
-        <ion-button fill="outline" expand="block" (click)="cancel()">Cancel</ion-button>
-      </div>
+      <ion-content class="ion-padding delete-content">
+        <div class="delete-header">
+          <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
+          <h2>Remove Doctor?</h2>
+          <p>
+            Are you sure you want to remove
+            <strong class="doctor-name-highlight">{{ doctor?.firstName }} {{ doctor?.lastName }}</strong>
+            from your doctors list?
+          </p>
+        </div>
+
+        <p class="warning-text">This action cannot be undone.</p>
+
+        <div class="button-group">
+          <ion-button expand="block" class="deleteBtn" (click)="confirmDelete()" [disabled]="isLoading">
+            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+            {{ isLoading ? 'Removing...' : 'Yes, Remove' }}
+          </ion-button>
+          <ion-button expand="block" class="cancelBtn" (click)="cancel()" [disabled]="isLoading">
+            Cancel
+          </ion-button>
+        </div>
+      </ion-content>
     </div>
   </div>
 </ng-container>

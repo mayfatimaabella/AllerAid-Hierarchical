@@ -36,6 +36,8 @@ import { Router } from '@angular/router';
     .user-menu-popover {
       --padding-top: 0;
       --padding-bottom: 0;
+      width: 320px !important;
+      max-width: 320px !important;
     }
     
     .user-info {
@@ -44,6 +46,7 @@ import { Router } from '@angular/router';
       padding: 16px;
       background: var(--ion-color-light);
       border-bottom: 1px solid var(--ion-color-light-shade);
+      width: 100%;
     }
     
     .user-info ion-avatar {
@@ -56,16 +59,27 @@ import { Router } from '@angular/router';
       font-size: 48px;
     }
     
+    .user-details {
+      flex: 1;
+      min-width: 0;
+    }
+    
     .user-details h4 {
       margin: 0 0 4px 0;
       font-weight: 600;
       color: var(--ion-color-dark);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     
     .user-details p {
       margin: 0 0 8px 0;
       font-size: 14px;
       color: var(--ion-color-medium);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     
     .logout-item {
@@ -97,7 +111,7 @@ export class UserMenuPopover {
     });
 
     if (action === 'profile') {
-      this.router.navigate(['/doctor/doctor-profile']);
+      this.router.navigate(['/tabs/doctor-profile']);
     }
   }
 }

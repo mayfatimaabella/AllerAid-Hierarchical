@@ -1,99 +1,191 @@
-ion-card-title {
-  font-weight: bold !important;
+.doctor-header ion-toolbar {
+  --background: #036a5d;
+  --color: #ffffff;
 }
 
-ion-card ion-item,
-ion-list {
-  --background: #fff !important;
-  background: #fff !important;
+.invite-btn {
+  position: relative;
+  --color: #ffffff;
 }
 
-ion-card {
-  background: #fff !important;
+.invite-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  font-size: 10px;
+}
+
+.doctor-page {
+  --background: #f5fbfa;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 16px;
+  --padding-bottom: 90px;
+}
+
+.doctor-hero {
+  background: linear-gradient(135deg, #036a5d, #0b8f7f);
+  border-radius: 22px;
+  padding: 20px;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 12px 28px rgba(3, 106, 93, 0.22);
+}
+
+.hero-eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  opacity: 0.85;
+  font-weight: 700;
+}
+
+.doctor-hero h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.hero-subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.doctor-count {
+  min-width: 78px;
+  height: 78px;
   border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(229, 94, 118, 0.10);
-  border: 1px solid #036a5d;
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.doctor-count strong {
+  font-size: 24px;
+}
+
+.doctor-count span {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.search-bar-item {
+  --background: #ffffff;
+  --border-radius: 16px;
+  --padding-start: 14px;
+  --inner-padding-end: 8px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 18px rgba(15, 42, 38, 0.08);
+}
+
+.search-bar-item ion-icon {
+  color: #036a5d;
+  font-size: 20px;
+}
+
+.search-bar-input {
+  --color: #173f39;
+  --placeholder-color: #7a928d;
+  font-size: 14px;
+}
+
+.search-bar-btn {
+  --color: #036a5d;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.doctor-list-card,
+.no-doctors-card {
+  margin: 0 0 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(3, 106, 93, 0.12);
+  box-shadow: 0 8px 24px rgba(15, 42, 38, 0.08);
+}
+
+.doctor-list-card ion-card-header {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 8px;
+}
+
+.doctor-list-card ion-card-title {
+  color: #036a5d;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.doctor-list-card ion-card-subtitle {
+  margin-top: 4px;
+  color: #6b827e;
+  font-size: 12px;
+}
+
+.doctor-list {
+  background: transparent;
+}
+
+.doctor-item {
+  --background: #f8fffd;
+  --border-radius: 16px;
+  --padding-start: 12px;
+  --inner-padding-end: 8px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(3, 106, 93, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 80px;
+  padding: 12px;
+}
+
+.doctor-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.doctor-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
   color: #036a5d;
 }
 
-ion-card,
-ion-card * {
-  color: #036a5d !important;
+.doctor-specialty {
+  margin: 0;
+  font-size: 13px;
+  color: #6b827e;
+  font-weight: 500;
 }
 
-:host {
-  display: block;
-  background: #ffffff;
+.doctor-email {
+  margin: 0;
+  font-size: 12px;
+  color: #9ba9a6;
+  font-weight: 400;
 }
 
-ion-header ion-toolbar {
-  --background: #036a5d !important;
-  color: #fff !important;
-}
-
-ion-content {
-  --background: #ffffff;
-}
-
-ion-fab {
-  z-index: 100;
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-}
-
-ion-fab-button {
-  --background: #036a5d !important;
-  --color: #fff;
-}
-
-ion-item.search-bar-item {
-  --background: #F1F2F5;
-  border: 0.5px solid #4a5553;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
-}
-
-ion-input.search-bar-input {
-  --background: #F1F2F5;
-  background: #F1F2F5;
-  border-radius: 8px;
-  --color: #272727;
-  color: #272727;
-}
-
-ion-button.search-bar-btn {
-  --background: transparent;
+.doctor-menu-btn {
   --color: #036a5d;
-  border-radius: 8px;
-  margin-left: 8px;
-  box-shadow: none;
-  min-width: 40px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-/* Ensure shadow DOM native element is transparent */
-ion-button.search-bar-btn::part(native) {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.no-doctors-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
+  flex-shrink: 0;
 }
 
 .no-doctors-card {
-  width: 100%;
-  max-width: 300px;
+  margin-top: 24px;
 }
 
 .no-doctors-content {
@@ -101,18 +193,26 @@ ion-button.search-bar-btn::part(native) {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 32px 16px;
+  padding: 40px 24px;
+  gap: 12px;
 }
 
 .no-doctors-icon {
-  font-size: 64px;
+  font-size: 72px;
   color: #036a5d;
-  opacity: 0.5;
-  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.no-doctors-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #036a5d;
 }
 
 .no-doctors-text {
-  color: #666;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  margin: 0;
+  color: #6b827e;
+  font-size: 14px;
+  line-height: 1.6;
 }

@@ -67,6 +67,10 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
   isExternalBuddy = false;
   primaryRelationship = '';
   showFallback = false;
+  
+  searchResults: any[] = [];
+  showSearchDropdown = false;
+  private searchTimeout?: any;
 
   fallbackContact: FallbackContact = {
     name: '',
@@ -251,6 +255,112 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  async onBuddyEmailInput(): Promise<void> {
+    const email = this.buddySearchEmail.trim();
+    
+    if (email.length === 0) {
+      this.showSearchDropdown = false;
+      this.searchResults = [];
+      this.foundBuddy = null;
+      this.isExternalBuddy = false;
+      return;
+    }
+
+    if (email.length < 2) {
+      this.showSearchDropdown = false;
+      this.searchResults = [];
+      return;
+    }
+
+    // Clear previous timeout
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+
+    // Debounce search
+    this.searchTimeout = setTimeout(async () => {
+      await this.performUserSearch();
+    }, 300);
+  }
+
+  private async performUserSearch(): Promise<void> {
+    const email = this.buddySearchEmail.trim().toLowerCase();
+
+    if (!this.isValidEmail(email) && email.length < 2) {
+      this.showSearchDropdown = false;
+      return;
+    }
+
+    try {
+      this.isSearchingBuddy = true;
+      this.foundBuddy = null;
+      this.isExternalBuddy = false;
+
+      const currentUser = await this.authService.waitForAuthInit();
+      if (!currentUser) {
+        return;
+      }
+
+      if (currentUser.email?.toLowerCase() === email) {
+        this.showSearchDropdown = false;
+        this.searchResults = [];
+        return;
+      }
+
+      this.searchResults = await this.userService.searchUsers(
+        email,
+        currentUser.uid
+      );
+
+      // Filter out users with pending or accepted buddy relationships
+      const filteredResults = [];
+      for (const user of this.searchResults) {
+        const duplicate = await this.buddyService.checkDuplicateBuddyByEmail(
+          currentUser.uid,
+          user.email
+        );
+
+        if (!duplicate.isDuplicate) {
+          filteredResults.push(user);
+        }
+      }
+
+      this.searchResults = filteredResults;
+      this.showSearchDropdown = this.searchResults.length > 0;
+    } catch (error) {
+      console.error('Error searching users:', error);
+      this.searchResults = [];
+      this.showSearchDropdown = false;
+    } finally {
+      this.isSearchingBuddy = false;
+    }
+  }
+
+  selectBuddyFromDropdown(user: any): void {
+    this.foundBuddy = {
+      uid: user.uid,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+
+    this.buddySearchEmail = user.email;
+    this.isExternalBuddy = false;
+    this.primaryBuddy = {
+      fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+      relationship: this.primaryRelationship,
+      contactNumber: '',
+      email: user.email,
+    };
+
+    this.showSearchDropdown = false;
+    this.searchResults = [];
+  }
+
+  closeSearchDropdown(): void {
+    this.showSearchDropdown = false;
   }
 
   async searchBuddyByEmail(): Promise<void> {

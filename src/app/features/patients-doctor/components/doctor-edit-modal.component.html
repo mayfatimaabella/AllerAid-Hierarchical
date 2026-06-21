@@ -1,50 +1,47 @@
 <ng-container>
   <div class="doctor-modal-backdrop" (click)="close()">
     <div class="doctor-modal-content" (click)="$event.stopPropagation()">
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="end">
-            <ion-button (click)="close()">
-              <ion-icon name="close"></ion-icon>
+      <!-- Clean modal without header -->
+      <ion-content class="ion-padding" [style.background]="'#fff'">
+        <form>
+          <h2 class="modal-title">Edit Doctor</h2>
+
+          <ion-item lines="none">
+            <ion-label position="stacked">First Name</ion-label>
+            <ion-input [(ngModel)]="editForm.firstName" name="firstName" required></ion-input>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label position="stacked">Last Name</ion-label>
+            <ion-input [(ngModel)]="editForm.lastName" name="lastName" required></ion-input>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label position="stacked">Specialty</ion-label>
+            <ion-input [(ngModel)]="editForm.specialty" name="specialty"></ion-input>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label position="stacked">Email</ion-label>
+            <ion-input [(ngModel)]="editForm.email" name="email" disabled></ion-input>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label position="stacked">Phone</ion-label>
+            <ion-input [(ngModel)]="editForm.phone" name="phone" type="tel"></ion-input>
+          </ion-item>
+
+          <div class="button-group">
+            <ion-button expand="block" class="saveBtn" (click)="saveChanges()" [disabled]="isLoading">
+              <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+              {{ isLoading ? 'Saving...' : 'Save Changes' }}
             </ion-button>
-          </ion-buttons>
-          <ion-title>Edit Doctor</ion-title>
-        </ion-toolbar>
-      </ion-header>
 
-      <ion-content class="ion-padding">
-        <ion-item>
-          <ion-label position="floating">First Name</ion-label>
-          <ion-input [(ngModel)]="editForm.firstName"></ion-input>
-        </ion-item>
-
-        <ion-item>
-          <ion-label position="floating">Last Name</ion-label>
-          <ion-input [(ngModel)]="editForm.lastName"></ion-input>
-        </ion-item>
-
-        <ion-item>
-          <ion-label position="floating">Specialty</ion-label>
-          <ion-input [(ngModel)]="editForm.specialty"></ion-input>
-        </ion-item>
-
-        <ion-item>
-          <ion-label position="floating">Email</ion-label>
-          <ion-input [(ngModel)]="editForm.email" disabled></ion-input>
-        </ion-item>
-
-        <ion-item>
-          <ion-label position="floating">Phone</ion-label>
-          <ion-input [(ngModel)]="editForm.phone"></ion-input>
-        </ion-item>
-
-        <div class="button-container">
-          <ion-button expand="block" color="primary" (click)="saveChanges()" [disabled]="isLoading">
-            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-            {{ isLoading ? 'Saving...' : 'Save Changes' }}
-          </ion-button>
-          <ion-button expand="block" fill="outline" (click)="close()">Cancel</ion-button>
-        </div>
+            <ion-button expand="block" class="cancelBtn" (click)="close()">
+              Cancel
+            </ion-button>
+          </div>
+        </form>
       </ion-content>
     </div>
   </div>

@@ -32,7 +32,8 @@ export class DoctorDashboardPage implements OnInit, OnDestroy {
 
   stats = {
     totalPatients: 0,
-    grantedEhrAccess: 0
+    grantedEhrAccess: 0,
+    activeEmergencies: 0
   };
 
   searchTerm = '';
@@ -248,6 +249,9 @@ startPatientsListener() {
   calculateStats() {
     this.stats.totalPatients = this.patients.length;
     this.stats.grantedEhrAccess = this.patients.length;
+    this.stats.activeEmergencies = this.patients.filter(
+      p => p.hasActiveEmergency || p.emergencyStatus === 'active'
+    ).length;
   }
 
   filterPatients() {
@@ -365,6 +369,7 @@ startPatientsListener() {
       event,
       translucent: true,
       showBackdrop: true,
+      cssClass: 'user-menu-popover-wide',
       componentProps: {
         doctorName: this.doctorName,
         doctorEmail: this.doctorEmail
@@ -392,6 +397,24 @@ startPatientsListener() {
     .filter((allergy: string) => allergy.trim())
     .slice(0, 3);
 }
+
+  async viewPatientAnalysis(patient: any) {
+    try {
+      const analysis = await this.ehrService.getPatientAnalysis(patient.patientId);
+      const modal = await this.modalController.create({
+        component: PatientAnalysisModal,
+        componentProps: { patient, analysis }
+      });
+      await modal.present();
+    } catch (error) {
+      console.error('Error loading patient analysis:', error);
+      await this.presentToast('Error loading patient analysis', 'danger');
+    }
+  }
+
+  get pendingInviteCount(): number {
+    return this.pendingInvitations.length;
+  }
 
   async logout() {
     try {

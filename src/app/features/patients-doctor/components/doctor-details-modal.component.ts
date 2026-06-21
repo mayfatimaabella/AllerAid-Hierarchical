@@ -13,4 +13,18 @@ export class DoctorDetailsModalComponent {
   close() {
     this.closeDetails.emit();
   }
+
+  convertTimestamp(timestamp: any): Date | null {
+    if (!timestamp) return null;
+    // Handle Firebase Timestamp objects
+    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
+    // Handle plain objects with seconds property
+    if (timestamp.seconds) {
+      return new Date(timestamp.seconds * 1000);
+    }
+    // Handle regular dates or timestamps
+    return new Date(timestamp);
+  }
 }

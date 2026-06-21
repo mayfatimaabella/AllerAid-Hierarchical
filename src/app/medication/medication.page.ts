@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController, AlertController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MedicationService, Medication } from 'src/app/core/services/medication.service';
 import { Subscription } from 'rxjs';
 
@@ -49,7 +49,8 @@ export class MedicationPage implements OnInit {
     private medService: MedicationService,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
@@ -200,7 +201,7 @@ export class MedicationPage implements OnInit {
    * Create new medication - navigate to add-edit page
    */
   async onAddMedication(): Promise<void> {
-    await this.router.navigate(['/medication/add-edit']);
+    await this.router.navigate(['./add-edit'], { relativeTo: this.route });
   }
 
   /**
@@ -208,7 +209,7 @@ export class MedicationPage implements OnInit {
    */
   async onViewDetails(medication: Medication): Promise<void> {
     if (medication.id) {
-      await this.router.navigate(['/medication/details', medication.id]);
+      await this.router.navigate(['./details', medication.id], { relativeTo: this.route });
     }
   }
 
@@ -217,7 +218,7 @@ export class MedicationPage implements OnInit {
    */
   async onEditMedication(medication: Medication): Promise<void> {
     if (medication.id) {
-      await this.router.navigate(['/medication/add-edit', medication.id]);
+      await this.router.navigate(['./add-edit', medication.id], { relativeTo: this.route });
     }
   }
 
@@ -270,6 +271,38 @@ export class MedicationPage implements OnInit {
     } catch (error) {
       console.error('Error toggling medication status:', error);
       this.showToast('Failed to update medication status', 'danger');
+    }
+  }
+
+  /**
+   * Get active medications count
+   */
+  getActiveMedicationCount(): number {
+    return this.userMedications.filter(med => {
+      const status = this.getStatusLabel(med);
+      return med.isActive && status !== 'Completed' && status !== 'Expired' && status !== 'Inactive';
+    }).length;
+  }
+
+  /**
+   * Get appropriate icon for medication status
+   */
+  getStatusIcon(medication: Medication): string {
+    const label = this.getStatusLabel(medication);
+    switch (label) {
+      case 'Ongoing':
+      case 'Active':
+        return 'checkmark-circle';
+      case 'Completed':
+        return 'checkmark-done-circle';
+      case 'Overdue':
+        return 'alert-circle';
+      case 'Expired':
+        return 'close-circle';
+      case 'Inactive':
+        return 'pause-circle';
+      default:
+        return 'information-circle';
     }
   }
 

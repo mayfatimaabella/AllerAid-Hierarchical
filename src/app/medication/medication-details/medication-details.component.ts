@@ -157,7 +157,7 @@ async presentMedicationActions(medication?: Medication): Promise<void> {
         text: 'Edit Medication',
         icon: 'create-outline',
         handler: async () => { 
-          await this.router.navigate(['/medication/add-edit', target.id]);
+          await this.router.navigate(['/tabs/medication/add-edit', target.id]);
         }
       },
       {
