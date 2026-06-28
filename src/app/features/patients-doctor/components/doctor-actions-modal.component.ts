@@ -8,13 +8,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class DoctorActionsModalComponent {
   @Input() doctor: any;
-  @Output() edit = new EventEmitter<any>();
   @Output() delete = new EventEmitter<any>();
   @Output() closeModal = new EventEmitter<void>();
-
-  editDoctor() {
-    this.edit.emit(this.doctor);
-  }
 
   deleteDoctor() {
     this.delete.emit(this.doctor);
