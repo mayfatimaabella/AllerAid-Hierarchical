@@ -22,7 +22,6 @@ export class PatientsDoctorPage implements OnInit {
   doctors: any[] = [];
   filteredDoctors: any[] = [];
   searchTerm: string = '';
-  showEditModal = false;
   showActionsModal = false;
   showDeleteModal = false;
   doctorToEdit: any = null;
@@ -123,30 +122,6 @@ export class PatientsDoctorPage implements OnInit {
   closeDoctorActions() {
     this.showActionsModal = false;
     this.selectedDoctor = null;
-  }
-
-  // ─── Edit ─────────────────────────────────────────────────────────────────────
-
-  onEditDoctor(doctor: any) {
-    this.doctorToEdit = doctor;
-    this.showEditModal = true;
-    this.closeDoctorActions();
-  }
-
-  closeEditModal() {
-    this.showEditModal = false;
-    this.doctorToEdit = null;
-  }
-
-  async onSaveEditDoctor(updatedDoctor: any) {
-    try {
-      await this.showToast('Doctor information saved', 'success');
-      this.closeEditModal();
-      await this.loadDoctors();
-    } catch (error) {
-      console.error('Error updating doctor:', error);
-      await this.showToast('Error updating doctor', 'danger');
-    }
   }
 
   // ─── Delete ───────────────────────────────────────────────────────────────────

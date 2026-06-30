@@ -32,18 +32,9 @@
   <app-doctor-actions-modal
     *ngIf="showActionsModal"
     [doctor]="selectedDoctor"
-    (edit)="onEditDoctor($event)"
     (delete)="onDeleteDoctor($event)"
     (closeModal)="closeDoctorActions()">
   </app-doctor-actions-modal>
-
-  <!-- Doctor Edit Modal -->
-  <app-doctor-edit-modal
-    *ngIf="showEditModal"
-    [doctor]="doctorToEdit"
-    (save)="onSaveEditDoctor($event)"
-    (closeEdit)="closeEditModal()">
-  </app-doctor-edit-modal>
 
   <!-- Doctor Delete Confirm Modal -->
   <app-doctor-delete-confirm-modal
