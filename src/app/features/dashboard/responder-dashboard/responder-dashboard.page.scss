@@ -416,6 +416,27 @@ ion-content {
 
 .btn-maps ion-icon { color: #4285f4; }
 
+/* ─── Already-responding banner (another buddy already accepted) ─── */
+.already-responding-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--teal-light);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #065f46;
+  line-height: 1.4;
+}
+
+.already-responding-banner ion-icon {
+  font-size: 18px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
 .secondary-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;

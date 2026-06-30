@@ -521,7 +521,15 @@ export class EmergencyService {
     }
   }
 
-  /** Respond to an emergency (for buddies / responders). */
+  /**
+   * Respond to an emergency (for buddies / responders).
+   *
+   * If another buddy has already become the primary responder, this buddy's
+   * response is recorded in `buddyResponses` for visibility, but the primary
+   * responder fields (responderId/responderName/responderLocation/etc.) are
+   * left untouched — first responder wins, so concurrent buddies don't
+   * overwrite each other's acceptance.
+   */
   async respondToEmergency(
     emergencyId: string,
     responderId: string,
@@ -529,6 +537,34 @@ export class EmergencyService {
   ): Promise<void> {
     try {
       const emergencyRef = doc(this.db, 'emergencies', emergencyId);
+      const emergencyDoc = await getDoc(emergencyRef);
+
+      if (!emergencyDoc.exists()) throw new Error('Emergency alert not found.');
+
+      const emergencyData = emergencyDoc.data() as EmergencyAlert;
+      if (!emergencyData.location) throw new Error('Patient location is not available yet.');
+
+      // Another buddy is already the primary responder — just log this
+      // buddy's response without overwriting the primary responder fields.
+      if (
+        emergencyData.status === 'responding' &&
+        emergencyData.responderId &&
+        emergencyData.responderId !== responderId
+      ) {
+        await updateDoc(emergencyRef, {
+          [`buddyResponses.${responderId}`]: {
+            status: 'responded',
+            name: responderName,
+            timestamp: Timestamp.now()
+          }
+        });
+
+        console.log(
+          `${responderName} also responded, but ${emergencyData.responderName} is already the primary responder.`
+        );
+        return;
+      }
+
       const responderPosition = await this.getCurrentLocation();
 
       const responderLocation = {
@@ -536,12 +572,6 @@ export class EmergencyService {
         longitude: responderPosition.coords.longitude,
         accuracy: responderPosition.coords.accuracy
       };
-
-      const emergencyDoc = await getDoc(emergencyRef);
-      if (!emergencyDoc.exists()) throw new Error('Emergency alert not found.');
-
-      const emergencyData = emergencyDoc.data() as EmergencyAlert;
-      if (!emergencyData.location) throw new Error('Patient location is not available yet.');
 
       const distance = this.calculateDistance(
         responderLocation.latitude,

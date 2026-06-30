@@ -38,6 +38,9 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
   activeEmergencies: EmergencyAlert[] = [];
   currentEmergency: EmergencyAlert | null = null;
 
+  /** UID of the buddy viewing this page — used to tell apart "I responded" from "someone else responded". */
+  currentUserId: string | null = null;
+
   patientAvatar: string | null = null;
   specificInstructionEntries: { label: string; text: string }[] = [];
   private profileInstructionFallback = '';
@@ -64,6 +67,9 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
   ) {}
 
   async ngOnInit() {
+    const user = await this.authService.waitForAuthInit();
+    this.currentUserId = user?.uid ?? null;
+
     if (!this.responderData) {
       const navState = history.state;
       if (navState?.emergencyData) {
@@ -80,6 +86,8 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
         userName: this.responderData.userName || this.responderData.alert.userName,
         location: this.responderData.alert.location,
         status: this.responderData.alert.status,
+        responderId: this.responderData.alert.responderId,
+        responderName: this.responderData.alert.responderName,
         timestamp: this.responderData.alert.timestamp,
         instruction: this.responderData.alert.instruction || '',
         emergencyInstruction:
@@ -409,6 +417,10 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       const user = await this.authService.waitForAuthInit();
       if (!user) return;
 
+      if (!this.currentUserId) {
+        this.currentUserId = user.uid;
+      }
+
       this.buddyService.listenForEmergencyAlerts(user.uid);
 
       this.emergencySubscription = this.buddyService.activeEmergencyAlerts$.subscribe(
@@ -542,4 +554,39 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       'No instructions available'
     );
   }
+
+  /** True when a different buddy has already become the primary responder for this emergency. */
+  get isAnotherBuddyResponding(): boolean {
+    return !!this.currentEmergency &&
+      this.currentEmergency.status === 'responding' &&
+      !!this.currentEmergency.responderId &&
+      this.currentEmergency.responderId !== this.currentUserId;
+  }
+
+  /** Display name of whichever buddy is already responding, for the "already responding" banner. */
+  get primaryResponderName(): string {
+    return this.currentEmergency?.responderName || 'A buddy';
+  }
+
+  get emergencyStatusLabel(): string {
+  if (!this.currentEmergency) return 'Unknown';
+
+  if (this.currentEmergency.status === 'active') {
+    return 'Waiting for responder';
+  }
+
+  if (this.currentEmergency.status === 'responding') {
+    if (this.currentEmergency.responderId === this.currentUserId) {
+      return 'You are responding';
+    }
+
+    return `${this.primaryResponderName} is responding`;
+  }
+
+  if (this.currentEmergency.status === 'resolved') {
+    return 'Resolved';
+  }
+
+  return 'Unknown';
+}
 }

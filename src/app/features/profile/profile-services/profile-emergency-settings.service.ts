@@ -78,7 +78,7 @@ export class ProfileEmergencySettingsService {
     profileDetails: any,
     onSave: (message: any) => Promise<void>,
     onRefresh: () => Promise<void>,
-    emergencyProfile?: any  // ← add this
+    emergencyProfile?: any
   ): Promise<void> {
     const modal = await this.modalController.create({
       component: EditEmergencyProfileModalComponent,

@@ -53,7 +53,7 @@
 
             <div class="info-cell align-right">
               <div class="info-label">Status</div>
-              <div class="info-val">{{ currentEmergency.status | titlecase }}</div>
+              <div class="info-val">{{ emergencyStatusLabel  | titlecase }}</div>
             </div>
           </div>
         </div>
@@ -114,11 +114,21 @@
             Open in Google Maps
           </button>
 
+          <!-- Shows to B2 when B1 is already responding -->
+          <div class="already-responding-banner" *ngIf="isAnotherBuddyResponding && !hasResponded">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            <span>
+              {{ primaryResponderName }} is already on the way to help.
+              You can still respond if you are also available.
+            </span>
+          </div>
+
+          <!-- Correct logic: show actions if THIS buddy has not responded yet -->
           <div class="initial-actions" *ngIf="!hasResponded">
             <div class="secondary-grid">
               <button class="btn btn-respond" (click)="acceptEmergency()">
                 <ion-icon name="checkmark-circle"></ion-icon>
-                Respond
+                {{ isAnotherBuddyResponding ? 'Respond also' : 'Respond' }}
               </button>
 
               <button class="btn btn-decline" (click)="cannotRespond()">
