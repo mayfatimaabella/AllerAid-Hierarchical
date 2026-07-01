@@ -67,7 +67,11 @@ ion-toolbar {
 // ─── Welcome ──────────────────────────────────────────────────────────────────
 
 .welcome-section {
-  margin-bottom: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 22px;
 
   h2 {
     font-size: 28px;
@@ -86,13 +90,26 @@ ion-toolbar {
   }
 }
 
+.welcome-meta,
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
@@ -103,38 +120,19 @@ ion-toolbar {
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition: all 0.3s ease;
-  cursor: pointer;
   position: relative;
-  overflow: hidden;
 
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(3, 106, 93, 0.05) 0%, transparent 70%);
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(3, 106, 93, 0.08) 0%, transparent 55%);
     pointer-events: none;
   }
 
   &:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
-  }
-
-  &.emergency {
-    background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%);
-    border-color: rgba(220, 38, 38, 0.1);
-
-    .stat-icon {
-      background: #fecaca;
-      color: var(--danger);
-    }
-
-    .stat-number {
-      color: var(--danger);
-    }
   }
 
   ion-card-content {
@@ -144,8 +142,8 @@ ion-toolbar {
   }
 
   .stat-icon {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: var(--radius-md);
     background: var(--brand-light);
     display: flex;
@@ -158,7 +156,7 @@ ion-toolbar {
   }
 
   .stat-number {
-    font-size: 32px;
+    font-size: 30px;
     font-weight: 800;
     color: var(--brand);
     letter-spacing: -0.5px;
@@ -172,6 +170,22 @@ ion-toolbar {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+
+  .stat-caption {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    max-width: 320px;
+  }
+}
+
+.hero-card {
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 }
 
@@ -289,20 +303,27 @@ ion-toolbar {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--brand-light) 0%, #d0f2ed 100%);
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-muted) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
-      color: var(--brand);
+      color: #fff;
       flex-shrink: 0;
-      box-shadow: inset 0 2px 4px rgba(3, 106, 93, 0.1);
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
     }
 
     .patient-info {
       flex: 1;
       min-width: 0;
+
+      .patient-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
 
       ion-card-title {
         font-size: 16px;
@@ -322,6 +343,19 @@ ion-toolbar {
         overflow: hidden;
         text-overflow: ellipsis;
         font-weight: 500;
+      }
+
+      .review-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--warning-bg);
+        color: var(--warning);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
       }
     }
   }
@@ -383,16 +417,16 @@ ion-toolbar {
   }
 
   .patient-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    display: flex;
+    justify-content: flex-end;
 
     ion-button {
       --border-radius: var(--radius-md);
-      --border-color: var(--brand);
-      --color: var(--brand);
-      --background-hover: var(--brand-light);
-      --background-focused: var(--brand-light);
+      --background: var(--brand);
+      --background-hover: #035149;
+      --background-focused: #035149;
+      --color: var(--surface);
+      --box-shadow: 0 6px 14px rgba(3, 106, 93, 0.16);
       font-size: 13px;
       font-weight: 600;
       height: 40px;
@@ -405,10 +439,15 @@ ion-toolbar {
         margin-right: 6px;
       }
 
+      ion-badge {
+        margin-left: 6px;
+        font-size: 11px;
+        min-width: 22px;
+        justify-content: center;
+      }
+
       &:hover {
-        --color: var(--surface);
-        --background: var(--brand);
-        --border-color: var(--brand);
+        transform: translateY(-1px);
       }
     }
   }
@@ -531,10 +570,18 @@ ion-toolbar {
 
 // ─── FAB Button ───────────────────────────────────────────────────────────────
 
+.doctor-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+}
+
 ion-fab-button {
   --background: var(--brand);
   --background-activated: #024d47;
   --background-hover: #035149;
+  --box-shadow: 0 10px 24px rgba(3, 106, 93, 0.22);
 }
 
 // Animation for FAB

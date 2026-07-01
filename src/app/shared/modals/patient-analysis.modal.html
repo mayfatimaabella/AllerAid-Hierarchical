@@ -112,6 +112,35 @@
               <p>{{ visit.notes }}</p>
             </div>
           </div>
+
+          <div class="visit-status-row">
+            <ion-chip [color]="visit.status === 'confirmed' ? 'success' : visit.status === 'rejected' ? 'danger' : 'warning'">
+              <ion-label>
+                {{ visit.status === 'confirmed' ? 'Confirmed' : visit.status === 'rejected' ? 'Rejected' : 'Pending confirmation' }}
+              </ion-label>
+            </ion-chip>
+
+            <div
+              class="visit-action-buttons"
+              *ngIf="canConfirmVisits && canManageVisit(visit) && visit.status === 'pending'">
+              <ion-button
+                class="action-button confirm-button"
+                size="small"
+                fill="solid"
+                (click)="confirmVisit(visit)">
+                <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+                Confirm
+              </ion-button>
+              <ion-button
+                class="action-button reject-button"
+                size="small"
+                fill="solid"
+                (click)="rejectVisit(visit)">
+                <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+                Reject
+              </ion-button>
+            </div>
+          </div>
         </ion-card-content>
       </ion-card>
 

@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
-import { DoctorPatient, AllergicReaction, TreatmentOutcome, DoctorVisit, MedicalHistory } from '../../core/services/ehr.service';
+import { ModalController, ToastController } from '@ionic/angular';
+import { DoctorPatient, AllergicReaction, TreatmentOutcome, DoctorVisit, MedicalHistory, EHRService } from '../../core/services/ehr.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-patient-analysis',
@@ -11,29 +12,28 @@ import { DoctorPatient, AllergicReaction, TreatmentOutcome, DoctorVisit, Medical
 export class PatientAnalysisModal implements OnInit {
 
   @Input() patient!: DoctorPatient;
+  @Input() patientId?: string;
+  @Input() canConfirmVisits: boolean = false;
   @Input() analysis: {
     personalInfo: any;
     allergies: any[];
-    recentReactions: AllergicReaction[];
-    treatmentHistory: TreatmentOutcome[];
     visitHistory: DoctorVisit[];
     medicalHistory: MedicalHistory[];
-    riskFactors: string[];
-    recommendations: string[];
   } = {
     personalInfo: {},
     allergies: [],
-    recentReactions: [],
-    treatmentHistory: [],
     visitHistory: [],
-    medicalHistory: [],
-    riskFactors: [],
-    recommendations: []
+    medicalHistory: []
   };
 
   selectedTab: 'overview' | 'reactions' | 'treatments' | 'visits' | 'history' = 'overview';
 
-  constructor(private modalController: ModalController) { }
+  constructor(
+    private modalController: ModalController,
+    private toastr: ToastController,
+    private ehrService: EHRService,
+    private authService: AuthService
+  ) { }
 
   ngOnInit() {
     console.log('Patient Analysis:', this.analysis);
@@ -118,5 +118,90 @@ export class PatientAnalysisModal implements OnInit {
 
   hasCheckedAllergies(): boolean {
     return (this.analysis.allergies || []).length > 0;
+  }
+
+  canManageVisit(visit: DoctorVisit): boolean {
+    if (!this.canConfirmVisits) {
+      return false;
+    }
+
+    const currentDoctorEmail = this.authService.getCurrentUserEmail()?.trim().toLowerCase();
+    const assignedDoctorEmail = visit.doctorEmail?.trim().toLowerCase();
+
+    return !!currentDoctorEmail && !!assignedDoctorEmail && currentDoctorEmail === assignedDoctorEmail;
+  }
+
+  async confirmVisit(visit: DoctorVisit) {
+    const patientId = this.patient?.patientId || this.patientId;
+    if (!patientId || !visit?.id) return;
+
+    if (!this.canManageVisit(visit)) {
+      const toast = await this.toastr.create({
+        message: 'Only the assigned doctor can confirm this visit.',
+        duration: 2500,
+        position: 'bottom',
+        color: 'warning'
+      });
+      await toast.present();
+      return;
+    }
+
+    try {
+      await this.ehrService.confirmDoctorVisit(patientId, visit.id);
+      const toast = await this.toastr.create({
+        message: 'Visit confirmed successfully',
+        duration: 2000,
+        position: 'bottom',
+        color: 'success'
+      });
+      await toast.present();
+      this.analysis = await this.ehrService.getPatientAnalysis(patientId);
+    } catch (error) {
+      console.error('Error confirming visit:', error);
+      const toast = await this.toastr.create({
+        message: 'Could not confirm visit. Please try again.',
+        duration: 2500,
+        position: 'bottom',
+        color: 'danger'
+      });
+      await toast.present();
+    }
+  }
+
+  async rejectVisit(visit: DoctorVisit) {
+    const patientId = this.patient?.patientId || this.patientId;
+    if (!patientId || !visit?.id) return;
+
+    if (!this.canManageVisit(visit)) {
+      const toast = await this.toastr.create({
+        message: 'Only the assigned doctor can reject this visit.',
+        duration: 2500,
+        position: 'bottom',
+        color: 'warning'
+      });
+      await toast.present();
+      return;
+    }
+
+    try {
+      await this.ehrService.rejectDoctorVisit(patientId, visit.id);
+      const toast = await this.toastr.create({
+        message: 'Visit rejected',
+        duration: 2000,
+        position: 'bottom',
+        color: 'danger'
+      });
+      await toast.present();
+      this.analysis = await this.ehrService.getPatientAnalysis(patientId);
+    } catch (error) {
+      console.error('Error rejecting visit:', error);
+      const toast = await this.toastr.create({
+        message: 'Could not reject visit. Please try again.',
+        duration: 2500,
+        position: 'bottom',
+        color: 'danger'
+      });
+      await toast.present();
+    }
   }
 }

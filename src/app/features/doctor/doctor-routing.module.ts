@@ -7,10 +7,6 @@ const routes: Routes = [
     loadChildren: () => import('./patient-invite/patient-invite.module').then(m => m.PatientInvitePageModule)
   },
   {
-    path: 'patient-profile/:id',
-    loadChildren: () => import('./patient-profile/patient-profile.module').then(m => m.PatientProfilePageModule)
-  },
-  {
     path: 'doctor-profile',
     loadChildren: () => import('./doctor-profile/doctor-profile.module').then(m => m.DoctorProfilePageModule)
   },
