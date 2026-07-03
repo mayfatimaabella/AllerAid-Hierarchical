@@ -42,6 +42,9 @@ export interface EmergencyData {
 })
 export class EmergencyAlertService {
 
+  private emergencyAlarmAudio: HTMLAudioElement | null = null;
+  private readonly emergencyAlarmPath = 'assets/sounds/emergency-alarm.mp3';
+
   constructor(
     private buddyService: BuddyService,
     private authService: AuthService,
@@ -118,7 +121,6 @@ export class EmergencyAlertService {
 
       console.log('Getting current location before sending emergency alert...');
 
-
       let locationData: { latitude: number; longitude: number; accuracy?: number } | undefined;
 
       try {
@@ -136,7 +138,8 @@ export class EmergencyAlertService {
 
       console.log('Sending full emergency via EmergencyService from', alertType, 'trigger');
 
-  
+      await this.playEmergencyAlarmSound();
+
       await this.emergencyService.sendEmergencyAlert(
         currentUser.uid,
         userName,
@@ -159,10 +162,38 @@ export class EmergencyAlertService {
       );
 
     } catch (error) {
+      this.stopEmergencyAlarmSound();
+
       console.error('Error triggering emergency alert:', error);
       await this.showToast('Failed to send emergency alert. Please try again.', 'danger');
       throw error;
     }
+  }
+
+  async playEmergencyAlarmSound(): Promise<void> {
+    try {
+      if (!this.emergencyAlarmAudio) {
+        this.emergencyAlarmAudio = new Audio(this.emergencyAlarmPath);
+        this.emergencyAlarmAudio.loop = true;
+        this.emergencyAlarmAudio.volume = 1.0;
+      }
+
+      this.emergencyAlarmAudio.currentTime = 0;
+      await this.emergencyAlarmAudio.play();
+
+      console.log('Emergency alarm sound started');
+    } catch (error) {
+      console.warn('Could not play emergency alarm sound:', error);
+    }
+  }
+
+  stopEmergencyAlarmSound(): void {
+    if (!this.emergencyAlarmAudio) return;
+
+    this.emergencyAlarmAudio.pause();
+    this.emergencyAlarmAudio.currentTime = 0;
+
+    console.log('Emergency alarm sound stopped');
   }
 
   private async sendEmergencyNotification(

@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs';
 import { AllergyManagerService } from '../../../core/services/allergy-manager.service';
 import { AllergyModalService } from '../../profile/profile-services/allergy-modal.service';
 import { ModalController } from '@ionic/angular';
+import { EmergencyAlertService } from '../../../core/services/emergency-alert.service';
 
 const EMERGENCY_CONFIRMATION_SECONDS = 5;
 const HOTLINE_FALLBACK_DELAY_MS = 60_000;
@@ -86,7 +87,8 @@ export class HomePage implements OnDestroy {
     private allergyManager: AllergyManagerService,
     private allergyModalService: AllergyModalService,
     private locationPermissionService: LocationPermissionService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private emergencyAlertService: EmergencyAlertService,
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
@@ -217,97 +219,98 @@ export class HomePage implements OnDestroy {
     }
   }
   //4. Also check if theres an active alert 
-  async sendEmergencyAlert(): Promise<void> {
-    if (this.isEmergencyActive) {
-      await this.presentToast('An emergency alert is already active.', 'warning');
-      return;
-    }
-    //5. If True, get Location Permission 
-    const hasLocationPermission = await this.ensureLocationPermission();
-
-    //6. Check if theres LocationPermission, if FALSE then present toast
-    if (!hasLocationPermission) {
-      await this.presentToast(
-        'Location permission is required before sending an emergency alert.',
-        'danger'
-      );
-      return;
-    }
-    //7. If TRUEM open loadingController 
-    const loading = await this.loadingController.create({
-      message: 'Getting location and sending emergency alert...',
-      duration: 15_000,
-    });
-
-    await loading.present();
-
-    //8. Check TRUE current user, if not dismiss and toast 
-
-    try {
-      const currentUser = await this.authService.waitForAuthInit();
-
-      if (!currentUser) {
-        await loading.dismiss();
-
-        await this.presentToast(
-          'You must be logged in to send an emergency alert.',
-          'danger'
-        );
-        await this.router.navigate(['/login']);
-        return;
-      }
-
-      //9. Get latestMedical data from medicalService.getUserMedicalProfile
-
-      const latestMedical = await this.medicalService.getUserMedicalProfile(currentUser.uid);
-
-      //11/ Get emergencyInstructions
-
-      this.emergencyInstruction = this.emergencyService.resolveEmergencyInstruction(latestMedical,this.emergencyInstruction);
-
-      const buddyIds = this.resolveBuddyIds(currentUser.uid);
-      const allergyStrings = this.resolveAllergyStrings();
-
-      const locationData = await this.resolveLocation();
-
-      if (!locationData) {
-        await loading.dismiss();
-
-        await this.presentToast(
-          'Could not get your current location. Emergency alert was not sent.',
-          'danger'
-        );
-
-        return;
-      }
-
-      this.currentEmergencyId = await this.emergencyService.sendEmergencyAlert(
-        currentUser.uid,
-        this.userName,
-        buddyIds,
-        allergyStrings,
-        this.emergencyInstruction,
-        locationData
-      );
-
-      this.activateEmergencyState(locationData);
-      this.seedInitialBuddyResponses(currentUser.uid);
-      this.listenForEmergencyResponses();
-
-      await loading.dismiss();
-      await this.notifyUserAfterSend(buddyIds);
-
-    } catch (error) {
-      await loading.dismiss();
-
-      console.error('Error sending emergency alert:', error);
-
-      await this.presentToast(
-        'Failed to send emergency alert. Please try again.',
-        'danger'
-      );
-    }
+async sendEmergencyAlert(): Promise<void> {
+  if (this.isEmergencyActive) {
+    await this.presentToast('An emergency alert is already active.', 'warning');
+    return;
   }
+
+  const hasLocationPermission = await this.ensureLocationPermission();
+
+  if (!hasLocationPermission) {
+    await this.presentToast(
+      'Location permission is required before sending an emergency alert.',
+      'danger'
+    );
+    return;
+  }
+
+  const loading = await this.loadingController.create({
+    message: 'Getting location and sending emergency alert...',
+    duration: 15_000,
+  });
+
+  await loading.present();
+
+  try {
+    const currentUser = await this.authService.waitForAuthInit();
+
+    if (!currentUser) {
+      await loading.dismiss();
+
+      await this.presentToast(
+        'You must be logged in to send an emergency alert.',
+        'danger'
+      );
+
+      await this.router.navigate(['/login']);
+      return;
+    }
+
+    const latestMedical = await this.medicalService.getUserMedicalProfile(currentUser.uid);
+
+    this.emergencyInstruction = this.emergencyService.resolveEmergencyInstruction(
+      latestMedical,
+      this.emergencyInstruction
+    );
+
+    const buddyIds = this.resolveBuddyIds(currentUser.uid);
+    const allergyStrings = this.resolveAllergyStrings();
+
+    const locationData = await this.resolveLocation();
+
+    if (!locationData) {
+      await loading.dismiss();
+
+      await this.presentToast(
+        'Could not get your current location. Emergency alert was not sent.',
+        'danger'
+      );
+
+      return;
+    }
+
+    await this.emergencyAlertService.playEmergencyAlarmSound();
+
+    this.currentEmergencyId = await this.emergencyService.sendEmergencyAlert(
+      currentUser.uid,
+      this.userName,
+      buddyIds,
+      allergyStrings,
+      this.emergencyInstruction,
+      locationData
+    );
+
+    this.activateEmergencyState(locationData);
+    this.seedInitialBuddyResponses(currentUser.uid);
+    this.listenForEmergencyResponses();
+
+    await loading.dismiss();
+    await this.notifyUserAfterSend(buddyIds);
+
+  } catch (error) {
+    await loading.dismiss();
+
+    this.emergencyAlertService.stopEmergencyAlarmSound();
+
+    console.error('Error sending emergency alert:', error);
+
+    await this.presentToast(
+      'Failed to send emergency alert. Please try again.',
+      'danger'
+    );
+  }
+}
 
   private async ensureLocationPermission(): Promise<boolean> {
     try {
@@ -412,108 +415,63 @@ export class HomePage implements OnDestroy {
   }
 
 
-  async restoreActiveEmergency(): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) return;
+async restoreActiveEmergency(): Promise<void> {
+  const currentUser = await this.authService.waitForAuthInit();
+  if (!currentUser) return;
 
-    this.currentUserId = currentUser.uid;
+  const emergencies = await this.emergencyService.getUserEmergenciesByStatus(
+    currentUser.uid,
+    ['active', 'responding'],
+  );
 
-    const emergencies = await this.emergencyService.getUserEmergenciesByStatus(
-      currentUser.uid,
-      ['active', 'responding'],
-    );
-
-    if (!emergencies.length) {
-      this.clearEmergencyState();
-      return;
-    }
-
-    const emergency = emergencies[0];
-
-    this.currentEmergencyId = emergency.id ?? null;
-    this.isEmergencyActive = true;
-    this.emergencyStartTime = emergency.timestamp?.toDate
-      ? emergency.timestamp.toDate()
-      : new Date();
-
-    if (emergency.location) {
-      this.emergencyLocation = {
-        latitude: emergency.location.latitude,
-        longitude: emergency.location.longitude,
-      };
-    }
-
-    this.emergencyAddress = emergency.displayAddress
-      ? emergency.displayAddress
-      : emergency.location
-        ? 'GPS location available'
-        : '';
-    this.isEmergencyAddressLoading = false;
-
-    if (emergency.buddyResponses) {
-      this.processBuddyResponses(emergency.buddyResponses, currentUser.uid);
-    }
-
-    if (emergency.status === 'responding' && emergency.responderId) {
-      this.respondingBuddy = this.buildResponderInfo(emergency);
-    }
-
-    if (this.currentEmergencyId) {
-      this.emergencyService.startPatientLocationTracking(this.currentEmergencyId);
-    }
-
-    this.listenForEmergencyResponses();
+  if (!emergencies.length) {
+    this.clearEmergencyState();
+    return;
   }
 
-  private listenForActiveEmergencyUpdates(): void {
-    const sub = this.emergencyService.userEmergency$.subscribe(emergency => {
-      if (!emergency || !this.currentUserId) return;
-      if (emergency.userId !== this.currentUserId) return;
+  const emergency = emergencies[0];
 
-      if (emergency.status === 'resolved') {
-        this.clearEmergencyState();
-        return;
-      }
+  this.currentEmergencyId = emergency.id ?? null;
+  this.isEmergencyActive = true;
+  this.emergencyStartTime = emergency.timestamp?.toDate
+    ? emergency.timestamp.toDate()
+    : new Date();
 
-      if (emergency.status !== 'active' && emergency.status !== 'responding') {
-        return;
-      }
-
-      this.currentEmergencyId = emergency.id ?? this.currentEmergencyId;
-      this.isEmergencyActive = true;
-
-      this.emergencyStartTime = emergency.timestamp?.toDate
-        ? emergency.timestamp.toDate()
-        : this.emergencyStartTime ?? new Date();
-
-      if (emergency.location) {
-        this.emergencyLocation = {
-          latitude: emergency.location.latitude,
-          longitude: emergency.location.longitude,
-          accuracy: emergency.location.accuracy,
-        };
-      }
-
-      if (emergency.displayAddress) {
-        this.emergencyAddress = emergency.displayAddress;
-        this.isEmergencyAddressLoading = false;
-      } else if (emergency.location) {
-        this.emergencyAddress = 'GPS location available';
-        this.isEmergencyAddressLoading = false;
-      }
-
-      if (emergency.buddyResponses) {
-        this.processBuddyResponses(emergency.buddyResponses, this.currentUserId);
-      }
-
-      if (emergency.status === 'responding' && emergency.responderId) {
-        this.respondingBuddy = this.buildResponderInfo(emergency);
-      }
-    });
-
-    this.subscriptions.push(sub);
+  if (emergency.location) {
+    this.emergencyLocation = {
+      latitude: emergency.location.latitude,
+      longitude: emergency.location.longitude,
+    };
   }
 
+  this.emergencyAddress = emergency.displayAddress
+    ? emergency.displayAddress
+    : emergency.location
+      ? 'GPS location available'
+      : '';
+
+  this.isEmergencyAddressLoading = false;
+
+  if (emergency.buddyResponses) {
+    this.processBuddyResponses(emergency.buddyResponses, currentUser.uid);
+  }
+
+  if (emergency.status === 'responding' && emergency.responderId) {
+    this.respondingBuddy = this.buildResponderInfo(emergency);
+  }
+
+  if (this.currentEmergencyId) {
+    this.emergencyService.startPatientLocationTracking(this.currentEmergencyId);
+  }
+
+  try {
+    await this.emergencyAlertService.playEmergencyAlarmSound();
+  } catch (error) {
+    console.warn('Could not resume emergency alarm sound:', error);
+  }
+
+  this.listenForEmergencyResponses();
+}
 
   listenForEmergencyResponses(): void {
     if (!this.currentEmergencyId) return;
@@ -655,6 +613,8 @@ export class HomePage implements OnDestroy {
   }
 
   clearEmergencyState(): void {
+    this.emergencyAlertService.stopEmergencyAlarmSound();
+
     this.isEmergencyActive = false;
     this.emergencyStartTime = null;
     this.currentEmergencyId = null;
