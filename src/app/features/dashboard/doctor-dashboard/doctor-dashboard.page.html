@@ -18,29 +18,28 @@
   <div class="page-content">
     <!-- Welcome Section -->
     <div class="welcome-section">
-      <h2>Welcome, Dr. {{ doctorName }}</h2>
-      <p>{{ patients.length }} Active Patient{{ patients.length !== 1 ? 's' : '' }} • Professional Dashboard</p>
+      <div>
+        <h2>Welcome, Dr. {{ doctorName }}</h2>
+        <p>{{ patients.length }} Active Patient{{ patients.length !== 1 ? 's' : '' }} • Professional Dashboard</p>
+      </div>
+      <div class="welcome-meta" *ngIf="getPendingReviewCount() > 0">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <span>{{ getPendingReviewCount() }} pending review</span>
+      </div>
     </div>
 
-    <!-- Statistics Cards -->
+    <!-- Summary Card -->
     <div class="stats-grid">
-      <ion-card class="stat-card">
+      <ion-card class="stat-card hero-card">
         <ion-card-content>
           <div class="stat-icon">
-            <ion-icon name="people-outline"></ion-icon>
+            <ion-icon name="people-circle-outline"></ion-icon>
           </div>
-          <div class="stat-number">{{ stats.totalPatients }}</div>
-          <div class="stat-label">Total Patients</div>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card class="stat-card ehr">
-        <ion-card-content>
-          <div class="stat-icon">
-            <ion-icon name="document-text-outline"></ion-icon>
+          <div class="hero-copy">
+            <div class="stat-number">{{ stats.totalPatients }}</div>
+            <div class="stat-label">Patients under your care</div>
+            <p class="stat-caption">Track allergies, doctor visits, and medical history in one place.</p>
           </div>
-          <div class="stat-number">{{ stats.grantedEhrAccess }}</div>
-          <div class="stat-label">EHR Access</div>
         </ion-card-content>
       </ion-card>
     </div>
@@ -65,8 +64,15 @@
     <ion-card *ngFor="let patient of filteredPatients" class="patient-card">
       <ion-card-header>
         <div class="patient-header">
+          <div class="patient-avatar">{{ getPatientInitials(patient.patientName) }}</div>
           <div class="patient-info">
-            <ion-card-title>{{ patient.patientName }}</ion-card-title>
+            <div class="patient-title-row">
+              <ion-card-title>{{ patient.patientName }}</ion-card-title>
+              <span class="review-pill" *ngIf="patient.pendingVisitsCount > 0">
+                <ion-icon name="alert-circle-outline"></ion-icon>
+                {{ patient.pendingVisitsCount }} pending
+              </span>
+            </div>
             <ion-card-subtitle>{{ patient.patientEmail }}</ion-card-subtitle>
           </div>
         </div>
@@ -105,11 +111,14 @@
         <!-- Action Buttons -->
         <div class="patient-actions">
           <ion-button 
-            fill="outline" 
+            fill="solid" 
             size="small" 
             (click)="viewPatientAnalysis(patient)">
             <ion-icon name="analytics-outline" slot="start"></ion-icon>
             Analyze
+            <ion-badge *ngIf="patient.pendingVisitsCount > 0" color="warning" slot="end">
+              {{ patient.pendingVisitsCount }}
+            </ion-badge>
           </ion-button>
         </div>
       </ion-card-content>
@@ -130,12 +139,13 @@
     </p>
   </div>
 
+  </div>
+
   <!-- Floating Action Button - Invite Patient -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab class="doctor-fab" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button routerLink="/doctor/patient-invite">
       <ion-icon name="people-outline"></ion-icon>
       <ion-badge *ngIf="pendingInviteCount > 0" color="danger">{{ pendingInviteCount }}</ion-badge>
     </ion-fab-button>
   </ion-fab>
-  </div>
 </ion-content>

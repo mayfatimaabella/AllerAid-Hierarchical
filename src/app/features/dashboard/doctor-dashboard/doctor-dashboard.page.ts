@@ -152,6 +152,16 @@ startPatientsListener() {
             try {
               const analysis = await this.ehrService.getPatientAnalysis(patientId);
 
+              const confirmedVisits = (analysis?.visitHistory || []).filter(
+                (visit: any) => visit.status === 'confirmed'
+              );
+              const pendingVisits = (analysis?.visitHistory || []).filter((visit: any) => {
+                const visitDoctorEmail = visit.doctorEmail?.trim().toLowerCase();
+                const currentDoctorEmail = this.doctorEmail?.trim().toLowerCase();
+
+                return visit.status === 'pending' && !!currentDoctorEmail && !!visitDoctorEmail && visitDoctorEmail === currentDoctorEmail;
+              });
+
               return {
                 patientId,
                 patientName,
@@ -159,9 +169,10 @@ startPatientsListener() {
                 dateOfBirth: analysis?.personalInfo?.dateOfBirth || '',
                 primaryAllergies:this.extractAllergies(analysis),
 
-                lastVisit: analysis?.visitHistory?.[0]?.visitDate || undefined,
+                lastVisit: confirmedVisits[0]?.visitDate || undefined,
                 riskLevel: 'low',
-                totalVisits: analysis?.visitHistory?.length || 0,
+                totalVisits: confirmedVisits.length,
+                pendingVisitsCount: pendingVisits.length,
                 accessGrantedDate: relation.acceptedAt,
               };
             } catch (error) {
@@ -298,8 +309,9 @@ startPatientsListener() {
       const analysis = await this.ehrService.getPatientAnalysis(patient.patientId);
       const modal = await this.modalController.create({
         component: PatientAnalysisModal,
-        componentProps: { patient, analysis }
+        componentProps: { patient, patientId: patient.patientId, analysis, canConfirmVisits: true }
       });
+      modal.onDidDismiss().then(() => this.refreshPatientCounts());
       await modal.present();
     } catch (error) {
       console.error('Error loading patient EHR:', error);
@@ -363,6 +375,34 @@ startPatientsListener() {
     this.filterPatients();
   }
 
+  async refreshPatientCounts() {
+    this.patients = await Promise.all(
+      this.patients.map(async (patient: any) => {
+        const analysis = await this.ehrService.getPatientAnalysis(patient.patientId);
+        const confirmedVisits = (analysis?.visitHistory || []).filter(
+          (visit: any) => visit.status === 'confirmed'
+        );
+
+        const pendingVisits = (analysis?.visitHistory || []).filter((visit: any) => {
+          const visitDoctorEmail = visit.doctorEmail?.trim().toLowerCase();
+          const currentDoctorEmail = this.doctorEmail?.trim().toLowerCase();
+
+          return visit.status === 'pending' && !!currentDoctorEmail && !!visitDoctorEmail && visitDoctorEmail === currentDoctorEmail;
+        });
+
+        return {
+          ...patient,
+          lastVisit: confirmedVisits[0]?.visitDate || undefined,
+          totalVisits: confirmedVisits.length,
+          pendingVisitsCount: pendingVisits.length
+        };
+      })
+    );
+
+    this.calculateStats();
+    this.filterPatients();
+  }
+
   async openUserMenu(event: any) {
     const popover = await this.popoverController.create({
       component: UserMenuPopover,
@@ -403,7 +443,7 @@ startPatientsListener() {
       const analysis = await this.ehrService.getPatientAnalysis(patient.patientId);
       const modal = await this.modalController.create({
         component: PatientAnalysisModal,
-        componentProps: { patient, analysis }
+        componentProps: { patient, patientId: patient.patientId, analysis, canConfirmVisits: true }
       });
       await modal.present();
     } catch (error) {
@@ -414,6 +454,19 @@ startPatientsListener() {
 
   get pendingInviteCount(): number {
     return this.pendingInvitations.length;
+  }
+
+  getPendingReviewCount(): number {
+    return this.patients.reduce((count, patient) => count + (patient.pendingVisitsCount || 0), 0);
+  }
+
+  getPatientInitials(patientName: string): string {
+    return (patientName || 'P')
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part: string) => part[0]?.toUpperCase() || '')
+      .join('') || 'P';
   }
 
   async logout() {

@@ -166,6 +166,56 @@
   gap: 16px;
 }
 
+.visit-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(3, 106, 93, 0.12);
+}
+
+.visit-action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  --border-radius: 999px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  height: 36px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+}
+
+.action-button.confirm-button {
+  --background: linear-gradient(135deg, #036a5d 0%, #0b8f7f 100%);
+  --background-activated: #025445;
+  --background-hover: #057e6b;
+  --color: #ffffff;
+  box-shadow: 0 8px 18px rgba(3, 106, 93, 0.2);
+}
+
+.action-button.reject-button {
+  --background: #fff5f5;
+  --background-activated: #ffe2e2;
+  --background-hover: #ffeaea;
+  --color: #b42318;
+  --border-color: #fda29b;
+  --border-style: solid;
+  --border-width: 1px;
+  box-shadow: 0 6px 14px rgba(180, 35, 24, 0.12);
+}
+
 /* Medical History Styles */
 .history-header {
   display: flex;

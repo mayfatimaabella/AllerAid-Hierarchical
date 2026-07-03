@@ -37,6 +37,7 @@ export interface DoctorVisit {
   chiefComplaint: string;
   diagnosis?: string;
   notes?: string;
+  status?: 'pending' | 'confirmed' | 'rejected';
   createdAt?: any;
   updatedAt?: any;
 }
@@ -283,6 +284,7 @@ private async getUserInfoForPatient(patientId: string): Promise<any | null> {
       chiefComplaint: visitData.chiefComplaint?.trim() || '',
       diagnosis: visitData.diagnosis?.trim() || '',
       notes: visitData.notes?.trim() || '',
+      status: 'pending',
       patientId: currentUser.uid,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -311,7 +313,14 @@ private async getUserInfoForPatient(patientId: string): Promise<any | null> {
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as DoctorVisit[];
+    return snapshot.docs.map(d => {
+      const rawData = d.data();
+      return {
+        id: d.id,
+        status: rawData['status'] ?? 'confirmed',
+        ...rawData
+      } as DoctorVisit;
+    });
   }
 
   async getDoctorVisitById(visitId: string): Promise<DoctorVisit | null> {
@@ -321,7 +330,7 @@ private async getUserInfoForPatient(patientId: string): Promise<any | null> {
     const ref = doc(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'doctorVisits'), visitId);
     const snap = await getDoc(ref);
 
-    return snap.exists() ? ({ id: snap.id, ...snap.data() } as DoctorVisit) : null;
+    return snap.exists() ? ({ id: snap.id, status: snap.data()?.['status'] ?? 'confirmed', ...snap.data() } as DoctorVisit) : null;
   }
 
   async updateDoctorVisit(visitId: string, visitData: Partial<DoctorVisit>): Promise<void> {
@@ -633,7 +642,42 @@ async getPatientAnalysis(patientId: string): Promise<{
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as DoctorVisit[];
+    return snapshot.docs.map(d => {
+      const rawData = d.data();
+      return {
+        id: d.id,
+        status: rawData['status'] ?? 'confirmed',
+        ...rawData
+      } as DoctorVisit;
+    });
+  }
+
+  async confirmDoctorVisit(patientId: string, visitId: string): Promise<void> {
+    const visitRef = doc(this.db, this.healthRecordsCollectionPath(patientId, 'doctorVisits'), visitId);
+    const visitSnap = await getDoc(visitRef);
+
+    if (!visitSnap.exists()) {
+      throw new Error('Doctor visit not found');
+    }
+
+    await updateDoc(visitRef, {
+      status: 'confirmed',
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  async rejectDoctorVisit(patientId: string, visitId: string): Promise<void> {
+    const visitRef = doc(this.db, this.healthRecordsCollectionPath(patientId, 'doctorVisits'), visitId);
+    const visitSnap = await getDoc(visitRef);
+
+    if (!visitSnap.exists()) {
+      throw new Error('Doctor visit not found');
+    }
+
+    await updateDoc(visitRef, {
+      status: 'rejected',
+      updatedAt: serverTimestamp()
+    });
   }
 
   private async getMedicalHistoryForPatient(patientId: string): Promise<MedicalHistory[]> {
