@@ -1,17 +1,19 @@
-<ion-toolbar class="notification-header">
-  <ion-buttons slot="start">
-    <ion-menu-button></ion-menu-button>
-  </ion-buttons>
-  <ion-title>Reminders</ion-title>
-  <ion-buttons slot="end">
-    <ion-button (click)="clearAll()" color="danger" *ngIf="pendingReminders.length > 0">
-      Clear
-    </ion-button>
-  </ion-buttons>
-</ion-toolbar>
+<ion-header>
+  <ion-toolbar class="notification-header">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Reminders</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="clearAll()" color="danger" *ngIf="pendingReminders.length > 0">
+        Clear
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
-<ion-content [fullscreen]="true" class="notification-bg">
-  <div class="notification-container">
+<ion-content class="ion-padding notification-bg">
+  <div class="wrapper scrollable-content">
     
     <div *ngIf="isLoading" class="ion-text-center ion-padding">
       <ion-spinner name="crescent"></ion-spinner>
@@ -86,9 +88,7 @@
       </div>
 
       <div *ngIf="pendingReminders.length === 0" class="no-reminders">
-        <div class="empty-icon-wrapper">
-          <ion-icon name="notifications-off-outline"></ion-icon>
-        </div>
+        <ion-icon name="notifications-off-outline"></ion-icon>
         <p>You're all caught up!</p>
         <ion-button fill="outline" size="small" (click)="goHome()" class="home-btn">
           Back to Home

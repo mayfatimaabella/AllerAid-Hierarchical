@@ -48,11 +48,11 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     try {
       const user = await this.authService.waitForAuthInit();
       if (user) {
-        
+
         this.buddyService.listenForEmergencyAlerts(user.uid);
-        
+
         this.emergencySubscription = this.buddyService.activeEmergencyAlerts$.subscribe(async emergencies => {
-        
+
           this.resolvedEmergencies = await this.emergencyService.getBuddyEmergenciesByStatus(user.uid, ['resolved']);
 
           const userInitiated = await this.emergencyService.getUserEmergenciesByStatus(
@@ -64,10 +64,11 @@ export class EmergenciesPage implements OnInit, OnDestroy {
             .filter(e => (e.status === 'active' || e.status === 'responding'))
             .filter(e => !this.dismissedEmergencyIds.has(e.id!));
 
-          const userActive = userInitiated.filter(e => e.status === 'active' || e.status === 'responding');
-
+          // "Active Emergencies" is the respond-to-others list — the user's
+          // own triggered emergency should never appear here, only in
+          // History. (It previously leaked in via `userActive` below.)
           const activeMerged = new Map<string, EmergencyAlert>();
-          [...buddyActive, ...userActive].forEach(e => {
+          buddyActive.forEach(e => {
             if (e.id) {
               activeMerged.set(e.id, e);
             }
@@ -209,8 +210,8 @@ export class EmergenciesPage implements OnInit, OnDestroy {
       if (user) {
 
         await this.emergencyService.respondToEmergency(
-          emergency.id!, 
-          user.uid, 
+          emergency.id!,
+          user.uid,
           user.displayName || 'Buddy Response'
         );
         this.viewOnMap(emergency);
@@ -287,12 +288,12 @@ export class EmergenciesPage implements OnInit, OnDestroy {
 
   getTimeAgo(timestamp: any): string {
     if (!timestamp) return 'Unknown time';
-    
+
     const now = new Date();
     const alertTime = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     const diffMs = now.getTime() - alertTime.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);

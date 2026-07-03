@@ -24,7 +24,6 @@ interface EmergencyMessageFormData {
 })
 export class ProfileEmergencySettingsService {
   emergencySettings: any = {};
-  showVoiceSettings: boolean = true;
   showEditEmergencyMessageModal: boolean = false;
 
   constructor(
@@ -280,11 +279,6 @@ export class ProfileEmergencySettingsService {
 
     return entries;
   }
-
-  toggleVoiceRecordingModal(): void {
-    this.showVoiceSettings = !this.showVoiceSettings;
-  }
-
 
   private async presentToast(message: string): Promise<void> {
     const toast = await this.toastController.create({

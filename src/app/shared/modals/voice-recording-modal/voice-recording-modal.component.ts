@@ -133,12 +133,6 @@ export class VoiceRecordingModalComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  selectRecording(recordingId: string) {
-    this.audioSettings.selectedRecordingId = recordingId;
-    this.audioSettings.useCustomVoice = true;
-    this.voiceRecordingService.updateAudioSettings(this.audioSettings);
-  }
-
   // Settings Functions
   onSettingChange() {
     this.voiceRecordingService.updateAudioSettings(this.audioSettings);
@@ -156,18 +150,5 @@ export class VoiceRecordingModalComponent implements OnInit, OnDestroy {
 
   formatFileSize(bytes: number): string {
     return this.voiceRecordingService.formatFileSize(bytes);
-  }
-
-  getSelectedRecordingName(): string {
-    if (!this.audioSettings.selectedRecordingId) {
-      return 'None selected';
-    }
-    
-    const recording = this.recordings.find(r => r.id === this.audioSettings.selectedRecordingId);
-    return recording ? recording.name : 'Recording not found';
-  }
-
-  isRecordingSelected(recordingId: string): boolean {
-    return this.audioSettings.selectedRecordingId === recordingId;
   }
 }

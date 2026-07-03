@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { MedicalService } from './medical.profile.service';
 import { BuddyService } from './buddy.service';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 import { EmergencyService } from './emergency.service';
 import { EmergencySettingsService } from './emergency-settings.service';
+import { Timestamp } from 'firebase/firestore';
 
 export interface EmergencyAlert {
   id: string;
@@ -89,6 +92,30 @@ export class EmergencyAlertService {
         );
       }
 
+      const initialBuddyResponses = buddies.reduce((responses, buddy: any) => {
+        const buddyId = buddy.connectedUserId || buddy.buddyUid || buddy.id;
+        if (!buddyId || buddyId === currentUser.uid) {
+          return responses;
+        }
+
+        responses[buddyId] = {
+          status: 'sent',
+          timestamp: Timestamp.now(),
+          name:
+            buddy.buddyName ||
+            `${buddy.firstName || ''} ${buddy.lastName || ''}`.trim() ||
+            buddyId,
+        };
+
+        return responses;
+      }, {} as {
+        [buddyId: string]: {
+          status: 'sent';
+          timestamp: any;
+          name: string;
+        };
+      });
+
       console.log('Getting current location before sending emergency alert...');
 
 
@@ -116,7 +143,8 @@ export class EmergencyAlertService {
         buddyIds,
         [],
         resolvedInstruction,
-        locationData
+        locationData,
+        initialBuddyResponses
       );
 
       await this.showToast('Emergency alert sent successfully.', 'success');
@@ -239,6 +267,22 @@ export class EmergencyAlertService {
 
   private async speakInstructions(emergencyData: EmergencyData): Promise<void> {
     try {
+      const textToSpeak = this.buildEmergencyInstructionText(emergencyData);
+
+      if (Capacitor.isNativePlatform()) {
+        await TextToSpeech.speak({
+          text: textToSpeak,
+          lang: 'en-US',
+          rate: 0.8,
+          pitch: 1,
+          volume: 1,
+          category: 'playback',
+          queueStrategy: 0
+        });
+        console.log('Speaking emergency instructions natively:', textToSpeak);
+        return;
+      }
+
       if (typeof window === 'undefined') {
         console.warn('Text-to-speech not available: window is undefined');
         return;
@@ -254,30 +298,6 @@ export class EmergencyAlertService {
       }
 
       window.speechSynthesis.cancel();
-
-      const { emergencyInstructions, emergencyInstruction, emergencyMessage, name, allergies } = emergencyData;
-
-      let textToSpeak = '';
-
-      if (emergencyInstructions && emergencyInstructions.length > 0) {
-        textToSpeak = `Emergency alert for ${name || 'this person'}. Emergency instructions: `;
-        emergencyInstructions.forEach((instruction) => {
-          textToSpeak += `${instruction.allergyName}: ${instruction.instruction}. `;
-        });
-      } else if (emergencyInstruction) {
-        textToSpeak = emergencyInstruction;
-      } else if (emergencyMessage?.instructions) {
-        textToSpeak = `Emergency alert for ${name || 'this person'}. `;
-        if (allergies && allergies !== 'None') {
-          textToSpeak += `They are allergic to ${allergies}. `;
-        }
-        textToSpeak += emergencyMessage.instructions;
-      } else {
-        textToSpeak = `Emergency alert for ${name || 'this person'}. `;
-        textToSpeak += (allergies && allergies !== 'None')
-          ? `They are allergic to ${allergies}. Call emergency services immediately.`
-          : 'Call emergency services immediately.';
-      }
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.rate = 0.8;
@@ -298,6 +318,36 @@ export class EmergencyAlertService {
     } catch (error) {
       console.error('Error using text-to-speech:', error);
     }
+  }
+
+  private buildEmergencyInstructionText(emergencyData: EmergencyData): string {
+    const { emergencyInstructions, emergencyInstruction, emergencyMessage, name, allergies } = emergencyData;
+
+    if (emergencyInstructions && emergencyInstructions.length > 0) {
+      let text = `Emergency alert for ${name || 'this person'}. Emergency instructions: `;
+      emergencyInstructions.forEach((instruction) => {
+        text += `${instruction.allergyName}: ${instruction.instruction}. `;
+      });
+      return text;
+    }
+
+    if (emergencyInstruction) {
+      return emergencyInstruction;
+    }
+
+    if (emergencyMessage?.instructions) {
+      let text = `Emergency alert for ${name || 'this person'}. `;
+      if (allergies && allergies !== 'None') {
+        text += `They are allergic to ${allergies}. `;
+      }
+      text += emergencyMessage.instructions;
+      return text;
+    }
+
+    return `Emergency alert for ${name || 'this person'}. ` +
+      ((allergies && allergies !== 'None')
+        ? `They are allergic to ${allergies}. Call emergency services immediately.`
+        : 'Call emergency services immediately.');
   }
 
   private async showToast(message: string, color: string = 'primary'): Promise<void> {

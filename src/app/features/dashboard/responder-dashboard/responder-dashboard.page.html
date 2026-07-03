@@ -155,12 +155,15 @@
 
     <ng-template #noEmergency>
       <div class="empty-emergency-state">
-        <ion-icon name="checkmark-done-circle"></ion-icon>
+        <div class="empty-icon">
+          <ion-icon name="checkmark-done-circle"></ion-icon>
+        </div>
+
         <h2>Emergency completed</h2>
         <p>This alert has been resolved by the patient.</p>
 
-        <ion-button expand="block" (click)="goHome()">
-          Go Home
+        <ion-button expand="block" fill="solid" color="primary" (click)="goHome()">
+          Return to home
         </ion-button>
       </div>
     </ng-template>

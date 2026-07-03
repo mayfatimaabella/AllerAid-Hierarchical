@@ -48,8 +48,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   allergiesCount: number = 0;
 
   audioInstructionsEnabled: boolean = true;
-  showVoiceSettings: boolean = false;
-
   doctorStats: DoctorStats = {
     activePatients: 0,
     pendingRequests: 0,

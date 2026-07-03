@@ -12,7 +12,6 @@ import { IonicModule } from '@ionic/angular';
 })
 export class ProfileSettingsComponent {
   @Input() audioInstructionsEnabled = false;
-  @Input() showVoiceSettings = false;
   @Input() profileVoiceFacade: any;
   @Input() testAudioSettings!: () => Promise<void>;
 }

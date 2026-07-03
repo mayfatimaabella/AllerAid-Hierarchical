@@ -17,6 +17,10 @@ ion-content {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
+.summary-card {
+  padding: 14px;
+}
+
 .card-header {
   display: flex;
   align-items: center;
@@ -37,10 +41,45 @@ ion-content {
   }
 }
 
+.card-header--summary {
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+
+  h2 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.card-title-icon {
+  flex-shrink: 0;
+}
+
 .status-chip {
   margin: 0;
   font-weight: 600;
   font-size: 12px;
+  flex-shrink: 0;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline: 10px;
+
+  ion-icon {
+    font-size: 13px;
+    margin: 0;
+  }
 }
 
 .card-content {
@@ -55,6 +94,7 @@ ion-content {
   padding: 12px;
   background: #f8fbfd;
   border-radius: 14px;
+  border: 1px solid #edf3f7;
 
   ion-icon {
     font-size: 22px;
@@ -178,6 +218,10 @@ ion-content {
     border-radius: 16px;
   }
 
+  .summary-card {
+    padding: 12px;
+  }
+
   .card-header {
     align-items: flex-start;
 
@@ -186,7 +230,30 @@ ion-content {
     }
   }
 
+  .card-header--summary {
+    align-items: center;
+  }
+
+  .card-title-group {
+    gap: 8px;
+
+    h2 {
+      white-space: normal;
+      line-height: 1.25;
+    }
+  }
+
   .status-chip {
     font-size: 11px;
+    margin-top: 1px;
+
+    ion-icon {
+      font-size: 12px;
+    }
+  }
+
+  .diagnosis-row {
+    padding: 11px;
+    gap: 10px;
   }
 }

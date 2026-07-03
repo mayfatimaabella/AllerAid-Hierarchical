@@ -1,57 +1,58 @@
-<ion-content [fullscreen]="true" class="emergency-modal-content" scrollY="true">
+<ion-header class="ion-no-border">
+  <ion-toolbar class="toolbar--teal">
+    <ion-title>Emergency Details</ion-title>
 
-  <div class="header">
-    <div class="header-top">
-      <button class="back-btn" aria-label="Close" (click)="onClose()">
-        <ion-icon name="chevron-back-outline"></ion-icon>
-      </button>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="onClose()" aria-label="Close">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
-      <span class="header-title">Emergency Details</span>
+<ion-content class="emergency-modal-content ion-padding" scrollY="true">
+  <div class="wrapper scrollable-content">
 
-      <div class="header-spacer"></div>
-    </div>
-
-    <div class="hero">
-      <div class="hero-avatar">
-        <ion-icon name="shield-checkmark-outline"></ion-icon>
-      </div>
-
-      <div class="hero-content">
-        <div class="hero-name">
-          {{ emergencyMessageName || 'Not set' }}
+    <div class="hero-shell">
+      <div class="hero">
+        <div class="hero-avatar">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
         </div>
 
-        <div class="hero-tags">
-          <span class="tag tag-danger">
-            <ion-icon name="warning-outline"></ion-icon>
-            {{ userAllergies.length || 0 }} Allergies
-          </span>
+        <div class="hero-content">
+          <div class="hero-name">
+            {{ emergencyMessageName || 'Not set' }}
+          </div>
 
-          <span class="tag tag-danger">
-            Emergency Profile
-          </span>
+          <div class="hero-tags">
+            <span class="tag tag-danger">
+              <ion-icon name="warning-outline"></ion-icon>
+              {{ userAllergies.length || 0 }} Allergies
+            </span>
+
+            <span class="tag tag-danger">
+              Emergency Profile
+            </span>
+          </div>
         </div>
       </div>
+
+      <div class="tab-bar">
+        <button
+          class="tab"
+          [class.active]="activeTab === 'overview'"
+          (click)="setTab('overview')">
+          Overview
+        </button>
+
+        <button
+          class="tab"
+          [class.active]="activeTab === 'instructions'"
+          (click)="setTab('instructions')">
+          Instructions
+        </button>
+      </div>
     </div>
-
-    <div class="tab-bar">
-      <button
-        class="tab"
-        [class.active]="activeTab === 'overview'"
-        (click)="setTab('overview')">
-        Overview
-      </button>
-
-      <button
-        class="tab"
-        [class.active]="activeTab === 'instructions'"
-        (click)="setTab('instructions')">
-        Instructions
-      </button>
-    </div>
-  </div>
-
-  <div class="body">
 
     <!-- OVERVIEW TAB -->
     <ng-container *ngIf="activeTab === 'overview'">

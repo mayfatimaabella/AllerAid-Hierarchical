@@ -69,12 +69,6 @@ const routes: Routes = [
         data: { roles: ['buddy'] }
       },
       {
-        path: 'patient-map',
-        loadChildren: () => import('../../features/emergency/patient-map/patient-map.module').then(m => m.PatientMapPageModule),
-        canActivate: [RoleGuard],
-        data: { roles: ['patient', 'user', 'default', 'all'] }
-      },
-      {
         path: 'doctor-profile',
         loadChildren: () => import('../../features/doctor/doctor-profile/doctor-profile.module').then(m => m.DoctorProfilePageModule),
         canActivate: [RoleGuard],

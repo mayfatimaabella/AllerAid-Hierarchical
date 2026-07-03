@@ -11,7 +11,6 @@ export class EmergencyResponseNotificationComponent implements OnInit, OnDestroy
   @Input() estimatedTime: string = '';
   @Input() distance: number = 0;
   @Input() estimatedMinutes: number = 0;
-  @Output() viewMap = new EventEmitter<any>();
   @Output() dismiss = new EventEmitter<void>();
   
   private audio: HTMLAudioElement | null = null;
@@ -32,10 +31,6 @@ export class EmergencyResponseNotificationComponent implements OnInit, OnDestroy
     const soundUrl = 'assets/audio/notification.mp3';
     this.audio = new Audio(soundUrl);
     this.audio.play();
-  }
-  
-  openMap() {
-    this.viewMap.emit();
   }
   
   onDismiss() {

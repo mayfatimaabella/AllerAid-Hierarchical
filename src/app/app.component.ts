@@ -41,6 +41,7 @@ export class AppComponent implements OnInit {
     if (user) {
       // Ensure role is loaded for an authenticated user
       await this.loadUserRole();
+      await this.pushNotificationService.init();
 
       // If the app started on the login screen, redirect to the main area
       if (this.router.url === '/login' || this.router.url === '/') {

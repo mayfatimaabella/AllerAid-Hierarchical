@@ -48,7 +48,7 @@ export interface EmergencyAlert {
   displayAddress?: string;
   buddyResponses?: {
     [buddyId: string]: {
-      status: 'responded' | 'cannot_respond';
+      status: 'sent' | 'responded' | 'cannot_respond';
       timestamp: any;
       name?: string;
     };
@@ -107,7 +107,14 @@ export class EmergencyService {
     buddyIds: string[],
     allergies: string[] = [],
     instruction: string = '',
-    locationData?: { latitude: number; longitude: number; accuracy?: number }
+    locationData?: { latitude: number; longitude: number; accuracy?: number },
+    initialBuddyResponses?: {
+      [buddyId: string]: {
+        status: 'sent' | 'responded' | 'cannot_respond';
+        timestamp: any;
+        name?: string;
+      };
+    }
   ): Promise<string> {
     
     const existing = await this.getUserEmergenciesByStatus(userId, ['active', 'responding']);
@@ -142,7 +149,8 @@ export class EmergencyService {
         allergies,
         instruction,
         status: 'active',
-        buddyIds
+        buddyIds,
+        ...(initialBuddyResponses ? { buddyResponses: initialBuddyResponses } : {})
       };
 
       const docRef = await addDoc(collection(this.db, 'emergencies'), emergencyData);

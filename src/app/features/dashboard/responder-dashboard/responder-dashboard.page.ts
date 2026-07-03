@@ -1,5 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, Input } from '@angular/core';
 import { ModalController, NavController, AlertController, ToastController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { AllergyService } from '../../../core/services/allergy.service';
 import { MedicalService } from '../../../core/services/medical.profile.service';
 import * as L from 'leaflet';
@@ -222,9 +224,7 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       if (!user) return;
 
       const userProfile = await this.userService.getUserProfile(user.uid);
-      const responderName = userProfile
-        ? `${(userProfile as any).firstName || ''} ${(userProfile as any).lastName || ''}`.trim() || 'Responder'
-        : 'Responder';
+      const responderName = userProfile?.fullName || 'Responder';
 
       await this.emergencyService.respondToEmergency(
         this.currentEmergency.id,
@@ -371,12 +371,27 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
   speakAlert() {
     if (!this.currentEmergency) return;
 
+    const text = `Emergency alert from ${this.currentEmergency.userName}. ${this.displayedEmergencyInstruction}. Patient location is ${this.address}.`;
+
+    if (Capacitor.isNativePlatform()) {
+      TextToSpeech.speak({
+        text,
+        lang: 'en-US',
+        rate: 1,
+        pitch: 1,
+        volume: 1,
+        category: 'playback',
+        queueStrategy: 0
+      }).catch((error: unknown) => {
+        console.warn('Native TTS failed on responder dashboard:', error);
+      });
+      return;
+    }
+
     if (typeof window === 'undefined' || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
       console.warn('Text-to-speech not supported on this device');
       return;
     }
-
-    const text = `Emergency alert from ${this.currentEmergency.userName}. ${this.displayedEmergencyInstruction}. Patient location is ${this.address}.`;
     window.speechSynthesis.cancel();
     const message = new SpeechSynthesisUtterance(text);
     window.speechSynthesis.speak(message);
@@ -386,31 +401,40 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
     this.router.navigate(['/tabs/patients']);
   }
 
-  async goHome() {
-    try {
-      const user = await this.authService.waitForAuthInit();
-      if (!user) {
-        await this.navCtrl.navigateRoot(['/login'], { replaceUrl: true });
-        return;
-      }
-
-      const profile = await this.userService.getUserProfile(user.uid);
-      const role = (profile as any)?.role;
-
-      const roleRoutes: Record<string, string> = {
-        buddy: '/tabs/responder-dashboard',
-        responder: '/tabs/responder-dashboard',
-        doctor: '/tabs/doctor-dashboard',
-        admin: '/tabs/admin-dashboard'
-      };
-
-      const route = roleRoutes[role] || '/tabs/home';
-      await this.navCtrl.navigateRoot([route], { replaceUrl: true });
-    } catch (error) {
-      console.error('Error going home:', error);
-      await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
+async goHome() {
+  try {
+    // This page can be presented as a modal (see @Input() responderData and
+    // the modalController.getTop() checks in cannotRespond/confirmHelpCompleted).
+    // If it is, navigating the underlying router does nothing visible while
+    // the modal is still on top of it — dismiss it first.
+    const modal = await this.modalController.getTop();
+    if (modal) {
+      await modal.dismiss(null, 'home');
     }
+
+    const user = await this.authService.waitForAuthInit();
+
+    if (!user) {
+      await this.navCtrl.navigateRoot(['/login'], { replaceUrl: true });
+      return;
+    }
+
+    const profile = await this.userService.getUserProfile(user.uid);
+    const role = (profile as any)?.role;
+
+    // Only 'user', 'doctor', and 'admin' are real roles.
+    const roleRoutes: Record<string, string> = {
+      user: '/tabs/home',
+      doctor: '/tabs/doctor-dashboard',
+      admin: '/tabs/admin-dashboard'
+    };
+
+    await this.navCtrl.navigateRoot([roleRoutes[role] || '/tabs/home'], { replaceUrl: true });
+  } catch (error) {
+    console.error('Error going home:', error);
+    await this.navCtrl.navigateRoot(['/tabs/home'], { replaceUrl: true });
   }
+}
 
   private async setupRealTimeListeners() {
     try {
@@ -467,6 +491,7 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
           } else {
             if (!this.isResolving) {
               this.currentEmergency = null;
+              await this.goHome();
             }
           }
         }
@@ -572,7 +597,7 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
   if (!this.currentEmergency) return 'Unknown';
 
   if (this.currentEmergency.status === 'active') {
-    return 'Waiting for responder';
+    return 'Emergency active';
   }
 
   if (this.currentEmergency.status === 'responding') {

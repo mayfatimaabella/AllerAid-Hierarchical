@@ -12,10 +12,12 @@
 <ion-content class="ion-padding white-content">
   <div *ngIf="history" class="history-details-container"> 
     <!-- Compact header card matching modal simplicity -->
-    <div class="detail-card">
-      <div class="card-header">
-        <ion-icon [name]="getStatusIcon(history.status)"></ion-icon>
-        <h2>{{ history.condition }}</h2>
+    <div class="detail-card summary-card">
+      <div class="card-header card-header--summary">
+        <div class="card-title-group">
+          <ion-icon [name]="getStatusIcon(history.status)" class="card-title-icon"></ion-icon>
+          <h2>{{ history.condition }}</h2>
+        </div>
         <ion-chip [color]="getStatusColor(history.status)" class="status-chip">
           <ion-icon [name]="getStatusIcon(history.status)"></ion-icon>
           {{ getStatusLabel(history.status) }}

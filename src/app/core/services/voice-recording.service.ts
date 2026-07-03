@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ToastController, AlertController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { BehaviorSubject } from 'rxjs';
 
 export interface VoiceRecording {
@@ -13,8 +15,6 @@ export interface VoiceRecording {
 }
 
 export interface AudioSettings {
-  useCustomVoice: boolean;
-  selectedRecordingId: string | null;
   defaultVoice: 'male' | 'female';
   speechRate: number; // 0.5 to 2.0
   volume: number; // 0.0 to 1.0
@@ -40,8 +40,6 @@ export class VoiceRecordingService {
   public recordings$ = this.recordingsSubject.asObservable();
 
   private audioSettings: AudioSettings = {
-    useCustomVoice: false,
-    selectedRecordingId: null,
     defaultVoice: 'female',
     speechRate: 1.0,
     volume: 1.0
@@ -222,12 +220,6 @@ export class VoiceRecordingService {
     
     localStorage.setItem('voice_recordings', JSON.stringify(filtered));
     this.recordingsSubject.next(filtered);
-
-    // If this was the selected recording, clear it
-    if (this.audioSettings.selectedRecordingId === recordingId) {
-      this.audioSettings.selectedRecordingId = null;
-      this.saveAudioSettings();
-    }
   }
 
   async renameRecording(recordingId: string, newName: string): Promise<void> {
@@ -263,16 +255,27 @@ export class VoiceRecordingService {
   }
 
   async playEmergencyInstructions(instructions: string): Promise<void> {
-    if (this.audioSettings.useCustomVoice && this.audioSettings.selectedRecordingId) {
-      // Play custom recording
-      await this.playRecording(this.audioSettings.selectedRecordingId);
-    } else {
-      // Use text-to-speech
-      await this.speakText(instructions);
-    }
+    await this.speakText(instructions);
   }
 
   private async speakText(text: string): Promise<void> {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await TextToSpeech.speak({
+          text,
+          lang: 'en-US',
+          rate: this.audioSettings.speechRate,
+          pitch: 1,
+          volume: this.audioSettings.volume,
+          category: 'playback',
+          queueStrategy: 0
+        });
+        return;
+      } catch (error) {
+        console.warn('Native TTS failed, falling back to Web Speech API:', error);
+      }
+    }
+
     // Guard against environments (like some mobile WebViews) that
     // do not support the Web Speech API to avoid runtime errors.
     if (typeof window === 'undefined') {
@@ -328,7 +331,12 @@ export class VoiceRecordingService {
     try {
       const stored = localStorage.getItem('audio_settings');
       if (stored) {
-        this.audioSettings = { ...this.audioSettings, ...JSON.parse(stored) };
+        const parsed = JSON.parse(stored);
+        this.audioSettings = {
+          defaultVoice: parsed.defaultVoice === 'male' ? 'male' : 'female',
+          speechRate: typeof parsed.speechRate === 'number' ? parsed.speechRate : this.audioSettings.speechRate,
+          volume: typeof parsed.volume === 'number' ? parsed.volume : this.audioSettings.volume
+        };
       }
     } catch (error) {
       console.error('Failed to load audio settings:', error);

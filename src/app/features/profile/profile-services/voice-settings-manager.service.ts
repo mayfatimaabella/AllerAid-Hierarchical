@@ -7,7 +7,7 @@ import { ToastController, AlertController } from '@ionic/angular';
 })
 export class VoiceSettingsManagerService  {
  
-  audioSettings: AudioSettings = { useCustomVoice: false, defaultVoice: 'female', speechRate: 1, volume: 1, selectedRecordingId: null };
+  audioSettings: AudioSettings = { defaultVoice: 'female', speechRate: 1, volume: 1 };
   isRecording: boolean = false;
   recordingTime: number = 0;
   recordings: any[] = [];
@@ -69,16 +69,6 @@ export class VoiceSettingsManagerService  {
   }
 
   /**
-   * Select a recording as custom voice
-   */
-  selectRecording(id: string): void {
-    this.audioSettings.selectedRecordingId = id;
-    this.audioSettings.useCustomVoice = true;
-    this.voiceRecordingService.updateAudioSettings(this.audioSettings);
-    this.presentToast('Custom voice selected');
-  }
-
-  /**
    * Delete a recording with confirmation
    */
   async deleteRecording(recording: any): Promise<void> {
@@ -96,13 +86,6 @@ export class VoiceSettingsManagerService  {
       ]
     });
     await alert.present();
-  }
-
-  /**
-   * Check if a recording is selected as custom voice
-   */
-  isRecordingSelected(id: string): boolean {
-    return this.audioSettings.selectedRecordingId === id;
   }
 
   /**
@@ -134,9 +117,6 @@ export class VoiceSettingsManagerService  {
    * Get CSS class for audio source indicator
    */
   getAudioSourceClass(): string {
-    if (this.audioSettings.useCustomVoice && this.audioSettings.selectedRecordingId) {
-      return 'audio-source custom-voice';
-    }
     return 'audio-source default-voice';
   }
 
@@ -144,9 +124,6 @@ export class VoiceSettingsManagerService  {
    * Get display text for current audio source
    */
   getAudioSourceText(): string {
-    if (this.audioSettings.useCustomVoice && this.audioSettings.selectedRecordingId) {
-      return 'Custom Voice';
-    }
     return `Text-to-Speech (${this.audioSettings.defaultVoice})`;
   }
 

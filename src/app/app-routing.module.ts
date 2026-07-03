@@ -86,11 +86,6 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'patient-map',
-    loadChildren: () => import('./features/emergency/patient-map/patient-map.module').then( m => m.PatientMapPageModule),
-    canActivate: [AuthGuard]
-  },
-  {
     path: 'doctor-dashboard',
     loadChildren: () => import('./features/dashboard/doctor-dashboard/doctor-dashboard.module').then( m => m.DoctorDashboardPageModule),
     canActivate: [AuthGuard, RoleGuard],

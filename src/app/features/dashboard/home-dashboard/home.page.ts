@@ -42,6 +42,7 @@ export class HomePage implements OnDestroy {
   userBuddies: any[] = [];
   userAllergies: any[] = [];
   userName = '';
+  private currentUserId: string | null = null;
   emergencyInstruction = '';
  
   isEmergencyActive = false;
@@ -94,6 +95,7 @@ export class HomePage implements OnDestroy {
     try {
       await this.loadUserData();
       await this.restoreActiveEmergency();
+      this.listenForActiveEmergencyUpdates();
     } finally {
       this.listenForNotificationStatus();
     }
@@ -113,6 +115,8 @@ export class HomePage implements OnDestroy {
         this.userService.getUserProfile(currentUser.uid),
         this.medicalService.getUserMedicalProfile(currentUser.uid),
       ]);
+
+      this.currentUserId = currentUser.uid;
 
       this.userName = userProfile?.fullName ?? 'User';
 
@@ -412,6 +416,8 @@ export class HomePage implements OnDestroy {
     const currentUser = await this.authService.waitForAuthInit();
     if (!currentUser) return;
 
+    this.currentUserId = currentUser.uid;
+
     const emergencies = await this.emergencyService.getUserEmergenciesByStatus(
       currentUser.uid,
       ['active', 'responding'],
@@ -457,6 +463,55 @@ export class HomePage implements OnDestroy {
     }
 
     this.listenForEmergencyResponses();
+  }
+
+  private listenForActiveEmergencyUpdates(): void {
+    const sub = this.emergencyService.userEmergency$.subscribe(emergency => {
+      if (!emergency || !this.currentUserId) return;
+      if (emergency.userId !== this.currentUserId) return;
+
+      if (emergency.status === 'resolved') {
+        this.clearEmergencyState();
+        return;
+      }
+
+      if (emergency.status !== 'active' && emergency.status !== 'responding') {
+        return;
+      }
+
+      this.currentEmergencyId = emergency.id ?? this.currentEmergencyId;
+      this.isEmergencyActive = true;
+
+      this.emergencyStartTime = emergency.timestamp?.toDate
+        ? emergency.timestamp.toDate()
+        : this.emergencyStartTime ?? new Date();
+
+      if (emergency.location) {
+        this.emergencyLocation = {
+          latitude: emergency.location.latitude,
+          longitude: emergency.location.longitude,
+          accuracy: emergency.location.accuracy,
+        };
+      }
+
+      if (emergency.displayAddress) {
+        this.emergencyAddress = emergency.displayAddress;
+        this.isEmergencyAddressLoading = false;
+      } else if (emergency.location) {
+        this.emergencyAddress = 'GPS location available';
+        this.isEmergencyAddressLoading = false;
+      }
+
+      if (emergency.buddyResponses) {
+        this.processBuddyResponses(emergency.buddyResponses, this.currentUserId);
+      }
+
+      if (emergency.status === 'responding' && emergency.responderId) {
+        this.respondingBuddy = this.buildResponderInfo(emergency);
+      }
+    });
+
+    this.subscriptions.push(sub);
   }
 
 
@@ -546,7 +601,6 @@ export class HomePage implements OnDestroy {
 
     switch (newStatus) {
       case 'responded':
-        this.presentToast(`${buddyName} is on the way to help you.`, 'success');
         break;
       case 'cannot_respond':
         this.presentToast(`${buddyName} declined your emergency alert.`, 'warning');
@@ -610,15 +664,6 @@ export class HomePage implements OnDestroy {
     this.isEmergencyAddressLoading = false;
     this.respondingBuddy = null;
     this.minimizedResponder = null;
-  }
-
-  async openResponderMap(response?: ResponderInfo): Promise<void> {
-    const data = response ?? this.minimizedResponder;
-    if (!data?.emergencyId) return;
-
-    await this.router.navigate(['/tabs/patient-map'], {
-      state: { emergencyId: data.emergencyId, responderName: data.responderName ?? 'Responder' },
-    });
   }
 
   dismissToMinimized(): void {

@@ -35,8 +35,8 @@
   <!-- Recordings Tab -->
   <div *ngIf="activeTab === 'recordings'" class="tab-content">
     <div class="section-header">
-      <h3>Custom Voice Recordings</h3>
-      <p>Record your own voice for emergency instructions</p>
+      <h3>Voice Recordings</h3>
+      <p>Record short voice clips for playback and testing.</p>
     </div>
 
     <div *ngIf="recordings.length === 0" class="empty-state">
@@ -54,10 +54,6 @@
         <div class="recording-info">
           <div class="recording-header">
             <h4>{{ recording.name }}</h4>
-            <div class="recording-selected" *ngIf="isRecordingSelected(recording.id)">
-              <ion-icon name="checkmark-circle" color="success"></ion-icon>
-              <span>Selected</span>
-            </div>
           </div>
           <div class="recording-details">
             <span class="duration">{{ formatDuration(recording.duration) }}</span>
@@ -71,13 +67,6 @@
                       fill="clear" 
                       size="small">
             <ion-icon name="play" slot="icon-only"></ion-icon>
-          </ion-button>
-          
-          <ion-button (click)="selectRecording(recording.id)" 
-                      fill="clear" 
-                      size="small"
-                      [color]="isRecordingSelected(recording.id) ? 'success' : 'medium'">
-            <ion-icon name="checkmark" slot="icon-only"></ion-icon>
           </ion-button>
           
           <ion-button (click)="renameRecording(recording)" 
@@ -168,27 +157,6 @@
 
     <div class="settings-section">
       <div class="setting-item">
-        <div class="setting-info">
-          <h4>Use Custom Voice</h4>
-          <p>Play your recorded message instead of text-to-speech</p>
-        </div>
-        <ion-toggle [(ngModel)]="audioSettings.useCustomVoice" 
-                    (ionChange)="onSettingChange()"></ion-toggle>
-      </div>
-
-      <div class="setting-item" *ngIf="audioSettings.useCustomVoice">
-        <div class="setting-info">
-          <h4>Selected Recording</h4>
-          <p>{{ getSelectedRecordingName() }}</p>
-        </div>
-        <ion-button (click)="setActiveTab('recordings')" 
-                    fill="outline" 
-                    size="small">
-          Change
-        </ion-button>
-      </div>
-
-      <div class="setting-item" *ngIf="!audioSettings.useCustomVoice">
         <div class="setting-info">
           <h4>Default Voice</h4>
           <p>Choose text-to-speech voice type</p>

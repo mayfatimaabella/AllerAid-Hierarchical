@@ -236,10 +236,8 @@
 
         <app-emergency-settings-card
           [emergencySettings]="profileEmergencySettings.emergencySettings"
-          [showVoiceSettings]="profileEmergencySettings.showVoiceSettings"
           [getAudioSourceClass]="profileVoiceFacade.getAudioSourceClass.bind(profileVoiceFacade)"
           [getAudioSourceText]="profileVoiceFacade.getAudioSourceText.bind(profileVoiceFacade)"
-          [openVoiceRecordingModal]="profileEmergencySettings.toggleVoiceRecordingModal.bind(profileEmergencySettings)"
           [saveEmergencySettings]="profileEmergencySettings.saveEmergencySettings.bind(profileEmergencySettings)"
         >
 
