@@ -97,7 +97,7 @@ export class HomePage implements OnDestroy {
     try {
       await this.loadUserData();
       await this.restoreActiveEmergency();
-      this.listenForActiveEmergencyUpdates();
+
     } finally {
       this.listenForNotificationStatus();
     }
@@ -282,18 +282,19 @@ async sendEmergencyAlert(): Promise<void> {
 
     await this.emergencyAlertService.playEmergencyAlarmSound();
 
-    this.currentEmergencyId = await this.emergencyService.sendEmergencyAlert(
-      currentUser.uid,
-      this.userName,
-      buddyIds,
-      allergyStrings,
-      this.emergencyInstruction,
-      locationData
-    );
+this.currentEmergencyId = await this.emergencyService.sendEmergencyAlert(
+  currentUser.uid,
+  this.userName,
+  buddyIds,
+  allergyStrings,
+  this.emergencyInstruction,
+  locationData
+);
 
-    this.activateEmergencyState(locationData);
-    this.seedInitialBuddyResponses(currentUser.uid);
-    this.listenForEmergencyResponses();
+
+this.activateEmergencyState(locationData);
+this.seedInitialBuddyResponses(currentUser.uid);
+this.listenForEmergencyResponses();
 
     await loading.dismiss();
     await this.notifyUserAfterSend(buddyIds);

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { CapacitorHttp } from '@capacitor/core';
+import { BehaviorSubject } from 'rxjs';
+
 import { EmergencyAlert } from './emergency.service';
 import { BuddyService } from './buddy.service';
 import { UserService } from './user.service';
@@ -39,7 +40,6 @@ export class EmergencyNotificationService {
   notificationStatus$ = this.notificationStatusSubject.asObservable();
 
   constructor(
-    private http: HttpClient,
     private buddyService: BuddyService,
     private userService: UserService
   ) {}
@@ -56,29 +56,45 @@ export class EmergencyNotificationService {
         return;
       }
 
-      const buddyRelations = await this.buddyService.getUserBuddies(emergencyAlert.userId);
+      const patientUserId = emergencyAlert.userId;
 
-      if (buddyRelations.length === 0) {
+      const buddyRelations = await this.buddyService.getUserBuddies(patientUserId);
+
+      console.log('Buddy relations found:', buddyRelations);
+
+      if (!buddyRelations || buddyRelations.length === 0) {
         console.log('No buddies found to notify');
         return;
       }
 
-      const notificationData = this.prepareNotificationData(emergencyAlert, userProfile || {});
+      const notificationData = this.prepareNotificationData(
+        emergencyAlert,
+        userProfile || {}
+      );
 
       const notificationPromises = buddyRelations.map(async (buddy) => {
-        // FIX #5: Use buddyUid || id as the canonical key, matching what
-        // home.page.ts uses when building buddyResponses and looking up
-        // notification status. This ensures the status map keys are consistent
-        // and statuses actually display correctly in the UI.
-        const buddyStatusKey = buddy.buddyUid || buddy.id || buddy.buddyId;
+        const buddyStatusKey =
+          buddy.buddyUid ||
+          buddy.buddyId ||
+          buddy.connectedUserId ||
+          buddy.uid ||
+          buddy.id ||
+          buddy.user2Id ||
+          buddy.user1Id;
 
         if (!buddyStatusKey) {
-          console.warn('Buddy without ID found, skipping');
+          console.warn('Buddy without ID found, skipping:', buddy);
           return;
         }
 
         try {
-          await this.sendToBuddy(buddy, notificationData, buddyStatusKey);
+          await this.sendToBuddy(
+            buddy,
+            notificationData,
+            buddyStatusKey,
+            patientUserId
+          );
+
           this.updateNotificationStatus(buddyStatusKey, 'sent');
         } catch (error) {
           console.error(`Failed to notify buddy ${buddyStatusKey}:`, error);
@@ -118,9 +134,13 @@ export class EmergencyNotificationService {
     const allergies =
       emergencyAlert.allergies?.length
         ? emergencyAlert.allergies
-        : (medicalInfo.allergies || []).map((allergy: any) =>
-            typeof allergy === 'string' ? allergy : (allergy.label || allergy.name || allergy)
-          ).filter((a: any) => !!a);
+        : (medicalInfo.allergies || [])
+            .map((allergy: any) =>
+              typeof allergy === 'string'
+                ? allergy
+                : allergy.label || allergy.name || allergy.value || allergy
+            )
+            .filter((allergy: any) => !!allergy);
 
     return {
       patientName:
@@ -134,6 +154,7 @@ export class EmergencyNotificationService {
       emergencyInstructions:
         emergencyAlert.instruction ||
         emergencyAlert.emergencyInstruction ||
+        medicalInfo.generalEmergencyInstruction ||
         medicalInfo.emergencyInstruction ||
         medicalInfo.generalInstruction ||
         'No specific instructions provided',
@@ -152,24 +173,47 @@ export class EmergencyNotificationService {
         locationLink: hasLocation ? locationLink : 'Location unavailable'
       },
 
-      emergencyId: emergencyAlert.id!,
+      emergencyId: emergencyAlert.id || '',
       timestamp: new Date().toISOString()
     };
   }
 
-  // Accept the pre-resolved buddyStatusKey so sendToBuddy always uses
-  // the same key that was passed to updateNotificationStatus, rather than
-  // deriving a potentially different key internally.
   private async sendToBuddy(
     buddy: any,
     notificationData: EmergencyNotificationData,
-    buddyStatusKey: string
+    buddyStatusKey: string,
+    patientUserId: string
   ): Promise<void> {
     try {
       this.updateNotificationStatus(buddyStatusKey, 'sending');
 
-      // Resolve the buddy's Firebase user ID for profile lookup
-      const buddyUserId = buddy.connectedUserId || buddy.user2Id || buddy.user1Id || buddy.buddyUid;
+      let buddyUserId =
+        buddy.buddyUid ||
+        buddy.buddyId ||
+        buddy.connectedUserId ||
+        buddy.uid ||
+        buddy.id;
+
+      if (!buddyUserId && buddy.user1Id && buddy.user2Id) {
+        buddyUserId =
+          buddy.user1Id === patientUserId
+            ? buddy.user2Id
+            : buddy.user1Id;
+      }
+
+      if (buddyUserId === patientUserId && buddy.user1Id && buddy.user2Id) {
+        buddyUserId =
+          buddy.user1Id === patientUserId
+            ? buddy.user2Id
+            : buddy.user1Id;
+      }
+
+      console.log('Resolved buddy user ID:', {
+        patientUserId,
+        buddyUserId,
+        buddy
+      });
+
       if (!buddyUserId) {
         console.warn(`No user ID found for buddy ${buddyStatusKey}`);
         this.updateNotificationStatus(buddyStatusKey, 'failed');
@@ -179,13 +223,25 @@ export class EmergencyNotificationService {
       const buddyProfile = await this.userService.getUserProfile(buddyUserId);
 
       if (!buddyProfile) {
-        console.warn(`Buddy profile not found for ${buddyStatusKey} (userId: ${buddyUserId})`);
+        console.warn(
+          `Buddy profile not found for ${buddyStatusKey} userId: ${buddyUserId}`
+        );
         this.updateNotificationStatus(buddyStatusKey, 'failed');
         return;
       }
 
-      await this.sendPushNotification(buddyProfile, notificationData);
-      console.log(`Notifications sent to buddy: ${buddyProfile.fullName}`);
+      await this.sendPushNotification(
+        buddyUserId,
+        buddyProfile,
+        notificationData
+      );
+
+      console.log(
+        `Notification sent to buddy: ${
+          buddyProfile.fullName || buddyProfile.email || buddyUserId
+        }`
+      );
+
     } catch (error) {
       console.error('Error sending notification to buddy:', error);
       throw error;
@@ -193,6 +249,7 @@ export class EmergencyNotificationService {
   }
 
   private async sendPushNotification(
+    targetUserId: string,
     buddyProfile: any,
     notificationData: EmergencyNotificationData
   ): Promise<void> {
@@ -203,40 +260,60 @@ export class EmergencyNotificationService {
 
         data: {
           type: 'emergency',
-          emergencyId: notificationData.emergencyId,
-          patientName: notificationData.patientName,
+          emergencyId: String(notificationData.emergencyId || ''),
+          patientName: String(notificationData.patientName || ''),
 
-          contactNumber: notificationData.profileDetails.phone,
-          dateOfBirth: notificationData.profileDetails.dateOfBirth,
-          bloodType: notificationData.profileDetails.bloodType,
-          gender: notificationData.profileDetails.gender,
-          profilePicture: notificationData.profileDetails.profile_picture,
+          contactNumber: String(notificationData.profileDetails.phone || ''),
+          dateOfBirth: String(notificationData.profileDetails.dateOfBirth || ''),
+          bloodType: String(notificationData.profileDetails.bloodType || ''),
+          gender: String(notificationData.profileDetails.gender || ''),
+          profilePicture: String(notificationData.profileDetails.profile_picture || ''),
 
-          profileDetails: notificationData.profileDetails,
-
-          location: notificationData.location,
-          allergies: notificationData.allergies,
-          instructions: notificationData.emergencyInstructions
-        },
-
-        click_action:
-          `https://your-app-domain.com/tabs/responder-dashboard?emergency=${notificationData.emergencyId}`
+          profileDetails: JSON.stringify(notificationData.profileDetails || {}),
+          location: JSON.stringify(notificationData.location || {}),
+          allergies: JSON.stringify(notificationData.allergies || []),
+          instructions: String(notificationData.emergencyInstructions || '')
+        }
       };
 
       const endpoint = environment.pushNotificationEndpoint;
 
-      if (endpoint) {
-        await firstValueFrom(
-          this.http.post(endpoint, {
-            targetUserId: buddyProfile.uid || buddyProfile.id,
-            message: pushMessage
-          })
+      console.log('Push endpoint:', endpoint);
+      console.log('Sending push to target user:', targetUserId);
+      console.log('Push message:', pushMessage);
+
+      if (!targetUserId) {
+        throw new Error('Missing targetUserId');
+      }
+
+      if (!endpoint) {
+        console.log('Push Notification simulated only because endpoint is missing.');
+        console.log(
+          `To: ${buddyProfile.fullName || buddyProfile.email || targetUserId}`
         );
-      } else {
-        console.log('Push Notification (simulated):');
-        console.log(`To: ${buddyProfile.fullName}`);
         console.log('Message:', pushMessage);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        return;
+      }
+
+      const response = await CapacitorHttp.post({
+        url: endpoint,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: {
+          targetUserId,
+          message: pushMessage
+        }
+      });
+
+      console.log('Push notification backend response:', response.data);
+
+      if (!response.data?.success || Number(response.data?.sent || 0) <= 0) {
+        throw new Error(
+          `Push backend did not send notification. Sent: ${
+            response.data?.sent || 0
+          }, Failed: ${response.data?.failed || 0}`
+        );
       }
 
     } catch (error) {
