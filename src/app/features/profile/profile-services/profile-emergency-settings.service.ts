@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { MedicalService } from '../../../core/services/medical.profile.service';
 import { UserService } from '../../../core/services/user.service';
-import { UserProfile } from '../../../core/services/models/user-profile.model';
+import { UserProfile } from '../../../core/models/user-profile.model';
 import { EditEmergencyProfileModalComponent } from '../overview/modals/edit-profile-message/edit-emergency-profile-modal.component';
 import { EmergencyDetectorService } from '../../../core/services/emergency-detector.service';
 import { ProfileDetailService } from '../../../core/services/profile-details.service';

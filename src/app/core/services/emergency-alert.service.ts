@@ -14,18 +14,36 @@ export interface EmergencyAlert {
   id: string;
   uid: string;
   timestamp: Date;
+
   location?: {
     latitude: number;
     longitude: number;
     address?: string;
   };
+
   alertType: 'shake' | 'volume-button' | 'manual' | 'buddy-request';
   status: 'active' | 'resolved' | 'cancelled';
+
   emergencyData: EmergencyData;
+
   notifiedBuddies: string[];
   responderIds: string[];
-}
 
+  buddyResponses?: Record<string, any>;
+
+  notificationStatus?: Record<
+    string,
+    'sending' | 'sent' | 'delivered' | 'failed' | 'pending'
+  >;
+
+  notificationDeliveredAt?: Record<string, any>;
+
+  responderId?: string;
+  responderName?: string;
+  estimatedArrival?: number;
+  distance?: number;
+  displayAddress?: string;
+}
 export interface EmergencyData {
   name?: string;
   allergies?: string;

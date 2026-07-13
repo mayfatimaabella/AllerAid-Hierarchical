@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { ToastController, ModalController } from '@ionic/angular';
 
-import { UserProfile } from '../../core/services/models/user-profile.model';
+import { UserProfile } from '../../core/models/user-profile.model';
 
 import { Medication } from '../../core/services/medication.service';
 

@@ -74,7 +74,7 @@
                   <ion-icon name="location"></ion-icon>
                   <span>Patient</span>
                 </div>
-                <div class="address-text">{{ patientAddress || 'GPS location available' }}</div>
+                <div class="address-text">{{ patientAddress || getPatientLocationText() }}</div>
               </div>
 
               <div class="eta-container" *ngIf="estimatedArrival">

@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { EmergencyService, EmergencyAlert } from '../../../../core/services/emergency.service';
+import { EmergencyService } from '../../../../core/services/emergency.service';
 import { BuddyService } from '../../../../core/services/buddy.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { EmergencyAlert } from '../../../../core/models/emergency-alert.model';
 
 @Component({
   selector: 'app-emergencies',

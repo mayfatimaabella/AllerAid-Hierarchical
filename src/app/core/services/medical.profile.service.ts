@@ -6,8 +6,8 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { FirebaseService } from './firebase.service';
-import { MedicalInfo } from './models/medical-info.model';
-import { EmergencyInstruction } from './models/emergency-instruction.model';
+import { MedicalInfo } from '../models/medical-info.model';
+import { EmergencyInstruction } from '../models/emergency-instruction.model';
 
 @Injectable({
   providedIn: 'root'

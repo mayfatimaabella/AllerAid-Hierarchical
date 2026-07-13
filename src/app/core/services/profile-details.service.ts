@@ -3,7 +3,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 import { FirebaseService } from './firebase.service';
-import { ProfileDetails } from './models/profile-details.model';
+import { ProfileDetails } from '../models/profile-details.model';
 
 @Injectable({
   providedIn: 'root'

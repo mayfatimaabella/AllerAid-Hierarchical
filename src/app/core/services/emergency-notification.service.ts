@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { CapacitorHttp } from '@capacitor/core';
 import { BehaviorSubject } from 'rxjs';
 
-import { EmergencyAlert } from './emergency.service';
+import { EmergencyAlert } from '../models/emergency-alert.model';
 import { BuddyService } from './buddy.service';
 import { UserService } from './user.service';
 import { environment } from '../../../environments/environment';
@@ -153,7 +153,7 @@ export class EmergencyNotificationService {
 
       emergencyInstructions:
         emergencyAlert.instruction ||
-        emergencyAlert.emergencyInstruction ||
+        emergencyAlert.emergencyData?.emergencyInstruction ||
         medicalInfo.generalEmergencyInstruction ||
         medicalInfo.emergencyInstruction ||
         medicalInfo.generalInstruction ||
@@ -267,9 +267,7 @@ export class EmergencyNotificationService {
           dateOfBirth: String(notificationData.profileDetails.dateOfBirth || ''),
           bloodType: String(notificationData.profileDetails.bloodType || ''),
           gender: String(notificationData.profileDetails.gender || ''),
-          profilePicture: String(notificationData.profileDetails.profile_picture || ''),
 
-          profileDetails: JSON.stringify(notificationData.profileDetails || {}),
           location: JSON.stringify(notificationData.location || {}),
           allergies: JSON.stringify(notificationData.allergies || []),
           instructions: String(notificationData.emergencyInstructions || '')

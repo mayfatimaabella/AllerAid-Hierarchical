@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {doc, setDoc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, serverTimestamp} from 'firebase/firestore';
 import { FirebaseService } from './firebase.service';
 import { AuthService } from './auth.service';
-import { UserProfile } from './models/user-profile.model';
+import { UserProfile } from '../models/user-profile.model';
 import { EmergencySettingsService } from './emergency-settings.service';
 
 

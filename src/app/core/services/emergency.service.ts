@@ -19,41 +19,8 @@ import { Capacitor } from '@capacitor/core';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { EmergencyNotificationService } from './emergency-notification.service';
 import { UserService } from './user.service';
+import { EmergencyAlert } from '../models/emergency-alert.model';
 
-export interface EmergencyAlert {
-  id?: string;
-  userId: string;
-  userName: string;
-  timestamp: any;
-  location: {
-    latitude: number;
-    longitude: number;
-    accuracy?: number;
-  } | null;
-  responderLocation?: {
-    latitude: number;
-    longitude: number;
-    accuracy?: number;
-  };
-  allergies?: string[];
-  instruction?: string;
-  emergencyInstruction?: string;
-  status: 'active' | 'responding' | 'resolved';
-  buddyIds: string[];
-  responderId?: string;
-  responderName?: string;
-  estimatedArrival?: number;
-  responseTimestamp?: any;
-  distance?: number;
-  displayAddress?: string;
-  buddyResponses?: {
-    [buddyId: string]: {
-      status: 'sent' | 'responded' | 'cannot_respond';
-      timestamp: any;
-      name?: string;
-    };
-  };
-}
 
 @Injectable({
   providedIn: 'root'

@@ -31,6 +31,8 @@ interface ResponderInfo {
   emergencyId: string;
 }
 
+type NotificationStatus = 'sending' | 'sent' | 'delivered' | 'failed' | 'pending';
+
 
 @Component({
   selector: 'app-home',
@@ -55,7 +57,7 @@ export class HomePage implements OnDestroy {
   emergencyAddress = '';
   isEmergencyAddressLoading = false;
 
-  notificationStatus: Record<string, 'sending' | 'sent' | 'failed' | 'pending'> = {};
+  notificationStatus: Record<string, NotificationStatus> = {};
 
   respondingBuddy: ResponderInfo | null = null;
   minimizedResponder: ResponderInfo | null = null;
@@ -457,6 +459,13 @@ async restoreActiveEmergency(): Promise<void> {
     this.processBuddyResponses(emergency.buddyResponses, currentUser.uid);
   }
 
+  if (emergency.notificationStatus) {
+  this.notificationStatus = {
+    ...this.notificationStatus,
+    ...emergency.notificationStatus
+  };
+}
+
   if (emergency.status === 'responding' && emergency.responderId) {
     this.respondingBuddy = this.buildResponderInfo(emergency);
   }
@@ -620,6 +629,7 @@ async restoreActiveEmergency(): Promise<void> {
     this.emergencyStartTime = null;
     this.currentEmergencyId = null;
     this.buddyResponses = {};
+    this.notificationStatus = {};
     this.emergencyLocation = null;
     this.emergencyAddress = '';
     this.isEmergencyAddressLoading = false;
@@ -674,9 +684,10 @@ async restoreActiveEmergency(): Promise<void> {
   getNotificationStatus(buddyId: string): string {
     const status = this.resolvedNotificationStatus(buddyId);
     switch (status) {
-      case 'sending': return 'Sending...';
-      case 'sent':    return 'Notified';
-      case 'failed':  return 'Failed';
+      case 'sending':   return 'Sending...';
+      case 'sent':      return 'Notified';
+      case 'delivered': return 'Received';
+      case 'failed':    return 'Failed';
       default:        return 'Pending...';
     }
   }
@@ -684,9 +695,10 @@ async restoreActiveEmergency(): Promise<void> {
   getNotificationStatusColor(buddyId: string): string {
     const status = this.resolvedNotificationStatus(buddyId);
     switch (status) {
-      case 'sending': return 'warning';
-      case 'sent':    return 'success';
-      case 'failed':  return 'danger';
+      case 'sending':   return 'warning';
+      case 'sent':      return 'primary';
+      case 'delivered': return 'success';
+      case 'failed':    return 'danger';
       default:        return 'medium';
     }
   }
@@ -698,7 +710,7 @@ async restoreActiveEmergency(): Promise<void> {
 
   private resolvedNotificationStatus(
     buddyId: string,
-  ): 'sending' | 'sent' | 'failed' | 'pending' {
+  ): NotificationStatus {
     const resolvedId = this.buddyStatusKeyMap.get(buddyId) ?? buddyId;
     return this.notificationStatus[resolvedId] ?? 'pending';
   }

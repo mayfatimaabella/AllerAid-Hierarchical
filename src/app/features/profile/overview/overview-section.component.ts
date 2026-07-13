@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { UserProfile } from '../../../core/services/models/user-profile.model';
+import { UserProfile } from '../../../core/models/user-profile.model';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
