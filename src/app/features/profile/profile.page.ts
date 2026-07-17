@@ -223,6 +223,10 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.activeModal = null;
   }
 
+  async testAudioSettings(): Promise<void> {
+    this.profileVoiceFacade?.onAudioSettingChange();
+  }
+
   getEmergencyInstructionEntries(): { label: string; text: string }[] {
     return this.profileEmergencySettings.getEmergencyInstructionEntries(
       this.profileDataLoader.emergencyInstructionsValue,

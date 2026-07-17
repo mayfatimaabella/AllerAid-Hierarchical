@@ -239,6 +239,8 @@
           [getAudioSourceClass]="profileVoiceFacade.getAudioSourceClass.bind(profileVoiceFacade)"
           [getAudioSourceText]="profileVoiceFacade.getAudioSourceText.bind(profileVoiceFacade)"
           [saveEmergencySettings]="profileEmergencySettings.saveEmergencySettings.bind(profileEmergencySettings)"
+          [profileVoiceFacade]="profileVoiceFacade"
+          [testAudioSettings]="testAudioSettings.bind(this)"
         >
 
         </app-emergency-settings-card>

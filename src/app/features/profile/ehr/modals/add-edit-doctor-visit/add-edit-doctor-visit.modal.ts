@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { EHRService, DoctorVisit } from '../../../../../core/services/ehr.service';
+import { DoctorService } from '../../../../../core/services/doctor.service';
 import { UserService } from '../../../../../core/services/user.service';
 
 @Component({
@@ -51,6 +52,7 @@ export class AddDoctorVisitModal implements OnInit {
     private modalCtrl: ModalController,
     private ehrService: EHRService,
     private userService: UserService,
+    private doctorService: DoctorService,
     private toastController: ToastController
   ) {}
 
@@ -100,18 +102,26 @@ export class AddDoctorVisitModal implements OnInit {
 
   async loadAvailableDoctors() {
     try {
-  
-      const doctors = await this.userService.getDoctors();
-      this.availableDoctors = doctors.map(doctor => ({
-        name: `Dr. ${doctor.firstName} ${doctor.lastName}`,
-        specialty: doctor.specialty || 'General Medicine',
-        email: doctor.email
-      }));
-     
+      const currentUser = await this.userService.getCurrentUserProfile();
+      if (!currentUser?.uid) {
+        this.availableDoctors = [];
+        this.doctorInputMode = 'manual';
+        return;
+      }
+
+      const connectedDoctors = await this.doctorService.getUserDoctors(currentUser.uid);
+      this.availableDoctors = connectedDoctors
+        .filter((doctor: any) => doctor?.doctorEmail)
+        .map((doctor: any) => ({
+          name: doctor.doctorName || `Dr. ${doctor.doctorEmail}`,
+          specialty: doctor.specialization || doctor.specialty || 'General Medicine',
+          email: doctor.doctorEmail
+        }));
+
       this.availableDoctors.sort((a, b) => a.name.localeCompare(b.name));
     } catch (error) {
       console.error('Error loading available doctors:', error);
-      
+      this.availableDoctors = [];
       this.doctorInputMode = 'manual';
     }
   }

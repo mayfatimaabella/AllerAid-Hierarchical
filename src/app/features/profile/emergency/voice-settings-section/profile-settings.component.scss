@@ -9,7 +9,7 @@
 .voice-audio-settings {
   h4 {
     margin: 0 0 8px 0;
-    color: var(--ion-color-primary);
+    color: #036a5d;
     font-weight: 600;
   }
 
@@ -36,7 +36,7 @@
 
 .setting-info {
   flex: 1;
-  min-width: 0;
+  min-width: 200px;
 
   label {
     display: block;
@@ -54,5 +54,15 @@
 
 ion-select,
 ion-range {
-  min-width: 120px;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+ion-range {
+  --bar-background: #d7d8da;
+  --bar-background-active: #0c6f56;
+  --bar-height: 4px;
+  --bar-border-radius: 999px;
+  --knob-background: #0c6f56;
+  --knob-size: 20px;
 }

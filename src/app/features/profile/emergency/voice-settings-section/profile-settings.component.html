@@ -31,29 +31,5 @@
         <ion-label slot="end">2.0x</ion-label>
       </ion-range>
     </div>
-
-    <div class="setting-item">
-      <div class="setting-info">
-        <label>Volume ({{ (profileVoiceFacade.audioSettings.volume * 100).toFixed(0) }}%)</label>
-        <p>Audio playback volume</p>
-      </div>
-      <ion-range [(ngModel)]="profileVoiceFacade.audioSettings.volume"
-                 (ionChange)="profileVoiceFacade.onAudioSettingChange()"
-                 min="0"
-                 max="1"
-                 step="0.1"
-                 pin="true">
-        <ion-label slot="start">0%</ion-label>
-        <ion-label slot="end">100%</ion-label>
-      </ion-range>
-    </div>
-
-    <ion-button (click)="testAudioSettings()"
-                expand="block"
-                fill="outline"
-                color="secondary">
-      <ion-icon name="volume-high" slot="start"></ion-icon>
-      Test Audio Settings
-    </ion-button>
   </div>
 </div>
