@@ -716,6 +716,7 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       }
 
       const data = await response.json();
+      console.log('Patient address:', data.display_name);
 
       this.address = data?.display_name || `${lat}, ${lng}`;
       this.patientAddress = this.address;

@@ -46,7 +46,7 @@ const routes: Routes = [
         path: 'emergencies',
         loadChildren: () => import('../../features/buddy/pages/emergencies/emergencies.module').then(m => m.EmergenciesPageModule),
         canActivate: [RoleGuard],
-        data: { roles: ['user', 'buddy'] }
+        data: { roles: ['user'] }
       },
       
       // Doctor Routes
@@ -60,13 +60,13 @@ const routes: Routes = [
         path: 'responder-dashboard',
         loadChildren: () => import('../../features/dashboard/responder-dashboard/responder-dashboard.module').then(m => m.ResponderDashboardPageModule),
         canActivate: [RoleGuard],
-        data: { roles: ['buddy'] }
+        data: { roles: ['user'] }
       },
       {
         path: 'responder-map',
         loadChildren: () => import('../../features/emergency/responder-map/responder-map.module').then(m => m.ResponderMapPageModule),
         canActivate: [RoleGuard],
-        data: { roles: ['buddy'] }
+        data: { roles: ['user'] }
       },
       {
         path: 'doctor-profile',
@@ -102,11 +102,6 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: ['user'] }
       }
-      // {
-      //   path: '',
-      //   redirectTo: '/tabs/home',
-      //   pathMatch: 'full'
-      // }
     ]
   }
 ];

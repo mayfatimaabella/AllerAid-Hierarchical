@@ -5,12 +5,8 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { Subject } from 'rxjs';
 import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
-import {
-  doc,
-  setDoc,
-  serverTimestamp,
-  arrayUnion
-} from 'firebase/firestore';
+import { doc,setDoc,serverTimestamp,arrayUnion,collection,getDocs,writeBatch,arrayRemove} from 'firebase/firestore';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +23,8 @@ export class PushNotificationService {
 
   constructor(
     private authService: AuthService,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
+    private router: Router
   ) {}
 
   async init(): Promise<void> {
@@ -87,7 +84,13 @@ export class PushNotificationService {
         return;
       }
 
-      const db = this.firebaseService.getDb();
+          const db = this.firebaseService.getDb();
+
+      // Ensure this device token belongs to only one user.
+      await this.removeTokenFromOtherUsers(
+        token.value,
+        currentUser.uid
+      );
 
       await setDoc(
         doc(db, `users/${currentUser.uid}`),
@@ -146,7 +149,10 @@ export class PushNotificationService {
       const data = notification.notification.data;
 
       if (data?.type === 'emergency' && data?.emergencyId) {
-        window.location.href = `/tabs/responder-dashboard?emergency=${data.emergencyId}`;
+        this.router.navigate(['/tabs/responder-dashboard'],{
+          queryParams: {emergency: data.emergencyId}
+  }
+);
       }
     });
 
@@ -156,14 +162,13 @@ export class PushNotificationService {
       const data = notification.notification.extra;
 
     if (data?.type === 'emergency' && data?.emergencyId) {
-      window.location.href = `/tabs/responder-dashboard?emergency=${data.emergencyId}`;
+      this.router.navigate(['/tabs/responder-dashboard'], {
+        queryParams: { emergency: data.emergencyId }
+      });
     }
   });
   }
 
-  // Writes a first-hand confirmation that THIS device actually received
-  // the payload — a real signal, unlike the sender-side FCM "sent" status,
-  // which only confirms handoff to FCM, not that the buddy's app saw it.
   private async acknowledgeDelivery(emergencyId: string): Promise<void> {
     try {
       const currentUser = await this.authService.waitForAuthInit();
@@ -189,4 +194,46 @@ export class PushNotificationService {
       console.warn('Could not write delivery acknowledgment:', error);
     }
   }
+
+  private async removeTokenFromOtherUsers(
+  token: string,
+  currentUserId: string
+): Promise<void> {
+
+  const db = this.firebaseService.getDb();
+
+  const snapshot = await getDocs(collection(db, 'users'));
+
+  const batch = writeBatch(db);
+
+  snapshot.forEach(userDoc => {
+    if (userDoc.id === currentUserId) {
+      return;
+    }
+
+    const data = userDoc.data();
+
+    const pushTokens = Array.isArray(data['pushTokens'])
+      ? data['pushTokens']
+      : [];
+
+    if (pushTokens.includes(token)) {
+      batch.update(userDoc.ref, {
+        pushTokens: arrayRemove(token)
+      });
+
+      if (data['fcmToken'] === token) {
+        batch.update(userDoc.ref, {
+          fcmToken: null
+        });
+      }
+
+      console.log(
+        `Removed duplicate token from user ${userDoc.id}`
+      );
+    }
+  });
+
+  await batch.commit();
+}
 }

@@ -146,6 +146,7 @@ export class ScanPage {
             allergens: this.ingredientsToWatch,
             date: new Date().toISOString(),
             image_url: product.image_url || 'assets/img/placeholder.png',
+            ingredients_text: product.ingredients_text || 'Ingredients unavailable.',
           };
 
           await this.storageService.addRecentScan(scanEntry);
@@ -194,17 +195,17 @@ export class ScanPage {
   }
 
   viewScan(scan: any) {
-    this.productInfo = {
-      product_name: scan.product_name,
-      brands: scan.brand,
-      ingredients_text: 'Ingredients unavailable — viewed from recent scans.',
-      image_url: scan.image_url,
-    };
-    this.allergenStatus = scan.status;
-    this.ingredientsToWatch = scan.allergens || [];
+  this.productInfo = {
+    product_name: scan.product_name,
+    brands: scan.brand,
+    ingredients_text: scan.ingredients_text || 'Ingredients unavailable.',
+    image_url: scan.image_url,
+  };
+  this.allergenStatus = scan.status;
+  this.ingredientsToWatch = scan.allergens || [];
 
-    this.openScanResultModal();
-  }
+  this.openScanResultModal();
+}
 
   openManualInputModal() {
     this.isManualInputModalOpen = true;

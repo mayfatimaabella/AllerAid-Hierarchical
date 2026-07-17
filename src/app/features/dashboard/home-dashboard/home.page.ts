@@ -31,7 +31,7 @@ interface ResponderInfo {
   emergencyId: string;
 }
 
-type NotificationStatus = 'sending' | 'sent' | 'delivered' | 'failed' | 'pending';
+type NotificationStatus = 'sending' | 'pending' | 'sent' | 'delivered' | 'failed' | 'received_in_app';
 
 
 @Component({
@@ -685,8 +685,10 @@ async restoreActiveEmergency(): Promise<void> {
     const status = this.resolvedNotificationStatus(buddyId);
     switch (status) {
       case 'sending':   return 'Sending...';
-      case 'sent':      return 'Notified';
+      case 'pending':   return 'Pending...';
+      case 'sent':      return 'Push Sent';
       case 'delivered': return 'Received';
+      case 'received_in_app': return 'Received in App';
       case 'failed':    return 'Failed';
       default:        return 'Pending...';
     }
@@ -696,8 +698,10 @@ async restoreActiveEmergency(): Promise<void> {
     const status = this.resolvedNotificationStatus(buddyId);
     switch (status) {
       case 'sending':   return 'warning';
+      case 'pending':   return 'medium';
       case 'sent':      return 'primary';
       case 'delivered': return 'success';
+      case 'received_in_app': return 'info';
       case 'failed':    return 'danger';
       default:        return 'medium';
     }

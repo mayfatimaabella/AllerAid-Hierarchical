@@ -676,10 +676,7 @@ export class EmergencyService {
     try {
       const emergencyRef = doc(this.db, 'emergencies', emergencyId);
 
-      const updateData: any = {
-        status: 'resolved',
-        resolvedAt: Timestamp.now()
-      };
+      const updateData: any = { status: 'resolved', resolvedAt: Timestamp.now()};
 
       if (patientCondition !== undefined) updateData.patientCondition = patientCondition;
       if (resolvedBy) updateData.resolvedBy = resolvedBy;
@@ -727,7 +724,7 @@ export class EmergencyService {
   /** Fetch emergencies for a buddy filtered by status. */
   async getBuddyEmergenciesByStatus(
     buddyId: string,
-    statuses: ('active' | 'responding' | 'resolved')[]
+    statuses: ('active' | 'responding' | 'resolved' | 'cancelled')[]
   ): Promise<EmergencyAlert[]> {
     try {
       const emergenciesRef = collection(this.db, 'emergencies');
@@ -751,7 +748,7 @@ export class EmergencyService {
   /** Fetch emergencies initiated by a user filtered by status. */
   async getUserEmergenciesByStatus(
     userId: string,
-    statuses: ('active' | 'responding' | 'resolved')[]
+    statuses: ('active' | 'responding' | 'resolved' | 'cancelled')[]
   ): Promise<EmergencyAlert[]> {
     try {
       const emergenciesRef = collection(this.db, 'emergencies');

@@ -21,10 +21,9 @@ export class EmergenciesPage implements OnInit, OnDestroy {
   allEmergencies: EmergencyAlert[] = [];
   filteredEmergencies: EmergencyAlert[] = [];
   selectedFilter: string = 'all';
-  selectedTab: string = 'active';
+  selectedTab: string = 'incoming';
   private resolvedEmergencies: EmergencyAlert[] = [];
   private dismissedEmergencyIds = new Set<string>();
-  private dismissedHistoryIds = new Set<string>();
   private emergencySubscription: Subscription | null = null;
   private locationAddressCache = new Map<string, string>();
 
@@ -39,46 +38,54 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     await this.setupRealTimeEmergencyListener();
   }
 
-  ngOnDestroy() {
-    if (this.emergencySubscription) {
-      this.emergencySubscription.unsubscribe();
-    }
+  ngOnDestroy(): void {
+    this.emergencySubscription?.unsubscribe();
   }
 
-  private async setupRealTimeEmergencyListener() {
+  private async setupRealTimeEmergencyListener(): Promise<void> {
+
+    this.emergencySubscription?.unsubscribe();
+    this.emergencySubscription = null;
+
     try {
       const user = await this.authService.waitForAuthInit();
-      if (user) {
+      if (!user) {
+        return;
+      }
 
-        this.buddyService.listenForEmergencyAlerts(user.uid);
+      this.buddyService.listenForEmergencyAlerts(user.uid);
 
-        this.emergencySubscription = this.buddyService.activeEmergencyAlerts$.subscribe(async emergencies => {
+      this.emergencySubscription =
+        this.buddyService.activeEmergencyAlerts$.subscribe(async emergencies => {
 
-          this.resolvedEmergencies = await this.emergencyService.getBuddyEmergenciesByStatus(user.uid, ['resolved']);
+          this.resolvedEmergencies =
+            await this.emergencyService.getBuddyEmergenciesByStatus(
+              user.uid,
+              ['resolved', 'cancelled'] 
+            );
 
-          const userInitiated = await this.emergencyService.getUserEmergenciesByStatus(
-            user.uid,
-            ['active', 'responding', 'resolved']
-          );
+          const userInitiated =
+            await this.emergencyService.getUserEmergenciesByStatus(
+              user.uid,
+              ['active', 'responding', 'resolved', 'cancelled']
+            );
 
           const buddyActive = emergencies
-            .filter(e => (e.status === 'active' || e.status === 'responding'))
+            .filter(e =>
+              e.status === 'active' ||
+              e.status === 'responding'
+            )
             .filter(e => !this.dismissedEmergencyIds.has(e.id!));
 
-          // "Active Emergencies" is the respond-to-others list — the user's
-          // own triggered emergency should never appear here, only in
-          // History. (It previously leaked in via `userActive` below.)
-          const activeMerged = new Map<string, EmergencyAlert>();
-          buddyActive.forEach(e => {
-            if (e.id) {
-              activeMerged.set(e.id, e);
-            }
-          });
-
-          this.activeEmergencies = Array.from(activeMerged.values());
+          this.activeEmergencies = [...buddyActive];
 
           const merged = new Map<string, EmergencyAlert>();
-          [...emergencies, ...this.resolvedEmergencies, ...userInitiated].forEach((e) => {
+
+          [
+            ...emergencies,
+            ...this.resolvedEmergencies,
+            ...userInitiated
+          ].forEach(e => {
             if (e.id) {
               merged.set(e.id, e);
             }
@@ -87,11 +94,12 @@ export class EmergenciesPage implements OnInit, OnDestroy {
           this.allEmergencies = Array.from(merged.values());
 
           await this.populateAddresses(this.allEmergencies);
+
           this.filterEmergencies();
         });
-      }
+
     } catch (error) {
-      console.error('Error setting up emergency listener:', error);
+      console.error(error);
     }
   }
 
@@ -107,7 +115,6 @@ export class EmergenciesPage implements OnInit, OnDestroy {
         this.dismissedEmergencyIds.add(emergency.id);
         this.activeEmergencies = this.activeEmergencies.filter(e => e.id !== emergency.id);
 
-        this.dismissedHistoryIds.add(emergency.id);
         this.filterEmergencies();
       }
     } catch (error) {
@@ -115,36 +122,33 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     }
   }
 
-  filterEmergencies() {
+  filterEmergencies(): void {
     switch (this.selectedFilter) {
-      case 'resolved':
-        this.filteredEmergencies = this.allEmergencies.filter(e => e.status === 'resolved');
+
+      case 'completed':
+        this.filteredEmergencies = this.allEmergencies.filter(
+          e => e.status === 'resolved' || e.status === 'cancelled'
+        );
         break;
-      case 'responding':
-        this.filteredEmergencies = this.allEmergencies.filter(e => e.status === 'responding');
-        break;
+
       case 'dismissed':
         this.filteredEmergencies = this.getDismissedAlertsForCurrentUser();
         break;
-      default:
 
+      case 'all':
+      default: {
         const dismissed = this.getDismissedAlertsForCurrentUser();
         const merged = new Map<string, EmergencyAlert>();
 
-        this.allEmergencies.forEach(e => {
+        [...this.allEmergencies, ...dismissed].forEach(e => {
           if (e.id) {
-            merged.set(e.id, e);
-          }
-        });
-
-        dismissed.forEach(e => {
-          if (e.id) {
-
             merged.set(e.id, e);
           }
         });
 
         this.filteredEmergencies = Array.from(merged.values());
+        break;
+      }
     }
   }
 
@@ -168,15 +172,13 @@ export class EmergenciesPage implements OnInit, OnDestroy {
         const match = this.allEmergencies.find(e => e.id === a.id);
         return {
           id: a.id,
-
-          status: 'dismissed',
+          status: match?.status ?? 'resolved',
+          dismissed: true,
           timestamp: match?.timestamp || a.createdAt,
           location: a.location || match?.location,
           responderId: a.responderId || match?.responderId,
           responderName: a.responderName || match?.responderName,
           userName: match?.userName || a.patientName || 'Unknown',
-          patientId: a.patientId || (match as any)?.patientId,
-          patientName: a.patientName || (match as any)?.patientName
         } as any;
       });
     } catch {
@@ -185,23 +187,36 @@ export class EmergenciesPage implements OnInit, OnDestroy {
   }
 
   getStatusDisplay(emergency: EmergencyAlert): string {
-    if (emergency.id && this.dismissedHistoryIds.has(emergency.id)) {
+    if ((emergency as any).dismissed) {
       return 'dismissed';
     }
+
     return emergency.status;
   }
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'resolved': return 'success';
-      case 'responding': return 'warning';
-      case 'active': return 'danger';
-      case 'dismissed': return 'medium';
-      default: return 'medium';
+      case 'active':
+        return 'danger';
+
+      case 'responding':
+        return 'warning';
+
+      case 'resolved':
+        return 'success';
+
+      case 'cancelled':
+        return 'medium';
+
+      case 'dismissed':
+        return 'dark';
+
+      default:
+        return 'medium';
     }
   }
 
-  async refreshEmergencies() {
+  async refreshEmergencies(): Promise<void> {
     await this.setupRealTimeEmergencyListener();
   }
 
@@ -244,41 +259,60 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     this.router.navigate(['/emergency-details', emergency.id]);
   }
 
-  private async populateAddresses(emergencies: EmergencyAlert[]): Promise<void> {
-    const tasks: Promise<void>[] = [];
+private async populateAddresses(emergencies: EmergencyAlert[]): Promise<void> {
 
-    for (const e of emergencies) {
-      const loc: any = (e as any).location;
-      if (!loc || !loc.latitude || !loc.longitude) {
-        continue;
-      }
+  const tasks: Promise<void>[] = [];
 
-      const key = `${loc.latitude},${loc.longitude}`;
-      if (this.locationAddressCache.has(key)) {
-        (e as any).displayAddress = this.locationAddressCache.get(key);
-        continue;
-      }
+  for (const emergency of emergencies) {
 
-      tasks.push((async () => {
-        try {
-          const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${loc.latitude}&lon=${loc.longitude}`;
-          const response = await fetch(url);
-          const data = await response.json();
-
-          const address: string = data?.display_name || this.getLocationDisplay(loc);
-          this.locationAddressCache.set(key, address);
-          (e as any).displayAddress = address;
-        } catch {
-
-          (e as any).displayAddress = this.getLocationDisplay(loc);
-        }
-      })());
+    if (emergency.displayAddress) {
+      continue;
     }
 
-    if (tasks.length) {
-      await Promise.all(tasks);
+    if (!emergency.location) {
+      continue;
     }
+
+    const { latitude, longitude } = emergency.location;
+
+    const key = `${latitude},${longitude}`;
+
+    const cached = this.locationAddressCache.get(key);
+
+    if (cached) {
+      emergency.displayAddress = cached;
+      continue;
+    }
+
+    tasks.push((async () => {
+
+      try {
+
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+        );
+
+        const data = await response.json();
+
+        const address = data?.display_name ?? this.getLocationDisplay(emergency.location);
+        
+        emergency.displayAddress = address;
+        
+        this.locationAddressCache.set(key, address);
+
+      } catch {
+
+        emergency.displayAddress =
+          this.getLocationDisplay(emergency.location);
+
+      }
+
+    })());
+
   }
+
+  await Promise.all(tasks);
+}
 
   getLocationDisplay(location: any): string {
     if (location && location.latitude && location.longitude) {

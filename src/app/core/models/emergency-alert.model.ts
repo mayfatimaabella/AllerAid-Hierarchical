@@ -41,13 +41,11 @@ export interface EmergencyAlert {
     };
   };
 
-
-  alertType?: 
+  alertType?:
     | 'shake'
     | 'volume-button'
     | 'manual'
     | 'buddy-request';
-
 
   status:
     | 'active'
@@ -55,6 +53,11 @@ export interface EmergencyAlert {
     | 'resolved'
     | 'cancelled';
 
+  /**
+   * UI-only flag.
+   * True when a buddy dismisses an emergency from the Incoming tab.
+   */
+  dismissed?: boolean;
 
   buddyIds: string[];
 
@@ -65,37 +68,34 @@ export interface EmergencyAlert {
 
   estimatedArrival?: number;
   distance?: number;
+
   displayAddress?: string;
 
-
   buddyResponses?: {
-    [buddyId:string]: {
+    [buddyId: string]: {
       status:
         | 'sent'
         | 'responded'
         | 'cannot_respond';
 
-      timestamp:any;
-      name?:string;
-    }
+      timestamp: any;
+      name?: string;
+    };
   };
 
-
-  // PUSH NOTIFICATION STATUS
+  // Push notification status
   notificationStatus?: {
-    [buddyId:string]:
-      | 'sending'
-      | 'pending'
-      | 'sent'
-      | 'delivered'
-      | 'failed';
+    [buddyId: string]:
+    | 'sending'
+    | 'pending'
+    | 'sent'
+    | 'delivered'
+    | 'received_in_app'
   };
-
 
   notificationDeliveredAt?: {
-    [buddyId:string]: any;
+    [buddyId: string]: any;
   };
-
 
   responseTimestamp?: any;
 }

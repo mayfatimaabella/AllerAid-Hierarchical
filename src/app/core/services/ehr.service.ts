@@ -273,35 +273,75 @@ private async getUserInfoForPatient(patientId: string): Promise<any | null> {
   }
 
   async addDoctorVisit(visitData: Omit<DoctorVisit, 'id' | 'patientId'>): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    const cleanedData = {
-      doctorName: visitData.doctorName?.trim() || '',
-      doctorEmail: visitData.doctorEmail?.trim().toLowerCase() || '',
-      specialty: visitData.specialty?.trim() || '',
-      visitDate: visitData.visitDate || new Date().toISOString(),
-      chiefComplaint: visitData.chiefComplaint?.trim() || '',
-      diagnosis: visitData.diagnosis?.trim() || '',
-      notes: visitData.notes?.trim() || '',
-      status: 'pending',
-      patientId: currentUser.uid,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    };
-
-    await addDoc(collection(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'doctorVisits')), cleanedData);
-
-    if (cleanedData.doctorEmail) {
-      await this.autoGrantDoctorAccessByEmail(
-        cleanedData.doctorEmail,
-        cleanedData.doctorName,
-        cleanedData.specialty
-      );
-    } else {
-      await this.autoGrantDoctorAccess(cleanedData.doctorName, cleanedData.specialty);
-    }
+  const currentUser = await this.authService.waitForAuthInit();
+  if (!currentUser) {
+    throw new Error('User not logged in');
   }
+
+  const cleanedData = {
+    doctorName: visitData.doctorName?.trim() || '',
+    doctorEmail: visitData.doctorEmail?.trim().toLowerCase() || '',
+    specialty: visitData.specialty?.trim() || '',
+    visitDate: visitData.visitDate || new Date().toISOString(),
+    chiefComplaint: visitData.chiefComplaint?.trim() || '',
+    diagnosis: visitData.diagnosis?.trim() || '',
+    notes: visitData.notes?.trim() || '',
+    status: 'pending' as const,
+    patientId: currentUser.uid,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+
+  console.log('========== ADD DOCTOR VISIT ==========');
+  console.log('Current User UID:', currentUser.uid);
+  console.log('Writing to:',
+    this.healthRecordsCollectionPath(currentUser.uid, 'doctorVisits')
+  );
+
+  try {
+    console.log('STEP 1: Saving doctor visit...');
+
+    const docRef = await addDoc(
+      collection(
+        this.db,
+        this.healthRecordsCollectionPath(currentUser.uid, 'doctorVisits')
+      ),
+      cleanedData
+    );
+
+    console.log('STEP 2: Doctor visit saved!');
+    console.log('Document ID:', docRef.id);
+
+  } catch (err) {
+    console.error('FAILED WHILE SAVING DOCTOR VISIT');
+    console.error(err);
+    throw err;
+  }
+
+  if (!cleanedData.doctorEmail) {
+    console.log('STEP 3: No doctor email. Skipping automatic access request.');
+    return;
+  }
+
+  try {
+    console.log('STEP 4: Creating automatic access request...');
+
+    await this.autoGrantDoctorAccessByEmail(
+      cleanedData.doctorEmail,
+      cleanedData.doctorName,
+      cleanedData.specialty
+    );
+
+    console.log('STEP 5: Access request created successfully.');
+
+  } catch (err) {
+    console.error('FAILED WHILE CREATING ACCESS REQUEST');
+    console.error(err);
+
+    // Don't fail the whole save because of the access request.
+    // The doctor visit has already been saved successfully.
+  }
+}
 
   async getDoctorVisits(): Promise<DoctorVisit[]> {
     const currentUser = await this.authService.waitForAuthInit();
