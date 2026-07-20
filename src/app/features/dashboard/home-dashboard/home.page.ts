@@ -282,7 +282,7 @@ async sendEmergencyAlert(): Promise<void> {
       return;
     }
 
-    await this.emergencyAlertService.playEmergencyAlarmSound();
+    await this.emergencyAlertService.playEmergencyAlarmSound(this.buildEmergencySpeechText());
 
 this.currentEmergencyId = await this.emergencyService.sendEmergencyAlert(
   currentUser.uid,
@@ -475,7 +475,7 @@ async restoreActiveEmergency(): Promise<void> {
   }
 
   try {
-    await this.emergencyAlertService.playEmergencyAlarmSound();
+    await this.emergencyAlertService.playEmergencyAlarmSound(this.buildEmergencySpeechText());
   } catch (error) {
     console.warn('Could not resume emergency alarm sound:', error);
   }
@@ -620,6 +620,15 @@ async restoreActiveEmergency(): Promise<void> {
     });
 
     await alert.present();
+  }
+
+  private buildEmergencySpeechText(): string {
+    const locationText = this.emergencyAddress ||
+      (this.emergencyLocation
+        ? `${this.emergencyLocation.latitude.toFixed(4)}, ${this.emergencyLocation.longitude.toFixed(4)}`
+        : 'location unavailable');
+
+    return `Emergency alert from ${this.userName || 'the patient'}. ${this.emergencyInstruction || 'No instructions available'}. Patient location is ${locationText}.`;
   }
 
   clearEmergencyState(): void {

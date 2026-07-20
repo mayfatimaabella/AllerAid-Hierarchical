@@ -60,8 +60,9 @@ export interface EmergencyData {
 })
 export class EmergencyAlertService {
 
-  private emergencyAlarmAudio: HTMLAudioElement | null = null;
-  private readonly emergencyAlarmPath = 'assets/sounds/emergency-alarm.mp3';
+  private emergencyAlarmLoopTimer: ReturnType<typeof setInterval> | null = null;
+  private isEmergencyAlarmLooping = false;
+  private readonly defaultEmergencyAlarmText = 'Emergency alert. Please stay calm. Help is on the way.';
 
   constructor(
     private buddyService: BuddyService,
@@ -156,7 +157,9 @@ export class EmergencyAlertService {
 
       console.log('Sending full emergency via EmergencyService from', alertType, 'trigger');
 
-      await this.playEmergencyAlarmSound();
+      await this.playEmergencyAlarmSound(
+        resolvedInstruction || this.defaultEmergencyAlarmText
+      );
 
       await this.emergencyService.sendEmergencyAlert(
         currentUser.uid,
@@ -188,28 +191,88 @@ export class EmergencyAlertService {
     }
   }
 
-  async playEmergencyAlarmSound(): Promise<void> {
+  async playEmergencyAlarmSound(textToSpeak: string = this.defaultEmergencyAlarmText): Promise<void> {
+    this.stopEmergencyAlarmSound();
+
+    const message = textToSpeak?.trim() || this.defaultEmergencyAlarmText;
+    this.isEmergencyAlarmLooping = true;
+
     try {
-      if (!this.emergencyAlarmAudio) {
-        this.emergencyAlarmAudio = new Audio(this.emergencyAlarmPath);
-        this.emergencyAlarmAudio.loop = true;
-        this.emergencyAlarmAudio.volume = 1.0;
-      }
+      await this.speakEmergencyAlarmText(message);
 
-      this.emergencyAlarmAudio.currentTime = 0;
-      await this.emergencyAlarmAudio.play();
+      this.emergencyAlarmLoopTimer = setInterval(() => {
+        void this.speakEmergencyAlarmText(message);
+      }, 8_000);
 
-      console.log('Emergency alarm sound started');
+      console.log('Emergency alarm loop started');
     } catch (error) {
       console.warn('Could not play emergency alarm sound:', error);
     }
   }
 
-  stopEmergencyAlarmSound(): void {
-    if (!this.emergencyAlarmAudio) return;
+  private async speakEmergencyAlarmText(textToSpeak: string): Promise<void> {
+    if (!this.isEmergencyAlarmLooping) {
+      return;
+    }
 
-    this.emergencyAlarmAudio.pause();
-    this.emergencyAlarmAudio.currentTime = 0;
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await TextToSpeech.speak({
+          text: textToSpeak,
+          lang: 'en-US',
+          rate: 0.9,
+          pitch: 1,
+          volume: 1,
+          category: 'playback',
+          queueStrategy: 0,
+        });
+        console.log('Speaking emergency alarm natively:', textToSpeak);
+        return;
+      }
+
+      if (typeof window === 'undefined') {
+        console.warn('Text-to-speech not available: window is undefined');
+        return;
+      }
+
+      const hasSpeechSynthesis = 'speechSynthesis' in window;
+      const hasUtteranceConstructor = typeof SpeechSynthesisUtterance !== 'undefined';
+
+      if (!hasSpeechSynthesis || !hasUtteranceConstructor) {
+        console.warn('Text-to-speech not supported on this device');
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9;
+      utterance.volume = 1.0;
+      utterance.pitch = 1.0;
+
+      window.speechSynthesis.speak(utterance);
+      console.log('Speaking emergency alarm:', textToSpeak);
+    } catch (error) {
+      console.error('Error using text-to-speech for emergency alarm:', error);
+    }
+  }
+
+  stopEmergencyAlarmSound(): void {
+    this.isEmergencyAlarmLooping = false;
+
+    if (this.emergencyAlarmLoopTimer !== null) {
+      clearInterval(this.emergencyAlarmLoopTimer);
+      this.emergencyAlarmLoopTimer = null;
+    }
+
+    if (Capacitor.isNativePlatform()) {
+      void TextToSpeech.stop();
+    }
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
 
     console.log('Emergency alarm sound stopped');
   }

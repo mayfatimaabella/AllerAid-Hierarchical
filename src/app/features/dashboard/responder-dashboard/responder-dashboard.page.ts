@@ -628,7 +628,7 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
       this.address ||
       this.getPatientLocationText();
 
-    const text = `Emergency alert from ${this.currentEmergency.userName}. ${this.displayedEmergencyInstruction}. Patient location is ${locationText}.`;
+    const text = this.buildEmergencySpeechText(locationText);
 
     if (Capacitor.isNativePlatform()) {
       TextToSpeech.speak({
@@ -659,6 +659,10 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
 
     const message = new SpeechSynthesisUtterance(text);
     window.speechSynthesis.speak(message);
+  }
+
+  private buildEmergencySpeechText(locationText: string): string {
+    return `Emergency alert from ${this.currentEmergency?.userName || 'the patient'}. ${this.displayedEmergencyInstruction || 'No instructions available'}. Patient location is ${locationText}.`;
   }
 
   viewPatients() {
