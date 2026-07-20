@@ -76,7 +76,7 @@ export class EmergencyAlertService {
 
   async triggerEmergencyAlert(
     alertType: 'shake' | 'volume-button' | 'manual' = 'manual'
-  ): Promise<void> {
+  ): Promise<string> {
     try {
       const currentUser = await this.authService.waitForAuthInit();
       if (!currentUser) {
@@ -161,7 +161,7 @@ export class EmergencyAlertService {
         resolvedInstruction || this.defaultEmergencyAlarmText
       );
 
-      await this.emergencyService.sendEmergencyAlert(
+      const emergencyId = await this.emergencyService.sendEmergencyAlert(
         currentUser.uid,
         userName,
         buddyIds,
@@ -181,6 +181,7 @@ export class EmergencyAlertService {
         medicalData,
         buddies
       );
+      return emergencyId;
 
     } catch (error) {
       this.stopEmergencyAlarmSound();

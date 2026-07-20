@@ -7,15 +7,17 @@ ion-content {
   --background: #f5fbfa;
 }
 
+.wrapper {
+  width: 100%;
+  max-width: 720px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 4px 0 24px;
+}
+
 .notif-icon {
   width: 23px;
   height: 23px;
-}
-
-.wrapper {
-  min-height: 100%;
-  padding: 4px 0px 24px;
-  background: transparent;
 }
 
 .page-title {
@@ -142,6 +144,7 @@ ion-content {
 }
 
 .circle-button:active {
+  animation: none;
   transform: scale(0.95);
   box-shadow: 0 8px 22px rgba(214, 29, 29, 0.28);
 }
@@ -164,53 +167,6 @@ ion-content {
   color: rgba(255, 255, 255, 0.92);
   font-size: 11px;
   font-weight: 600;
-}
-
-
-//Emergency Active Card
-.emergency-status-card {
-  border-radius: 24px;
-  border: 1px solid rgba(211, 47, 47, 0.18);
-  border-left: 6px solid #d32f2f;
-  box-shadow: 0 10px 24px rgba(211, 47, 47, 0.1);
-  background: #fffafa;
-}
-
-.emergency-status-card ion-card-header {
-  padding-bottom: 8px;
-}
-
-.emergency-title-row {
-  color: #d32f2f;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 17px;
-  font-weight: 900;
-}
-
-.emergency-info p {
-  color: #263633;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.hotline-fallback {
-  margin-top: 16px;
-  padding: 14px;
-  border-radius: 18px;
-  background: #fff4f4;
-  border: 1px solid rgba(211, 47, 47, 0.15);
-}
-
-.hotline-note {
-  color: #8a1f1f !important;
-  font-weight: 700;
-  margin-bottom: 12px !important;
-}
-
-.mt-16 {
-  margin-top: 16px;
 }
 
 //Health Overview
@@ -270,31 +226,6 @@ ion-content {
   letter-spacing: 0.5px;
 }
 
-//Buddy Response List
-.buddy-responses {
-  margin-top: 16px;
-}
-
-.buddy-responses h4 {
-  margin: 0 0 10px;
-  color: #023f37;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.response-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.response-item {
-  padding: 12px;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid rgba(3, 106, 93, 0.1);
-}
-
 .buddy-info {
   display: flex;
   align-items: center;
@@ -302,22 +233,10 @@ ion-content {
   gap: 8px;
 }
 
-.buddy-name {
-  color: #023f37;
-  font-weight: 800;
-  font-size: 14px;
-}
-
 .buddy-status {
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
-}
-
-.response-time {
-  margin-top: 6px;
-  font-size: 11px;
-  color: #6c7c79;
 }
 
 //Mobile
@@ -355,11 +274,6 @@ ion-content {
 //Responsive Dashboard
 
 /* Safe layout for all screens */
-.wrapper {
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-}
 
 /* Small phones */
 @media (max-width: 360px) {
@@ -497,7 +411,8 @@ ion-content {
   }
 
   .circle-button:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(214,29,29,.42);
   }
 
   .emergency-title {
@@ -570,15 +485,6 @@ ion-content {
   }
 }
 
-.clickable-card {
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.clickable-card:active {
-  transform: scale(0.97);
-}
-
 .card-header-row {
   display: flex;
   align-items: center;
@@ -595,5 +501,103 @@ ion-content {
   margin-top: 8px;
   font-size: 12px;
   color: #ffffff;
+  opacity: 0.85;
+}
+
+.emergency-countdown-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(150, 0, 0, .92);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+.countdown-card {
+  width: 90%;
+  max-width: 360px;
+
+  background: white;
+  border-radius: 20px;
+
+  padding: 30px;
+
+  text-align: center;
+}
+
+.countdown-icon {
+  font-size: 70px;
+  margin-bottom: 10px;
+}
+
+.countdown-number {
+  font-size: 80px;
+  font-weight: bold;
+  color: var(--ion-color-danger);
+
+  margin: 20px 0;
+}
+
+.countdown-note {
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.hidden-home {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease;
+}
+
+.clickable-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(3,106,93,.25);
+}
+
+.clickable-card:active {
+  transform: scale(.97);
+}
+
+@keyframes sosPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circle-button,
+  .clickable-card {
+    animation: none;
+    transition: none;
+  }
+}
+
+.time-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.time-text strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.time-text small {
+  font-size: 12px;
   opacity: 0.85;
 }

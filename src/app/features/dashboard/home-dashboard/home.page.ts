@@ -1,5 +1,4 @@
 import { Component, OnDestroy } from '@angular/core';
-import { ToastController, AlertController, LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { BuddyService } from '../../../core/services/buddy.service';
@@ -11,10 +10,9 @@ import { LocationPermissionService } from '../../../core/services/location-permi
 import { Subscription } from 'rxjs';
 import { AllergyManagerService } from '../../../core/services/allergy-manager.service';
 import { AllergyModalService } from '../../profile/profile-services/allergy-modal.service';
-import { ModalController } from '@ionic/angular';
 import { EmergencyAlertService } from '../../../core/services/emergency-alert.service';
+import { AlertController, ToastController } from '@ionic/angular';
 
-const EMERGENCY_CONFIRMATION_SECONDS = 5;
 const HOTLINE_FALLBACK_DELAY_MS = 60_000;
 
 interface BuddyResponse {
@@ -34,6 +32,7 @@ interface ResponderInfo {
 type NotificationStatus = 'sending' | 'pending' | 'sent' | 'delivered' | 'failed' | 'received_in_app';
 
 
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
@@ -45,7 +44,6 @@ export class HomePage implements OnDestroy {
   userBuddies: any[] = [];
   userAllergies: any[] = [];
   userName = '';
-  private currentUserId: string | null = null;
   emergencyInstruction = '';
  
   isEmergencyActive = false;
@@ -68,17 +66,20 @@ export class HomePage implements OnDestroy {
   buddyBannerState: 'none' | 'pending' | 'accepted' = 'none';
   pendingBuddyInviteCount = 0;
 
-  emergencyConfirmationTimeLeft = EMERGENCY_CONFIRMATION_SECONDS;
+  showEmergencyCountdown = false;
+  countdown = 3;
+
+  showEmergencySending = false;
+
+  sendingStep: | 'preparing' | 'location' | 'sending' | 'waiting' | 'done' = 'preparing';
+
+  private countdownTimer: ReturnType<typeof setInterval> | null = null;
 
   private subscriptions: Subscription[] = [];
   private buddyStatusKeyMap = new Map<string, string>();
-  private emergencyConfirmationTimer: ReturnType<typeof setInterval> | null = null;
  
 
   constructor(
-    private alertController: AlertController,
-    private toastController: ToastController,
-    private loadingController: LoadingController,
     private router: Router,
     private authService: AuthService,
     private buddyService: BuddyService,
@@ -89,8 +90,9 @@ export class HomePage implements OnDestroy {
     private allergyManager: AllergyManagerService,
     private allergyModalService: AllergyModalService,
     private locationPermissionService: LocationPermissionService,
-    private modalController: ModalController,
     private emergencyAlertService: EmergencyAlertService,
+    private alertController: AlertController,
+    private toastController: ToastController
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
@@ -107,7 +109,11 @@ export class HomePage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribeAll();
-    this.clearConfirmationTimer();
+      if (this.countdownTimer) {
+    clearInterval(this.countdownTimer);
+     this.countdownTimer = null;
+  }
+
   }
 
   async loadUserData(): Promise<void> {
@@ -120,11 +126,9 @@ export class HomePage implements OnDestroy {
         this.medicalService.getUserMedicalProfile(currentUser.uid),
       ]);
 
-      this.currentUserId = currentUser.uid;
-
       this.userName = userProfile?.fullName ?? 'User';
 
-      this.emergencyInstruction = this.emergencyService.resolveEmergencyInstruction(medicalInfo);
+      this.emergencyInstruction = this.emergencyService.getEmergencyInstruction(medicalInfo);
 
       this.userAllergies = Array.isArray(medicalInfo?.allergies)
         ? medicalInfo.allergies.filter((a: any) => a.checked)
@@ -165,71 +169,31 @@ export class HomePage implements OnDestroy {
       this.presentToast('An emergency alert is already active.', 'warning');
       return;
     }
-    //2. Five second timer for user to cancel
-    this.presentEmergencyConfirmation();
-  }
 
-  async presentEmergencyConfirmation(): Promise<void> {
-    this.clearConfirmationTimer();
-    this.emergencyConfirmationTimeLeft = EMERGENCY_CONFIRMATION_SECONDS;
-
-    const buildMessage = () =>
-      `Your emergency alert is about to be sent. Are you sure?\n\nAuto-sending in: ${this.emergencyConfirmationTimeLeft}s`;
-
-    let alertRef: HTMLIonAlertElement;
-
-    //3. Once the time is up, show alert to confirm; Click 'Send Alert' to send emergency alert
-    alertRef = await this.alertController.create({
-      header: 'EMERGENCY ALERT!',
-      message: buildMessage(),
-      buttons: [
-        {
-          text: 'SEND ALERT',
-          handler: () => {
-            this.clearConfirmationTimer();
-            this.sendEmergencyAlert();
-          },
-        },
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          handler: () => this.clearConfirmationTimer(),
-        },
-      ],
-    });
-
-    await alertRef.present();
-    //Countdown logic
-    this.emergencyConfirmationTimer = setInterval(() => {
-      this.emergencyConfirmationTimeLeft--;
-
-      const el = alertRef?.querySelector?.('.alert-message');
-      if (el) el.textContent = buildMessage();
-
-      if (this.emergencyConfirmationTimeLeft <= 0) {
-        this.clearConfirmationTimer();
-        alertRef.dismiss();
-        this.sendEmergencyAlert();
-      }
-    }, 1000);
-  }
-
-  private clearConfirmationTimer(): void {
-    if (this.emergencyConfirmationTimer !== null) {
-      clearInterval(this.emergencyConfirmationTimer);
-      this.emergencyConfirmationTimer = null;
+    if (this.showEmergencyCountdown) {
+      return;
     }
+
+    //2. Five second timer for user to cancel
+    this.showEmergencyCountdown = true;
+    this.startCountdown();
   }
-  //4. Also check if theres an active alert 
+
 async sendEmergencyAlert(): Promise<void> {
+  this.showEmergencySending = true;
+  this.sendingStep = 'preparing';
   if (this.isEmergencyActive) {
     await this.presentToast('An emergency alert is already active.', 'warning');
+    this.showEmergencySending = false;
     return;
   }
 
   const hasLocationPermission = await this.ensureLocationPermission();
+  this.sendingStep = 'location';
 
   if (!hasLocationPermission) {
+    this.showEmergencySending = false;
+
     await this.presentToast(
       'Location permission is required before sending an emergency alert.',
       'danger'
@@ -237,18 +201,13 @@ async sendEmergencyAlert(): Promise<void> {
     return;
   }
 
-  const loading = await this.loadingController.create({
-    message: 'Getting location and sending emergency alert...',
-    duration: 15_000,
-  });
-
-  await loading.present();
 
   try {
     const currentUser = await this.authService.waitForAuthInit();
 
     if (!currentUser) {
-      await loading.dismiss();
+      
+      this.showEmergencySending = false;
 
       await this.presentToast(
         'You must be logged in to send an emergency alert.',
@@ -261,18 +220,16 @@ async sendEmergencyAlert(): Promise<void> {
 
     const latestMedical = await this.medicalService.getUserMedicalProfile(currentUser.uid);
 
-    this.emergencyInstruction = this.emergencyService.resolveEmergencyInstruction(
-      latestMedical,
-      this.emergencyInstruction
-    );
+    this.emergencyInstruction = this.emergencyService.getEmergencyInstruction(latestMedical,this.emergencyInstruction);
 
-    const buddyIds = this.resolveBuddyIds(currentUser.uid);
-    const allergyStrings = this.resolveAllergyStrings();
+    const buddyIds = this.getBuddyIds(currentUser.uid);
+    const allergyStrings = this.getAllergyStrings();
 
     const locationData = await this.resolveLocation();
 
     if (!locationData) {
-      await loading.dismiss();
+      
+      this.showEmergencySending = false;
 
       await this.presentToast(
         'Could not get your current location. Emergency alert was not sent.',
@@ -284,25 +241,29 @@ async sendEmergencyAlert(): Promise<void> {
 
     await this.emergencyAlertService.playEmergencyAlarmSound(this.buildEmergencySpeechText());
 
-this.currentEmergencyId = await this.emergencyService.sendEmergencyAlert(
-  currentUser.uid,
-  this.userName,
-  buddyIds,
-  allergyStrings,
-  this.emergencyInstruction,
-  locationData
-);
+    this.sendingStep = 'sending';
+    this.currentEmergencyId = await this.emergencyService.sendEmergencyAlert(
+        currentUser.uid,
+        this.userName,
+        buddyIds,
+        allergyStrings,
+        this.emergencyInstruction,
+        locationData
+      );
 
 
 this.activateEmergencyState(locationData);
 this.seedInitialBuddyResponses(currentUser.uid);
 this.listenForEmergencyResponses();
 
-    await loading.dismiss();
+    this.sendingStep = 'waiting';
+
     await this.notifyUserAfterSend(buddyIds);
+    this.showEmergencySending = false;
 
   } catch (error) {
-    await loading.dismiss();
+
+    this.showEmergencySending = false;
 
     this.emergencyAlertService.stopEmergencyAlarmSound();
 
@@ -338,7 +299,7 @@ this.listenForEmergencyResponses();
     }
   }
 
-  private resolveBuddyIds(currentUid: string): string[] {
+  private getBuddyIds(currentUid: string): string[] {
     return Array.from(new Set(
       this.userBuddies
         .map(b => b.buddyUid || b.id)
@@ -346,10 +307,8 @@ this.listenForEmergencyResponses();
     ));
   }
 
-  private resolveAllergyStrings(): string[] {
-    return this.userAllergies
-      .map((a: any) => a.label || a.name || '')
-      .filter(Boolean);
+  private getAllergyStrings(): string[] {
+    return this.userAllergies.map((a: any) => a.label || a.name || '').filter(Boolean);
   }
 
   private async resolveLocation(): Promise<{ latitude: number; longitude: number; accuracy?: number } | null> {
@@ -481,6 +440,7 @@ async restoreActiveEmergency(): Promise<void> {
   }
 
   this.listenForEmergencyResponses();
+  
 }
 
   listenForEmergencyResponses(): void {
@@ -841,5 +801,66 @@ async restoreActiveEmergency(): Promise<void> {
       this.buddyBannerState = 'none';
     }
   }
+
+  startCountdown(): void {
+
+  this.countdown = 3;
+
+  if (this.countdownTimer) {
+    clearInterval(this.countdownTimer);
+  }
+
+  this.countdownTimer = setInterval(() => {
+
+    this.countdown--;
+
+    if (this.countdown <= 0) {
+
+      clearInterval(this.countdownTimer!);
+      this.countdownTimer = null;
+
+      this.showEmergencyCountdown = false;
+
+      this.sendEmergencyAlert();
+    }
+
+  }, 1000);
+
+}
+
+cancelEmergencyCountdown(): void {
+
+  if (this.countdownTimer) {
+    clearInterval(this.countdownTimer);
+    this.countdownTimer = null;
+  }
+
+  this.showEmergencyCountdown = false;
+
+}
+
+getEmergencyDuration(): string {
+  if (!this.emergencyStartTime) {
+    return 'Just now';
+  }
+
+  const elapsed = Math.floor(
+    (Date.now() - this.emergencyStartTime.getTime()) / 1000
+  );
+
+  if (elapsed < 60) {
+    return `${elapsed} sec ago`;
+  }
+
+  const minutes = Math.floor(elapsed / 60);
+
+  if (minutes < 60) {
+    return `${minutes} min ago`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+
+  return `${hours} hr ${minutes % 60} min ago`;
+}
 
 }

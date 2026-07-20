@@ -54,14 +54,9 @@ export class EmergencyService {
     this.db = getFirestore(app);
   }
 
-  resolveEmergencyInstruction(medicalProfile: any, fallback: string = ''): string {
+  getEmergencyInstruction(medicalProfile: any, fallback: string = ''): string {
     const fromMessage = (medicalProfile as any)?.emergencyMessage?.instructions;
-    return (
-      (typeof fromMessage === 'string' && fromMessage.trim()) ||
-      medicalProfile?.generalEmergencyInstruction?.trim() ||
-      fallback ||
-      ''
-    );
+    return ((typeof fromMessage === 'string' && fromMessage.trim()) || medicalProfile?.generalEmergencyInstruction?.trim() || fallback);
   }
 
   /**

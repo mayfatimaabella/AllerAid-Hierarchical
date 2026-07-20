@@ -20,8 +20,135 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div class="wrapper scrollable-content">
+<ion-content class="ion-padding" [scrollY]="!(showEmergencyCountdown || showEmergencySending || isEmergencyActive)">
+
+    <div
+    class="emergency-countdown-overlay"
+    *ngIf="showEmergencyCountdown">
+
+    <div class="countdown-card">
+
+      <ion-icon
+        name="warning"
+        color="danger"
+        class="countdown-icon">
+      </ion-icon>
+
+      <h1>Emergency Alert</h1>
+
+      <p>Sending emergency alert in</p>
+
+      <div class="countdown-number">
+        {{ countdown }}
+      </div>
+
+      <p class="countdown-note">
+         Tap <strong>Cancel</strong> if this was accidental. Otherwise, your emergency contacts will receive your location and emergency information.
+        </p>
+
+
+      <ion-button
+        expand="block"
+        color="medium"
+        (click)="cancelEmergencyCountdown()"> 
+        Cancel Alert
+      </ion-button>
+
+    </div>
+
+
+  </div>
+
+  <!-- Sending Emergency Overlay -->
+  <div
+    class="emergency-progress-overlay"
+    *ngIf="showEmergencySending">
+
+    <div class="progress-card">
+
+      <div class="progress-header">
+        <ion-spinner color="danger"></ion-spinner>
+
+        <h2>Sending Emergency Alert</h2>
+
+        <p>
+          Please keep the app open while we notify your emergency contacts.
+        </p>
+      </div>
+
+      <div class="progress-steps">
+
+        <div
+          class="progress-step"
+          [class.completed]="sendingStep !== 'preparing'">
+
+          <ion-icon
+            [name]="sendingStep === 'preparing'
+              ? 'ellipse'
+              : 'checkmark-circle'">
+          </ion-icon>
+
+          <span>Preparing emergency information</span>
+
+        </div>
+
+        <div
+          class="progress-step"
+          [class.active]="sendingStep === 'location'"
+          [class.completed]="sendingStep === 'sending' || sendingStep === 'waiting'">
+
+          <ion-icon
+            [name]="sendingStep === 'location'
+              ? 'location'
+              : 'checkmark-circle'">
+          </ion-icon>
+
+          <span>Getting your location</span>
+
+        </div>
+
+        <div
+          class="progress-step"
+          [class.active]="sendingStep === 'sending'"
+          [class.completed]="sendingStep === 'waiting'">
+
+          <ion-icon
+            [name]="sendingStep === 'sending'
+              ? 'paper-plane'
+              : 'checkmark-circle'">
+          </ion-icon>
+
+          <span>Sending emergency alerts</span>
+
+        </div>
+
+        <div
+          class="progress-step"
+          [class.active]="sendingStep === 'waiting'">
+
+          <ion-spinner
+            *ngIf="sendingStep === 'waiting'"
+            name="dots">
+          </ion-spinner>
+
+          <ion-icon
+            *ngIf="sendingStep !== 'waiting'"
+            name="time">
+          </ion-icon>
+
+          <span>Waiting for buddy responses</span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- FULLSCREEN EMERGENCY DASHBOARD -->
+
+  <div class="wrapper scrollable-content" [class.hidden-home]="isEmergencyActive">
     <h2 class="page-title">Welcome, {{ userName }}!</h2>
 
         <div *ngIf="showAllergyBanner" class="buddy-banner allergy-banner">
@@ -135,96 +262,6 @@
     >
     </app-emergency-response-notification>
 
-    <!-- Emergency Status Card -->
-    <ion-card *ngIf="isEmergencyActive" class="emergency-status-card">
-      <ion-card-header>
-        <ion-card-title class="emergency-title-row">
-          <ion-icon name="alert-circle" color="danger"></ion-icon>  
-          EMERGENCY ACTIVE
-        </ion-card-title>
-        <ion-card-subtitle>Started: {{ emergencyStartTime | date: 'short' }}</ion-card-subtitle>
-      </ion-card-header>
-
-      <ion-card-content>
-        <div class="emergency-info">
-          <p>
-            <strong>Location:</strong>
-            <span *ngIf="isEmergencyAddressLoading">Resolving address...</span>
-            <span *ngIf="!isEmergencyAddressLoading && emergencyAddress">{{ emergencyAddress }}</span>
-            <span *ngIf="!isEmergencyAddressLoading && !emergencyAddress && emergencyLocation">
-              {{ emergencyLocation.latitude.toFixed(4) }}, {{ emergencyLocation.longitude.toFixed(4) }}
-            </span>
-            <span *ngIf="!emergencyLocation && !isEmergencyAddressLoading">Updating...</span>
-          </p>
-
-          <div class="buddy-responses" *ngIf="hasBuddyResponses()">
-            <h4>Buddy Responses & Notifications:</h4>
-            <div class="response-list">
-              <div *ngFor="let buddyId of getObjectKeys(buddyResponses)" class="response-item">
-                <div class="buddy-info">
-                <span class="buddy-name">{{ buddyResponses[buddyId].name }}</span>
-
-                <div class="buddy-response-message">
-                  <span *ngIf="buddyResponses[buddyId].status === 'cannot_respond'">
-                    {{ buddyResponses[buddyId].name }} declined the emergency alert.
-                  </span>
-
-                  <span *ngIf="buddyResponses[buddyId].status === 'responded'">
-                    {{ buddyResponses[buddyId].name }} is responding.
-                  </span>
-
-                  <span *ngIf="buddyResponses[buddyId].status === 'sent'">
-                    Waiting for {{ buddyResponses[buddyId].name }} to respond.
-                  </span>
-                </div>
-
-                <div class="buddy-status">
-                    <ion-badge class="status-badge" [color]="getBuddyResponseColor(buddyId)">
-                      {{ getBuddyResponseStatus(buddyId) }}
-                    </ion-badge>
-                    <ion-badge
-                      *ngIf="shouldShowNotificationBadge(buddyId)"
-                      class="notification-badge"
-                      [color]="getNotificationStatusColor(buddyId)">
-                      {{ getNotificationStatus(buddyId) }}
-                    </ion-badge>
-                  </div>
-                </div>
-                <div class="response-time">
-                  {{ buddyResponses[buddyId].timestamp | date: 'short' }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="hotline-fallback" *ngIf="shouldShowHotlineFallback()">
-            <p class="hotline-note">
-              No available responders at the moment. Please contact emergency services.
-            </p>
-            <ion-button expand="block" color="danger" (click)="callNumber('911')">
-              <ion-icon name="call-outline" slot="start"></ion-icon>
-              Call 911
-            </ion-button>
-            <ion-button expand="block" color="warning" (click)="callNumber('117')">
-              <ion-icon name="call-outline" slot="start"></ion-icon>
-              Call 117
-            </ion-button>
-            <ion-button expand="block" color="medium" (click)="callNumber('143')">
-              <ion-icon name="call-outline" slot="start"></ion-icon>
-              Call Red Cross 143
-            </ion-button>
-          </div>
-
-          <div class="emergency-actions">
-            <ion-button class="mt-16" expand="block" color="success" (click)="resolveEmergency()">
-              <ion-icon name="checkmark-circle" slot="start"></ion-icon>
-              Help Completed
-            </ion-button>
-          </div>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
 <div class="health-overview-container">
 
   <ion-card
@@ -274,5 +311,157 @@
   </ion-card>
 
 </div>
+  </div>
+
+<!-- FULLSCREEN EMERGENCY DASHBOARD -->
+
+  <div 
+  class="emergency-dashboard-overlay" 
+  *ngIf="isEmergencyActive">
+    <div class="dashboard-header">
+      <div class="pulse-ring"></div>
+
+      <ion-icon name="alert-circle" color="danger"></ion-icon>
+      <h1>Emergency Active</h1>
+
+      <div class="emergency-time"> 
+        <ion-icon name="time-outline"></ion-icon>
+          <div class="time-text">
+            <strong>Emergency Active</strong>
+            <small>{{ getEmergencyDuration() }}</small>
+          </div>
+      </div>
+
+      <p>
+        Your emergency alert has been sent.
+        Stay calm while help is on the way.
+      </p>
+
+    </div>
+
+    <!-- Location -->
+
+    <div class="dashboard-card">
+      <h3>
+        <ion-icon name="location"></ion-icon>
+        Current Location
+      </h3>
+
+      <p *ngIf="isEmergencyAddressLoading">
+        Resolving address...
+      </p>
+
+      <div class="location-address"
+        *ngIf="!isEmergencyAddressLoading && emergencyAddress">
+
+        <ion-icon name="navigate"></ion-icon>
+        <span>{{ emergencyAddress }}</span>
+
+      </div>
+
+        <div
+          class="location-address"
+          *ngIf="!isEmergencyAddressLoading && !emergencyAddress && emergencyLocation">
+
+          <ion-icon name="locate"></ion-icon>
+
+          <span>
+            {{ emergencyLocation.latitude.toFixed(5) }},
+            {{ emergencyLocation.longitude.toFixed(5) }}
+          </span>
+
+        </div>
+
+        </div>
+
+    <!-- Buddy Responses -->
+
+<div class="dashboard-card">
+
+  <h3>
+    <ion-icon name="people"></ion-icon>
+    Buddy Responses
+  </h3>
+
+<ng-container *ngIf="hasBuddyResponses(); else waitingBuddies">
+
+  <div
+    *ngFor="let buddyId of getObjectKeys(buddyResponses)"
+    class="buddy-card">
+
+    <div class="buddy-info">
+
+      <ion-avatar class="buddy-avatar">
+        <ion-icon name="person"></ion-icon>
+      </ion-avatar>
+
+      <div class="buddy-details">
+        <strong>{{ buddyResponses[buddyId].name }}</strong>
+
+        <small>
+          {{ buddyResponses[buddyId].timestamp | date:'shortTime' }}
+        </small>
+      </div>
+
+    </div>
+
+    <div class="buddy-status">
+
+      <ion-badge [color]="getBuddyResponseColor(buddyId)">
+        {{ getBuddyResponseStatus(buddyId) }}
+      </ion-badge>
+
+      <ion-badge
+        *ngIf="shouldShowNotificationBadge(buddyId)"
+        [color]="getNotificationStatusColor(buddyId)">
+        {{ getNotificationStatus(buddyId) }}
+      </ion-badge>
+
+    </div>
+
+  </div>
+
+</ng-container>
+
+  <ng-template #waitingBuddies>
+    <div class="waiting-card">
+      <ion-spinner></ion-spinner>
+      <p>Waiting for your buddies to respond...</p>
+    </div>
+  </ng-template>
+
+</div>
+
+    <!-- Hotline -->
+
+    <div class="dashboard-card" *ngIf="shouldShowHotlineFallback()">
+
+      <h3><ion-icon name="call"></ion-icon>
+        Emergency Hotline
+      </h3>
+
+      <ion-button expand="block" color="danger" (click)="callNumber('911')">
+        Call 911
+      </ion-button>
+
+      <ion-button expand="block" color="warning" (click)="callNumber('117')">
+        Call 117
+      </ion-button>
+
+      <ion-button expand="block" color="medium" (click)="callNumber('143')">
+        Call Red Cross
+      </ion-button>
+
+    </div>
+
+    <!-- Bottom Button -->
+
+    <div class="dashboard-footer">
+      <ion-button expand="block" color="success" size="large" (click)="resolveEmergency()">
+        <ion-icon slot="start" name="checkmark-circle"></ion-icon>
+        Resolve Emergency
+      </ion-button>
+    </div>
+
   </div>
 </ion-content>
