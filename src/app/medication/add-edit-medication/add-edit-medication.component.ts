@@ -106,6 +106,13 @@ export class AddEditMedicationComponent implements OnInit {
       if (!this.med.strength) this.med.strength = '';
       if (!this.med.customMedicationType) this.med.customMedicationType = '';
 
+      // Ensure refillsRemaining has a real numeric baseline before any
+      // recalculation runs below (loadMedication can run before quantity
+      // and refillsRemaining have ever been synced for older records).
+      if (this.med.refillsRemaining === null || this.med.refillsRemaining === undefined) {
+        this.med.refillsRemaining = this.med.quantity ?? 0;
+      }
+
       if (this.med.startDate) {
         this.med.startDate = new Date(this.med.startDate).toISOString();
         this.extractStartTimeFromDate();
@@ -182,15 +189,43 @@ export class AddEditMedicationComponent implements OnInit {
     }
   }
 
+  /**
+   * Recalculates total pill quantity from dose/interval/duration.
+   *
+   * IMPORTANT: also keeps `refillsRemaining` in sync with `quantity`.
+   * `refillsRemaining` defaults to 0 on the form model, and the list page
+   * (medication.page.ts) computes remaining stock as:
+   *   medication.refillsRemaining ?? medication.quantity ?? 0
+   * Because `??` only falls through on null/undefined (not on 0), a
+   * medication whose refillsRemaining was never set to anything but its
+   * initial 0 would always show "Completed", regardless of a valid
+   * quantity/expiry/start date. This sync prevents that.
+   *
+   * We only overwrite refillsRemaining when:
+   *  - this is a brand new medication (not edit mode), or
+   *  - the computed quantity actually changed from what it was
+   *    (i.e. the user edited dose/interval/duration - a real regimen
+   *    change that should reset the remaining pill count).
+   * This avoids silently resetting a partially-consumed course's
+   * remaining count every time the edit page loads/recalculates.
+   */
   private calculateTotalPills(): void {
     const interval = Number(this.med.intervalHours) || 24;
     const duration = Number(this.med.durationDays) || 0;
     const perDose = Number(this.med.pillsPerDose) || 0;
 
+    const previousQuantity = Number(this.med.quantity) || 0;
+
     if (interval > 0 && duration > 0 && perDose > 0) {
       this.med.quantity = Math.ceil((24 / interval) * duration * perDose);
     } else {
       this.med.quantity = 0;
+    }
+
+    const quantityChanged = this.med.quantity !== previousQuantity;
+
+    if (!this.isEditMode || quantityChanged) {
+      this.med.refillsRemaining = this.med.quantity;
     }
   }
 
