@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController, AlertController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MedicationService, Medication } from 'src/app/core/services/medication.service';
+import { MedicationReminderService } from 'src/app/core/services/medication-reminder.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -47,6 +48,7 @@ export class MedicationPage implements OnInit {
 
   constructor(
     private medService: MedicationService,
+    private reminderService: MedicationReminderService,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
     private router: Router,
@@ -244,6 +246,13 @@ export class MedicationPage implements OnInit {
           handler: async () => {
             try {
               await this.medService.deleteMedication(medication.id!);
+
+              // FIX: cancel any pending native reminders for this medication.
+              // Previously nothing did this, so a deleted medication could
+              // keep firing reminders that reference a Firestore document
+              // that no longer exists.
+              await this.reminderService.cancelForMedication(medication.id!);
+
               this.showToast('Medication deleted successfully!', 'success');
             } catch (error) {
               console.error('Error deleting medication:', error);
@@ -266,7 +275,22 @@ export class MedicationPage implements OnInit {
     }
     try {
       await this.medService.toggleMedicationStatus(medication.id!);
-      const newStatus = medication.isActive ? 'Inactive' : 'Active';
+      const newIsActive = !medication.isActive;
+
+      // FIX: keep native reminders in sync with the toggled status.
+      // Previously toggling active/inactive only updated Firestore -
+      // pausing a medication never actually stopped its reminders, and
+      // reactivating it never resumed them.
+      if (newIsActive) {
+        await this.reminderService.scheduleForMedication({
+          ...medication,
+          isActive: true
+        });
+      } else {
+        await this.reminderService.cancelForMedication(medication.id!);
+      }
+
+      const newStatus = newIsActive ? 'Active' : 'Inactive';
       this.showToast(`Medication marked as ${newStatus}`, 'success');
     } catch (error) {
       console.error('Error toggling medication status:', error);

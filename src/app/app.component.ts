@@ -5,6 +5,7 @@ import { AuthService } from './core/services/auth.service';
 import { UserService } from './core/services/user.service';
 import { PatientNotificationService } from './core/services/patient-notification.service';
 import { MedicationReminderService } from './core/services/medication-reminder.service';
+import { MedicationService } from './core/services/medication.service';
 import { PushNotificationService } from './core/services/push-notification.service';
 
 @Component({
@@ -23,7 +24,8 @@ export class AppComponent implements OnInit {
     private router: Router,
     private patientNotificationService: PatientNotificationService,
     private pushNotificationService: PushNotificationService,
-    private medicationReminderService: MedicationReminderService
+    private medicationReminderService: MedicationReminderService,
+    private medicationService: MedicationService
   ) {
     // this.allergyService.resetAllergyOptions();
     // Initialize emergency detection on app startup
@@ -100,11 +102,28 @@ export class AppComponent implements OnInit {
 
   private async initializeMedicationNotifications() {
     // Wait for user authentication
-    this.authService.getCurrentUser$().subscribe((user) => {
+    this.authService.getCurrentUser$().subscribe(async (user) => {
       if (user) {
         // Start listening for medication notifications when user is authenticated
         this.medicationReminderService.startListeningForNotifications();
         console.log('Medication notification listener initialized');
+
+        // FIX: restore/reschedule reminders for every existing medication
+        // on login/launch. Previously only startListeningForNotifications()
+        // was called here, which just wires up the TAKEN/SKIP action
+        // listeners - it does not queue any actual notifications. Without
+        // this, a medication only ever got its reminder scheduled at the
+        // moment it was created or edited in that same session; anything
+        // created before, or if the app was reinstalled/notifications were
+        // cleared by the OS, would silently have no reminders at all.
+        try {
+          const meds = await this.medicationService.getUserMedications();
+          const activeMeds = meds.filter(m => m.isActive && (m.quantity ?? 0) > 0);
+          await this.medicationReminderService.rescheduleAll(activeMeds);
+          console.log(`Rescheduled reminders for ${activeMeds.length} active medication(s)`);
+        } catch (error) {
+          console.error('Error rescheduling medication reminders on startup:', error);
+        }
       } else {
         // Stop listening when user logs out
         this.medicationReminderService.stopListeningForNotifications();

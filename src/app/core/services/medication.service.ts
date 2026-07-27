@@ -122,7 +122,7 @@ export class MedicationService {
     }
   }
 
-  async recordReminderAction(medicationId: string, action: 'taken' | 'skipped' | 'opened'): Promise<void> {
+  async recordReminderAction(medicationId: string, action: 'taken' | 'skipped' | 'opened'): Promise<{ updatedQuantity: number; status: string; isActive: boolean } | void> {
     console.log(`DEBUG MedicationService: Recording action '${action}' for ${medicationId}`);
     const uid = await this.getUid();
     const medRef = doc(this.db, `users/${uid}/medications/${medicationId}`);
@@ -143,9 +143,15 @@ export class MedicationService {
       
       // Set status correctly: Completed if no pills left, otherwise Ongoing (even if was Overdue)
       updateData.status = updatedQty <= 0 ? 'Completed' : 'Ongoing';
+      updateData.isActive = updatedQty > 0;
       
-      if (updatedQty <= 0) updateData.isActive = false;
       console.log(`DEBUG MedicationService: Pill count updated to ${updatedQty}`);
+
+      await updateDoc(medRef, updateData);
+      console.log(`DEBUG MedicationService: Action recorded in Firestore.`);
+      await this.refreshMedications();
+
+      return { updatedQuantity: updatedQty, status: updateData.status, isActive: updateData.isActive };
     } else if (action === 'skipped') {
       updateData.lastSkippedAt = new Date().toISOString();
       // Don't change the status when skipping - let isOverdue() handle it
@@ -174,6 +180,16 @@ export class MedicationService {
 
   // In medication.service.ts
 
+  /**
+   * Grace period after a scheduled dose time before it's considered
+   * "Overdue" rather than just "Due". Without this, a dose is flagged
+   * Overdue the instant its scheduled minute passes - which meant a
+   * brand-new medication could show Overdue seconds after being saved,
+   * since lastTakenAt is still null and the start time has technically
+   * already ticked by. Adjust to taste (minutes).
+   */
+  private static readonly OVERDUE_GRACE_PERIOD_MS = 30 * 60 * 1000; // 30 minutes
+
 isOverdue(medication: Medication): boolean {
   if (medication.status === 'Completed' || !medication.isActive) return false;
 
@@ -185,26 +201,40 @@ isOverdue(medication: Medication): boolean {
 
   // 2. Fallback for interval-based check if no reminder times
   if (!reminderTimes || reminderTimes.length === 0) {
-    if (!medication.lastTakenAt) return false;
+    if (!medication.lastTakenAt) {
+      // Never taken yet - only overdue once we're a full grace period
+      // past the medication's own start time, not the instant it's saved.
+      if (!medication.startDate) return false;
+      const started = new Date(medication.startDate).getTime();
+      return new Date().getTime() > (started + MedicationService.OVERDUE_GRACE_PERIOD_MS);
+    }
     const lastTaken = new Date(medication.lastTakenAt).getTime();
     const intervalMs = (medication.intervalHours || 24) * 60 * 60 * 1000;
-    return new Date().getTime() > (lastTaken + intervalMs);
+    return new Date().getTime() > (lastTaken + intervalMs + MedicationService.OVERDUE_GRACE_PERIOD_MS);
   }
 
   // 3. Schedule-based check: Only TAKEN doses count, not SKIPPED
   const now = new Date();
   const lastTaken = medication.lastTakenAt ? new Date(medication.lastTakenAt) : null;
 
+  // Find the most recent scheduled slot that's actually overdue (past its
+  // grace period), rather than flagging on the first past slot we see.
+  // This also means one "Taken" tap only clears the dose it actually
+  // covers - it can't retroactively "clear" earlier missed doses, because
+  // we only ever check whether THIS slot's grace period has elapsed
+  // without a matching lastTaken timestamp for that slot's cycle.
   for (const timeStr of reminderTimes) {
     const [hours, minutes] = timeStr.split(':').map(Number);
     const scheduledTime = new Date();
     scheduledTime.setHours(hours, minutes, 0, 0);
 
-    // If this scheduled time has passed
-    if (scheduledTime < now) {
+    const graceDeadline = scheduledTime.getTime() + MedicationService.OVERDUE_GRACE_PERIOD_MS;
+
+    // Only consider a slot overdue once its grace period has fully elapsed.
+    if (now.getTime() > graceDeadline) {
       // Check if we have TAKEN this specific dose (not skipped)
-      const doseTaken = lastTaken && lastTaken >= scheduledTime;
-      
+      const doseTaken = lastTaken && lastTaken.getTime() >= scheduledTime.getTime();
+
       // If no TAKEN action for this scheduled slot, it is overdue
       if (!doseTaken) {
         return true;
@@ -231,18 +261,20 @@ private calculateReminderTimes(medication: Medication): string[] {
   const times: string[] = [];
   const [startHour, startMin] = medication.startTime.split(':').map(Number);
   const intervalMs = medication.intervalHours * 60 * 60 * 1000;
-  
-  // Generate times throughout the day
+
+  // Generate times throughout the day only - stop once we roll into the
+  // next calendar day, since Date.getHours() wraps back to 0-23 and would
+  // never satisfy a ">= 24" check, silently producing times that belong
+  // to the following day but get compared as if they were "today".
   let currentTime = new Date();
   currentTime.setHours(startHour, startMin, 0, 0);
-  
-  // Generate up to 5 reminder times (or until end of day)
-  for (let i = 0; i < 5; i++) {
-    if (currentTime.getHours() >= 24) break; // Stop if past midnight
+  const startDay = currentTime.getDate();
+
+  for (let i = 0; i < 24 && currentTime.getDate() === startDay; i++) {
     times.push(`${String(currentTime.getHours()).padStart(2, '0')}:${String(currentTime.getMinutes()).padStart(2, '0')}`);
     currentTime.setTime(currentTime.getTime() + intervalMs);
   }
-  
+
   return times;
 }
 

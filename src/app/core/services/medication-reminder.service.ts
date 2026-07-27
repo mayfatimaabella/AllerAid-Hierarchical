@@ -228,6 +228,18 @@ export class MedicationReminderService {
 
   /**
    * Safely routes action responses ('TAKEN' / 'SKIP') without throwing property errors.
+   *
+   * FIX: previously this only recorded the action (deducting the pill count
+   * on 'TAKEN') and never scheduled anything further. Because
+   * scheduleForMedication() only ever schedules a single upcoming dose
+   * (maxOccurrences = 1 / nextTimes() returns just one Date), that meant
+   * only the very first reminder for a medication would ever fire - no
+   * reminder for the next scheduled dose ever appeared afterward. We now
+   * re-fetch the medication after recording the action and call
+   * scheduleForMedication() again so the *next* dose gets its own
+   * reminder queued. scheduleForMedication() already guards against
+   * scheduling when the medication is inactive or out of pills (it will
+   * cancel instead), so a completed course correctly stops reminding.
    */
   private async handleMedicationNotificationAction(notification: MedicationNotification | undefined | null, actionId?: string): Promise<void> {
     try {
@@ -237,13 +249,24 @@ export class MedicationReminderService {
       }
 
       if (actionId === 'TAKEN') {
-        const result: any = await this.medicationService.recordReminderAction(notification.medId, 'taken');
-        
-        if (result && typeof result.newQuantity === 'number' && result.newQuantity <= 0) {
+        const result = await this.medicationService.recordReminderAction(notification.medId, 'taken');
+
+        if (result && result.updatedQuantity <= 0) {
+          // Course completed - stop reminding entirely, nothing left to schedule.
           await this.cancelForMedication(notification.medId);
+          return;
         }
       } else if (actionId === 'SKIP') {
         await this.medicationService.recordReminderAction(notification.medId, 'skipped');
+      } else {
+        return;
+      }
+
+      // Queue the reminder for the next dose now that this one has been handled.
+      const meds = await this.medicationService.getUserMedications();
+      const updatedMed = meds.find(m => m.id === notification.medId);
+      if (updatedMed) {
+        await this.scheduleForMedication(updatedMed);
       }
     } catch (error) {
       console.error('Error processing medication action handler targets:', error);

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastController, ActionSheetController, LoadingController } from '@ionic/angular';
 import { MedicationService, Medication } from 'src/app/core/services/medication.service';
+import { MedicationReminderService } from 'src/app/core/services/medication-reminder.service';
 import { createWorker } from 'tesseract.js';
 
 @Component({
@@ -57,6 +58,7 @@ export class AddEditMedicationComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private medService: MedicationService,
+    private reminderService: MedicationReminderService,
     private toastController: ToastController,
     private actionSheetController: ActionSheetController,
     private loadingController: LoadingController
@@ -282,9 +284,28 @@ export class AddEditMedicationComponent implements OnInit {
 
       if (this.isEditMode && this.medication?.id) {
         await this.medService.updateMedication(this.medication.id, dataToSave);
+
+        // FIX: (re)schedule this medication's reminder after an edit, in
+        // case the dose/interval/duration/start date changed - previously
+        // nothing re-synced the native notification schedule on edit.
+        await this.reminderService.scheduleForMedication({
+          ...dataToSave,
+          id: this.medication.id
+        });
+
         this.showToast('Medication updated successfully!', 'success');
       } else {
-        await this.medService.addMedication(dataToSave, this.prescriptionImage || undefined);
+        const newId = await this.medService.addMedication(dataToSave, this.prescriptionImage || undefined);
+
+        // FIX: schedule the reminder for a brand-new medication.
+        // Previously nothing called scheduleForMedication() here at all,
+        // so a newly created medication could go without any native
+        // reminder until it happened to be edited later.
+        await this.reminderService.scheduleForMedication({
+          ...dataToSave,
+          id: newId
+        });
+
         this.showToast('Medication saved successfully!', 'success');
       }
 
