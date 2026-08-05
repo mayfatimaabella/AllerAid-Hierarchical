@@ -9,7 +9,7 @@
           <span class="alert-title">EMERGENCY ALERT</span>
         </div>
         <span class="time-badge">
-          {{ currentEmergency.timestamp?.toDate() | date:'shortTime' }}
+         {{ toDate(currentEmergency.timestamp) | date:'shortTime' }}
         </span>
       </div>
 

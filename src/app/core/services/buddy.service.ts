@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { firebaseConfig } from './firebase.config';
 import { UserService } from './user.service';
+import { Buddy } from '../models/buddy.model';
 
 import {
   getFirestore,
@@ -36,6 +37,12 @@ export interface BuddyInvitation {
   respondedAt?: Date;
 }
 
+interface BuddyReference {
+  id?: string;
+  buddyUid?: string;
+  connectedUserId?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -55,7 +62,7 @@ export class BuddyService {
   private sentInvitationsSubject = new BehaviorSubject<BuddyInvitation[]>([]);
   sentInvitations$ = this.sentInvitationsSubject.asObservable();
 
-  private buddyRelationsSubject = new BehaviorSubject<any[]>([]);
+  private buddyRelationsSubject = new BehaviorSubject<Buddy[]>([]);
   buddyRelations$ = this.buddyRelationsSubject.asObservable();
 
   // ── Subjects for buddy-accepted notifications ──────────────────────────────
@@ -427,7 +434,7 @@ export class BuddyService {
     }
   }
 
-  async deleteBuddy(buddyToDelete: any): Promise<void> {
+  async deleteBuddy(buddyToDelete: BuddyReference): Promise<void> {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const currentUserId = currentUser.uid;
 
@@ -448,24 +455,19 @@ export class BuddyService {
 
     await deleteDoc(doc(this.db, 'users', currentUserId, 'sentBuddyInvitations', inviteId1));
     await deleteDoc(doc(this.db, 'users', buddyUid, 'receivedBuddyInvitations', inviteId1));
-
+    
     await deleteDoc(doc(this.db, 'users', buddyUid, 'sentBuddyInvitations', inviteId2));
     await deleteDoc(doc(this.db, 'users', currentUserId, 'receivedBuddyInvitations', inviteId2));
   }
 
-  // ── Query helpers ──────────────────────────────────────────────────────────
-
-  async getUserBuddies(userId: string): Promise<any[]> {
+  async getUserBuddies(userId: string): Promise<Buddy[]> { 
     const buddiesRef = collection(this.db, 'users', userId, 'buddies');
     const q = query(buddiesRef, where('status', '==', 'accepted'));
     const snap = await getDocs(q);
 
-    return snap.docs
-      .map(docSnap => ({ id: docSnap.id, ...docSnap.data(), isFromRelation: true }))
-      .filter((buddy: any) => buddy.buddyUid !== userId);
-  }
+    return snap.docs.map(docSnap =>({id: docSnap.id, ...docSnap.data(),isFromRelation: true}) as Buddy).filter(buddy => buddy.buddyUid !== userId);}
 
-  async getConnectedBuddies(userId: string): Promise<any[]> {
+  async getConnectedBuddies(userId: string): Promise<Buddy[]> {
     return this.getUserBuddies(userId);
   }
 
@@ -473,8 +475,8 @@ export class BuddyService {
     const buddies = await this.getUserBuddies(buddyUserId);
 
     return buddies
-      .filter((buddy: any) => buddy.relationship === 'Protected Patient')
-      .map((buddy: any) => ({
+      .filter((buddy: Buddy) => buddy.relationship === 'Protected Patient')
+      .map((buddy: Buddy) => ({
         id:           buddy.buddyUid,
         userId:       buddy.buddyUid,
         firstName:    buddy.buddyName?.split(' ')[0] || 'Patient',
@@ -565,10 +567,13 @@ export class BuddyService {
     const q = query(buddiesRef, where('status', '==', 'accepted'));
 
     this.relationsListenerUnsubscribe = onSnapshot(q, snapshot => {
-      const buddies = snapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+      const buddies: Buddy[] = snapshot.docs.map(
+        docSnap =>
+          ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }) as Buddy
+      );
 
       this.buddyRelationsSubject.next(buddies);
     });

@@ -13,6 +13,7 @@ import { UserService } from '../../../core/services/user.service';
 import { EmergencyService,} from '../../../core/services/emergency.service';
 import { EmergencyAlert } from '../../../core/models/emergency-alert.model';
 import { Subscription } from 'rxjs';
+import { Timestamp } from 'firebase/firestore';
 
 @Component({
   selector: 'app-responder-dashboard',
@@ -858,4 +859,20 @@ export class ResponderDashboardPage implements OnInit, AfterViewInit, OnDestroy 
 
     return 'Unknown';
   }
+
+  toDate(value: Date | Timestamp | null | undefined): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return value;
+  }
+
+  if (value instanceof Timestamp) {
+    return value.toDate();
+  }
+
+  return null;
+}
 }

@@ -12,26 +12,19 @@ import { AllergyManagerService } from '../../../core/services/allergy-manager.se
 import { AllergyModalService } from '../../profile/profile-services/allergy-modal.service';
 import { EmergencyAlertService } from '../../../core/services/emergency-alert.service';
 import { AlertController, ToastController } from '@ionic/angular';
+import { Timestamp } from 'firebase/firestore';
+import { Allergy } from '../../../core/models/allergy.model';
+import { Buddy } from 'src/app/core/models/buddy.model';
+import { BuddyStatus } from 'src/app/core/models/buddy-status.model';
+import { EmergencyAlert } from 'src/app/core/models/emergency-alert.model';
+import { MedicalInfo } from 'src/app/core/models/medical-info.model';
+import { UserProfile } from 'src/app/core/models/user-profile.model';
+import { BuddyResponse,BuddyResponsePayload, BuddyResponseStatus} from 'src/app/core/models/buddy-response.model';
+import { NotificationStatusValues, NotificationStatus} from 'src/app/core/models/notification-status.model';
+import { ResponderInfo, ResponderSource } from 'src/app/core/models/responder-info.model';
+import { EmergencyStatusValues } from 'src/app/core/models/emergency-status.model';
 
 const HOTLINE_FALLBACK_DELAY_MS = 60_000;
-
-interface BuddyResponse {
-  status: string;
-  timestamp: Date;
-  name: string;
-}
-
-interface ResponderInfo {
-  responderName: string;
-  estimatedTime: string;
-  distance: number;
-  estimatedArrival: number;
-  emergencyId: string;
-}
-
-type NotificationStatus = 'sending' | 'pending' | 'sent' | 'delivered' | 'failed' | 'received_in_app';
-
-
 
 @Component({
   selector: 'app-home',
@@ -41,30 +34,39 @@ type NotificationStatus = 'sending' | 'pending' | 'sent' | 'delivered' | 'failed
 })
 export class HomePage implements OnDestroy {
 
-  userBuddies: any[] = [];
-  userAllergies: any[] = [];
+  //User Data
   userName = '';
+  userAllergies: Allergy[] = [];
+  userBuddies: Buddy[] = [];
   emergencyInstruction = '';
  
+  //Emergency State
   isEmergencyActive = false;
   emergencyStartTime: Date | null = null;
   currentEmergencyId: string | null = null;
 
-  buddyResponses: Record<string, BuddyResponse> = {};
-  emergencyLocation: { latitude: number; longitude: number; accuracy?: number } | null = null;
+  emergencyLocation: {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+} | null = null;
+
   emergencyAddress = '';
   isEmergencyAddressLoading = false;
 
+  //Buddy and Notification State
+  buddyResponses: Record<string, BuddyResponse> = {};
   notificationStatus: Record<string, NotificationStatus> = {};
 
   respondingBuddy: ResponderInfo | null = null;
   minimizedResponder: ResponderInfo | null = null;
 
-  showBuddyBanner = false;
-  showAllergyBanner = false;
-
   buddyBannerState: 'none' | 'pending' | 'accepted' = 'none';
   pendingBuddyInviteCount = 0;
+
+  //UI State
+  showBuddyBanner = false;
+  showAllergyBanner = false;
 
   showEmergencyCountdown = false;
   countdown = 3;
@@ -73,8 +75,9 @@ export class HomePage implements OnDestroy {
 
   sendingStep: | 'preparing' | 'location' | 'sending' | 'waiting' | 'done' = 'preparing';
 
-  private countdownTimer: ReturnType<typeof setInterval> | null = null;
+  //Internal
 
+  private countdownTimer: ReturnType<typeof setInterval> | null = null;
   private subscriptions: Subscription[] = [];
   private buddyStatusKeyMap = new Map<string, string>();
  
@@ -128,34 +131,53 @@ export class HomePage implements OnDestroy {
 
       this.userName = userProfile?.fullName ?? 'User';
 
-      this.emergencyInstruction = this.emergencyService.getEmergencyInstruction(medicalInfo);
-
-      this.userAllergies = Array.isArray(medicalInfo?.allergies)
-        ? medicalInfo.allergies.filter((a: any) => a.checked)
-        : [];
-
-      this.showAllergyBanner = this.userAllergies.length === 0;
-
-      this.userBuddies = await this.buddyService.getUserBuddies(currentUser.uid);
-
-      this.rebuildBuddyStatusKeyMap();
-
-      const pendingInvites = await this.buddyService.getSentInvitations(currentUser.uid);
-      this.pendingBuddyInviteCount = pendingInvites.filter(
-        (invite: any) => invite.status === 'pending'
-      ).length;
-
-      this.updateBuddyBannerState();
+       this.loadUserProfile(userProfile);
+      this.loadMedicalData(medicalInfo);
+      await this.loadBuddyData(currentUser.uid);
 
     } catch (error) {
       console.error('Error loading user data:', error);
     }
   }
 
+  private loadMedicalData(medicalInfo: MedicalInfo | null): void {
+    if (!medicalInfo) {
+      this.userAllergies = [];
+      this.showAllergyBanner = true;
+      return;
+    }
+
+    this.emergencyInstruction = this.emergencyService.getEmergencyInstruction(medicalInfo);
+
+    this.userAllergies = (medicalInfo.allergies ?? []).filter(allergy => allergy.checked);
+
+    this.showAllergyBanner = this.userAllergies.length === 0;
+  }
+
+  private async loadBuddyData(userId: string): Promise<void> {
+    this.userBuddies = await this.buddyService.getUserBuddies(userId);
+    
+    this.rebuildBuddyStatusKeyMap();
+
+    const pendingInvites =
+      await this.buddyService.getSentInvitations(userId);
+
+    this.pendingBuddyInviteCount = pendingInvites.filter(
+      invite => invite.status === 'pending'
+    ).length;
+
+    this.updateBuddyBannerState();
+
+  }
+
+  private loadUserProfile(userProfile: UserProfile | null): void {
+  this.userName = userProfile?.fullName ?? 'User';
+}
+
   private rebuildBuddyStatusKeyMap(): void {
     this.buddyStatusKeyMap.clear();
     for (const buddy of this.userBuddies) {
-      const canonical = buddy.buddyUid || buddy.id;
+      const canonical = buddy.buddyUid  || buddy.id;
       if (buddy.id)       this.buddyStatusKeyMap.set(buddy.id, canonical);
       if (buddy.buddyUid) this.buddyStatusKeyMap.set(buddy.buddyUid, canonical);
     }
@@ -179,102 +201,101 @@ export class HomePage implements OnDestroy {
     this.startCountdown();
   }
 
-async sendEmergencyAlert(): Promise<void> {
-  this.showEmergencySending = true;
-  this.sendingStep = 'preparing';
-  if (this.isEmergencyActive) {
-    await this.presentToast('An emergency alert is already active.', 'warning');
-    this.showEmergencySending = false;
-    return;
-  }
+  async sendEmergencyAlert(): Promise<void> {
+    this.showEmergencySending = true;
 
-  const hasLocationPermission = await this.ensureLocationPermission();
-  this.sendingStep = 'location';
+    try {
+      this.sendingStep = 'preparing';
 
-  if (!hasLocationPermission) {
-    this.showEmergencySending = false;
-
-    await this.presentToast(
-      'Location permission is required before sending an emergency alert.',
-      'danger'
-    );
-    return;
-  }
+      if (!(await this.validateEmergencyState())) {
+        return;
+      }
+      if (!(await this.validateLocationPermission())) {
+         return;
+      }
+      if (!(await this.validateAuthentication())) {
+        return;
+      }
+      await this.triggerEmergencyWorkflow();
 
 
-  try {
-    const currentUser = await this.authService.waitForAuthInit();
+    } catch (error) {
+      this.emergencyAlertService.stopEmergencyAlarmSound();
 
-    if (!currentUser) {
-      
+      console.error('Error triggering emergency alert:', error);
+      await this.presentToast('Failed to send emergency alert. Please try again.','danger');
+
+    } finally {
       this.showEmergencySending = false;
-
-      await this.presentToast(
-        'You must be logged in to send an emergency alert.',
-        'danger'
-      );
-
-      await this.router.navigate(['/login']);
-      return;
     }
-
-    const latestMedical = await this.medicalService.getUserMedicalProfile(currentUser.uid);
-
-    this.emergencyInstruction = this.emergencyService.getEmergencyInstruction(latestMedical,this.emergencyInstruction);
-
-    const buddyIds = this.getBuddyIds(currentUser.uid);
-    const allergyStrings = this.getAllergyStrings();
-
-    const locationData = await this.resolveLocation();
-
-    if (!locationData) {
-      
-      this.showEmergencySending = false;
-
-      await this.presentToast(
-        'Could not get your current location. Emergency alert was not sent.',
-        'danger'
-      );
-
-      return;
-    }
-
-    await this.emergencyAlertService.playEmergencyAlarmSound(this.buildEmergencySpeechText());
-
-    this.sendingStep = 'sending';
-    this.currentEmergencyId = await this.emergencyService.sendEmergencyAlert(
-        currentUser.uid,
-        this.userName,
-        buddyIds,
-        allergyStrings,
-        this.emergencyInstruction,
-        locationData
-      );
-
-
-this.activateEmergencyState(locationData);
-this.seedInitialBuddyResponses(currentUser.uid);
-this.listenForEmergencyResponses();
-
-    this.sendingStep = 'waiting';
-
-    await this.notifyUserAfterSend(buddyIds);
-    this.showEmergencySending = false;
-
-  } catch (error) {
-
-    this.showEmergencySending = false;
-
-    this.emergencyAlertService.stopEmergencyAlarmSound();
-
-    console.error('Error sending emergency alert:', error);
-
-    await this.presentToast(
-      'Failed to send emergency alert. Please try again.',
-      'danger'
-    );
   }
+
+  private async validateEmergencyState(): Promise<boolean> {
+  if (!this.isEmergencyActive) {
+    return true;
+  }
+
+  await this.presentToast('An emergency alert is already active.','warning');
+  return false;
 }
+
+    private async validateLocationPermission(): Promise<boolean> {
+      this.sendingStep = 'location';
+
+      const hasLocationPermission =
+        await this.ensureLocationPermission();
+
+      if (hasLocationPermission) {
+        return true;
+      }
+
+      await this.presentToast(
+        'Location permission is required before sending an emergency alert.',
+        'danger'
+      );
+
+      return false;
+    }
+
+private async validateAuthentication(): Promise<boolean> {
+
+  const currentUser = await this.authService.waitForAuthInit();
+
+  if (currentUser) {
+    return true;
+  }
+
+  await this.presentToast(
+    'You must be logged in to send an emergency alert.',
+    'danger'
+  );
+
+  await this.router.navigate(['/login']);
+
+  return false;
+}
+
+private async triggerEmergencyWorkflow(): Promise<void> {
+
+  this.sendingStep = 'sending';
+
+  const result =
+    await this.emergencyAlertService.triggerEmergencyAlert('manual');
+
+  this.currentEmergencyId = result.emergencyId;
+
+  this.activateEmergencyState(result.location);
+
+  this.listenForEmergencyResponses();
+
+  this.sendingStep = 'waiting';
+
+  await this.notifyUserAfterSend(this.userBuddies.length);
+
+}
+
+
+
 
   private async ensureLocationPermission(): Promise<boolean> {
     try {
@@ -299,82 +320,40 @@ this.listenForEmergencyResponses();
     }
   }
 
-  private getBuddyIds(currentUid: string): string[] {
-    return Array.from(new Set(
-      this.userBuddies
-        .map(b => b.buddyUid || b.id)
-        .filter((id): id is string => !!id && id !== currentUid),
-    ));
-  }
-
-  private getAllergyStrings(): string[] {
-    return this.userAllergies.map((a: any) => a.label || a.name || '').filter(Boolean);
-  }
-
-  private async resolveLocation(): Promise<{ latitude: number; longitude: number; accuracy?: number } | null> {
-    try {
-      const position = await this.emergencyService.getCurrentLocation();
-
-      const locationData = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: position.coords.accuracy,
-      };
-
-      this.emergencyLocation = locationData;
-      this.isEmergencyAddressLoading = true;
-
-      return locationData;
-    } catch (error) {
-      console.warn('Location unavailable — emergency alert will not be sent.', error);
-
-      this.emergencyLocation = null;
-      this.isEmergencyAddressLoading = false;
-
-      return null;
-    }
-  }
 
   private activateEmergencyState(
-    locationData: { latitude: number; longitude: number; accuracy?: number },
-  ): void {
-    this.isEmergencyActive = true;
-    this.emergencyStartTime = new Date();
-    this.buddyResponses = {};
-    this.emergencyLocation = locationData;
+    locationData?: { latitude: number; longitude: number; accuracy?: number },
+    ): void {
+        this.isEmergencyActive = true;
+        this.emergencyStartTime = new Date();
+        this.buddyResponses = {};
 
-    this.emergencyAddress = 'GPS location available';
-    this.isEmergencyAddressLoading = false;
-  }
+        if (locationData) {
+          this.emergencyLocation = locationData;
+          this.emergencyAddress = 'GPS location available';
+        } else {
+          this.emergencyLocation = null;
+          this.emergencyAddress = 'Location unavailable';
+        }
 
-  private seedInitialBuddyResponses(currentUid: string): void {
-    for (const buddy of this.userBuddies) {
-      const key = buddy.buddyUid || buddy.id;
-      if (!key || key === currentUid) continue;
-
-      this.buddyResponses[key] = {
-        status: 'sent',
-        timestamp: new Date(),
-        name:
-          buddy.buddyName ||
-          `${buddy.firstName || ''} ${buddy.lastName || ''}`.trim() ||
-          'Buddy',
-      };
+        this.isEmergencyAddressLoading = false;
     }
-  }
 
-  private async notifyUserAfterSend(buddyIds: string[]): Promise<void> {
-    if (buddyIds.length > 0) {
-      await this.presentToast(
-        `Emergency alert sent to ${buddyIds.length} connections. Notifications are being delivered.`,
-      );
-    } else {
-      await this.presentToast(
-        'No emergency contacts available. Please contact emergency services.',
-      );
-      await this.callEmergencyHotlines();
+
+    private async notifyUserAfterSend(buddyCount: number): Promise<void> {
+      if (buddyCount  > 0) {
+        await this.presentToast(
+          `Emergency alert sent to ${buddyCount} connections. Notifications are being delivered.`,
+          'success'
+        );
+      } else {
+        await this.presentToast(
+          'No emergency contacts available. Please contact emergency services.',
+          'danger'
+        );
+        await this.callEmergencyHotlines();
+      }
     }
-  }
 
 
 async restoreActiveEmergency(): Promise<void> {
@@ -383,7 +362,8 @@ async restoreActiveEmergency(): Promise<void> {
 
   const emergencies = await this.emergencyService.getUserEmergenciesByStatus(
     currentUser.uid,
-    ['active', 'responding'],
+    [EmergencyStatusValues.ACTIVE,
+    EmergencyStatusValues.RESPONDING,],
   );
 
   if (!emergencies.length) {
@@ -393,69 +373,145 @@ async restoreActiveEmergency(): Promise<void> {
 
   const emergency = emergencies[0];
 
-  this.currentEmergencyId = emergency.id ?? null;
-  this.isEmergencyActive = true;
-  this.emergencyStartTime = emergency.timestamp?.toDate
-    ? emergency.timestamp.toDate()
-    : new Date();
+  this.restoreEmergencyState(emergency);
+  this.restoreEmergencyAddress(emergency);
+  this.restoreBuddyInformation(emergency, currentUser.uid);
 
-  if (emergency.location) {
-    this.emergencyLocation = {
-      latitude: emergency.location.latitude,
-      longitude: emergency.location.longitude,
-    };
-  }
 
-  this.emergencyAddress = emergency.displayAddress
-    ? emergency.displayAddress
-    : emergency.location
-      ? 'GPS location available'
-      : '';
-
-  this.isEmergencyAddressLoading = false;
-
-  if (emergency.buddyResponses) {
-    this.processBuddyResponses(emergency.buddyResponses, currentUser.uid);
-  }
-
-  if (emergency.notificationStatus) {
-  this.notificationStatus = {
-    ...this.notificationStatus,
-    ...emergency.notificationStatus
-  };
-}
-
-  if (emergency.status === 'responding' && emergency.responderId) {
-    this.respondingBuddy = this.buildResponderInfo(emergency);
-  }
 
   if (this.currentEmergencyId) {
-    this.emergencyService.startPatientLocationTracking(this.currentEmergencyId);
+await this.resumeEmergencyServices();
+  }
+}
+
+private restoreEmergencyState(emergency: EmergencyAlert): void {
+  this.currentEmergencyId = emergency.id ?? null;
+  this.isEmergencyActive = true;
+
+  this.emergencyStartTime =
+    emergency.timestamp instanceof Timestamp
+      ? emergency.timestamp.toDate()
+      : emergency.timestamp;
+}
+
+  private restoreEmergencyAddress(emergency: EmergencyAlert): void {
+    this.emergencyAddress = emergency.displayAddress
+      ? emergency.displayAddress
+      : emergency.location
+        ? 'GPS location available'
+        : '';
+
+    this.isEmergencyAddressLoading = false;
+  }
+
+  private restoreBuddyInformation(
+    emergency: EmergencyAlert,
+    currentUserId: string
+  ): void {
+
+    if (emergency.buddyResponses) {
+      this.processBuddyResponses(
+        emergency.buddyResponses,
+        currentUserId
+      );
+    }
+
+    if (emergency.notificationStatus) {
+      this.notificationStatus = {
+        ...this.notificationStatus,
+        ...emergency.notificationStatus
+      };
+    }
+
+    if (
+      emergency.status === EmergencyStatusValues.RESPONDING  &&
+      emergency.responderId
+    ) {
+      this.respondingBuddy =
+        this.buildResponderInfo(emergency);
+    }
+  }
+
+  private async resumeEmergencyServices(): Promise<void> {
+
+  if (this.currentEmergencyId) {
+    this.emergencyService.startPatientLocationTracking(
+      this.currentEmergencyId
+    );
   }
 
   try {
-    await this.emergencyAlertService.playEmergencyAlarmSound(this.buildEmergencySpeechText());
+    await this.emergencyAlertService.playEmergencyAlarmSound(
+      this.buildEmergencySpeechText()
+    );
   } catch (error) {
-    console.warn('Could not resume emergency alarm sound:', error);
+    console.warn(
+      'Could not resume emergency alarm sound:',
+      error
+    );
   }
 
   this.listenForEmergencyResponses();
-  
+
 }
 
-  listenForEmergencyResponses(): void {
-    if (!this.currentEmergencyId) return;
 
-    const responseSub = this.emergencyService.emergencyResponse$.subscribe(response => {
-      if (!response || response.emergencyId !== this.currentEmergencyId) return;
-      this.respondingBuddy = this.buildResponderInfo(response);
-      this.presentToast(`${response.responderName ?? 'A responder'} is on the way.`);
-    });
+listenForEmergencyResponses(): void {
+  if (!this.currentEmergencyId) return;
 
-    const docSub = this.emergencyService.userEmergency$.subscribe(emergency => {
-      if (!emergency || emergency.id !== this.currentEmergencyId) return;
+  this.listenForResponderUpdates();
+  this.listenForEmergencyUpdates();
+}
 
-      if (emergency.status === 'resolved') {
+private listenForResponderUpdates(): void {
+
+  const responseSub =
+    this.emergencyService.emergencyResponse$
+      .subscribe(response => {
+
+        if (
+          !response ||
+          response.emergencyId !== this.currentEmergencyId
+        ) {
+          return;
+        }
+
+        this.respondingBuddy =
+          this.buildResponderInfo(response);
+
+        this.presentToast(
+          `${response.responderName ?? 'A responder'} is on the way.`
+        );
+      });
+
+  this.subscriptions.push(responseSub);
+}
+
+private listenForEmergencyUpdates(): void {
+
+  const docSub =
+    this.emergencyService.userEmergency$
+      .subscribe(emergency => {
+
+        if (
+          !emergency ||
+          emergency.id !== this.currentEmergencyId
+        ) {
+          return;
+        }
+
+        this.handleEmergencyUpdate(emergency);
+
+      });
+
+  this.subscriptions.push(docSub);
+}
+
+      private handleEmergencyUpdate(
+      emergency: EmergencyAlert
+    ): void {
+
+      if (emergency.status === EmergencyStatusValues.RESOLVED) {
         this.clearEmergencyState();
         return;
       }
@@ -476,20 +532,22 @@ async restoreActiveEmergency(): Promise<void> {
         this.processBuddyResponses(emergency.buddyResponses);
       }
 
-      if (emergency.status === 'responding' && emergency.responderId) {
+      if (
+        emergency.status === EmergencyStatusValues.RESPONDING &&
+        emergency.responderId
+      ) {
         this.respondingBuddy = this.buildResponderInfo(emergency);
       }
-    });
+    }
 
-    this.subscriptions.push(responseSub, docSub);
-  }
 
-  listenForNotificationStatus(): void {
-    const sub = this.emergencyNotificationService.notificationStatus$.subscribe(status => {
-      this.notificationStatus = { ...status };
-    });
-    this.subscriptions.push(sub);
-  }
+
+      listenForNotificationStatus(): void {
+        const sub = this.emergencyNotificationService.notificationStatus$.subscribe(status => {
+          this.notificationStatus = { ...status };
+        });
+        this.subscriptions.push(sub);
+      }
 
   /**
    * Normalises the raw buddyResponses map from Firestore, emits toasts for
@@ -498,18 +556,18 @@ async restoreActiveEmergency(): Promise<void> {
    * @param responses   Raw Firestore map.
    * @param excludeUid  Optional UID to skip (e.g. current user on restore).
    */
-  private processBuddyResponses(responses: any, excludeUid?: string): void {
+  private processBuddyResponses(responses: Record<string, BuddyResponsePayload>, excludeUid?: string): void {
     const previous = { ...this.buddyResponses };
     this.buddyResponses = {};
 
-    for (const [buddyId, response] of Object.entries(responses) as [string, any][]) {
+    for (const [buddyId, response] of Object.entries(responses)) {
       if (excludeUid && buddyId === excludeUid) continue;
 
       const oldStatus = previous[buddyId]?.status;
-      const newStatus = response.status as string;
+      const newStatus = response.status;
 
       this.buddyResponses[buddyId] = {
-        status: newStatus,
+       status: response.status,
         timestamp: response.timestamp?.toDate?.() ?? new Date(),
         name: response.name ?? 'Buddy',
       };
@@ -521,19 +579,19 @@ async restoreActiveEmergency(): Promise<void> {
   }
 
   private handleBuddyStatusChange(
-    buddyName: string,
-    oldStatus: string | undefined,
-    newStatus: string,
+      buddyName: string,
+      oldStatus: BuddyResponseStatus | undefined,
+      newStatus: BuddyResponseStatus,
   ): void {
     if (newStatus === oldStatus) return;
 
     switch (newStatus) {
-      case 'responded':
+      case BuddyStatus.RESPONDED:
         break;
-      case 'cannot_respond':
+      case BuddyStatus.CANNOT_RESPOND:
         this.presentToast(`${buddyName} declined your emergency alert.`, 'warning');
         break;
-      case 'timed_out':
+      case BuddyStatus.TIMED_OUT:
         this.presentToast(`${buddyName} did not respond in time.`, 'warning');
         break;
     }
@@ -544,7 +602,7 @@ async restoreActiveEmergency(): Promise<void> {
     if (!responses.length) return;
 
     const allUnavailable = responses.every(
-      r => r.status === 'cannot_respond' || r.status === 'timed_out',
+      r => r.status === BuddyStatus.CANNOT_RESPOND || r.status === BuddyStatus.TIMED_OUT,
     );
 
     if (allUnavailable) {
@@ -626,11 +684,21 @@ async restoreActiveEmergency(): Promise<void> {
     if (!response) return 'Unknown';
 
     switch (response.status) {
-      case 'sent':           return 'Alert Sent';
-      case 'responded':      return `${response.name} is responding`;
-      case 'cannot_respond': return `${response.name} declined`;
-      default:               return response.status;
-    }
+  case NotificationStatusValues.SENT:
+    return 'Alert Sent';
+
+  case BuddyStatus.RESPONDED:
+    return `${response.name} is responding`;
+
+  case BuddyStatus.CANNOT_RESPOND:
+    return `${response.name} declined`;
+
+  case BuddyStatus.TIMED_OUT:
+    return `${response.name} did not respond`;
+
+  default:
+    return response.status;
+}
   }
 
   getBuddyResponseColor(buddyId: string): string {
@@ -639,9 +707,9 @@ async restoreActiveEmergency(): Promise<void> {
     if (!response) return 'medium';
 
     switch (response.status) {
-      case 'sent':           return 'warning';
-      case 'responded':      return 'success';
-      case 'cannot_respond': return 'danger';
+      case NotificationStatusValues.SENT:           return 'warning';
+      case BuddyStatus.RESPONDED:      return 'success';
+      case BuddyStatus.CANNOT_RESPOND: return 'danger';
       default:               return 'medium';
     }
   }
@@ -653,12 +721,12 @@ async restoreActiveEmergency(): Promise<void> {
   getNotificationStatus(buddyId: string): string {
     const status = this.resolvedNotificationStatus(buddyId);
     switch (status) {
-      case 'sending':   return 'Sending...';
-      case 'pending':   return 'Pending...';
-      case 'sent':      return 'Push Sent';
-      case 'delivered': return 'Received';
-      case 'received_in_app': return 'Received in App';
-      case 'failed':    return 'Failed';
+      case NotificationStatusValues.SENDING:   return 'Sending...';
+      case NotificationStatusValues.PENDING:   return 'Pending...';
+      case NotificationStatusValues.SENT:      return 'Push Sent';
+      case NotificationStatusValues.DELIVERED: return 'Received';
+     case NotificationStatusValues.RECEIVED_IN_APP: return 'Received in App';
+      case NotificationStatusValues.FAILED:    return 'Failed';
       default:        return 'Pending...';
     }
   }
@@ -666,26 +734,26 @@ async restoreActiveEmergency(): Promise<void> {
   getNotificationStatusColor(buddyId: string): string {
     const status = this.resolvedNotificationStatus(buddyId);
     switch (status) {
-      case 'sending':   return 'warning';
-      case 'pending':   return 'medium';
-      case 'sent':      return 'primary';
-      case 'delivered': return 'success';
-      case 'received_in_app': return 'info';
-      case 'failed':    return 'danger';
+      case NotificationStatusValues.SENDING:   return 'warning';
+      case NotificationStatusValues.PENDING:   return 'medium';
+      case NotificationStatusValues.SENT:      return 'primary';
+      case NotificationStatusValues.DELIVERED: return 'success';
+      case NotificationStatusValues.RECEIVED_IN_APP: return 'info';
+      case NotificationStatusValues.FAILED:    return 'danger';
       default:        return 'medium';
     }
   }
 
   shouldShowNotificationBadge(buddyId: string): boolean {
     const resolvedId = this.buddyStatusKeyMap.get(buddyId) ?? buddyId;
-    return this.buddyResponses[resolvedId]?.status !== 'cannot_respond';
+    return this.buddyResponses[resolvedId]?.status !== BuddyStatus.CANNOT_RESPOND;
   }
 
   private resolvedNotificationStatus(
     buddyId: string,
   ): NotificationStatus {
     const resolvedId = this.buddyStatusKeyMap.get(buddyId) ?? buddyId;
-    return this.notificationStatus[resolvedId] ?? 'pending';
+    return this.notificationStatus[resolvedId] ?? NotificationStatusValues.PENDING;
   }
 
   shouldShowHotlineFallback(): boolean {
@@ -701,8 +769,8 @@ async restoreActiveEmergency(): Promise<void> {
 
     return ids.every(
       id =>
-        this.buddyResponses[id]?.status === 'cannot_respond' ||
-        this.buddyResponses[id]?.status === 'timed_out',
+        this.buddyResponses[id]?.status === BuddyStatus.CANNOT_RESPOND ||
+        this.buddyResponses[id]?.status === BuddyStatus.TIMED_OUT,
     );
   }
 
@@ -734,7 +802,10 @@ async restoreActiveEmergency(): Promise<void> {
   }
 
   getAllergensDisplay(): string {
-    return this.userAllergies.map((a: any) => a.label || a.name).join(', ');
+    return this.userAllergies
+      .map(a => a.label ?? a.name ?? '')
+      .filter(Boolean)
+      .join(', ');
   }
 
   getAllergensCount(): number {
@@ -754,7 +825,7 @@ async restoreActiveEmergency(): Promise<void> {
     return this.userBuddies?.length ?? 0;
   }
 
-  getObjectKeys(obj: any): string[] {
+  getObjectKeys(obj: Record<string, unknown>): string[] {
     return Object.keys(obj);
   }
 
@@ -776,7 +847,7 @@ async restoreActiveEmergency(): Promise<void> {
   }
 
   /** Maps any shape of emergency/response document to a consistent ResponderInfo. */
-  private buildResponderInfo(source: any): ResponderInfo {
+  private buildResponderInfo(source: ResponderSource): ResponderInfo {
     return {
       responderName: source.responderName ?? source.responder_name ?? 'A buddy',
       estimatedTime: source.estimatedArrival ? `${source.estimatedArrival} min` : 'Calculating...',

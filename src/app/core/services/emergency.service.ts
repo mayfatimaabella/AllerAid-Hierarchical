@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from './firebase.config';
 import {
+  Firestore,
   getFirestore,
   collection,
   addDoc,
@@ -20,13 +21,20 @@ import { Geolocation, Position } from '@capacitor/geolocation';
 import { EmergencyNotificationService } from './emergency-notification.service';
 import { UserService } from './user.service';
 import { EmergencyAlert } from '../models/emergency-alert.model';
+import { MedicalInfo } from '../models/medical-info.model';
+import { EmergencyLocation } from '../models/emergency-location.model';
+import { EmergencyResponse } from '../models/emergency-response.model';
+import { EmergencyStatus, EmergencyStatusValues } from '../models/emergency-status.model';
 
+type EmergencyAlertWithId = EmergencyAlert & {
+  id: string;
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class EmergencyService {
-  private db;
+  private db: Firestore;
 
   private patientLocationWatchId: string | null = null;
   private responderLocationWatchId: string | null = null;
@@ -38,13 +46,14 @@ export class EmergencyService {
   private userEmergencySubject = new BehaviorSubject<EmergencyAlert | null>(null);
   userEmergency$ = this.userEmergencySubject.asObservable();
 
-  private emergencyResponseSubject = new BehaviorSubject<any | null>(null);
+  private emergencyResponseSubject = new BehaviorSubject<EmergencyResponse  | null>(null);
   emergencyResponse$ = this.emergencyResponseSubject.asObservable();
   
   private emergencySnapshotUnsubscribe: (() => void) | null = null;
 
   private lastGeocodeTime: number = 0;
   private readonly GEOCODE_DEBOUNCE_MS = 30_000;
+
 
   constructor(
     private emergencyNotificationService?: EmergencyNotificationService,
@@ -54,14 +63,15 @@ export class EmergencyService {
     this.db = getFirestore(app);
   }
 
-  getEmergencyInstruction(medicalProfile: any, fallback: string = ''): string {
-    const fromMessage = (medicalProfile as any)?.emergencyMessage?.instructions;
+  getEmergencyInstruction(medicalProfile: MedicalInfo  | null, fallback: string = ''): string {
+    const fromMessage =medicalProfile?.emergencyMessage?.instructions;
     return ((typeof fromMessage === 'string' && fromMessage.trim()) || medicalProfile?.generalEmergencyInstruction?.trim() || fallback);
   }
 
+  
+
   /**
    * Send an emergency alert to the user's buddies with automatic notifications.
-   * locationData is optional — alert proceeds without location if unavailable.
    */
   async sendEmergencyAlert(
     userId: string,
@@ -69,11 +79,11 @@ export class EmergencyService {
     buddyIds: string[],
     allergies: string[] = [],
     instruction: string = '',
-    locationData?: { latitude: number; longitude: number; accuracy?: number },
+    locationData?: EmergencyLocation,
     initialBuddyResponses?: {
       [buddyId: string]: {
         status: 'sent' | 'responded' | 'cannot_respond';
-        timestamp: any;
+        timestamp: Timestamp;
         name?: string;
       };
     }
@@ -110,7 +120,7 @@ export class EmergencyService {
         location,
         allergies,
         instruction,
-        status: 'active',
+        status: EmergencyStatusValues.ACTIVE,
         buddyIds,
         ...(initialBuddyResponses ? { buddyResponses: initialBuddyResponses } : {})
       };
@@ -311,7 +321,7 @@ export class EmergencyService {
             position.coords.longitude
           );
         } catch (error) {
-          const errorMsg = (error as any)?.message || String(error);
+          const errorMsg = error instanceof Error ? error.message : String(error);
           console.warn('Patient location update failed:', errorMsg);
           if (errorMsg.includes('User denied') || errorMsg.includes('Permission denied')) {
             clearInterval(parseInt(this.patientLocationWatchId!));
@@ -427,14 +437,14 @@ export class EmergencyService {
    */
   async updateEmergencyLocation(
     emergencyId: string,
-    location: { latitude: number; longitude: number; accuracy?: number }
+    location: EmergencyLocation
   ): Promise<void> {
     try {
       const emergencyRef = doc(this.db, 'emergencies', emergencyId);
       await updateDoc(emergencyRef, { location });
 
       const emergencySnap = await getDoc(emergencyRef);
-      const emergencyData = emergencySnap.data() as any;
+      const emergencyData = emergencySnap.data() as EmergencyAlert;
 
       if (!emergencyData?.displayAddress) {
         this.debouncedReverseGeocodeAndSave(
@@ -461,13 +471,16 @@ export class EmergencyService {
 
     const unsubscribe = onSnapshot(emergencyRef, (docSnapshot) => {
       if (docSnapshot.exists()) {
-        const data = { id: docSnapshot.id, ...docSnapshot.data() } as EmergencyAlert;
-
-        if (data.status === 'responding' && data.responderId) {
+      const data: EmergencyAlertWithId = {
+        id: docSnapshot.id,
+        ...(docSnapshot.data() as EmergencyAlert)
+      };
+        
+        if (data.status === EmergencyStatusValues.RESPONDING && data.responderId) {
           this.emergencyResponseSubject.next({
             responderId: data.responderId,
             responderName: data.responderName || 'A buddy',
-            emergencyId: data.id,
+            emergencyId: data.id!,
             location: data.location,
             estimatedArrival: data.estimatedArrival || 0,
             distance: data.distance || 0
@@ -517,7 +530,7 @@ export class EmergencyService {
       // Another buddy is already the primary responder — just log this
       // buddy's response without overwriting the primary responder fields.
       if (
-        emergencyData.status === 'responding' &&
+        emergencyData.status === EmergencyStatusValues.RESPONDING &&
         emergencyData.responderId &&
         emergencyData.responderId !== responderId
       ) {
@@ -553,7 +566,7 @@ export class EmergencyService {
       const estimatedArrival = this.calculateETA(distance);
 
       await updateDoc(emergencyRef, {
-        status: 'responding',
+        status: EmergencyStatusValues.RESPONDING,
         responderId,
         responderName,
         responderLocation,
@@ -629,7 +642,7 @@ export class EmergencyService {
   async updateResponderLocation(
     emergencyId: string,
     responderId: string,
-    location: { latitude: number; longitude: number; accuracy?: number }
+    location: EmergencyLocation
   ): Promise<void> {
     try {
       const emergencyRef = doc(this.db, 'emergencies', emergencyId);
@@ -671,7 +684,10 @@ export class EmergencyService {
     try {
       const emergencyRef = doc(this.db, 'emergencies', emergencyId);
 
-      const updateData: any = { status: 'resolved', resolvedAt: Timestamp.now()};
+     const updateData: Partial<EmergencyAlert> = {
+      status: EmergencyStatusValues.RESOLVED,
+      resolvedAt: Timestamp.now()
+    };
 
       if (patientCondition !== undefined) updateData.patientCondition = patientCondition;
       if (resolvedBy) updateData.resolvedBy = resolvedBy;
@@ -694,13 +710,18 @@ export class EmergencyService {
     const q = query(
       collection(this.db, 'emergencies'),
       where('buddyIds', 'array-contains', buddyId),
-      where('status', 'in', ['active', 'responding'])
+      where('status', 'in', [EmergencyStatusValues.ACTIVE,EmergencyStatusValues.RESPONDING])
     );
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const emergencies: EmergencyAlert[] = [];
       querySnapshot.forEach((d) => {
-        emergencies.push({ id: d.id, ...d.data() } as EmergencyAlert);
+        const emergency: EmergencyAlert = {
+          id: d.id,
+          ...(d.data() as EmergencyAlert)
+        };
+
+        emergencies.push(emergency);
       });
       emergenciesSubject.next(emergencies);
     });
@@ -719,7 +740,7 @@ export class EmergencyService {
   /** Fetch emergencies for a buddy filtered by status. */
   async getBuddyEmergenciesByStatus(
     buddyId: string,
-    statuses: ('active' | 'responding' | 'resolved' | 'cancelled')[]
+    statuses: EmergencyStatus[]
   ): Promise<EmergencyAlert[]> {
     try {
       const emergenciesRef = collection(this.db, 'emergencies');
@@ -728,22 +749,27 @@ export class EmergencyService {
         where('buddyIds', 'array-contains', buddyId),
         where('status', 'in', statuses)
       );
+
       const snapshot = await getDocs(q);
       const emergencies: EmergencyAlert[] = [];
+
       snapshot.forEach((docSnap) => {
-        emergencies.push({ id: docSnap.id, ...(docSnap.data() as any) } as EmergencyAlert);
+        emergencies.push({
+          id: docSnap.id,
+          ...(docSnap.data() as EmergencyAlert)
+        });
       });
+
       return emergencies;
     } catch (error) {
       console.error('Error getting buddy emergencies by status:', error);
       return [];
-    }
-  }
+    }}
 
   /** Fetch emergencies initiated by a user filtered by status. */
   async getUserEmergenciesByStatus(
     userId: string,
-    statuses: ('active' | 'responding' | 'resolved' | 'cancelled')[]
+    statuses:EmergencyStatus[]
   ): Promise<EmergencyAlert[]> {
     try {
       const emergenciesRef = collection(this.db, 'emergencies');
@@ -755,7 +781,10 @@ export class EmergencyService {
       const snapshot = await getDocs(q);
       const emergencies: EmergencyAlert[] = [];
       snapshot.forEach((docSnap) => {
-        emergencies.push({ id: docSnap.id, ...(docSnap.data() as any) } as EmergencyAlert);
+        emergencies.push({
+          id: docSnap.id,
+          ...(docSnap.data() as EmergencyAlert)
+        });
       });
       return emergencies;
     } catch (error) {
@@ -770,7 +799,12 @@ export class EmergencyService {
       const docRef = doc(this.db, 'emergencies', emergencyId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as EmergencyAlert;
+              const emergency: EmergencyAlert = {
+        id: docSnap.id,
+        ...(docSnap.data() as EmergencyAlert)
+      };
+
+      return emergency;
       }
       return null;
     } catch (error) {

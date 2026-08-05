@@ -118,9 +118,9 @@ async loadBuddies() {
       // Map buddyName → firstName/lastName so the template works
       this.buddies = raw.map(b => ({
         ...b,
-        firstName: b.firstName || b.buddyName?.split(' ')[0] || '',
-        lastName:  b.lastName  || b.buddyName?.split(' ').slice(1).join(' ') || '',
-        email:     b.email     || b.buddyEmail || '',
+        firstName: b.buddyName?.split(' ')[0] || '',
+        lastName:  b.buddyName?.split(' ').slice(1).join(' ') || '',
+        email:     b.buddyEmail || '',
       }));
 
       if (!environment.production) {

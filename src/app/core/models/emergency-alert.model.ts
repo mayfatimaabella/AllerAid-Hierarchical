@@ -1,4 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
+import { EmergencyLocation } from './emergency-location.model';
+import { EmergencyStatus } from './emergency-status.model';
+import { BuddyResponsePayload } from './buddy-response.model';
 
 export interface EmergencyAlert {
   id?: string;
@@ -7,20 +10,11 @@ export interface EmergencyAlert {
   userId: string;
   userName: string;
 
-  timestamp: Timestamp | Date | any;
+  timestamp: Timestamp | Date;
 
-  location?: {
-    latitude: number;
-    longitude: number;
-    accuracy?: number;
-    address?: string;
-  } | null;
+  location: EmergencyLocation | null;
 
-  responderLocation?: {
-    latitude: number;
-    longitude: number;
-    accuracy?: number;
-  };
+  responderLocation?: EmergencyLocation | null;
 
   // Emergency details
   allergies?: string[];
@@ -47,16 +41,8 @@ export interface EmergencyAlert {
     | 'manual'
     | 'buddy-request';
 
-  status:
-    | 'active'
-    | 'responding'
-    | 'resolved'
-    | 'cancelled';
+  status: EmergencyStatus;
 
-  /**
-   * UI-only flag.
-   * True when a buddy dismisses an emergency from the Incoming tab.
-   */
   dismissed?: boolean;
 
   buddyIds: string[];
@@ -71,17 +57,7 @@ export interface EmergencyAlert {
 
   displayAddress?: string;
 
-  buddyResponses?: {
-    [buddyId: string]: {
-      status:
-        | 'sent'
-        | 'responded'
-        | 'cannot_respond';
-
-      timestamp: any;
-      name?: string;
-    };
-  };
+  buddyResponses?: Record<string, BuddyResponsePayload>;
 
   // Push notification status
   notificationStatus?: {
@@ -93,9 +69,12 @@ export interface EmergencyAlert {
     | 'received_in_app'
   };
 
-  notificationDeliveredAt?: {
-    [buddyId: string]: any;
-  };
+  notificationDeliveredAt?: Record<string, Timestamp>;
 
-  responseTimestamp?: any;
+  responseTimestamp?: Timestamp;
+
+  resolvedAt?: Timestamp;
+  resolvedBy?: string;
+  resolvedByName?: string;
+  patientCondition?: string;
 }

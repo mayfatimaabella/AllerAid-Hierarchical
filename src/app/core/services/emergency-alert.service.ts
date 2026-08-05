@@ -9,50 +9,17 @@ import { UserService } from './user.service';
 import { EmergencyService } from './emergency.service';
 import { EmergencySettingsService } from './emergency-settings.service';
 import { Timestamp } from 'firebase/firestore';
+import { Buddy } from '../models/buddy.model';
+import { EmergencyData } from '../models/emergency-data.model';
+import { EmergencyAlert } from '../models/emergency-alert.model';
 
-export interface EmergencyAlert {
-  id: string;
-  uid: string;
-  timestamp: Date;
-
-  location?: {
-    latitude: number;
-    longitude: number;
-    address?: string;
-  };
-
-  alertType: 'shake' | 'volume-button' | 'manual' | 'buddy-request';
-  status: 'active' | 'resolved' | 'cancelled';
-
-  emergencyData: EmergencyData;
-
-  notifiedBuddies: string[];
-  responderIds: string[];
-
-  buddyResponses?: Record<string, any>;
-
-  notificationStatus?: Record<
-    string,
-    'sending' | 'sent' | 'delivered' | 'failed' | 'pending'
-  >;
-
-  notificationDeliveredAt?: Record<string, any>;
-
-  responderId?: string;
-  responderName?: string;
-  estimatedArrival?: number;
-  distance?: number;
-  displayAddress?: string;
-}
-export interface EmergencyData {
-  name?: string;
-  allergies?: string;
-  emergencyInstruction?: string;
-  emergencyInstructions?: { allergyName: string; instruction: string }[];
-  emergencyMessage?: {
-    audioUrl?: string;
-    instructions?: string;
-  };
+export interface TriggerEmergencyResult {
+    emergencyId: string;
+    location?: {
+        latitude: number;
+        longitude: number;
+        accuracy?: number;
+    };
 }
 
 @Injectable({
@@ -76,7 +43,7 @@ export class EmergencyAlertService {
 
   async triggerEmergencyAlert(
     alertType: 'shake' | 'volume-button' | 'manual' = 'manual'
-  ): Promise<string> {
+  ): Promise<TriggerEmergencyResult> {
     try {
       const currentUser = await this.authService.waitForAuthInit();
       if (!currentUser) {
@@ -85,26 +52,14 @@ export class EmergencyAlertService {
 
       const userProfile = await this.userService.getUserProfile(currentUser.uid);
 
-      const fullNameParts: string[] = [];
-      if (userProfile?.firstName) fullNameParts.push(userProfile.firstName);
-      if (userProfile?.lastName) fullNameParts.push(userProfile.lastName);
-      const derivedName = fullNameParts.join(' ').trim();
-
-      const userName = (
-        userProfile?.fullName || derivedName || currentUser.email || 'User'
-      ).trim();
+      const userName = this.getUserDisplayName(userProfile, currentUser);
 
       const medicalData = await this.medicalService.getEmergencyData(currentUser.uid);
       const resolvedInstruction = medicalData?.emergencyInstruction?.trim() || '';
 
       const buddies = await this.buddyService.getUserBuddies(currentUser.uid);
-      const buddyIds = Array.from(
-        new Set(
-          buddies
-            .map((buddy: any) => buddy.connectedUserId || buddy.buddyUid || buddy.id)
-            .filter((id: any) => !!id && id !== currentUser.uid)
-        )
-      );
+
+      const buddyIds = this.getBuddyIds(buddies, currentUser.uid);
 
       if (buddyIds.length === 0) {
         console.warn('No emergency buddies configured.');
@@ -114,46 +69,13 @@ export class EmergencyAlertService {
         );
       }
 
-      const initialBuddyResponses = buddies.reduce((responses, buddy: any) => {
-        const buddyId = buddy.connectedUserId || buddy.buddyUid || buddy.id;
-        if (!buddyId || buddyId === currentUser.uid) {
-          return responses;
-        }
-
-        responses[buddyId] = {
-          status: 'sent',
-          timestamp: Timestamp.now(),
-          name:
-            buddy.buddyName ||
-            `${buddy.firstName || ''} ${buddy.lastName || ''}`.trim() ||
-            buddyId,
-        };
-
-        return responses;
-      }, {} as {
-        [buddyId: string]: {
-          status: 'sent';
-          timestamp: any;
-          name: string;
-        };
-      });
+      const initialBuddyResponses = this.buildInitialBuddyResponses(buddies,currentUser.uid);
 
       console.log('Getting current location before sending emergency alert...');
 
-      let locationData: { latitude: number; longitude: number; accuracy?: number } | undefined;
+      const locationData = await this.getEmergencyLocation();
 
-      try {
-        const position = await this.emergencyService.getCurrentLocation();
-        locationData = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        };
-      } catch (locationError) {
-        console.warn('Location unavailable for emergency trigger, proceeding without it:', locationError);
-        await this.showToast('Location unavailable — sending alert without location.', 'warning');
-        locationData = undefined;
-      }
+      
 
       console.log('Sending full emergency via EmergencyService from', alertType, 'trigger');
 
@@ -171,7 +93,7 @@ export class EmergencyAlertService {
         initialBuddyResponses
       );
 
-      await this.showToast('Emergency alert sent successfully.', 'success');
+      
       console.log('Emergency alert sent successfully via EmergencyService');
 
       await this.logEmergencyAlert(
@@ -181,16 +103,106 @@ export class EmergencyAlertService {
         medicalData,
         buddies
       );
-      return emergencyId;
+      return { emergencyId, location: locationData };
 
     } catch (error) {
       this.stopEmergencyAlarmSound();
 
       console.error('Error triggering emergency alert:', error);
-      await this.showToast('Failed to send emergency alert. Please try again.', 'danger');
       throw error;
     }
   }
+
+  private buildInitialBuddyResponses(
+    buddies: Buddy[],
+    currentUserUid: string,
+  ): {
+    [buddyId: string]: {
+      status: 'sent';
+      timestamp: Timestamp;
+      name: string;
+    };
+  } {
+    return buddies.reduce((responses, buddy: Buddy) => {
+      const buddyId = buddy.connectedUserId || buddy.buddyUid || buddy.id;
+ 
+      if (!buddyId || buddyId === currentUserUid) {
+        return responses;
+      }
+
+      responses[buddyId] = {
+        status: 'sent',
+        timestamp: Timestamp.now(),
+        name:
+          buddy.buddyName.trim() || buddyId,
+      };
+
+      return responses;
+    }, {} as {
+      [buddyId: string]: {
+        status: 'sent';
+        timestamp: Timestamp;
+        name: string;
+      };
+    });
+  }
+
+  private async getEmergencyLocation(): Promise<
+  { latitude: number; longitude: number; accuracy?: number } | undefined
+> {
+  try {
+    const position = await this.emergencyService.getCurrentLocation();
+
+    return {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+      accuracy: position.coords.accuracy,
+    };
+  } catch (locationError) {
+    console.warn(
+      'Location unavailable for emergency trigger, proceeding without it:',
+      locationError
+    );
+
+    await this.showToast(
+      'Location unavailable — sending alert without location.',
+      'warning'
+    );
+
+    return undefined;
+  }
+}
+
+  private getBuddyIds(buddies: Buddy[], currentUserUid: string): string[] {
+    return Array.from(
+      new Set(
+        buddies
+          .map((buddy: Buddy) => buddy.connectedUserId || buddy.buddyUid || buddy.id)
+          .filter((id: string) => !!id && id !== currentUserUid)
+      )
+    );
+  }
+
+  private getUserDisplayName(userProfile: any, currentUser: any): string {
+  const fullNameParts: string[] = [];
+
+      if (userProfile?.firstName) {
+        fullNameParts.push(userProfile.firstName);
+      }
+
+      if (userProfile?.lastName) {
+        fullNameParts.push(userProfile.lastName);
+      }
+
+      const derivedName = fullNameParts.join(' ').trim();
+
+      return (
+        userProfile?.fullName ||
+        derivedName ||
+        currentUser.email ||
+        'User'
+      ).trim();
+    }
 
   async playEmergencyAlarmSound(textToSpeak: string = this.defaultEmergencyAlarmText): Promise<void> {
     this.stopEmergencyAlarmSound();
@@ -295,10 +307,10 @@ export class EmergencyAlertService {
     alertType: string,
     location: { latitude: number; longitude: number; accuracy?: number } | undefined,
     emergencyData: EmergencyData,
-    buddies: { id: string }[]
+    buddies: Buddy[]
   ): Promise<void> {
     try {
-      const alertLog: Partial<EmergencyAlert> = {
+      const alertLog = {
         uid,
         alertType: alertType as EmergencyAlert['alertType'],
         location,

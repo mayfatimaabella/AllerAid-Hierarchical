@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
     </ion-buttons>
-    <ion-title>Manage Users</ion-title>
+    <ion-title>Users</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="addUser()">
         <ion-icon slot="icon-only" name="person-add-outline"></ion-icon>
@@ -28,32 +28,44 @@
 
   <section class="users-hero">
     <h1>User Management</h1>
-    <p>View, edit, suspend, and remove registered users.</p>
+        <p>
+          Manage registered users, update account information,
+          and control account access.
+        </p>
   </section>
 
   <!-- FILTER CHIPS -->
-  <div class="filter-row">
-    <ion-chip
-      [color]="activeFilter === 'all' ? 'primary' : 'medium'"
-      (click)="setFilter('all')">
-      All
-    </ion-chip>
-    <ion-chip
-      [color]="activeFilter === 'user' ? 'primary' : 'medium'"
-      (click)="setFilter('user')">
-      Users
-    </ion-chip>
-    <ion-chip
-      [color]="activeFilter === 'doctor' ? 'primary' : 'medium'"
-      (click)="setFilter('doctor')">
-      Doctors
-    </ion-chip>
-    <ion-chip
-      [color]="activeFilter === 'admin' ? 'primary' : 'medium'"
-      (click)="setFilter('admin')">
-      Admins
-    </ion-chip>
-  </div>
+   <div class="filter-row">
+
+  <ion-chip
+    [color]="activeFilter === 'all' ? 'primary' : 'medium'"
+    (click)="setFilter('all')">
+    <ion-icon name="people-outline"></ion-icon>
+    <ion-label>All</ion-label>
+  </ion-chip>
+
+  <ion-chip
+    [color]="activeFilter === 'user' ? 'primary' : 'medium'"
+    (click)="setFilter('user')">
+    <ion-icon name="person-outline"></ion-icon>
+    <ion-label>Users</ion-label>
+  </ion-chip>
+
+  <ion-chip
+    [color]="activeFilter === 'doctor' ? 'primary' : 'medium'"
+    (click)="setFilter('doctor')">
+    <ion-icon name="medkit-outline"></ion-icon>
+    <ion-label>Doctors</ion-label>
+  </ion-chip>
+
+  <ion-chip
+    [color]="activeFilter === 'admin' ? 'primary' : 'medium'"
+    (click)="setFilter('admin')">
+    <ion-icon name="shield-checkmark-outline"></ion-icon>
+    <ion-label>Admins</ion-label>
+  </ion-chip>
+
+</div>
 
   <!-- LOADING -->
   <div class="empty-state" *ngIf="isLoading">
@@ -85,46 +97,65 @@
           </ion-badge>
         </div>
 
-        <div class="user-details">
-          <p *ngIf="user.phone">
+        <div class="user-meta">
+
+          <span class="status"
+                [class.suspended]="user.isActive === false">
+
+            <ion-icon
+              [name]="user.isActive === false
+                ? 'ban-outline'
+                : 'checkmark-circle-outline'">
+            </ion-icon>
+
+            {{ user.isActive === false ? 'Suspended' : 'Active' }}
+
+          </span>
+
+          <span *ngIf="user.phone">
             <ion-icon name="call-outline"></ion-icon>
             {{ user.phone }}
-          </p>
-          <p *ngIf="user.allergies && user.allergies.length > 0">
+          </span>
+
+          <span *ngIf="user.allergies?.length">
             <ion-icon name="leaf-outline"></ion-icon>
-            {{ user.allergies!.join(', ') }}
-          </p>
-          <p>
-            <ion-icon
-              [name]="user.isActive === false ? 'ban-outline' : 'checkmark-circle-outline'"
-              [color]="user.isActive === false ? 'danger' : 'success'">
-            </ion-icon>
-            {{ user.isActive === false ? 'Suspended' : 'Active' }}
-          </p>
+            {{ user.allergies?.join(', ') }}
+          </span>
+
         </div>
 
         <div class="actions">
-          <ion-button fill="outline" size="small" (click)="editUser(user)">
-            <ion-icon slot="start" name="create-outline"></ion-icon>
-            Edit
-          </ion-button>
+            <ion-button
+              color="primary"
+              size="small"
+              (click)="editUser(user)">
+              <ion-icon slot="start" name="create-outline"></ion-icon>
+              Edit User
+            </ion-button>
 
-          <ion-button
-            fill="outline"
-            size="small"
-            [color]="user.isActive === false ? 'success' : 'warning'"
-            (click)="toggleActive(user)">
-            <ion-icon
-              slot="start"
-              [name]="user.isActive === false ? 'checkmark-outline' : 'ban-outline'">
-            </ion-icon>
-            {{ user.isActive === false ? 'Restore' : 'Suspend' }}
-          </ion-button>
+            <ion-button
+              fill="clear"
+              color="warning"
+              size="small"
+              (click)="toggleActive(user)">
+              <ion-icon
+                slot="icon-only"
+                [name]="user.isActive === false
+                ? 'checkmark-circle-outline'
+                : 'ban-outline'">
+              </ion-icon>
+            </ion-button>
 
-          <ion-button fill="outline" size="small" color="danger" (click)="deleteUser(user)">
-            <ion-icon slot="start" name="trash-outline"></ion-icon>
-            Delete
-          </ion-button>
+            <ion-button
+              fill="clear"
+              color="danger"
+              size="small"
+              (click)="deleteUser(user)">
+              <ion-icon
+                slot="icon-only"
+                name="trash-outline">
+              </ion-icon>
+            </ion-button>
         </div>
 
       </ion-card-content>

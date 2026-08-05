@@ -1,3 +1,5 @@
+import { Timestamp, FieldValue } from 'firebase/firestore';
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -12,6 +14,6 @@ export interface UserProfile {
 
   verificationStatus?: 'pending' | 'approved' | 'rejected';
 
-  dateCreated?: any;
-  lastLogin?: any;
+  dateCreated?: Timestamp | FieldValue;
+  lastLogin?: Timestamp | FieldValue;
 }

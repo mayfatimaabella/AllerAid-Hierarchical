@@ -1,5 +1,5 @@
-
 import { EmergencyInstruction } from './emergency-instruction.model';
+import { Timestamp } from 'firebase/firestore';
 
 export interface MedicalInfo {
   allergies: any[];
@@ -12,13 +12,17 @@ export interface MedicalInfo {
 
   emergencyProfile?: EmergencyInstruction;
 
+  emergencyMessage?: {
+    instructions?: string;
+  };
+
   buddySetupOnboarding?: {
     skippedBuddySetup?: boolean;
     fallbackUsed?: boolean;
-    skippedAt?: any;
-    updatedAt?: any;
+    skippedAt?: Timestamp;
+    updatedAt?: Timestamp;
   };
 
-  createdAt?: any;
-  updatedAt?: any;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }

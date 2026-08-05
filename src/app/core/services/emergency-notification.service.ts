@@ -74,13 +74,9 @@ export class EmergencyNotificationService {
 
       const notificationPromises = buddyRelations.map(async (buddy) => {
         const buddyStatusKey =
-          buddy.buddyUid ||
-          buddy.buddyId ||
-          buddy.connectedUserId ||
-          buddy.uid ||
-          buddy.id ||
-          buddy.user2Id ||
-          buddy.user1Id;
+            buddy.buddyUid ||
+            buddy.connectedUserId ||
+            buddy.id;
 
         if (!buddyStatusKey) {
           console.warn('Buddy without ID found, skipping:', buddy);
@@ -188,25 +184,9 @@ export class EmergencyNotificationService {
       this.updateNotificationStatus(buddyStatusKey, 'sending');
 
       let buddyUserId =
-        buddy.buddyUid ||
-        buddy.buddyId ||
-        buddy.connectedUserId ||
-        buddy.uid ||
-        buddy.id;
-
-      if (!buddyUserId && buddy.user1Id && buddy.user2Id) {
-        buddyUserId =
-          buddy.user1Id === patientUserId
-            ? buddy.user2Id
-            : buddy.user1Id;
-      }
-
-      if (buddyUserId === patientUserId && buddy.user1Id && buddy.user2Id) {
-        buddyUserId =
-          buddy.user1Id === patientUserId
-            ? buddy.user2Id
-            : buddy.user1Id;
-      }
+          buddy.buddyUid ||
+          buddy.connectedUserId ||
+          buddy.id;
 
       console.log('Resolved buddy user ID:', {
         patientUserId,

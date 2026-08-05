@@ -8,6 +8,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { EmergencyAlert } from '../../../../core/models/emergency-alert.model';
+import { EmergencyLocation } from 'src/app/core/models/emergency-location.model';
+import { Timestamp } from '@angular/fire/firestore';
+
+interface DismissedEmergency {
+  id: string;
+  status?: string;
+  createdAt: string;
+  location?: EmergencyLocation;
+  responderId?: string;
+  responderName?: string;
+  patientName?: string;
+}
+
+type EmergencyWithDismissed = EmergencyAlert & {
+  dismissed?: boolean;
+};
 
 @Component({
   selector: 'app-emergencies',
@@ -19,7 +35,7 @@ import { EmergencyAlert } from '../../../../core/models/emergency-alert.model';
 export class EmergenciesPage implements OnInit, OnDestroy {
   activeEmergencies: EmergencyAlert[] = [];
   allEmergencies: EmergencyAlert[] = [];
-  filteredEmergencies: EmergencyAlert[] = [];
+  filteredEmergencies: EmergencyWithDismissed[] = [];
   selectedFilter: string = 'all';
   selectedTab: string = 'incoming';
   private resolvedEmergencies: EmergencyAlert[] = [];
@@ -157,41 +173,54 @@ export class EmergenciesPage implements OnInit, OnDestroy {
     this.filterEmergencies();
   }
 
-  private getDismissedAlertsForCurrentUser(): EmergencyAlert[] {
-    try {
+private getDismissedAlertsForCurrentUser(): EmergencyWithDismissed[] {
+  try {
 
-      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const uid = user?.uid;
-      if (!uid) {
-        return [];
-      }
-      const key = `dismissedAlerts_${uid}`;
-      const stored = JSON.parse(localStorage.getItem(key) || '[]');
+    const user: { uid?: string } =
+      JSON.parse(localStorage.getItem('currentUser') || '{}');
 
-      return stored.map((a: any) => {
-        const match = this.allEmergencies.find(e => e.id === a.id);
-        return {
-          id: a.id,
-          status: match?.status ?? 'resolved',
-          dismissed: true,
-          timestamp: match?.timestamp || a.createdAt,
-          location: a.location || match?.location,
-          responderId: a.responderId || match?.responderId,
-          responderName: a.responderName || match?.responderName,
-          userName: match?.userName || a.patientName || 'Unknown',
-        } as any;
-      });
-    } catch {
+    if (!user.uid) {
       return [];
     }
-  }
 
-  getStatusDisplay(emergency: EmergencyAlert): string {
-    if ((emergency as any).dismissed) {
+    const key = `dismissedAlerts_${user.uid}`;
+
+    const stored: DismissedEmergency[] =
+      JSON.parse(localStorage.getItem(key) || '[]');
+
+    return stored.map(a => {
+
+      const match = this.allEmergencies.find(e => e.id === a.id);
+
+      return {
+        ...(match ?? {}),
+        id: a.id,
+        status: match?.status ?? 'resolved',
+        dismissed: true,
+        timestamp: match?.timestamp ?? a.createdAt,
+        location: match?.location ?? a.location,
+        responderId: match?.responderId ?? a.responderId,
+        responderName: match?.responderName ?? a.responderName,
+        userName: match?.userName ?? a.patientName ?? 'Unknown'
+      } as EmergencyWithDismissed;
+
+    });
+
+  } catch {
+
+    return [];
+
+  }
+}
+
+  getStatusDisplay(emergency: EmergencyWithDismissed): string {
+
+    if (emergency.dismissed) {
       return 'dismissed';
     }
 
     return emergency.status;
+
   }
 
   getStatusColor(status: string): string {
@@ -314,26 +343,57 @@ private async populateAddresses(emergencies: EmergencyAlert[]): Promise<void> {
   await Promise.all(tasks);
 }
 
-  getLocationDisplay(location: any): string {
-    if (location && location.latitude && location.longitude) {
-      return `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;
+  getLocationDisplay(location: EmergencyLocation | null | undefined): string {
+    if (!location) {
+      return 'Location unavailable';
     }
-    return 'Location unavailable';
+
+    return `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;
   }
 
-  getTimeAgo(timestamp: any): string {
-    if (!timestamp) return 'Unknown time';
+ getTimeAgo(
+  timestamp: Timestamp | Date | string | null | undefined
+): string {
 
-    const now = new Date();
-    const alertTime = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    const diffMs = now.getTime() - alertTime.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
+  if (!timestamp) {
+    return 'Unknown time';
   }
+
+  let alertTime: Date;
+
+  if (timestamp instanceof Date) {
+    alertTime = timestamp;
+  } else if (timestamp instanceof Timestamp) {
+    alertTime = timestamp.toDate();
+  } else {
+    alertTime = new Date(timestamp);
+  }
+
+  const now = new Date();
+  const diffMs = now.getTime() - alertTime.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+
+  const diffHours = Math.floor(diffMins / 60);
+
+  if (diffHours < 24) return `${diffHours}h ago`;
+
+  return `${Math.floor(diffHours / 24)}d ago`;
+}
+
+toDate(timestamp: Timestamp | Date | string | null | undefined): Date | null {
+  if (!timestamp) return null;
+
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
+
+  if (timestamp instanceof Timestamp) {
+    return timestamp.toDate();
+  }
+
+  return new Date(timestamp);
+}
 }

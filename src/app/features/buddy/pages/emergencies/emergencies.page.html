@@ -211,11 +211,7 @@
             <p>
               <strong>Date &amp; Time:</strong>
 
-              {{
-                emergency.timestamp?.toDate
-                  ? (emergency.timestamp.toDate() | date:'short')
-                  : (emergency.timestamp | date:'short')
-              }}
+                {{ toDate(emergency.timestamp) | date:'short' }}
 
             </p>
 

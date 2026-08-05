@@ -1,6 +1,7 @@
 export interface EmergencyLocation {
   latitude: number;
   longitude: number;
-  address: string;
+  accuracy?: number;
+  address?: string;
   timestamp?: any;
 }
