@@ -231,9 +231,9 @@ export class HomePage implements OnDestroy {
   }
 
   private async validateEmergencyState(): Promise<boolean> {
-  if (!this.isEmergencyActive) {
-    return true;
-  }
+      if (!this.isEmergencyActive) {
+        return true;
+      }
 
   await this.presentToast('An emergency alert is already active.','warning');
   return false;
@@ -684,21 +684,19 @@ private listenForEmergencyUpdates(): void {
     if (!response) return 'Unknown';
 
     switch (response.status) {
-  case NotificationStatusValues.SENT:
-    return 'Alert Sent';
+      case NotificationStatusValues.SENT:
+        return 'Alert sent';
 
-  case BuddyStatus.RESPONDED:
-    return `${response.name} is responding`;
+      case BuddyStatus.RESPONDED:
+        return 'Help is on the way';
 
-  case BuddyStatus.CANNOT_RESPOND:
-    return `${response.name} declined`;
+      case BuddyStatus.CANNOT_RESPOND:
+      case BuddyStatus.TIMED_OUT:
+        return 'No response';
 
-  case BuddyStatus.TIMED_OUT:
-    return `${response.name} did not respond`;
-
-  default:
-    return response.status;
-}
+      default:
+        return 'Waiting for response';
+    }
   }
 
   getBuddyResponseColor(buddyId: string): string {
@@ -721,13 +719,13 @@ private listenForEmergencyUpdates(): void {
   getNotificationStatus(buddyId: string): string {
     const status = this.resolvedNotificationStatus(buddyId);
     switch (status) {
-      case NotificationStatusValues.SENDING:   return 'Sending...';
-      case NotificationStatusValues.PENDING:   return 'Pending...';
-      case NotificationStatusValues.SENT:      return 'Push Sent';
-      case NotificationStatusValues.DELIVERED: return 'Received';
-     case NotificationStatusValues.RECEIVED_IN_APP: return 'Received in App';
-      case NotificationStatusValues.FAILED:    return 'Failed';
-      default:        return 'Pending...';
+      case NotificationStatusValues.SENDING:   return 'Sending alert...';
+      case NotificationStatusValues.PENDING:   return 'Waiting...';
+      case NotificationStatusValues.SENT:      return 'Alert sent';
+      case NotificationStatusValues.DELIVERED: return 'Alert received';
+     case NotificationStatusValues.RECEIVED_IN_APP: return 'Seen in app';
+      case NotificationStatusValues.FAILED:    return 'Couldn’t reach contact';
+      default:        return 'Waiting...';
     }
   }
 

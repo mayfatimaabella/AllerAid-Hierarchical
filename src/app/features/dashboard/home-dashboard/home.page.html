@@ -72,7 +72,7 @@
         <h2>Sending Emergency Alert</h2>
 
         <p>
-          Please keep the app open while we notify your emergency contacts.
+          We are notifying your emergency contacts. Please stay calm.
         </p>
       </div>
 
@@ -88,7 +88,7 @@
               : 'checkmark-circle'">
           </ion-icon>
 
-          <span>Preparing emergency information</span>
+          <span>Preparing your emergency alert</span>
 
         </div>
 
@@ -103,7 +103,7 @@
               : 'checkmark-circle'">
           </ion-icon>
 
-          <span>Getting your location</span>
+          <span>Sharing your location</span>
 
         </div>
 
@@ -118,7 +118,7 @@
               : 'checkmark-circle'">
           </ion-icon>
 
-          <span>Sending emergency alerts</span>
+          <span>Notifying your emergency contacts</span>
 
         </div>
 
@@ -136,7 +136,7 @@
             name="time">
           </ion-icon>
 
-          <span>Waiting for buddy responses</span>
+          <span>Waiting for a response</span>
 
         </div>
 
@@ -334,7 +334,7 @@
 
       <p>
         Your emergency alert has been sent.
-        Stay calm while help is on the way.
+        Stay calm. We have notified your emergency contacts.
       </p>
 
     </div>
@@ -374,13 +374,13 @@
 
         </div>
 
-    <!-- Buddy Responses -->
+    <!-- Emergency Contacts -->
 
 <div class="dashboard-card">
 
   <h3>
     <ion-icon name="people"></ion-icon>
-    Buddy Responses
+    Emergency Contacts
   </h3>
 
 <ng-container *ngIf="hasBuddyResponses(); else waitingBuddies">
@@ -411,11 +411,7 @@
         {{ getBuddyResponseStatus(buddyId) }}
       </ion-badge>
 
-      <ion-badge
-        *ngIf="shouldShowNotificationBadge(buddyId)"
-        [color]="getNotificationStatusColor(buddyId)">
-        {{ getNotificationStatus(buddyId) }}
-      </ion-badge>
+
 
     </div>
 
@@ -426,7 +422,7 @@
   <ng-template #waitingBuddies>
     <div class="waiting-card">
       <ion-spinner></ion-spinner>
-      <p>Waiting for your buddies to respond...</p>
+      <p>Waiting for your emergency contacts to respond...</p>
     </div>
   </ng-template>
 

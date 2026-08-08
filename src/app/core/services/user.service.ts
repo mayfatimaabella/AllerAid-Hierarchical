@@ -6,7 +6,6 @@ import { UserProfile } from '../models/user-profile.model';
 import { EmergencySettingsService } from './emergency-settings.service';
 
 
-
 @Injectable({ providedIn: 'root' })
 export class UserService {
 
@@ -36,7 +35,7 @@ export class UserService {
       
     }
   ): Promise<void> {
-    
+     
     try {
       const baseProfile: UserProfile = {
         uid,
