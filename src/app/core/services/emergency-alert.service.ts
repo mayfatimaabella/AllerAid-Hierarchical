@@ -74,14 +74,17 @@ export class EmergencyAlertService {
       console.log('Getting current location before sending emergency alert...');
 
       const locationData = await this.getEmergencyLocation();
+      const locationText = await this.getLocationDisplayText(locationData);
 
-      
+      const emergencyAlarmText = this.buildEmergencyAlarmText(
+        userName,
+        medicalData,
+        locationText
+      );
 
       console.log('Sending full emergency via EmergencyService from', alertType, 'trigger');
 
-      await this.playEmergencyAlarmSound(
-        resolvedInstruction || this.defaultEmergencyAlarmText
-      );
+      await this.playEmergencyAlarmSound(emergencyAlarmText);
 
       const emergencyId = await this.emergencyService.sendEmergencyAlert(
         currentUser.uid,
@@ -223,6 +226,82 @@ export class EmergencyAlertService {
     }
   }
 
+  private async getLocationDisplayText(
+    locationData?: { latitude: number; longitude: number; accuracy?: number }
+  ): Promise<string> {
+    if (!locationData || !Number.isFinite(locationData.latitude) || !Number.isFinite(locationData.longitude)) {
+      return 'Location unavailable';
+    }
+
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${locationData.latitude}&lon=${locationData.longitude}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Reverse geocode HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const displayName = data?.display_name?.trim();
+      if (displayName) {
+        return displayName;
+      }
+    } catch (error) {
+      console.warn('Reverse geocode failed for emergency TTS location text:', error);
+    }
+
+    return `Latitude ${locationData.latitude}, Longitude ${locationData.longitude}`;
+  }
+
+  private buildEmergencyAlarmText(
+    patientName: string,
+    medicalData: any | null,
+    locationText: string
+  ): string {
+    const allergyList = this.extractAllergyLabels(medicalData);
+    const specificInstructions = this.extractPerAllergyEmergencyInstructions(medicalData);
+    const generalInstruction = String(medicalData?.generalEmergencyInstruction ?? medicalData?.emergencyInstruction ?? '').trim();
+
+    const allergies = allergyList.length > 0 ? allergyList.join(', ') : 'No known allergies listed';
+    const instructions = specificInstructions.length > 0
+      ? `${specificInstructions.join(' ')} ${generalInstruction ? `${generalInstruction}.` : ''}`.trim()
+      : generalInstruction || 'Follow general emergency instructions and call emergency services immediately.';
+
+    return `Emergency alert for ${patientName}. Allergies: ${allergies}. Instructions: ${instructions}. Location: ${locationText}.`;
+  }
+
+  private extractAllergyLabels(medicalData: any | null): string[] {
+    const fromData = medicalData?.allergies;
+    if (Array.isArray(fromData)) {
+      return fromData
+        .map((entry: any) => typeof entry === 'string'
+          ? entry
+          : entry?.name || entry?.allergyName || entry?.label || entry?.value || '')
+        .filter(Boolean);
+    }
+
+    if (typeof fromData === 'string' && fromData.trim()) {
+      return fromData.split(',').map(item => item.trim()).filter(Boolean);
+    }
+
+    return [];
+  }
+
+  private extractPerAllergyEmergencyInstructions(medicalData: any | null): string[] {
+    const instructions = medicalData?.allergyEmergencyInstructions ?? medicalData?.emergencyInstructions;
+    if (!Array.isArray(instructions) || instructions.length === 0) {
+      return [];
+    }
+
+    return instructions
+      .map((entry: any) => {
+        const allergyName = entry?.allergyName || entry?.allergy || entry?.name || 'allergy';
+        const instruction = entry?.instruction || entry?.note || '';
+        return instruction ? `${allergyName}: ${instruction}` : '';
+      })
+      .filter(Boolean);
+  }
+
   private async speakEmergencyAlarmText(textToSpeak: string): Promise<void> {
     if (!this.isEmergencyAlarmLooping) {
       return;
@@ -237,7 +316,7 @@ export class EmergencyAlertService {
           pitch: 1,
           volume: 1,
           category: 'playback',
-          queueStrategy: 0,
+          queueStrategy: 1,
         });
         console.log('Speaking emergency alarm natively:', textToSpeak);
         return;
@@ -255,8 +334,6 @@ export class EmergencyAlertService {
         console.warn('Text-to-speech not supported on this device');
         return;
       }
-
-      window.speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.lang = 'en-US';

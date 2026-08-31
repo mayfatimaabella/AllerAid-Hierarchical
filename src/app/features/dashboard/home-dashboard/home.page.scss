@@ -201,6 +201,24 @@ ion-content {
 
 
 /* =========================================================
+   ALERTS BUTTON
+========================================================= */
+
+.alerts-button-wrapper {
+  margin: 16px 0 20px;
+  padding: 0 0 12px;
+}
+
+.alerts-button-wrapper ion-button {
+  --border-radius: 14px;
+  --border-color: #036a5d;
+  --color: #036a5d;
+  font-weight: 700;
+  height: 48px;
+}
+
+
+/* =========================================================
    HEALTH CARDS
 ========================================================= */
 

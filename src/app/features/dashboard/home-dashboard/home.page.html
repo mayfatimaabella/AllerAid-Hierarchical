@@ -8,10 +8,6 @@
 
     <ion-buttons slot="end">
 
-      <ion-button fill="clear" [routerLink]="['/tabs/alerts']">
-        <ion-icon name="warning"></ion-icon>
-      </ion-button>
-
       <ion-button fill="clear" size="small" (click)="openNotifications()">
         <img src="assets/icon/bell.png" alt="bell" class="notif-icon" />
       </ion-button>
@@ -261,6 +257,17 @@
       (dismiss)="respondingBuddy = null"
     >
     </app-emergency-response-notification>
+
+    <!-- Emergency Alerts Button -->
+    <div class="alerts-button-wrapper">
+      <ion-button 
+        expand="block" 
+        fill="outline"
+        [routerLink]="['/tabs/alerts']">
+        <ion-icon name="alert-circle-outline" slot="start"></ion-icon>
+        View Emergency Alerts
+      </ion-button>
+    </div>
 
 <div class="health-overview-container">
 
