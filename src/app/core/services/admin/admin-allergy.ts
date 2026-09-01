@@ -25,9 +25,9 @@ export class AdminAllergyService {
     this.firestore = firebase.getDb(); 
   }
 
-  // =========================
+  // 
   // ALLERGY OPTIONS
-  // =========================
+  // 
 
   async getAllAllergyOptions(): Promise<any[]> {
     const ref = collection(this.firestore, 'allergyOptions');
@@ -63,9 +63,9 @@ export class AdminAllergyService {
     await deleteDoc(ref);
   }
 
-  // =========================
+  // 
   // ALLERGY SUGGESTIONS
-  // =========================
+  // 
 
   async getAllergySuggestions(): Promise<any[]> {
     const ref = collection(this.firestore, 'allergySuggestions');

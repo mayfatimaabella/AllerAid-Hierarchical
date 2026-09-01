@@ -56,10 +56,10 @@ function normalizePushData(input?: { [key: string]: any }): { [key: string]: str
   return output;
 }
 
-/* =====================================================
+/* 
    SEND EMERGENCY PUSH NOTIFICATION
    Called by Angular EmergencyNotificationService
-   ===================================================== */
+    */
 export const sendEmergencyPush = functions
   .region('us-central1')
   .https.onRequest(async (req, res) => {
@@ -166,9 +166,9 @@ export const sendEmergencyPush = functions
     }
   });
 
-/* =====================================================
+/* 
    SEND BUDDY INVITATION - CALLABLE FUNCTION
-   ===================================================== */
+    */
 export const sendBuddyInvitationFunction = functions
   .region('us-central1')
   .https.onCall(async (data, context) => {
@@ -269,9 +269,9 @@ export const sendBuddyInvitationFunction = functions
     }
   });
 
-/* =====================================================
+/* 
    SEND BUDDY INVITATION - HTTP FUNCTION
-   ===================================================== */
+    */
 export const sendBuddyInvitationHttp = functions
   .region('us-central1')
   .https.onRequest(async (req, res) => {
@@ -373,9 +373,9 @@ export const sendBuddyInvitationHttp = functions
     }
   });
 
-/* =====================================================
+/* 
    SEND DOCTOR WELCOME EMAIL
-   ===================================================== */
+    */
 export const sendDoctorWelcomeEmail = functions
   .region('us-central1')
   .https.onCall(async (data, context) => {

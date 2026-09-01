@@ -185,12 +185,13 @@ export class ProfileEHRManagerService {
                 header: 'Delete Visit',
                 message: 'Are you sure you want to delete this visit?',
                 buttons: [
-                  { text: 'Cancel', role: 'cancel' },
                   { 
                     text: 'Delete', 
                     role: 'destructive', 
                     handler: () => this.deleteDoctorVisit(id, async () => {})
-                  }
+                  },
+                  
+                  { text: 'Cancel', role: 'cancel' }
                 ]
               });
               await confirm.present();

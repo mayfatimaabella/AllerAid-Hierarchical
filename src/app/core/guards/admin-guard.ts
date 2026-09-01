@@ -1,5 +1,8 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import {
+  CanActivateFn,
+  Router
+} from '@angular/router';
 
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
@@ -12,27 +15,98 @@ export const adminGuard: CanActivateFn = async () => {
 
   try {
 
-    const currentUser = await authService.waitForAuthInit();
+    console.log('ADMIN GUARD STARTED');
+    
+    // Wait for Firebase to restore the login session
+    const currentUser =
+      await authService.waitForAuthInit();
 
+    console.log(
+      'Firebase user:',
+      currentUser?.email
+    );
+
+    console.log(
+      'Firebase UID:',
+      currentUser?.uid
+    );
+
+    // No logged-in user
     if (!currentUser) {
-      router.navigate(['/login']);
-      return false;
+
+      console.log(
+        'ADMIN GUARD: No authenticated user'
+      );
+
+      return router.createUrlTree(['/login']);
     }
 
-    const profile = await userService.getUserProfile(currentUser.uid);
+    // IMPORTANT:
+    // false = do not use cached profile
+    const profile =
+      await userService.getUserProfile(
+        currentUser.uid,
+        false
+      );
 
-    if (profile?.role === 'admin') {
+    console.log(
+      'Firestore profile:',
+      profile
+    );
+
+    console.log(
+      'Firestore role:',
+      profile?.role
+    );
+
+    console.log(
+      'Role type:',
+      typeof profile?.role
+    );
+
+    // Normalize the role
+    const role =
+      profile?.role
+        ?.toString()
+        .trim()
+        .toLowerCase();
+
+    console.log(
+      'Normalized role:',
+      role
+    );
+
+    // Admin
+    if (role === 'admin') {
+
+      console.log(
+        'ADMIN ACCESS GRANTED'
+      );
+
       return true;
     }
 
-    router.navigate(['tabs/home']);
-    return false;
+    console.log(
+      'USER IS NOT ADMIN'
+    );
+
+    console.log(
+      'Redirecting to /tabs/home'
+    );
+
+    return router.createUrlTree([
+      '/tabs/home'
+    ]);
 
   } catch (error) {
 
-    console.error('Admin guard error:', error);
+    console.error(
+      'ADMIN GUARD ERROR:',
+      error
+    );
 
-    router.navigate(['/login']);
-    return false;
+    return router.createUrlTree([
+      '/login'
+    ]);
   }
 };

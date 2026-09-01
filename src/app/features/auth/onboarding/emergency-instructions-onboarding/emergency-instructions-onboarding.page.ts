@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform, ToastController, AlertController } from '@ionic/angular';
 import { AuthService } from '../../../../core/services/auth.service';
-import { MedicalService } from '../../../../core/services/medical.profile.service';
+import { MedicalService } from '../../../../core/services/medical.service';
 import { AllergyService } from '../../../../core/services/allergy.service';
 import { FirebaseService } from '../../../../core/services/firebase.service';
 import { Subscription } from 'rxjs';

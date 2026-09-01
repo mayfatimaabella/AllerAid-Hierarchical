@@ -3,7 +3,7 @@ import {ModalController,NavController,AlertController,ToastController} from '@io
 import { Capacitor } from '@capacitor/core';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { AllergyService } from '../../../core/services/allergy.service';
-import { MedicalService } from '../../../core/services/medical.profile.service';
+import { MedicalService } from '../../../core/services/medical.service';
 import * as L from 'leaflet';
 import 'leaflet-routing-machine';
 import { Router } from '@angular/router';

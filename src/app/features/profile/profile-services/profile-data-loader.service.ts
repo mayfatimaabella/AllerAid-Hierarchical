@@ -5,7 +5,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { UserProfile } from '../../../core/models/user-profile.model';
 import { AllergyService } from '../../../core/services/allergy.service';
-import { MedicalService } from '../../../core/services/medical.profile.service';
+import { MedicalService } from '../../../core/services/medical.service';
 import { EHRService } from '../../../core/services/ehr.service';
 
 import { EmergencySettingsService } from 'src/app/core';

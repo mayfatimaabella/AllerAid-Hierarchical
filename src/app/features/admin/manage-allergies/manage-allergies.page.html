@@ -1,127 +1,670 @@
-<ion-header>
-  <ion-toolbar class="toolbar--teal">
+<ion-header class="admin-header">
+
+  <ion-toolbar>
 
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+      <ion-back-button
+        defaultHref="/admin-dashboard"
+        text="">
+      </ion-back-button>
     </ion-buttons>
 
-    <ion-title>Manage Allergies</ion-title>
+    <ion-title>
+      Manage Allergies
+    </ion-title>
 
   </ion-toolbar>
+
 </ion-header>
 
-<ion-content class="allergy-bg">
 
-  <section class="hero">
-    <h1>Allergy Management</h1>
+<ion-content class="allergies-bg">
 
-    <p>
-      Manage allergy options and review
-      user-submitted suggestions.
-    </p>
-  </section>
+  <main class="admin-page">
 
-  <ion-button
-    expand="block"
-    color="success"
-    (click)="addAllergy()">
 
-    Add Allergy Option
+    <!--PAGE HEADER-->
 
-  </ion-button>
+    <section class="page-header">
 
-  <!-- LOADING -->
-  <div class="loading-box" *ngIf="isLoading">
+      <span class="eyebrow">
+        ADMINISTRATION
+      </span>
 
-    <ion-spinner name="crescent"></ion-spinner>
+      <h1>
+        Allergy Management
+      </h1>
 
-    <p>Loading allergy data...</p>
+      <p>
+        Manage allergy options and review
+        user-submitted suggestions.
+      </p>
 
-  </div>
+    </section>
 
-  <!-- ALLERGY OPTIONS -->
-  <ion-list *ngIf="!isLoading">
+    <!-- MANAGEMENT TOOLBAR -->
 
-    <ion-list-header>
-      Allergy Options
-    </ion-list-header>
+    <section class="management-toolbar">
 
-    <ion-item *ngFor="let allergy of allergyOptions">
+      <div class="toolbar-info">
 
-      <ion-label>
+        <div class="toolbar-icon">
 
-        <h2>
-          {{ allergy.label || allergy.name }}
-        </h2>
+          <ion-icon
+            name="medical-outline">
+          </ion-icon>
 
-        <p>
-          {{ allergy.categoryName || allergy.categoryId || 'Uncategorized' }}
-        </p>
+        </div>
 
-      </ion-label>
 
-      <ion-button
-        fill="clear"
-        color="primary"
-        (click)="editAllergy(allergy)">
+        <div class="toolbar-text">
 
-        Edit
+          <h2>
+            Manage Allergies
+          </h2>
 
-      </ion-button>
+          <p>
+            Maintain allergy options and review suggestions.
+          </p>
 
-      <ion-button
-        fill="clear"
-        color="danger"
-        (click)="deleteAllergy(allergy)">
+        </div>
 
-        Delete
+      </div>
 
-      </ion-button>
 
-    </ion-item>
+      <button
+        type="button"
+        class="add-allergy-button"
+        (click)="addAllergy()">
 
-  </ion-list>
+        <ion-icon
+          name="add-outline">
+        </ion-icon>
 
-  <!-- SUGGESTIONS -->
-  <ion-list *ngIf="!isLoading">
+        <span>
+          Add Allergy
+        </span>
 
-    <ion-list-header>
-      Pending Suggestions
-    </ion-list-header>
+      </button>
 
-    <ion-item *ngFor="let suggestion of suggestions">
+    </section>
 
-      <ion-label>
 
-        <h2>
-          {{ suggestion.name || suggestion.label }}
-        </h2>
+    <!--LOADING-->
 
-        <p>
-          Suggested by:
-          {{ suggestion.suggestedBy || 'Unknown User' }}
-        </p>
+    <section
+      class="state-container"
+      *ngIf="isLoading">
 
-      </ion-label>
+      <div class="state-icon">
 
-      <ion-button
-        color="success"
-        (click)="approveSuggestion(suggestion)">
+        <ion-spinner
+          name="crescent">
+        </ion-spinner>
 
-        Approve
+      </div>
 
-      </ion-button>
+      <h2>
+        Loading allergy data
+      </h2>
 
-      <ion-button
-        color="danger"
-        (click)="rejectSuggestion(suggestion)">
+      <p>
+        Please wait while the allergy information is loaded.
+      </p>
 
-        Reject
+    </section>
 
-      </ion-button>
 
-    </ion-item>
+    <!--MAIN CONTENT-->
 
-  </ion-list>
+    <ng-container *ngIf="!isLoading">
+
+
+      <!--TABS -->
+
+      <section class="allergy-tabs">
+
+        <!-- ALLERGY OPTIONS -->
+
+        <button
+          type="button"
+          class="tab-button"
+          [class.active]="activeTab === 'options'"
+          (click)="activeTab = 'options'">
+
+          <ion-icon
+            name="list-outline">
+          </ion-icon>
+
+          <span>
+            Allergy Options
+          </span>
+
+          <span class="tab-count options-count">
+            {{ allergyOptions.length }}
+          </span>
+
+        </button>
+
+
+        <!-- PENDING SUGGESTIONS -->
+
+        <button
+          type="button"
+          class="tab-button"
+          [class.active]="activeTab === 'suggestions'"
+          (click)="activeTab = 'suggestions'">
+
+          <ion-icon
+            name="time-outline">
+          </ion-icon>
+
+          <span>
+            Pending Suggestions
+          </span>
+
+          <span
+            class="tab-count pending-count"
+            [class.has-pending]="suggestions.length > 0">
+
+            {{ suggestions.length }}
+
+          </span>
+
+        </button>
+
+      </section>
+
+
+      <!--ALLERGY OPTIONS-->
+
+      <ng-container *ngIf="activeTab === 'options'">
+
+
+        <!-- SECTION HEADER -->
+
+        <section class="directory-bar">
+
+          <div>
+
+            <span class="section-label">
+              ALLERGY DIRECTORY
+            </span>
+
+            <h2>
+              Allergy Options
+            </h2>
+
+          </div>
+
+
+          <span class="section-count">
+
+            {{ allergyOptions.length }}
+            {{ allergyOptions.length === 1 ? 'Option' : 'Options' }}
+
+          </span>
+
+        </section>
+
+
+        <!-- EMPTY STATE -->
+
+        <section
+          class="state-container compact-state"
+          *ngIf="allergyOptions.length === 0">
+
+          <div class="state-icon">
+
+            <ion-icon
+              name="medical-outline">
+            </ion-icon>
+
+          </div>
+
+          <h2>
+            No allergy options
+          </h2>
+
+          <p>
+            Add an allergy option to get started.
+          </p>
+
+        </section>
+
+
+        <!-- ALLERGY TABLE -->
+
+        <section
+          class="allergies-table"
+          *ngIf="allergyOptions.length > 0">
+
+
+          <!-- TABLE HEADER -->
+
+          <div class="allergy-table-header">
+
+            <div class="allergy-column">
+              Allergy
+            </div>
+
+            <div class="category-column">
+              Category
+            </div>
+
+            <div class="actions-column">
+              Actions
+            </div>
+
+          </div>
+
+
+          <!-- TABLE ROWS -->
+
+          <div
+            class="allergy-row"
+            *ngFor="let allergy of allergyOptions">
+
+
+            <!-- ALLERGY -->
+
+            <div class="allergy-column allergy-cell">
+
+              <div class="allergy-icon">
+
+                <ion-icon
+                  name="medical-outline">
+                </ion-icon>
+
+              </div>
+
+
+              <div class="allergy-info">
+
+                <h3>
+                  {{ allergy.label || allergy.name }}
+                </h3>
+
+                <p>
+                  Available allergy option
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <!-- CATEGORY -->
+
+            <div class="category-column">
+
+              <span
+                class="category-badge"
+                [class.food]="
+                  (allergy.categoryName || allergy.categoryId || '')
+                    .toLowerCase() === 'food'
+                "
+                [class.medication]="
+                  (allergy.categoryName || allergy.categoryId || '')
+                    .toLowerCase() === 'medication'
+                "
+                [class.environment]="
+                  (allergy.categoryName || allergy.categoryId || '')
+                    .toLowerCase() === 'environment'
+                ">
+
+                {{
+                  allergy.categoryName ||
+                  allergy.categoryId ||
+                  'Uncategorized'
+                }}
+
+              </span>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="actions-column actions-cell">
+
+              <button
+                type="button"
+                class="action-button edit"
+                (click)="editAllergy(allergy)"
+                aria-label="Edit allergy">
+
+                <ion-icon
+                  name="create-outline">
+                </ion-icon>
+
+                <span>
+                  Edit
+                </span>
+
+              </button>
+
+
+              <button
+                type="button"
+                class="action-button delete"
+                (click)="deleteAllergy(allergy)"
+                aria-label="Delete allergy">
+
+                <ion-icon
+                  name="trash-outline">
+                </ion-icon>
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </ng-container>
+
+
+
+      <!-- ==
+           PENDING SUGGESTIONS
+      === -->
+
+      <ng-container *ngIf="activeTab === 'suggestions'">
+
+
+        <!-- SECTION HEADER -->
+
+        <section class="directory-bar">
+
+          <div>
+
+            <span class="section-label">
+              USER SUBMISSIONS
+            </span>
+
+            <h2>
+              Pending Suggestions
+            </h2>
+
+          </div>
+
+
+          <span class="section-count pending-section-count">
+
+            {{ suggestions.length }}
+            {{ suggestions.length === 1 ? 'Suggestion' : 'Suggestions' }}
+
+          </span>
+
+        </section>
+
+
+        <!-- EMPTY STATE -->
+
+        <section
+          class="state-container compact-state"
+          *ngIf="suggestions.length === 0">
+
+          <div class="state-icon success-icon">
+
+            <ion-icon
+              name="checkmark-circle-outline">
+            </ion-icon>
+
+          </div>
+
+          <h2>
+            All caught up
+          </h2>
+
+          <p>
+            There are no pending allergy suggestions to review.
+          </p>
+
+        </section>
+
+
+        <!-- SUGGESTIONS TABLE -->
+
+        <section
+          class="suggestions-table"
+          *ngIf="suggestions.length > 0">
+
+
+          <!-- TABLE HEADER -->
+
+          <div class="suggestion-table-header">
+
+            <div class="suggestion-column">
+              Suggested Allergy
+            </div>
+
+            <div class="submitted-column">
+              Suggested By
+            </div>
+
+            <div class="suggestion-actions-column">
+              Actions
+            </div>
+
+          </div>
+
+
+          <!-- TABLE ROWS -->
+
+          <div
+            class="suggestion-row"
+            *ngFor="let suggestion of suggestions">
+
+
+            <!-- SUGGESTION -->
+
+            <div class="suggestion-column suggestion-cell">
+
+              <div class="suggestion-avatar">
+
+                {{
+                  (suggestion.name || suggestion.label || '?')
+                    .charAt(0)
+                }}
+
+              </div>
+
+
+              <div class="suggestion-info">
+
+                <h3>
+                  {{ suggestion.name || suggestion.label }}
+                </h3>
+
+                <p>
+                  User-submitted allergy suggestion
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <!-- SUBMITTED BY -->
+
+            <div class="submitted-column">
+
+              <div class="submitted-by">
+
+                <ion-icon
+                  name="person-outline">
+                </ion-icon>
+
+                <span>
+
+                  {{
+                    suggestion.suggestedBy ||
+                    'Unknown User'
+                  }}
+
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div
+              class="suggestion-actions-column
+                     suggestion-actions">
+
+
+              <button
+                type="button"
+                class="approve-button"
+                (click)="approveSuggestion(suggestion)">
+
+                <ion-icon
+                  name="checkmark-outline">
+                </ion-icon>
+
+                <span>
+                  Approve
+                </span>
+
+              </button>
+
+
+              <button
+                type="button"
+                class="reject-button"
+                (click)="rejectSuggestion(suggestion)">
+
+                <ion-icon
+                  name="close-outline">
+                </ion-icon>
+
+                <span>
+                  Reject
+                </span>
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </ng-container>
+
+
+    </ng-container>
+
+  </main>
+
+  <!-- ADD / EDIT ALLERGY MODAL -->
+
+<ion-modal
+  [isOpen]="isAllergyModalOpen"
+  (didDismiss)="closeAllergyModal()"
+  class="allergy-modal"
+>
+
+  <ng-template>
+
+    <div class="allergy-modal-wrapper">
+
+      <!-- HEADER -->
+
+      <div class="allergy-modal-header">
+
+        <div>
+          <span class="modal-eyebrow">
+            {{ isEditingAllergy ? 'EDIT OPTION' : 'NEW OPTION' }}
+          </span>
+
+          <h2>
+            {{
+              isEditingAllergy
+                ? 'Edit Allergy Option'
+                : 'Add Allergy Option'
+            }}
+          </h2>
+        </div>
+
+      </div>
+
+
+      <!-- CONTENT -->
+
+      <div class="allergy-modal-body">
+
+        <!-- ALLERGY NAME -->
+
+        <div class="modal-field">
+
+          <label>
+            Allergy Name
+          </label>
+
+          <ion-input
+            [(ngModel)]="allergyForm.name"
+            placeholder="Example: Peanuts"
+            fill="outline"
+          >
+          </ion-input>
+
+        </div>
+
+
+        <!-- CATEGORY -->
+
+        <div class="modal-field">
+
+          <label>
+            Allergy Category
+          </label>
+
+          <ion-select
+            [(ngModel)]="allergyForm.categoryId"
+            placeholder="Select a category"
+            interface="popover"
+            fill="outline"
+          >
+
+            <ion-select-option
+              *ngFor="let category of categories"
+              [value]="category.id"
+            >
+              {{ category.name }}
+            </ion-select-option>
+
+          </ion-select>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="modal-actions">
+
+          <button type="button" class="btn-save" (click)="saveAllergy()">
+            {{ isEditingAllergy ? 'Save Changes' : 'Add Allergy' }}
+          </button>
+
+          <button type="button" class="btn-cancel" (click)="closeAllergyModal()">
+            Cancel
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </ng-template>
+
+</ion-modal>
 
 </ion-content>

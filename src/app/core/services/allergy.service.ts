@@ -1,13 +1,10 @@
 import { Injectable } from '@angular/core';
-
-
 import {
   collection,
   addDoc,
   getDocs,
   setDoc,
   getDoc,
-  deleteDoc,
   doc,
   serverTimestamp,
   Firestore
@@ -72,48 +69,6 @@ export class AllergyService {
     return data?.['allergies'] || [];
   }
 
-  // UPDATE user allergies
-  async updateUserAllergies(userId: string, allergies: UserAllergy[]): Promise<void> {
-    const medicalRef = this.medicalInfoRef(userId);
-
-    await setDoc(
-      medicalRef,
-      {
-        allergies,
-        updatedAt: serverTimestamp()
-      },
-      { merge: true }
-    );
-  }
-
-  // CLEAR user allergies
-  async clearUserAllergies(userId: string): Promise<void> {
-    const medicalRef = this.medicalInfoRef(userId);
-
-    await setDoc(
-      medicalRef,
-      {
-        allergies: [],
-        updatedAt: serverTimestamp()
-      },
-      { merge: true }
-    );
-  }
-
-  // CHECK if user has a specific allergy
-  async userHasAllergy(userId: string, allergyName: string): Promise<boolean> {
-    const allergies = await this.getUserAllergies(userId);
-    return allergies.some(a => a.name === allergyName && a.checked);
-  }
-
-  // GET checked allergy labels only
-  async getUserAllergyList(userId: string): Promise<string[]> {
-    const allergies = await this.getUserAllergies(userId);
-    return allergies
-      .filter(a => a.checked)
-      .map(a => a.value?.trim() ? `${a.label}: ${a.value}` : a.label);
-  }
-
   // CREATE predefined allergy options (run once)
   async createAllergyOptions(): Promise<void> {
     try {
@@ -165,64 +120,160 @@ export class AllergyService {
     }
   }
 
-  // GET all master allergy options
+// GET all active/approved master allergy options
 async getAllergyOptions(): Promise<any[]> {
   try {
     console.log('Reading allergyCategories...');
+
+    
+    // 1. Load allergy categories
+    
     const categorySnapshot = await getDocs(
       collection(this.db, 'allergyCategories')
     );
-    console.log('Categories count:', categorySnapshot.size);
 
-    const categoryMap = new Map();
+    console.log(
+      'Categories count:',
+      categorySnapshot.size
+    );
+
+    const categoryMap = new Map<string, any>();
 
     categorySnapshot.docs.forEach(docSnap => {
-      categoryMap.set(docSnap.id, {
+      const category: any = {
         id: docSnap.id,
         ...docSnap.data()
-      });
+      };
+
+      console.log(
+        'Category:',
+        category.name,
+        '| ID:',
+        category.id,
+        '| isActive:',
+        category.isActive
+      );
+
+      /*
+       * IMPORTANT:
+       *
+       * A category is considered active unless
+       * isActive is explicitly false.
+       *
+       * This means old categories without an
+       * active field will continue to work.
+       */
+      if (category.active !== false) {
+        categoryMap.set(category.id, category);
+      }
     });
 
+    console.log(
+      'Active categories:',
+      Array.from(categoryMap.values())
+    );
+
+    
+    // 2. Load allergy options
+    
     console.log('Reading allergyOptions...');
+
     const optionsSnapshot = await getDocs(
       collection(this.db, 'allergyOptions')
     );
-    console.log('Options count:', optionsSnapshot.size);
 
-    let options = optionsSnapshot.docs.map(docSnap => {
-      const option: any = {
-        id: docSnap.id,
-        ...docSnap.data()
-      };
+    console.log(
+      'Options count:',
+      optionsSnapshot.size
+    );
 
-      const category: any = categoryMap.get(option.categoryId);
+    
+    // 3. Filter and attach category information
+    
+    const options = optionsSnapshot.docs
+      .map(docSnap => {
+        const option: any = {
+          id: docSnap.id,
+          ...docSnap.data()
+        };
 
-      return {
-        ...option,
-        categoryName: category?.name || 'Other',
-        categoryOrder: category?.order || 99
-      };
-    });
+        const category = categoryMap.get(
+          option.categoryId
+        );
 
-    options = options.filter(opt => opt.isApproved !== false);
+        /*
+         * If the option belongs to a category that:
+         * - does not exist
+         * - was deleted
+         * - is disabled
+         *
+         * do NOT show the option.
+         */
+        if (!category) {
+          console.log(
+            'Skipping allergy option because category is inactive/missing:',
+            option.label,
+            '| categoryId:',
+            option.categoryId
+          );
+
+          return null;
+        }
+
+        /*
+         * If the individual allergy option has been
+         * rejected/unapproved, don't show it either.
+         */
+        if (option.isApproved === false) {
+          console.log(
+            'Skipping unapproved allergy option:',
+            option.label
+          );
+
+          return null;
+        }
+
+        return {
+          ...option,
+
+          // Category information used by onboarding
+          categoryName: category.name,
+          categoryOrder: category.order ?? 99
+        };
+      })
+      .filter(
+        (option): option is any =>
+          option !== null
+      );
+
+    console.log(
+      'FINAL ACTIVE ALLERGY OPTIONS:',
+      options
+    );
 
     return options;
 
   } catch (error) {
-    console.error('getAllergyOptions FAILED:', error);
+    console.error(
+      'getAllergyOptions FAILED:',
+      error
+    );
+
     return [];
   }
 }
-  // RESET allergy options
-  async resetAllergyOptions(): Promise<void> { 
-    const querySnapshot = await getDocs(collection(this.db, 'allergyOptions'));
-    const deletePromises = querySnapshot.docs.map(docSnap =>
-      deleteDoc(doc(this.db, 'allergyOptions', docSnap.id))
-    );
 
-    await Promise.all(deletePromises);
-    await this.createAllergyOptions();
-  }
+
+  // RESET allergy options
+  // async resetAllergyOptions(): Promise<void> { 
+  //   const querySnapshot = await getDocs(collection(this.db, 'allergyOptions'));
+  //   const deletePromises = querySnapshot.docs.map(docSnap =>
+  //     deleteDoc(doc(this.db, 'allergyOptions', docSnap.id))
+  //   );
+
+  //   await Promise.all(deletePromises);
+  //   await this.createAllergyOptions();
+  // }
 
 async submitAllergySuggestion(suggestion: {
   name: string;

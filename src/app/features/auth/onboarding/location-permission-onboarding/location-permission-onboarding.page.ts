@@ -6,8 +6,10 @@ import { doc, setDoc } from 'firebase/firestore';
 
 import { AuthService } from '../../../../core/services/auth.service';
 import { LocationPermissionService } from '../../../../core/services/location-permission.service';
-import { MedicalService } from '../../../../core/services/medical.profile.service';
+import { MedicalService } from '../../../../core/services/medical.service';
 import { FirebaseService } from '../../../../core/services/firebase.service';
+
+import { AllergyOnboardingService } from '../../../../core/services/allergy-onboarding.service';
 
 @Component({
   selector: 'app-location-permission-onboarding',
@@ -31,7 +33,8 @@ export class LocationPermissionOnboardingPage implements OnInit, OnDestroy {
     private locationPermissionService: LocationPermissionService,
     private medicalService: MedicalService,
     private firebaseService: FirebaseService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private allergyOnboardingService: AllergyOnboardingService
   ) {
     this.db = this.firebaseService.getDb();
   }
@@ -159,7 +162,7 @@ export class LocationPermissionOnboardingPage implements OnInit, OnDestroy {
         { merge: true }
       );
 
-      await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
+      await this.allergyOnboardingService.markAllergyOnboardingCompleted(currentUser.uid);
 
       await this.showToast(
         'Setup complete. You can enable location later in settings.',
@@ -202,7 +205,7 @@ export class LocationPermissionOnboardingPage implements OnInit, OnDestroy {
         { merge: true }
       );
 
-      await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
+      await this.allergyOnboardingService.markAllergyOnboardingCompleted(currentUser.uid);
 
       await this.showToast(
         'Setup complete. Location sharing is ready for emergencies.',

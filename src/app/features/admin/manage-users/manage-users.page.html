@@ -1,166 +1,832 @@
-<ion-header>
-  <ion-toolbar class="toolbar--teal">
+<ion-header class="admin-header">
+
+  <ion-toolbar>
+
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+
+      <ion-back-button defaultHref="/admin-dashboard" text=""></ion-back-button>
+
     </ion-buttons>
-    <ion-title>Users</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="addUser()">
-        <ion-icon slot="icon-only" name="person-add-outline"></ion-icon>
-      </ion-button>
-      <ion-button (click)="loadUsers()">
-        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+
+    <ion-title> User Management </ion-title>
+
   </ion-toolbar>
 
-  <ion-toolbar class="search-toolbar">
-    <ion-searchbar
-      [(ngModel)]="searchTerm"
-      (ionInput)="filterUsers()"
-      placeholder="Search by name or email..."
-      debounce="300">
-    </ion-searchbar>
-  </ion-toolbar>
 </ion-header>
+ 
 
 <ion-content class="users-bg">
 
-  <section class="users-hero">
-    <h1>User Management</h1>
+  <main class="admin-page">
+
+    <section class="page-header">
+
+      <div>
+
+        <span class="eyebrow"> ADMINISTRATION </span>
+
+        <h1>
+          User Management
+        </h1>
+
         <p>
-          Manage registered users, update account information,
-          and control account access.
+          Manage registered accounts, roles, and access.
         </p>
-  </section>
 
-  <!-- FILTER CHIPS -->
-   <div class="filter-row">
+      </div>
 
-  <ion-chip
-    [color]="activeFilter === 'all' ? 'primary' : 'medium'"
-    (click)="setFilter('all')">
-    <ion-icon name="people-outline"></ion-icon>
-    <ion-label>All</ion-label>
-  </ion-chip>
+    </section>
 
-  <ion-chip
-    [color]="activeFilter === 'user' ? 'primary' : 'medium'"
-    (click)="setFilter('user')">
-    <ion-icon name="person-outline"></ion-icon>
-    <ion-label>Users</ion-label>
-  </ion-chip>
 
-  <ion-chip
-    [color]="activeFilter === 'doctor' ? 'primary' : 'medium'"
-    (click)="setFilter('doctor')">
-    <ion-icon name="medkit-outline"></ion-icon>
-    <ion-label>Doctors</ion-label>
-  </ion-chip>
+    <!-- SEARCH AND ACTIONS -->
 
-  <ion-chip
-    [color]="activeFilter === 'admin' ? 'primary' : 'medium'"
-    (click)="setFilter('admin')">
-    <ion-icon name="shield-checkmark-outline"></ion-icon>
-    <ion-label>Admins</ion-label>
-  </ion-chip>
+    <section class="management-toolbar">
 
-</div>
+      <!-- SEARCH -->
 
-  <!-- LOADING -->
-  <div class="empty-state" *ngIf="isLoading">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading users...</p>
-  </div>
+      <div class="search-box">
 
-  <!-- EMPTY -->
-  <div class="empty-state" *ngIf="!isLoading && filtered.length === 0">
-    <ion-icon name="people-outline"></ion-icon>
-    <h2>No users found</h2>
-    <p>Try adjusting your search or filter.</p>
-  </div>
+        <ion-icon
+          name="search-outline">
+        </ion-icon>
 
-  <!-- USER LIST -->
-  <section class="user-list" *ngIf="!isLoading && filtered.length > 0">
+        <ion-searchbar
+          [(ngModel)]="searchTerm"
+          (ionInput)="filterUsers()"
+          placeholder="Search users by name or email..."
+          debounce="300">
+        </ion-searchbar>
 
-    <ion-card *ngFor="let user of filtered">
-      <ion-card-content>
+      </div>
 
-        <div class="user-header">
-          <div class="avatar">{{ getInitials(user) }}</div>
-          <div class="user-info">
-            <h2>{{ getDisplayName(user) }}</h2>
-            <p>{{ user.email }}</p>
-          </div>
-          <ion-badge [color]="roleBadgeColor(user.role)">
-            {{ user.role || 'user' }}
-          </ion-badge>
+
+      <!-- ACTION BUTTONS -->
+
+      <div class="toolbar-actions">
+
+        <button
+          class="refresh-button"
+          type="button"
+          (click)="loadUsers()">
+
+          <ion-icon
+            name="refresh-outline">
+          </ion-icon>
+
+          <span>
+            Refresh
+          </span>
+
+        </button>
+
+
+        <button
+          class="add-user-button"
+          type="button"
+          (click)="addUser()">
+
+          <ion-icon
+            name="person-add-outline">
+          </ion-icon>
+
+          <span>
+            Add User
+          </span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- 
+         USER DIRECTORY
+          -->
+
+    <section class="directory-bar">
+
+      <!-- DIRECTORY TITLE -->
+
+      <div class="directory-title">
+
+        <div>
+
+          <span class="section-label">
+            USER DIRECTORY
+          </span>
+
+          <h2>
+            Accounts
+          </h2>
+
         </div>
 
-        <div class="user-meta">
+        <span class="user-count">
+          {{ filtered.length }}
+        </span>
 
-          <span class="status"
-                [class.suspended]="user.isActive === false">
+      </div>
+
+
+      <!-- FILTER TABS -->
+
+      <div class="filter-tabs">
+
+        <!-- ALL -->
+
+        <button
+          type="button"
+          [class.active]="activeFilter === 'all'"
+          (click)="setFilter('all')">
+
+          All
+
+          <span>
+            {{ users.length }}
+          </span>
+
+        </button>
+
+
+        <!-- USERS -->
+
+        <button
+          type="button"
+          [class.active]="activeFilter === 'user'"
+          (click)="setFilter('user')">
+
+          Users
+
+        </button>
+
+
+        <!-- DOCTORS -->
+
+        <button
+          type="button"
+          [class.active]="activeFilter === 'doctor'"
+          (click)="setFilter('doctor')">
+
+          Doctors
+
+        </button>
+
+
+        <!-- ADMINS -->
+
+        <button
+          type="button"
+          [class.active]="activeFilter === 'admin'"
+          (click)="setFilter('admin')">
+
+          Admins
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- 
+         LOADING STATE
+          -->
+
+    <section
+      class="state-container"
+      *ngIf="isLoading">
+
+      <div class="state-icon">
+
+        <ion-spinner
+          name="crescent">
+        </ion-spinner>
+
+      </div>
+
+      <h2>
+        Loading users
+      </h2>
+
+      <p>
+        Please wait while the user directory is loaded.
+      </p>
+
+    </section>
+
+
+    <!-- 
+         EMPTY STATE
+          -->
+
+    <section
+      class="state-container"
+      *ngIf="!isLoading && filtered.length === 0">
+
+      <div class="state-icon">
+
+        <ion-icon
+          name="people-outline">
+        </ion-icon>
+
+      </div>
+
+      <h2>
+        No users found
+      </h2>
+
+      <p>
+        Try adjusting your search or filter.
+      </p>
+
+    </section>
+
+
+    <!-- 
+         USERS TABLE
+          -->
+
+    <section
+      class="users-table"
+      *ngIf="!isLoading && filtered.length > 0">
+
+
+      <!-- TABLE HEADER -->
+
+      <div class="table-header">
+
+        <div class="user-column">
+          User
+        </div>
+
+        <div class="role-column">
+          Role
+        </div>
+
+        <div class="status-column">
+          Status
+        </div>
+
+        <div class="contact-column">
+          Contact
+        </div>
+
+        <div class="actions-column">
+          Actions
+        </div>
+
+      </div>
+
+
+      <!-- 
+           USER ROW
+            -->
+
+      <div
+        class="user-row"
+        *ngFor="let user of filtered">
+
+
+        <!-- USER -->
+
+        <div class="user-column user-cell">
+
+          <div class="avatar">
+            {{ getInitials(user) }}
+          </div>
+
+
+          <div class="user-info">
+
+            <h3>
+              {{ getDisplayName(user) }}
+            </h3>
+
+            <p>
+              {{ user.email }}
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- ROLE -->
+
+        <div class="role-column">
+
+          <span
+            class="role-badge"
+            [class.role-user]="
+              user.role === 'user' || !user.role
+            "
+            [class.role-doctor]="
+              user.role === 'doctor'
+            "
+            [class.role-admin]="
+              user.role === 'admin'
+            ">
+
+            {{ user.role || 'user' }}
+
+          </span>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="status-column">
+
+          <span
+            class="status-badge"
+            [class.suspended]="
+              user.isActive === false
+            ">
+
+            <span class="status-dot"></span>
+
+            {{ user.isActive === false
+              ? 'Suspended'
+              : 'Active'
+            }}
+
+          </span>
+
+        </div>
+
+
+        <!-- CONTACT -->
+
+        <div class="contact-column contact-cell">
+
+
+          <!-- PHONE -->
+
+          <div *ngIf="user.phone">
 
             <ion-icon
-              [name]="user.isActive === false
-                ? 'ban-outline'
-                : 'checkmark-circle-outline'">
+              name="call-outline">
             </ion-icon>
 
-            {{ user.isActive === false ? 'Suspended' : 'Active' }}
+            <span>
+              {{ user.phone }}
+            </span>
 
-          </span>
+          </div>
 
-          <span *ngIf="user.phone">
-            <ion-icon name="call-outline"></ion-icon>
-            {{ user.phone }}
-          </span>
 
-          <span *ngIf="user.allergies?.length">
-            <ion-icon name="leaf-outline"></ion-icon>
-            {{ user.allergies?.join(', ') }}
+          <!-- ALLERGIES -->
+
+          <div
+            *ngIf="user.allergies?.length">
+
+            <ion-icon
+              name="leaf-outline">
+            </ion-icon>
+
+            <span>
+
+              {{ user.allergies?.length }}
+
+              allerg{{ user.allergies?.length === 1
+                ? 'y'
+                : 'ies'
+              }}
+
+            </span>
+
+          </div>
+
+
+          <!-- NO ADDITIONAL INFORMATION -->
+
+          <span
+            class="no-contact"
+            *ngIf="
+              !user.phone &&
+              !user.allergies?.length
+            ">
+
+            No additional information
+
           </span>
 
         </div>
 
-        <div class="actions">
-            <ion-button
-              color="primary"
-              size="small"
-              (click)="editUser(user)">
-              <ion-icon slot="start" name="create-outline"></ion-icon>
-              Edit User
-            </ion-button>
 
-            <ion-button
-              fill="clear"
-              color="warning"
-              size="small"
-              (click)="toggleActive(user)">
-              <ion-icon
-                slot="icon-only"
-                [name]="user.isActive === false
-                ? 'checkmark-circle-outline'
-                : 'ban-outline'">
-              </ion-icon>
-            </ion-button>
+        <!-- ACTIONS -->
 
-            <ion-button
-              fill="clear"
-              color="danger"
-              size="small"
-              (click)="deleteUser(user)">
-              <ion-icon
-                slot="icon-only"
-                name="trash-outline">
-              </ion-icon>
-            </ion-button>
+        <div class="actions-column actions-cell">
+
+
+          <!-- EDIT -->
+
+          <button
+            type="button"
+            class="action-button edit"
+            (click)="editUser(user)"
+            aria-label="Edit user"
+            title="Edit user">
+
+            <ion-icon
+              name="create-outline">
+            </ion-icon>
+
+            <span>
+              Edit
+            </span>
+
+          </button>
+
+
+          <!-- SUSPEND / RESTORE -->
+
+          <button
+            type="button"
+            class="action-button suspend"
+            [class.restore]="
+              user.isActive === false
+            "
+            (click)="toggleActive(user)"
+            [attr.aria-label]="
+              user.isActive === false
+                ? 'Restore user'
+                : 'Suspend user'
+            "
+            [title]="
+              user.isActive === false
+                ? 'Restore user'
+                : 'Suspend user'
+            ">
+
+            <ion-icon
+              [name]="
+                user.isActive === false
+                  ? 'checkmark-circle-outline'
+                  : 'ban-outline'
+              ">
+            </ion-icon>
+
+          </button>
+
+
+          <!-- DELETE -->
+
+          <button
+            type="button"
+            class="action-button delete"
+            (click)="deleteUser(user)"
+            aria-label="Delete user"
+            title="Delete user">
+
+            <ion-icon
+              name="trash-outline">
+            </ion-icon>
+
+          </button>
+
         </div>
 
-      </ion-card-content>
-    </ion-card>
+      </div>
 
-  </section>
+    </section>
+
+
+    <!-- 
+         ADD / EDIT USER MODAL
+          -->
+
+    <ion-modal
+      [isOpen]="isUserModalOpen"
+      (didDismiss)="closeUserModal()"
+      class="user-form-modal">
+
+
+      <ng-template>
+
+
+        <!-- 
+             MODAL HEADER
+              -->
+
+        <ion-header>
+
+          <ion-toolbar class="modal-toolbar">
+
+
+            <ion-title>
+
+              {{ modalMode === 'add'
+                ? 'Add User'
+                : 'Edit User'
+              }}
+
+            </ion-title>
+
+
+            <ion-buttons slot="end">
+
+              <ion-button
+                fill="clear"
+                (click)="closeUserModal()">
+
+                <ion-icon
+                  name="close-outline">
+                </ion-icon>
+
+              </ion-button>
+
+            </ion-buttons>
+
+          </ion-toolbar>
+
+        </ion-header>
+
+
+        <!-- 
+             MODAL CONTENT
+              -->
+
+        <ion-content class="user-form-content">
+
+
+          <div class="user-form">
+
+
+            <!-- DESCRIPTION -->
+
+            <p class="form-description">
+
+              {{ modalMode === 'add'
+                ? 'Create a new account and assign a role.'
+                : 'Update this user’s account information.'
+              }}
+
+            </p>
+
+
+            <!-- 
+                 FIRST NAME
+                  -->
+
+            <div class="form-field">
+
+              <ion-label>
+                First Name
+              </ion-label>
+
+
+              <ion-input
+                [(ngModel)]="form.firstName"
+                name="firstName"
+                type="text"
+                inputmode="text"
+                autocomplete="given-name"
+                placeholder="Enter first name"
+                fill="outline"
+                maxlength="50"
+                pattern="[A-Za-zÀ-ÿ' -]+"
+                required>
+              </ion-input>
+
+
+              <small>
+                Required. Letters, spaces, hyphens, and apostrophes only.
+              </small>
+
+            </div>
+
+
+            <!-- 
+                 LAST NAME
+                  -->
+
+            <div class="form-field">
+
+              <ion-label>
+                Last Name
+              </ion-label>
+
+
+              <ion-input
+                [(ngModel)]="form.lastName"
+                name="lastName"
+                type="text"
+                inputmode="text"
+                autocomplete="family-name"
+                placeholder="Enter last name"
+                fill="outline"
+                maxlength="50"
+                pattern="[A-Za-zÀ-ÿ' -]+">
+              </ion-input>
+
+
+              <small>
+                Optional. Letters, spaces, hyphens, and apostrophes only.
+              </small>
+
+            </div>
+
+
+            <!-- 
+                 EMAIL
+                  -->
+
+            <div class="form-field">
+
+              <ion-label>
+                Email
+              </ion-label>
+
+
+              <ion-input
+                [(ngModel)]="form.email"
+                name="email"
+                type="email"
+                inputmode="email"
+                autocomplete="email"
+                placeholder="Enter email"
+                fill="outline"
+                maxlength="100"
+                required
+                [disabled]="modalMode === 'edit'">
+              </ion-input>
+
+
+              <small *ngIf="modalMode === 'add'">
+                Enter a valid email address.
+              </small>
+
+
+              <small *ngIf="modalMode === 'edit'">
+                Email cannot be changed here.
+              </small>
+
+            </div>
+
+
+            <!-- 
+                 PASSWORD
+                  -->
+
+            <div
+              class="form-field"
+              *ngIf="modalMode === 'add'">
+
+              <ion-label>
+                Password
+              </ion-label>
+
+
+              <ion-input
+                [(ngModel)]="form.password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Create password"
+                fill="outline"
+                minlength="8"
+                maxlength="64"
+                required>
+              </ion-input>
+
+
+              <small>
+                At least 8 characters, including uppercase, lowercase, and a number.
+              </small>
+
+            </div>
+
+
+            <!-- 
+                 PHONE
+                  -->
+
+            <div class="form-field">
+
+              <ion-label>
+                Phone Number
+              </ion-label>
+
+              <ion-input
+                [(ngModel)]="form.phone"
+                name="phone"
+                type="tel"
+                inputmode="numeric"
+                autocomplete="tel"
+                placeholder="09XXXXXXXXX"
+                fill="outline"
+                maxlength="11"
+                (ionInput)="sanitizePhone($event)">
+              </ion-input>
+
+              <small>
+                Optional. Numbers only. Format: 09XXXXXXXXX
+              </small>
+
+            </div>
+
+
+            <!-- 
+                 ROLE DROPDOWN
+                  -->
+
+            <div class="form-field">
+
+              <ion-label>
+                Role
+              </ion-label>
+
+
+              <ion-select
+                [(ngModel)]="form.role"
+                name="role"
+                interface="popover"
+                fill="outline"
+                placeholder="Select role">
+
+                <ion-select-option
+                  value="user">
+
+                  User
+
+                </ion-select-option>
+
+
+                <ion-select-option
+                  value="doctor">
+
+                  Doctor
+
+                </ion-select-option>
+
+
+                <ion-select-option
+                  value="admin">
+
+                  Admin
+
+                </ion-select-option>
+
+              </ion-select>
+
+
+              <small>
+                Choose the access level for this account.
+              </small>
+
+            </div>
+
+
+            <!-- 
+                 FORM ACTIONS
+                  -->
+
+            <div class="form-actions">
+
+
+              <!-- SAVE -->
+
+              <ion-button
+                expand="block"
+                class="save-form-button"
+                (click)="saveUser()">
+
+                {{ modalMode === 'add'
+                  ? 'Create User'
+                  : 'Save Changes'
+                }}
+
+              </ion-button>
+
+
+              <!-- CANCEL -->
+
+              <ion-button
+                expand="block"
+                fill="outline"
+                class="cancel-form-button"
+                (click)="closeUserModal()">
+
+                Cancel
+
+              </ion-button>
+
+            </div>
+
+
+          </div>
+
+        </ion-content>
+
+
+      </ng-template>
+
+    </ion-modal>
+
+
+  </main>
 
 </ion-content>

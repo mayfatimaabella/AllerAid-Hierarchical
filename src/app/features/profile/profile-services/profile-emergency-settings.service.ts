@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
-import { MedicalService } from '../../../core/services/medical.profile.service';
+import { MedicalService } from '../../../core/services/medical.service';
 import { UserService } from '../../../core/services/user.service';
 import { UserProfile } from '../../../core/models/user-profile.model';
 import { EditEmergencyProfileModalComponent } from '../overview/modals/edit-profile-message/edit-emergency-profile-modal.component';

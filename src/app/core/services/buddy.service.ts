@@ -19,7 +19,6 @@ import {
   onSnapshot
 } from 'firebase/firestore';
 
-import { getFunctions, httpsCallable } from 'firebase/functions';
 import { BehaviorSubject } from 'rxjs';
 
 export interface BuddyInvitation {
@@ -48,7 +47,6 @@ interface BuddyReference {
 })
 export class BuddyService {
   private db;
-  private functions;
   private auth;
 
   private readonly MAX_BUDDY_RELATIONS = 10;
@@ -65,14 +63,9 @@ export class BuddyService {
   private buddyRelationsSubject = new BehaviorSubject<Buddy[]>([]);
   buddyRelations$ = this.buddyRelationsSubject.asObservable();
 
-  // ── Subjects for buddy-accepted notifications ──────────────────────────────
-  private buddyAcceptedNotificationsSubject = new BehaviorSubject<any[]>([]);
-  buddyAcceptedNotifications$ = this.buddyAcceptedNotificationsSubject.asObservable();
-
   private notifiedAcceptances = new Set<string>();
 
   private relationsListenerUnsubscribe?: () => void;
-  private acceptedNotifUnsubscribe?: () => void;
 
   hasBeenNotified(buddyUid: string): boolean {
     return this.notifiedAcceptances.has(buddyUid);
@@ -85,11 +78,10 @@ export class BuddyService {
   constructor(private userService: UserService) {
     const app = initializeApp(firebaseConfig);
     this.db = getFirestore(app);
-    this.functions = getFunctions(app, 'us-central1');
     this.auth = getAuth(app);
   }
 
-  // ── Buddy limit helpers ────────────────────────────────────────────────────
+  // ── Buddy limit helpers 
 
   async countUserBuddyRelations(userId: string): Promise<number> {
     const buddiesRef = collection(this.db, 'users', userId, 'buddies');
@@ -107,7 +99,7 @@ export class BuddyService {
     return this.MAX_BUDDY_RELATIONS;
   }
 
-  // ── Duplicate check ────────────────────────────────────────────────────────
+  // ── Duplicate check 
 
   async checkDuplicateBuddyByEmail(
     currentUserId: string,
@@ -166,7 +158,7 @@ export class BuddyService {
     return { isDuplicate: false, type: 'none' };
   }
 
-  // ── Send invitations ───────────────────────────────────────────────────────
+  //  Send invitations 
 
   async sendBuddyInvitationWithUser(
     currentUser: any,
@@ -223,52 +215,7 @@ export class BuddyService {
     return inviteId;
   }
 
-  async sendBuddyInvitation(
-    toUserEmail: string,
-    toUserName: string,
-    message: string
-  ): Promise<void> {
-    const authUser = this.auth.currentUser;
-    if (!authUser?.uid || !authUser.email) {
-      throw new Error('User not properly authenticated.');
-    }
-
-    const senderProfile = await this.userService.getUserProfile(authUser.uid, false);
-    const fromUserName =
-      senderProfile?.fullName ||
-      `${senderProfile?.firstName || ''} ${senderProfile?.lastName || ''}`.trim() ||
-      authUser.email;
-
-    const inviteId = `${authUser.uid}_${toUserEmail.toLowerCase()}`;
-
-    const invitationData: BuddyInvitation = {
-      id: inviteId,
-      fromUserId: authUser.uid,
-      fromUserName,
-      fromUserEmail: authUser.email.toLowerCase(),
-      toUserId: '',
-      toUserEmail: toUserEmail.toLowerCase(),
-      toUserName,
-      message,
-      status: 'pending',
-      createdAt: new Date()
-    };
-
-    await setDoc(
-      doc(this.db, 'users', authUser.uid, 'sentBuddyInvitations', inviteId),
-      invitationData
-    );
-  }
-
-  // ── Accept invitation ──────────────────────────────────────────────────────
-
-  async acceptBuddyInvitation(invitationId: string): Promise<void> {
-    const currentUserData = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    if (!currentUserData.uid) {
-      throw new Error('No current user found.');
-    }
-    await this.acceptBuddyInvitationWithUser(invitationId, currentUserData.uid);
-  }
+  // ── Accept invitation ──
 
   async acceptBuddyInvitationWithUser(
     invitationId: string,
@@ -353,7 +300,7 @@ export class BuddyService {
       }
     );
 
-    // 3. ── Notify B2 that B1 accepted ──────────────────────────────────────
+    // 3.  Notify B2 that B1 accepted 
     //    Write to users/{B2}/notifications so B2's real-time listener fires.
     const notifRef = doc(
       collection(this.db, 'users', senderUid, 'notifications')
@@ -370,7 +317,7 @@ export class BuddyService {
     });
   }
 
-  // ── Decline / Cancel / Delete ──────────────────────────────────────────────
+  //  Decline / Cancel / Delete 
 
   async declineBuddyInvitation(invitationId: string): Promise<void> {
     const currentUserData = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -467,26 +414,6 @@ export class BuddyService {
 
     return snap.docs.map(docSnap =>({id: docSnap.id, ...docSnap.data(),isFromRelation: true}) as Buddy).filter(buddy => buddy.buddyUid !== userId);}
 
-  async getConnectedBuddies(userId: string): Promise<Buddy[]> {
-    return this.getUserBuddies(userId);
-  }
-
-  async getProtectedPatients(buddyUserId: string): Promise<any[]> {
-    const buddies = await this.getUserBuddies(buddyUserId);
-
-    return buddies
-      .filter((buddy: Buddy) => buddy.relationship === 'Protected Patient')
-      .map((buddy: Buddy) => ({
-        id:           buddy.buddyUid,
-        userId:       buddy.buddyUid,
-        firstName:    buddy.buddyName?.split(' ')[0] || 'Patient',
-        lastName:     buddy.buddyName?.split(' ').slice(1).join(' ') || '',
-        email:        buddy.buddyEmail || '',
-        relationship: 'Protected Patient',
-        acceptedAt:   buddy.acceptedAt
-      }));
-  }
-
   async getReceivedInvitations(userId: string): Promise<BuddyInvitation[]> {
     const invitationsRef = collection(this.db, 'users', userId, 'receivedBuddyInvitations');
     const snap = await getDocs(query(invitationsRef));
@@ -495,16 +422,6 @@ export class BuddyService {
       id: docSnap.id,
       ...docSnap.data()
     })) as BuddyInvitation[];
-  }
-
-  async getReceivedInvitationsByEmail(email: string): Promise<BuddyInvitation[]> {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    if (!currentUser.uid) return [];
-
-    const invitations = await this.getReceivedInvitations(currentUser.uid);
-    return invitations.filter(
-      invite => invite.toUserEmail?.toLowerCase() === email.toLowerCase()
-    );
   }
 
   async getSentInvitations(userId: string): Promise<BuddyInvitation[]> {
@@ -532,7 +449,7 @@ export class BuddyService {
     return validInvitations;
   }
 
-  // ── Real-time listeners ────────────────────────────────────────────────────
+  //  Real-time listeners 
 
   listenForBuddyInvitations(userId: string): () => void {
     const invitationsRef = collection(this.db, 'users', userId, 'receivedBuddyInvitations');
@@ -584,88 +501,7 @@ export class BuddyService {
     this.relationsListenerUnsubscribe = undefined;
   }
 
-  /**
-   * listenForBuddyAcceptedNotifications
-   *
-   * Called on B2's side (the one who sent the original invite).
-   * Watches users/{B2}/notifications for type === 'buddy_accepted'.
-   *
-   * When B1 accepts, acceptBuddyInvitationWithUser() writes a notification
-   * document there — this snapshot fires and:
-   *   1. Emits the notification through buddyAcceptedNotifications$
-   *   2. Refreshes the buddy relations list (buddyRelations$)
-   *   3. Marks the buddy as notified to prevent duplicate toasts
-   *
-   * Returns an unsubscribe function so the caller can clean up.
-   */
-  listenForBuddyAcceptedNotifications(userId: string): () => void {
-    // Stop any previous listener first
-    this.acceptedNotifUnsubscribe?.();
-
-    const notifsRef = collection(this.db, 'users', userId, 'notifications');
-    const q = query(
-      notifsRef,
-      where('type',  '==', 'buddy_accepted'),
-      where('read',  '==', false)
-    );
-
-    const unsubscribe = onSnapshot(q, snapshot => {
-      const notifications: any[] = [];
-
-      snapshot.docChanges().forEach(change => {
-        if (change.type !== 'added') return;
-
-        const notif    = { id: change.doc.id, ...change.doc.data() };
-        const buddyUid = (notif as any).fromUserId as string;
-
-        notifications.push(notif);
-
-        // Avoid duplicate toasts for the same buddy acceptance
-        if (buddyUid && !this.hasBeenNotified(buddyUid)) {
-          this.markAsNotified(buddyUid);
-
-          // Refresh buddy list so B2 sees the new buddy immediately
-          this.listenForBuddyRelations(userId);
-        }
-      });
-
-      if (notifications.length > 0) {
-        // Merge with existing unread notifications
-        const current = this.buddyAcceptedNotificationsSubject.value;
-        const merged  = [...current, ...notifications].filter(
-          (n, i, arr) => arr.findIndex(x => x.id === n.id) === i
-        );
-        this.buddyAcceptedNotificationsSubject.next(merged);
-      }
-    });
-
-    this.acceptedNotifUnsubscribe = unsubscribe;
-    return unsubscribe;
-  }
-
-  stopAcceptedNotificationsListener(): void {
-    this.acceptedNotifUnsubscribe?.();
-    this.acceptedNotifUnsubscribe = undefined;
-  }
-
-  /**
-   * markBuddyNotificationAsRead
-   *
-   * Call this after showing the toast / UI so the listener won't re-fire
-   * for the same document on next app open.
-   */
-  async markBuddyNotificationAsRead(userId: string, notificationId: string): Promise<void> {
-    try {
-      await updateDoc(
-        doc(this.db, 'users', userId, 'notifications', notificationId),
-        { read: true }
-      );
-    } catch (error) {
-      console.warn('Could not mark buddy notification as read:', error);
-    }
-  }
-
-  // ── Emergency listeners ────────────────────────────────────────────────────
+  //  Emergency listeners 
 
   listenForEmergencyAlerts(userId: string): void {
     const emergenciesRef = collection(this.db, 'emergencies');
@@ -696,27 +532,7 @@ export class BuddyService {
     });
   }
 
-  // ── Cloud Function wrapper ─────────────────────────────────────────────────
-
-  async sendBuddyInvitationViaFunction(
-    currentUser: any,
-    targetEmail: string,
-    message: string
-  ): Promise<void> {
-    const sendBuddyInvitation = httpsCallable(this.functions, 'sendBuddyInvitationFunction');
-
-    await sendBuddyInvitation({
-      currentUserUid:  currentUser.uid,
-      currentUserEmail: currentUser.email,
-      currentUserName:
-        currentUser.fullName ||
-        `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim(),
-      targetEmail,
-      message
-    });
-  }
-
-  // ── Emergency dismissal helpers ────────────────────────────────────────────
+  //  Emergency dismissal helpers 
 
   dismissEmergencyForUser(userId: string, emergencyId: string): void {
     try {
@@ -763,7 +579,7 @@ export class BuddyService {
     }
   }
 
-  // ── Private helpers ────────────────────────────────────────────────────────
+  //  Private helpers 
 
   private getInverseRelationship(relationship: string): string {
     switch (relationship) {

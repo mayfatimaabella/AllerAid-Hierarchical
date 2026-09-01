@@ -1,166 +1,502 @@
-<ion-header>
-  <ion-toolbar class="toolbar--teal">
+<ion-header class="admin-header">
+  <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
     </ion-buttons>
+
     <ion-title>Verify Doctors</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="verify-bg">
 
+  <!-- PAGE HERO -->
   <section class="page-hero">
-    <h1>Pending doctor verification</h1>
-    <p>Review medical professionals before allowing full access.</p>
+    <span class="eyebrow">ADMINISTRATION</span>
+
+    <h1>Doctor Verification</h1>
+
+    <p>
+      Review doctor registration requests and verify their credentials.
+    </p>
   </section>
 
-  <!-- Loading -->
-  <div class="loading-box" *ngIf="isLoading">
+
+  <!-- LOADING -->
+  <div
+    class="loading-box"
+    *ngIf="isLoading">
+
     <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading pending doctors…</p>
+
+    <p>Loading verification requests...</p>
   </div>
 
-  <!-- Empty state -->
-  <div class="empty-state" *ngIf="!isLoading && pendingDoctors.length === 0">
+
+  <!-- EMPTY STATE -->
+  <div
+    class="empty-state"
+    *ngIf="!isLoading && pendingDoctors.length === 0">
+
     <ion-icon name="checkmark-circle-outline"></ion-icon>
+
     <h2>All clear</h2>
-    <p>No pending verification requests.</p>
+
+    <p>
+      No pending verification requests.
+    </p>
+
   </div>
 
-  <!-- Doctor list -->
-  <section class="doctor-list" *ngIf="!isLoading && pendingDoctors.length > 0">
 
-    <ion-card *ngFor="let doctor of pendingDoctors" class="doctor-card">
-      <ion-card-content>
+  <!-- DOCTOR DIRECTORY -->
+  <section
+    class="doctor-directory"
+    *ngIf="!isLoading && pendingDoctors.length > 0">
 
-        <!-- Header row -->
-        <div class="doctor-header">
-          <div class="doctor-avatar">
-            {{ getInitials(doctor.fullName) }}
-          </div>
-          <div class="doctor-info">
-            <h2>{{ doctor.fullName || 'Unnamed Doctor' }}</h2>
-            <p>{{ doctor.email }}</p>
-          </div>
-          <ion-badge class="status-badge" color="warning">
-            <ion-icon name="time-outline" slot="start"></ion-icon>
-            {{ doctor.verificationStatus || 'pending' }}
-          </ion-badge>
+
+    <!-- DIRECTORY HEADING -->
+    <div class="directory-heading">
+
+      <div>
+        <span class="section-label">
+          DOCTOR DIRECTORY
+        </span>
+
+        <div class="heading-row">
+
+          <h2>
+            Pending Requests
+          </h2>
+
+          <span class="count-badge">
+            {{ pendingDoctors.length }}
+          </span>
+
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- DOCTOR TABLE -->
+    <div class="doctor-table">
+
+
+      <!-- TABLE HEADER -->
+      <div class="table-header">
+
+        <div class="doctor-column">
+          DOCTOR
         </div>
 
-        <!-- Details grid -->
-        <div class="doctor-details">
-          <div class="detail-field">
-            <span class="detail-label">Specialty</span>
-            <span class="detail-value">{{ doctor.specialty || '—' }}</span>
-          </div>
-          <div class="detail-field">
-            <span class="detail-label">Hospital</span>
-            <span class="detail-value">{{ doctor.hospital || '—' }}</span>
-          </div>
-          <div class="detail-field">
-            <span class="detail-label">License no.</span>
-            <span class="detail-value">{{ doctor.license || '—' }}</span>
-          </div>
+        <div class="specialty-column">
+          SPECIALTY
         </div>
 
-        <!-- License document section -->
-        <div class="doc-section">
+        <div class="license-column">
+          LICENSE
+        </div>
 
-          <!-- Collapsible header -->
-          <button
-            class="doc-toggle"
-            (click)="toggleDocPreview(doctor.uid)"
-            [attr.aria-expanded]="isDocExpanded(doctor.uid)">
-            <ion-icon
-              [name]="doctor.licenseURL ? 'document-text-outline' : 'document-outline'"
-              class="doc-icon">
-            </ion-icon>
-            <span class="doc-label">License document</span>
+        <div class="status-column">
+          STATUS
+        </div>
 
-            <ion-badge *ngIf="doctor.licenseURL" class="doc-type-badge" color="primary">
-              {{ getLicenseType(doctor.licenseURL) }}
-            </ion-badge>
-            <span *ngIf="!doctor.licenseURL" class="no-doc-hint">None uploaded</span>
+        <div class="actions-column">
+          ACTIONS
+        </div>
 
-            <ion-icon
-              name="chevron-down-outline"
-              class="doc-chevron"
-              [class.rotated]="isDocExpanded(doctor.uid)">
-            </ion-icon>
-          </button>
+      </div>
 
-          <!-- Preview panel -->
-          <div class="doc-preview-panel" *ngIf="isDocExpanded(doctor.uid)">
 
-            <!-- Image preview -->
-            <ng-container *ngIf="doctor.licenseURL && getLicenseType(doctor.licenseURL) === 'Image'">
-              <div class="doc-img-wrap">
-                <img
-                  [src]="doctor.licenseURL"
-                  alt="License document"
-                  class="doc-img"
-                  (error)="onDocImgError($event)" />
+      <!-- 
+           DOCTOR ROWS
+      = -->
+      <ng-container *ngFor="let doctor of pendingDoctors">
+
+
+        <!-- DOCTOR ROW -->
+        <div class="doctor-row">
+
+
+          <!-- 
+               DOCTOR PROFILE
+          = -->
+          <div class="doctor-cell doctor-profile">
+
+            <div class="doctor-avatar">
+              {{ getInitials(doctor.fullName) }}
+            </div>
+
+            <div class="doctor-info">
+
+              <h3>
+                {{ doctor.fullName || 'Unnamed Doctor' }}
+              </h3>
+
+              <p>
+                {{ doctor.email }}
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- 
+               SPECIALTY
+          = -->
+          <div class="doctor-cell specialty-cell">
+
+            <span class="mobile-label">
+              Specialty
+            </span>
+
+            <span class="cell-value">
+              {{ doctor.specialty || 'Not specified' }}
+            </span>
+
+            <!-- Optional hospital display -->
+            <span
+              class="hospital-value"
+              *ngIf="doctor.hospital">
+
+              {{ doctor.hospital }}
+
+            </span>
+
+          </div>
+
+
+          <!-- 
+               LICENSE
+          = -->
+          <div class="doctor-cell license-cell">
+
+            <span class="mobile-label">
+              License
+            </span>
+
+            <button
+              type="button"
+              class="license-button"
+              (click)="toggleDocPreview(doctor.uid)"
+              [attr.aria-expanded]="isDocExpanded(doctor.uid)">
+
+              <ion-icon
+                [name]="doctor.licenseURL
+                  ? 'document-text-outline'
+                  : 'document-outline'">
+              </ion-icon>
+
+              <span class="license-text">
+
+                {{
+                  doctor.license
+                    || (doctor.licenseURL
+                      ? 'View document'
+                      : 'No document')
+                }}
+
+              </span>
+
+              <ion-icon
+                name="chevron-down-outline"
+                class="chevron"
+                [class.rotated]="isDocExpanded(doctor.uid)">
+              </ion-icon>
+
+            </button>
+
+          </div>
+
+
+          <!-- 
+               STATUS
+          = -->
+          <div class="doctor-cell status-cell">
+
+            <span class="mobile-label">
+              Status
+            </span>
+
+            <div class="status">
+
+              <span class="status-dot"></span>
+
+              <span>
+                {{
+                  doctor.verificationStatus
+                    || 'Pending'
+                }}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- 
+               ACTIONS
+          = -->
+          <div class="doctor-cell actions-cell">
+
+            <span class="mobile-label">
+              Actions
+            </span>
+
+            <div class="actions">
+
+
+              <!-- APPROVE -->
+              <ion-button
+                type="button"
+                class="approve-btn"
+                (click)="approveDoctor(doctor)"
+                aria-label="Approve doctor">
+
+                <ion-icon
+                  name="checkmark-outline"
+                  slot="icon-only">
+                </ion-icon>
+
+              </ion-button>
+
+
+              <!-- REJECT -->
+              <ion-button
+                type="button"
+                class="reject-btn"
+                fill="clear"
+                (click)="rejectDoctor(doctor)"
+                aria-label="Reject doctor">
+
+                <ion-icon
+                  name="close-outline"
+                  slot="icon-only">
+                </ion-icon>
+
+              </ion-button>
+
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+
+        <!-- 
+             EXPANDED LICENSE DOCUMENT
+        = -->
+        <div
+          class="document-preview"
+          *ngIf="isDocExpanded(doctor.uid)">
+
+
+          <!-- DOCUMENT HEADER -->
+          <div class="document-preview-header">
+
+            <div class="document-title">
+
+              <ion-icon
+                [name]="doctor.licenseURL
+                  ? 'document-text-outline'
+                  : 'document-outline'">
+              </ion-icon>
+
+              <div>
+
+                <span class="document-label">
+                  LICENSE DOCUMENT
+                </span>
+
+                <h3>
+                  {{
+                    doctor.fullName
+                      || 'Doctor'
+                  }}
+                </h3>
+
               </div>
-              <div class="doc-actions-row">
-                <a [href]="doctor.licenseURL" target="_blank" class="doc-open-link">
-                  <ion-icon name="open-outline"></ion-icon>
-                  Open full image
-                </a>
-              </div>
-            </ng-container>
 
-            <!-- PDF preview -->
-            <ng-container *ngIf="doctor.licenseURL && getLicenseType(doctor.licenseURL) === 'PDF'">
+            </div>
+
+
+            <!-- CLOSE -->
+            <button
+              type="button"
+              class="close-preview"
+              (click)="toggleDocPreview(doctor.uid)"
+              aria-label="Close document preview">
+
+              <ion-icon
+                name="close-outline">
+              </ion-icon>
+
+            </button>
+
+          </div>
+
+
+          <!-- 
+               IMAGE PREVIEW
+          = -->
+          <ng-container
+            *ngIf="
+              doctor.licenseURL &&
+              getLicenseType(doctor.licenseURL) === 'Image'
+            ">
+
+            <div class="license-image-wrap">
+
+              <img
+                [src]="doctor.licenseURL"
+                class="license-image"
+                alt="Doctor license document"
+                (error)="onDocImgError($event)" />
+
+            </div>
+
+
+            <div class="document-actions">
+
+              <a
+                [href]="doctor.licenseURL"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="open-document">
+
+                <ion-icon
+                  name="open-outline">
+                </ion-icon>
+
+                Open full image
+
+              </a>
+
+            </div>
+
+          </ng-container>
+
+
+          <!-- 
+               PDF PREVIEW
+          = -->
+          <ng-container
+            *ngIf="
+              doctor.licenseURL &&
+              getLicenseType(doctor.licenseURL) === 'PDF'
+            ">
+
+            <div class="license-pdf-wrap">
+
               <iframe
                 [src]="getSafeUrl(doctor.licenseURL)"
-                class="doc-iframe"
-                title="License PDF">
+                class="license-pdf"
+                title="Doctor license document">
+
               </iframe>
-              <div class="doc-actions-row">
-                <a [href]="doctor.licenseURL" target="_blank" class="doc-open-link">
-                  <ion-icon name="open-outline"></ion-icon>
-                  Open in new tab
-                </a>
-              </div>
-            </ng-container>
 
-            <!-- Generic link fallback -->
-            <ng-container *ngIf="doctor.licenseURL && getLicenseType(doctor.licenseURL) === 'Link'">
-              <div class="doc-no-preview">
-                <ion-icon name="document-attach-outline"></ion-icon>
-                <a [href]="doctor.licenseURL" target="_blank" class="doc-open-link">
-                  <ion-icon name="open-outline"></ion-icon>
-                  View document
-                </a>
-              </div>
-            </ng-container>
+            </div>
 
-            <!-- No document uploaded -->
-            <ng-container *ngIf="!doctor.licenseURL">
-              <div class="doc-no-preview">
-                <ion-icon name="document-outline"></ion-icon>
-                <p>No document uploaded by this doctor.</p>
-              </div>
-            </ng-container>
 
-          </div>
+            <div class="document-actions">
+
+              <a
+                [href]="doctor.licenseURL"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="open-document">
+
+                <ion-icon
+                  name="open-outline">
+                </ion-icon>
+
+                Open document
+
+              </a>
+
+            </div>
+
+          </ng-container>
+
+
+          <!-- 
+               GENERIC LINK
+          = -->
+          <ng-container
+            *ngIf="
+              doctor.licenseURL &&
+              getLicenseType(doctor.licenseURL) === 'Link'
+            ">
+
+            <div class="no-document">
+
+              <ion-icon
+                name="document-attach-outline">
+              </ion-icon>
+
+              <h3>
+                Document available
+              </h3>
+
+              <p>
+                This document cannot be previewed directly.
+              </p>
+
+              <a
+                [href]="doctor.licenseURL"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="open-document">
+
+                <ion-icon
+                  name="open-outline">
+                </ion-icon>
+
+                View document
+
+              </a>
+
+            </div>
+
+          </ng-container>
+
+
+          <!-- 
+               NO DOCUMENT
+          = -->
+          <ng-container
+            *ngIf="!doctor.licenseURL">
+
+            <div class="no-document">
+
+              <ion-icon
+                name="document-outline">
+              </ion-icon>
+
+              <h3>
+                No document uploaded
+              </h3>
+
+              <p>
+                This doctor has not uploaded a license document.
+              </p>
+
+            </div>
+
+          </ng-container>
+
+
         </div>
 
-        <!-- Approve / Reject -->
-        <div class="actions">
-          <ion-button color="success" expand="block" (click)="approveDoctor(doctor)">
-            <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-            Approve
-          </ion-button>
-          <ion-button color="danger" fill="outline" expand="block" (click)="rejectDoctor(doctor)">
-            <ion-icon name="close-circle-outline" slot="start"></ion-icon>
-            Reject
-          </ion-button>
-        </div>
 
-      </ion-card-content>
-    </ion-card>
+      </ng-container>
+
+
+    </div>
 
   </section>
 

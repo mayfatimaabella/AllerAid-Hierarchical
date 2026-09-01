@@ -1,332 +1,1313 @@
-//Toolbar
-ion-toolbar.toolbar--teal {
-  --background: #0F6E56;
-  --color: #ffffff;
-  --border-color: transparent;
+/* 
+   PAGE
+ */
+
+ion-content.allergies-bg {
+  --background: #f5fbfa;
+}
+
+
+/* 
+   HEADER
+ */
+
+.admin-header {
+
+  ion-toolbar {
+    --background: #ffffff;
+    --color: #31534d;
+    --border-color: #e1ebe8;
+
+    --border-width: 0 0 1px;
+
+    min-height: 58px;
+    padding: 0 12px;
+  }
 
   ion-title {
+    color: #31534d;
+
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 600;
   }
 
   ion-back-button {
-    --color: #ffffff;
+    --color: #31534d;
   }
 }
 
-//Page Background
-ion-content.allergy-bg {
-  --background: #f4f7f6;
+
+/* 
+   PAGE LAYOUT
+ */
+
+.admin-page {
+  width: 100%;
+  max-width: 1280px;
+
+  margin: 0 auto;
+  padding: 34px 40px 60px;
+
+  box-sizing: border-box;
 }
 
-//Hero
-.hero {
-  padding: 20px 16px 16px;
-  background: #ffffff;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
-  margin-bottom: 8px;
 
-  h1 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #0F6E56;
-    margin-bottom: 4px;
-  }
+/* 
+   PAGE HEADER
+ */
 
-  p {
-    font-size: 13px;
-    color: #666;
-    line-height: 1.5;
-    margin: 0;
-  }
+.page-header {
+  margin-bottom: 25px;
 }
 
-//Tabs
-.tab-bar {
-  display: flex;
-  background: #ffffff;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+.eyebrow {
+  display: block;
 
-  .tab {
-    flex: 1;
-    padding: 12px 8px;
-    font-size: 13px;
-    font-weight: 500;
-    text-align: center;
-    cursor: pointer;
-    color: #888;
-    border-bottom: 2px solid transparent;
-    transition: all 0.15s ease;
+  margin-bottom: 6px;
 
-    &.active {
-      color: #0F6E56;
-      border-bottom-color: #0F6E56;
-    }
-  }
+  color: #0f6e56;
 
-  .tab-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 500;
-    border-radius: 10px;
-    padding: 1px 6px;
-    margin-left: 5px;
+  font-size: 10px;
+  font-weight: 800;
 
-    &.options {
-      background: #E1F5EE;
-      color: #085041;
-    }
-
-    &.pending {
-      background: #FAEEDA;
-      color: #633806;
-    }
-  }
+  letter-spacing: 1.3px;
 }
 
-//Section
-.section {
-  padding: 12px 16px;
+.page-header h1 {
+  margin: 0;
+
+  color: #31534d;
+
+  font-size: 29px;
+  font-weight: 650;
+
+  line-height: 1.2;
+  letter-spacing: -0.5px;
 }
 
-//Add Button
-.add-btn {
-  --background: #0F6E56;
-  --background-activated: #085041;
-  --border-radius: 10px;
-  --color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 14px;
-  height: 48px;
+.page-header p {
+  margin: 7px 0 0;
+
+  color: #718782;
+
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-//Count Bar
-.count-bar {
+
+/* 
+   MANAGEMENT TOOLBAR
+ */
+
+.management-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
 
-  span {
-    font-size: 12px;
-    color: #888;
-  }
+  gap: 18px;
+
+  padding: 16px;
+  margin-bottom: 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #e1ebe8;
+  border-radius: 12px;
+
+  box-shadow:
+    0 2px 8px rgba(49, 83, 77, 0.03);
 }
 
-//Allergy Option Card
-.allergy-card {
-  background: #ffffff;
-  border: 0.5px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 10px;
+.toolbar-info {
   display: flex;
   align-items: center;
-  gap: 10px;
 
-  .card-info {
-    flex: 1;
-    min-width: 0;
-
-    h3 {
-      font-size: 14px;
-      font-weight: 500;
-      color: #1a1a1a;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin: 0;
-    }
-  }
-
-  .card-actions {
-    display: flex;
-    gap: 6px;
-    flex-shrink: 0;
-  }
+  gap: 12px;
 }
 
-//Category Pills
-.pill {
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: 500;
-  margin-top: 4px;
+.toolbar-icon {
+  width: 42px;
+  height: 42px;
 
-  &.food {
-    background: #E1F5EE;
-    color: #085041;
-  }
-
-  &.medication {
-    background: #E6F1FB;
-    color: #0C447C;
-  }
-
-  &.environment {
-    background: #EAF3DE;
-    color: #27500A;
-  }
-
-  &.general {
-    background: #F1EFE8;
-    color: #444441;
-  }
-}
-
-//Icon Buttons
-.icon-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: 0.5px solid rgba(0, 0, 0, 0.1);
-  background: #f4f7f6;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: #666;
-  transition: all 0.12s ease;
 
-  ion-icon {
-    font-size: 16px;
-  }
+  flex-shrink: 0;
 
-  &.edit:hover {
-    background: #E6F1FB;
-    color: #185FA5;
-    border-color: #85B7EB;
-  }
+  border-radius: 10px;
 
-  &.danger:hover {
-    background: #FCEBEB;
-    color: #A32D2D;
-    border-color: #F09595;
-  }
+  background: #e1f5ee;
+  color: #0f6e56;
 }
 
-//Suggestion Card
-.suggestion-card {
+.toolbar-icon ion-icon {
+  font-size: 21px;
+}
+
+.toolbar-text h2 {
+  margin: 0 0 3px;
+
+  color: #31534d;
+
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.toolbar-text p {
+  margin: 0;
+
+  color: #7b8f8a;
+
+  font-size: 11px;
+}
+
+
+/* 
+   ADD ALLERGY BUTTON
+ */
+
+.add-allergy-button {
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 0 14px;
+
+  flex-shrink: 0;
+
+  border: 1px solid #0f6e56;
+  border-radius: 8px;
+
+  background: #0f6e56;
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 12px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.add-allergy-button:hover {
+  background: #085041;
+}
+
+.add-allergy-button:active {
+  transform: scale(0.97);
+}
+
+.add-allergy-button ion-icon {
+  font-size: 16px;
+}
+
+
+/* 
+   TABS
+ */
+
+.allergy-tabs {
+  display: flex;
+  align-items: stretch;
+
+  gap: 4px;
+
+  padding: 4px;
+  margin-bottom: 28px;
+
+  background: #edf3f1;
+
+  border: 1px solid #e1ebe8;
+  border-radius: 10px;
+}
+
+.tab-button {
+  flex: 1;
+
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 14px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #718782;
+
+  font-family: inherit;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.tab-button ion-icon {
+  font-size: 17px;
+}
+
+.tab-button:hover {
+  color: #31534d;
+}
+
+.tab-button.active {
   background: #ffffff;
-  border: 0.5px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  padding: 14px;
+  color: #0f6e56;
+
+  box-shadow:
+    0 1px 4px rgba(49, 83, 77, 0.08);
+}
+
+
+/* 
+   TAB COUNTS
+ */
+
+.tab-count {
+  min-width: 22px;
+  height: 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 6px;
+
+  border-radius: 10px;
+
+  background: #dce7e4;
+  color: #61746f;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.tab-button.active .options-count {
+  background: #e1f5ee;
+  color: #0f6e56;
+}
+
+.pending-count.has-pending {
+  background: #fff1d6;
+  color: #9a6815;
+}
+
+.tab-button.active .pending-count.has-pending {
+  background: #fff1d6;
+  color: #9a6815;
+}
+
+
+/* 
+   DIRECTORY BAR
+ */
+
+.directory-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
   margin-bottom: 10px;
+}
 
-  .suggestion-meta {
-    display: flex;
-    align-items: center;
+.section-label {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #7b8f8a;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.directory-bar h2 {
+  margin: 0;
+
+  color: #31534d;
+
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.section-count {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 6px 10px;
+
+  border-radius: 7px;
+
+  background: #e1f5ee;
+  color: #0f6e56;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.pending-section-count {
+  background: #fff1d6;
+  color: #9a6815;
+}
+
+
+/* 
+   TABLE CONTAINERS
+ */
+
+.allergies-table,
+.suggestions-table {
+  width: 100%;
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #e1ebe8;
+  border-radius: 12px;
+
+  box-shadow:
+    0 2px 8px rgba(49, 83, 77, 0.03);
+}
+
+
+/* 
+   ALLERGY TABLE
+ */
+
+.allergy-table-header,
+.allergy-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(280px, 2fr)
+    minmax(160px, 1fr)
+    130px;
+
+  align-items: center;
+}
+
+.allergy-table-header {
+  min-height: 44px;
+
+  padding: 0 20px;
+
+  background: #f8fbfa;
+
+  border-bottom: 1px solid #e7efec;
+
+  color: #82938e;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.8px;
+
+  text-transform: uppercase;
+}
+
+.allergy-row {
+  min-height: 74px;
+
+  padding: 0 20px;
+
+  border-bottom: 1px solid #edf3f1;
+
+  transition: background 0.15s ease;
+}
+
+.allergy-row:last-child {
+  border-bottom: 0;
+}
+
+.allergy-row:hover {
+  background: #fbfdfc;
+}
+
+
+/* 
+   ALLERGY INFO
+ */
+
+.allergy-cell {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  min-width: 0;
+}
+
+.allergy-icon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
+  background: #e1f5ee;
+  color: #0f6e56;
+}
+
+.allergy-icon ion-icon {
+  font-size: 19px;
+}
+
+.allergy-info {
+  min-width: 0;
+}
+
+.allergy-info h3 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: #31534d;
+
+  font-size: 13px;
+  font-weight: 650;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.allergy-info p {
+  margin: 3px 0 0;
+
+  color: #82938e;
+
+  font-size: 11px;
+}
+
+
+/* 
+   CATEGORY BADGES
+ */
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 25px;
+
+  padding: 0 9px;
+
+  border-radius: 6px;
+
+  background: #eef2f1;
+  color: #62746f;
+
+  font-size: 9px;
+  font-weight: 750;
+
+  letter-spacing: 0.3px;
+
+  text-transform: uppercase;
+}
+
+.category-badge.food {
+  background: #e1f5ee;
+  color: #0f6e56;
+}
+
+.category-badge.medication {
+  background: #e8effa;
+  color: #506a9c;
+}
+
+.category-badge.environment {
+  background: #edf5e6;
+  color: #5c7d35;
+}
+
+
+/* 
+   ALLERGY ACTIONS
+ */
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+.action-button {
+  height: 32px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 7px;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.action-button:active {
+  transform: scale(0.96);
+}
+
+.action-button.edit {
+  gap: 5px;
+
+  padding: 0 10px;
+
+  background: #e1f5ee;
+  color: #0f6e56;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.action-button.edit:hover {
+  background: #d4eee5;
+}
+
+.action-button.edit ion-icon {
+  font-size: 14px;
+}
+
+.action-button.delete {
+  width: 32px;
+
+  background: #fff1f1;
+  color: #c0392b;
+}
+
+.action-button.delete:hover {
+  background: #ffe4e4;
+}
+
+.action-button.delete ion-icon {
+  font-size: 15px;
+}
+
+
+/* 
+   SUGGESTIONS TABLE
+ */
+
+.suggestion-table-header,
+.suggestion-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(280px, 2fr)
+    minmax(180px, 1.2fr)
+    190px;
+
+  align-items: center;
+}
+
+.suggestion-table-header {
+  min-height: 44px;
+
+  padding: 0 20px;
+
+  background: #f8fbfa;
+
+  border-bottom: 1px solid #e7efec;
+
+  color: #82938e;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.8px;
+
+  text-transform: uppercase;
+}
+
+.suggestion-row {
+  min-height: 74px;
+
+  padding: 0 20px;
+
+  border-bottom: 1px solid #edf3f1;
+
+  transition: background 0.15s ease;
+}
+
+.suggestion-row:last-child {
+  border-bottom: 0;
+}
+
+.suggestion-row:hover {
+  background: #fbfdfc;
+}
+
+
+/* 
+   SUGGESTION INFO
+ */
+
+.suggestion-cell {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  min-width: 0;
+}
+
+.suggestion-avatar {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
+  background: #fff1d6;
+  color: #9a6815;
+
+  font-size: 13px;
+  font-weight: 750;
+
+  text-transform: uppercase;
+}
+
+.suggestion-info {
+  min-width: 0;
+}
+
+.suggestion-info h3 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: #31534d;
+
+  font-size: 13px;
+  font-weight: 650;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.suggestion-info p {
+  margin: 3px 0 0;
+
+  color: #82938e;
+
+  font-size: 11px;
+}
+
+
+/* 
+   SUBMITTED BY
+ */
+
+.submitted-by {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #718782;
+
+  font-size: 11px;
+}
+
+.submitted-by ion-icon {
+  color: #6e8982;
+
+  font-size: 15px;
+}
+
+
+/* 
+   APPROVE / REJECT ACTIONS
+ */
+
+.suggestion-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+}
+
+.approve-button,
+.reject-button {
+  height: 32px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  padding: 0 10px;
+
+  border: 0;
+  border-radius: 7px;
+
+  font-family: inherit;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.approve-button:active,
+.reject-button:active {
+  transform: scale(0.96);
+}
+
+.approve-button {
+  background: #e1f5ee;
+  color: #0f6e56;
+}
+
+.approve-button:hover {
+  background: #d4eee5;
+}
+
+.reject-button {
+  background: #fff1f1;
+  color: #c0392b;
+}
+
+.reject-button:hover {
+  background: #ffe4e4;
+}
+
+.approve-button ion-icon,
+.reject-button ion-icon {
+  font-size: 14px;
+}
+
+
+/* 
+   LOADING / EMPTY STATE
+ */
+
+.state-container {
+  padding: 80px 24px;
+
+  text-align: center;
+}
+
+.compact-state {
+  padding: 55px 24px;
+
+  background: #ffffff;
+
+  border: 1px solid #e1ebe8;
+  border-radius: 12px;
+}
+
+.state-icon {
+  width: 60px;
+  height: 60px;
+
+  margin: 0 auto 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background: #e1f5ee;
+  color: #0f6e56;
+}
+
+.state-icon.success-icon {
+  background: #e1f5ee;
+}
+
+.state-icon ion-icon {
+  font-size: 30px;
+}
+
+.state-icon ion-spinner {
+  width: 28px;
+  height: 28px;
+
+  --color: #0f6e56;
+}
+
+.state-container h2 {
+  margin: 0 0 6px;
+
+  color: #31534d;
+
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.state-container p {
+  margin: 0;
+
+  color: #82938e;
+
+  font-size: 12px;
+}
+
+
+/* 
+   TABLET
+ */
+
+@media (max-width: 850px) {
+
+  .admin-page {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .management-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .add-allergy-button {
+    width: 100%;
+  }
+
+  .allergy-table-header,
+  .allergy-row {
+    grid-template-columns:
+      minmax(220px, 2fr)
+      130px
+      110px;
+  }
+
+  .suggestion-table-header,
+  .suggestion-row {
+    grid-template-columns:
+      minmax(220px, 2fr)
+      150px
+      170px;
+  }
+
+}
+
+
+/* 
+   MOBILE
+ */
+
+@media (max-width: 600px) {
+
+  .admin-page {
+    padding: 22px 12px 40px;
+  }
+
+  .page-header {
+    margin-bottom: 18px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .page-header p {
+    font-size: 12px;
+  }
+
+  .management-toolbar {
+    padding: 13px;
+  }
+
+  .toolbar-info {
+    align-items: flex-start;
+  }
+
+  .toolbar-text p {
+    line-height: 1.5;
+  }
+
+
+  /* TABS */
+
+  .allergy-tabs {
+    gap: 3px;
+
+    margin-bottom: 22px;
+  }
+
+  .tab-button {
+    min-height: 44px;
+
+    gap: 5px;
+
+    padding: 0 8px;
+
+    font-size: 10px;
+  }
+
+  .tab-button ion-icon {
+    display: none;
+  }
+
+  .tab-count {
+    min-width: 20px;
+    height: 18px;
+
+    padding: 0 5px;
+
+    font-size: 9px;
+  }
+
+
+  /* TABLE HEADERS */
+
+  .allergy-table-header,
+  .suggestion-table-header {
+    display: none;
+  }
+
+
+  /* ALLERGY CARD LAYOUT */
+
+  .allergy-row {
+    display: grid;
+
+    grid-template-columns: 1fr auto;
+
     gap: 10px;
-    margin-bottom: 12px;
 
-    .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #E1F5EE;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 600;
-      color: #085041;
-      flex-shrink: 0;
-      text-transform: uppercase;
-    }
+    min-height: auto;
 
-    .meta-text {
-      h3 {
-        font-size: 14px;
-        font-weight: 500;
-        color: #1a1a1a;
-        margin: 0;
-      }
+    padding: 15px;
+  }
 
-      p {
-        font-size: 11px;
-        color: #888;
-        margin: 2px 0 0;
-      }
-    }
+  .allergy-column,
+  .category-column {
+    grid-column: 1;
+  }
+
+  .actions-column {
+    grid-column: 2;
+    grid-row: 1 / 3;
+
+    align-self: center;
+  }
+
+  .actions-cell {
+    flex-direction: column;
+  }
+
+  .action-button.edit {
+    width: 32px;
+
+    padding: 0;
+  }
+
+  .action-button.edit span {
+    display: none;
+  }
+
+
+  /* SUGGESTION CARD LAYOUT */
+
+  .suggestion-row {
+    display: grid;
+
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+
+    min-height: auto;
+
+    padding: 15px;
   }
 
   .suggestion-actions {
-    display: flex;
-    gap: 8px;
-
-    .approve-btn {
-      flex: 1;
-      --background: #E1F5EE;
-      --color: #085041;
-      --border-color: #5DCAA5;
-      --border-width: 0.5px;
-      --border-style: solid;
-      --border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      height: 38px;
-    }
-
-    .reject-btn {
-      flex: 1;
-      --background: #FCEBEB;
-      --color: #A32D2D;
-      --border-color: #F09595;
-      --border-width: 0.5px;
-      --border-style: solid;
-      --border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      height: 38px;
-    }
+    width: 100%;
   }
+
+  .approve-button,
+  .reject-button {
+    flex: 1;
+  }
+
+
+  /* DIRECTORY */
+
+  .directory-bar h2 {
+    font-size: 16px;
+  }
+
+  .section-count {
+    font-size: 9px;
+  }
+
 }
 
-//Empty State
-.empty-state {
-  text-align: center;
-  padding: 40px 16px;
-  color: #aaa;
+/* 
+   ALLERGY ADD / EDIT MODAL
+ */
 
-  ion-icon {
-    font-size: 36px;
-    display: block;
-    margin: 0 auto 10px;
-    opacity: 0.4;
-  }
-
-  p {
-    font-size: 13px;
-    line-height: 1.5;
-  }
+.allergy-modal {
+  --width: 520px;
+  --height: auto;
+  --border-radius: 16px;
+  --box-shadow: 0 24px 70px rgba(34, 61, 56, 0.22);
 }
 
-//Empty State
-.loading-box {
+
+/* MODAL CONTAINER */
+
+.allergy-modal::part(content) {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+
+/* WRAPPER */
+
+.allergy-modal-wrapper {
+  background: #ffffff;
+}
+
+
+/* 
+   HEADER
+ */
+
+.allergy-modal-header {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 16px;
-  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
 
-  ion-spinner {
-    color: #0F6E56;
-    width: 32px;
-    height: 32px;
+  padding: 24px 26px 20px;
+
+  border-bottom: 1px solid #e4ece9;
+
+  background: #ffffff;
+}
+
+.modal-eyebrow {
+  display: block;
+
+  margin-bottom: 5px;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+
+  color: #6f8d86;
+}
+
+.allergy-modal-header h2 {
+  margin: 0;
+
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.3;
+
+  color: #31534d;
+}
+
+
+/* BODY */
+
+.allergy-modal-body {
+  padding: 24px 26px 26px;
+
+  background: #ffffff;
+}
+
+
+/* 
+   FIELDS
+ */
+
+.modal-field {
+  margin-bottom: 20px;
+}
+
+.modal-field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  color: #526a64;
+}
+
+
+/* INPUT */
+
+.modal-field ion-input,
+.modal-field ion-select {
+  --background: #fbfcfc;
+  --color: #31534d;
+  --placeholder-color: #9aaca7;
+  --placeholder-opacity: 1;
+
+  --border-color: #dce8e4;
+  --border-color-hover: #9db8b1;
+  --border-color-focused: #31534d;
+
+  border-radius: 10px;
+
+  min-height: 52px;
+
+  font-size: 14px;
+}
+
+
+/* 
+   ACTIONS
+ */
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 26px;
+  padding-top: 20px;
+
+  border-top: 1px solid #edf2f0;
+}
+
+
+/* CANCEL */
+
+.btn-cancel {
+  min-width: 100px;
+  height: 44px;
+
+  padding: 0 18px;
+
+  border: 1px solid #dce8e4;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #60756f;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #f4f8f7;
+  border-color: #b9cec8;
+}
+
+
+/* SAVE */
+
+.btn-save {
+  min-width: 140px;
+  height: 44px;
+
+  padding: 0 22px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #31534d;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(49, 83, 77, 0.15);
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+
+.btn-save:hover {
+  background: #27443f;
+}
+
+.btn-save:active {
+  transform: translateY(1px);
+}
+
+
+/* 
+   MOBILE
+ */
+
+@media (max-width: 600px) {
+
+  .allergy-modal {
+    --width: calc(100% - 32px);
   }
 
-  p {
-    font-size: 13px;
-    color: #888;
+  .allergy-modal-header {
+    padding: 20px;
+  }
+
+  .allergy-modal-body {
+    padding: 20px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .btn-cancel,
+  .btn-save {
+    width: 100%;
   }
 }

@@ -15,9 +15,12 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { BuddyService } from '../../../../core/services/buddy.service';
 import { UserService } from '../../../../core/services/user.service';
 import { FirebaseService } from '../../../../core/services/firebase.service';
-import { MedicalService } from '../../../../core/services/medical.profile.service';
+import { MedicalService } from '../../../../core/services/medical.service';
 
 import { Subscription } from 'rxjs';
+
+import { AllergyOnboardingService } from '../../../../core/services/allergy-onboarding.service';
+
 
 interface BuddySetupEntry {
   fullName: string;
@@ -109,7 +112,8 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
     private buddyService: BuddyService,
     private firebaseService: FirebaseService,
     private toastController: ToastController,
-    private medicalService: MedicalService
+    private medicalService: MedicalService,
+    private allergyOnboardingService: AllergyOnboardingService
   ) {
     this.db = this.firebaseService.getDb();
   }
@@ -681,7 +685,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
         { merge: true }
       );
 
-      await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
+      await this.allergyOnboardingService.markAllergyOnboardingCompleted(currentUser.uid);
 
       if (this.primaryInviteStatus === 'pending') {
         await this.showToast(
@@ -775,7 +779,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
         { merge: true }
       );
 
-      await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
+      await this.allergyOnboardingService.markAllergyOnboardingCompleted(currentUser.uid);
 
       await this.showToast('Emergency setup saved.', 'success');
 
@@ -814,7 +818,7 @@ export class BuddySetupOnboardingPage implements OnInit, OnDestroy {
         { merge: true }
       );
 
-      await this.medicalService.markAllergyOnboardingCompleted(currentUser.uid);
+      await this.allergyOnboardingService.markAllergyOnboardingCompleted(currentUser.uid);
 
       await this.showToast(
         'Setup complete. Add a buddy anytime from your profile.',

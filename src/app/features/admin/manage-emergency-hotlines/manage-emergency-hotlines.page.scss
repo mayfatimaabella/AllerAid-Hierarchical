@@ -1,207 +1,1646 @@
+/* 
+   EMERGENCY HOTLINES PAGE
+   Manage Users-inspired admin UI
+    */
+
+
+/* 
+   PAGE
+    */
+
 .hotlines-bg {
-  --background: #f4faf8;
+  --background: #f5f8f7;
+
+  background: #f5f8f7;
 }
 
-.toolbar--teal {
-  --background: #036a5d;
-  --color: #ffffff;
-}
 
-.search-toolbar {
-  --background: #036a5d;
-  --color: #ffffff;
-  padding-bottom: 6px;
+/* 
+   HEADER
+    */
 
-  ion-searchbar {
-    --background: rgba(255, 255, 255, 0.15);
-    --color: #ffffff;
-    --placeholder-color: rgba(255, 255, 255, 0.7);
-    --icon-color: rgba(255, 255, 255, 0.8);
-    --border-radius: 12px;
-    padding: 0 8px;
+.admin-header {
+  z-index: 20;
+
+  ion-toolbar {
+    --background: #ffffff;
+    --color: #173b35;
+
+    height: 58px;
+    padding: 0 18px;
+
+    border-bottom: 1px solid #e4ebe9;
+
+    box-shadow: none;
+  }
+
+  ion-back-button {
+    --color: #036a5d;
+    --icon-font-size: 20px;
+
+    margin-right: 4px;
+  }
+
+  ion-title {
+    padding-left: 4px;
+
+    color: #173b35;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    letter-spacing: -0.1px;
   }
 }
 
-.hotlines-hero {
-  padding: 24px 18px 10px;
 
-  h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #0f2a26;
-    margin-bottom: 6px;
-  }
+/* 
+   MAIN ADMIN CONTENT
+    */
 
-  p {
-    color: #65827c;
-    font-size: 14px;
-    line-height: 1.5;
-    margin: 0;
-  }
+.admin-page {
+  width: 100%;
+  max-width: 1280px;
+
+  margin: 0 auto;
+
+  padding: 34px 40px 60px;
+
+  box-sizing: border-box;
 }
 
-.filter-row {
+
+/* 
+   PAGE HEADER
+    */
+
+.page-header {
+  margin-bottom: 25px;
+}
+
+.eyebrow {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #168477;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 1.3px;
+}
+
+.page-header h1 {
+  margin: 0;
+
+  color: #173b35;
+
+  font-size: 29px;
+  line-height: 1.2;
+
+  font-weight: 650;
+
+  letter-spacing: -0.5px;
+}
+
+.page-header p {
+  margin: 7px 0 0;
+
+  color: #718782;
+
+  font-size: 13px;
+}
+
+
+/* 
+   MANAGEMENT TOOLBAR
+    */
+
+.management-toolbar {
   display: flex;
-  gap: 8px;
-  padding: 10px 16px 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
 
-  &::-webkit-scrollbar { display: none; }
-
-  ion-chip {
-    font-size: 13px;
-    font-weight: 500;
-    flex-shrink: 0;
-
-    &[color="primary"] {
-      --background: #036a5d;
-      --color: #ffffff;
-    }
-
-    &[color="medium"] {
-      --background: #e8eeec;
-      --color: #5f7d77;
-    }
-  }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 70px 24px;
-
-  ion-icon {
-    font-size: 64px;
-    color: #036a5d;
-    margin-bottom: 14px;
-    display: block;
-  }
-
-  h2 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #163632;
-    margin-bottom: 8px;
-  }
-
-  p {
-    color: #65827c;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  ion-spinner {
-    color: #036a5d;
-    width: 40px;
-    height: 40px;
-    margin-bottom: 14px;
-  }
-}
-
-.hotline-list {
-  padding: 12px 14px 30px;
-}
-
-ion-card {
-  margin: 0 0 14px;
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-}
-
-.hotline-header {
-  display: flex;
   align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  padding: 16px;
+
+  margin-bottom: 14px;
+
+  background: #ffffff;
+
+  border: 1px solid #e1eae7;
+
+  border-radius: 11px;
+
+  box-shadow:
+    0 2px 8px rgba(22, 59, 53, 0.025);
+
+  box-sizing: border-box;
+}
+
+
+/* 
+   SEARCH
+    */
+
+.search-box {
+  flex: 1;
+
+  max-width: 650px;
+
+  height: 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  background: #f5f8f7;
+
+  border: 1px solid #dfe9e6;
+
+  border-radius: 8px;
+
+  overflow: hidden;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.search-box:focus-within {
+  border-color: #8fc7bc;
+
+  box-shadow:
+    0 0 0 3px rgba(3, 106, 93, 0.05);
+}
+
+.search-box > ion-icon {
+  flex-shrink: 0;
+
+  margin-left: 12px;
+
+  color: #66817a;
+
+  font-size: 17px;
+}
+
+.search-box ion-searchbar {
+  width: 100%;
+  height: 40px;
+
+  --background: transparent;
+  --color: #173b35;
+  --placeholder-color: #91a39e;
+  --icon-color: #66817a;
+  --clear-button-color: #66817a;
+
+  --box-shadow: none;
+
+  padding: 0 6px;
+}
+
+
+/* 
+   TOOLBAR ACTIONS
+    */
+
+.toolbar-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+.toolbar-actions button {
+  height: 40px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 0 13px;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.toolbar-actions button:active {
+  transform: scale(0.97);
+}
+
+.toolbar-actions ion-icon {
+  font-size: 15px;
+}
+
+
+/* 
+   REFRESH BUTTON
+    */
+
+.refresh-button {
+  background: #ffffff;
+
+  border: 1px solid #dce7e4;
+
+  color: #54716a;
+}
+
+.refresh-button:hover {
+  background: #f5f8f7;
+}
+
+
+/* 
+   ADD HOTLINE BUTTON
+    */
+
+.add-user-button {
+  background: #036a5d;
+
+  border: 1px solid #036a5d;
+
+  color: #ffffff;
+}
+
+.add-user-button:hover {
+  background: #045e53;
+}
+
+
+/* 
+   DIRECTORY BAR
+    */
+
+.directory-bar {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 10px;
+}
+
+
+/* 
+   DIRECTORY TITLE
+    */
+
+.directory-title {
+  display: flex;
+
+  align-items: center;
+
   gap: 12px;
-  margin-bottom: 12px;
+}
+
+.section-label {
+  display: block;
+
+  color: #7a8e89;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.directory-title h2 {
+  margin: 3px 0 0;
+
+  color: #173b35;
+
+  font-size: 17px;
+  font-weight: 650;
+}
+
+
+/* 
+   COUNT BADGE
+    */
+
+.user-count {
+  min-width: 30px;
+  height: 28px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 8px;
+
+  border-radius: 7px;
+
+  background: #e4f2ee;
+
+  color: #036a5d;
+
+  font-size: 11px;
+  font-weight: 750;
+
+  box-sizing: border-box;
+}
+
+
+/* 
+   FILTER TABS
+    */
+
+.filter-tabs {
+  display: flex;
+
+  align-items: center;
+
+  gap: 2px;
+}
+
+.filter-tabs button {
+  height: 35px;
+
+  padding: 0 13px;
+
+  background: transparent;
+
+  border: 0;
+
+  border-bottom: 2px solid transparent;
+
+  color: #778b85;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.filter-tabs button:hover {
+  color: #036a5d;
+}
+
+.filter-tabs button span {
+  margin-left: 4px;
+
+  color: #9baaa6;
+
+  font-size: 10px;
+}
+
+.filter-tabs button.active {
+  border-bottom-color: #036a5d;
+
+  color: #036a5d;
+
+  font-weight: 700;
+}
+
+.filter-tabs button.active span {
+  color: #168477;
+}
+
+
+/* 
+   HOTLINE TABLE
+    */
+
+.hotlines-table {
+  width: 100%;
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #e0e9e6;
+
+  border-radius: 11px;
+
+  box-shadow:
+    0 3px 12px rgba(22, 59, 53, 0.035);
+}
+
+
+/* 
+   TABLE GRID
+    */
+
+.table-header,
+.hotline-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(240px, 2.1fr)
+    minmax(120px, 1fr)
+    120px
+    130px
+    80px
+    135px;
+
+  align-items: center;
+}
+
+
+/* 
+   TABLE HEADER
+    */
+
+.table-header {
+  min-height: 45px;
+
+  padding: 0 18px;
+
+  background: #f7faf9;
+
+  border-bottom: 1px solid #e3ebe9;
+
+  color: #748781;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.8px;
+
+  text-transform: uppercase;
+}
+
+
+/* 
+   HOTLINE ROW
+    */
+
+.hotline-row {
+  min-height: 76px;
+
+  padding: 0 18px;
+
+  border-bottom: 1px solid #edf2f0;
+
+  transition:
+    background 0.15s ease;
+}
+
+.hotline-row:last-child {
+  border-bottom: 0;
+}
+
+.hotline-row:hover {
+  background: #fbfcfc;
+}
+
+
+/* 
+   HOTLINE CELL
+    */
+
+.hotline-cell {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  min-width: 0;
+}
+
+
+/* 
+   AVATAR
+    */
+
+.avatar {
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #e2f2ee;
+
+  color: #036a5d;
+
+  font-size: 12px;
+  font-weight: 750;
+
+  letter-spacing: 0.2px;
+}
+
+
+/* 
+   HOTLINE INFORMATION
+    */
+
+.hotline-info {
+  min-width: 0;
+}
+
+.hotline-info h3 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: #173b35;
+
+  font-size: 13px;
+  font-weight: 650;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+.hotline-info p {
+  margin: 3px 0 0;
+
+  overflow: hidden;
+
+  color: #82938e;
+
+  font-size: 11px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+
+/* 
+   PHONE NUMBER
+    */
+
+.number-cell {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #71857f;
+
+  font-size: 11px;
+}
+
+.number-cell ion-icon {
+  flex-shrink: 0;
+
+  color: #6b8b83;
+
+  font-size: 14px;
+}
+
+
+/* 
+   STATUS
+    */
+
+.status-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color: #287955;
+
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #2d9565;
+}
+
+.status-badge.suspended {
+  color: #c0392b;
+}
+
+.status-badge.suspended .status-dot {
+  background: #c0392b;
+}
+
+
+/* 
+   DEFAULT BADGE
+    */
+
+.default-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  color: #82918c;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.default-badge ion-icon {
+  font-size: 14px;
+}
+
+.default-badge.enabled {
+  color: #ad7110;
+}
+
+.default-badge.enabled ion-icon {
+  color: #d69a19;
+}
+
+
+/* 
+   ORDER
+    */
+
+.order-cell span {
+  min-width: 31px;
+  height: 25px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 7px;
+
+  border-radius: 6px;
+
+  background: #eef3f1;
+
+  color: #71847e;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* 
+   ACTIONS
+    */
+
+.actions-cell {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+
+/* 
+   ACTION BUTTON BASE
+    */
+
+.action-button {
+  width: 31px;
+  height: 31px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.action-button:active {
+  transform: scale(0.96);
+}
+
+.action-button ion-icon {
+  font-size: 14px;
+}
+
+
+/* 
+   EDIT
+    */
+
+.action-button.edit {
+  width: auto;
+
+  padding: 0 9px;
+
+  background: #e5f2ef;
+
+  color: #036a5d;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.action-button.edit:hover {
+  background: #d9ece8;
+}
+
+
+/* 
+   SUSPEND / ACTIVATE
+    */
+
+.action-button.suspend {
+  background: #fff7e8;
+
+  color: #ad7110;
+}
+
+.action-button.suspend:hover {
+  background: #fff0d1;
+}
+
+.action-button.suspend.restore {
+  background: #edf8f3;
+
+  color: #287955;
+}
+
+.action-button.suspend.restore:hover {
+  background: #e1f3eb;
+}
+
+
+/* 
+   DEFAULT ACTION
+    */
+
+.action-button.default {
+  background: #f4f6f5;
+
+  color: #879691;
+}
+
+.action-button.default:hover {
+  background: #edf1ef;
+
+  color: #687a74;
+}
+
+.action-button.default.unset {
+  background: #fff7e8;
+
+  color: #d39a20;
+}
+
+.action-button.default.unset:hover {
+  background: #fff0d1;
+}
+
+
+/* 
+   DELETE
+    */
+
+.action-button.delete {
+  background: #fff3f3;
+
+  color: #c0392b;
+}
+
+.action-button.delete:hover {
+  background: #ffe6e6;
+}
+
+
+/* 
+   LOADING / EMPTY STATE
+    */
+
+.state-container {
+  padding: 80px 24px;
+
+  text-align: center;
+}
+
+.state-icon {
+  width: 60px;
+  height: 60px;
+
+  margin: 0 auto 15px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background: #e3f2ee;
+
+  color: #036a5d;
+}
+
+.state-icon ion-icon {
+  font-size: 29px;
+}
+
+.state-icon ion-spinner {
+  width: 28px;
+  height: 28px;
+
+  --color: #036a5d;
+}
+
+.state-container h2 {
+  margin: 0 0 6px;
+
+  color: #173b35;
+
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.state-container p {
+  margin: 0;
+
+  color: #839590;
+
+  font-size: 12px;
+}
+
+
+/* 
+   
+   HOTLINE ADD / EDIT MODAL
+   
+    */
+
+.hotline-form-modal {
+  --width: 520px;
+  --max-width: 94vw;
+
+  /*
+   IMPORTANT:
+   Do not use height: auto here.
+   The modal needs a real height so ion-content
+   can display and scroll the form.
+  */
+
+  --height: 720px;
+  --max-height: calc(100vh - 40px);
+
+  --border-radius: 12px;
+
+  --box-shadow:
+    0 20px 60px rgba(22, 59, 53, 0.18);
+
+  --backdrop-opacity: 0.45;
+}
+
+
+/* 
+   MODAL HEADER
+    */
+
+.hotline-form-modal ion-header {
+  display: block;
+
+  box-shadow: none;
+}
+
+.modal-toolbar {
+  --background: #ffffff;
+  --color: #173b35;
+
+  min-height: 58px;
+
+  border-bottom: 1px solid #e4ebe9;
+
+  box-shadow: none;
+}
+
+.modal-toolbar ion-title {
+  padding-left: 16px;
+
+  color: #173b35;
+
+  font-size: 16px;
+  font-weight: 650;
+
+  letter-spacing: -0.1px;
+}
+
+.modal-toolbar ion-buttons {
+  margin-right: 4px;
+}
+
+.modal-toolbar ion-button {
+  --color: #66817a;
+
+  width: 38px;
+  height: 38px;
+
+  margin: 0;
+}
+
+.modal-toolbar ion-button:hover {
+  --color: #036a5d;
+}
+
+.modal-toolbar ion-icon {
+  font-size: 22px;
+}
+
+
+/* 
+   MODAL CONTENT
+    */
+
+.hotline-form-modal ion-content.hotline-form-content {
+  --background: #f5f8f7;
+
+  display: block;
+
+  height: 100%;
+}
+
+
+/* 
+   FORM WRAPPER
+    */
+
+.hotline-form {
+  width: 100%;
+
+  padding: 24px 26px 30px;
+
+  box-sizing: border-box;
+}
+
+
+/* 
+   FORM DESCRIPTION
+    */
+
+.form-description {
+  margin: 0 0 24px;
+
+  color: #718782;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+
+/* 
+   FORM FIELD
+    */
+
+.form-field {
+  display: flex;
+
+  flex-direction: column;
+
+  margin-bottom: 20px;
+}
+
+.form-field ion-label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #365a54;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.1px;
+}
+
+
+/* 
+   INPUT
+    */
+
+.form-field ion-input {
+  width: 100%;
+
+  min-height: 44px;
+
+  --background: #ffffff;
+
+  --color: #173b35;
+
+  --placeholder-color: #9aa9a5;
+
+  --border-color: #dce7e4;
+
+  --border-radius: 8px;
+
+  --highlight-color: #036a5d;
+
+  font-size: 13px;
+
+  box-sizing: border-box;
+}
+
+
+/* 
+   SELECT
+    */
+
+.form-field ion-select {
+  width: 100%;
+
+  min-height: 44px;
+
+  --background: #ffffff;
+
+  --color: #173b35;
+
+  --placeholder-color: #9aa9a5;
+
+  --border-color: #dce7e4;
+
+  --border-radius: 8px;
+
+  --highlight-color: #036a5d;
+
+  font-size: 13px;
+
+  box-sizing: border-box;
+}
+
+
+/* 
+   INPUT / SELECT FOCUS
+    */
+
+.form-field ion-input:focus-within,
+.form-field ion-select:focus-within {
+  --border-color: #8fc7bc;
+}
+
+
+/* 
+   FORM HELP TEXT
+    */
+
+.form-field small {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #91a09c;
+
+  font-size: 10px;
+
+  line-height: 1.45;
+}
+
+
+/* 
+   FORM ACTIONS
+    */
+
+.form-actions {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 9px;
+
+  margin-top: 28px;
+
+  padding-bottom: 5px;
+}
+
+
+/* 
+   SAVE BUTTON
+    */
+
+.save-form-button {
+  --background: #036a5d;
+
+  --background-hover: #045e53;
+
+  --background-activated: #045e53;
+
+  --color: #ffffff;
+
+  --border-radius: 8px;
+
+  height: 42px;
+
+  margin: 0;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  text-transform: none;
+
+  box-shadow: none;
+}
+
+.save-form-button:hover {
+  --background: #045e53;
+}
+
+
+/* 
+   CANCEL BUTTON
+    */
+
+.cancel-form-button {
+  --color: #54716a;
+
+  --border-color: #dce7e4;
+
+  --border-radius: 8px;
+
+  height: 42px;
+
+  margin: 0;
+
+  font-size: 12px;
+
+  font-weight: 650;
+
+  text-transform: none;
+}
+
+
+/* 
+   LARGE TABLET
+    */
+
+@media (max-width: 1050px) {
+
+  .admin-page {
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+
+
+  .table-header,
+  .hotline-row {
+    grid-template-columns:
+      minmax(220px, 2fr)
+      120px
+      105px
+      120px
+      70px
+      125px;
+  }
+
+}
+
+
+/* 
+   TABLET
+    */
+
+@media (max-width: 850px) {
+
+  .management-toolbar {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .search-box {
+    max-width: none;
+  }
+
+
+  .toolbar-actions {
+    justify-content: flex-end;
+  }
+
+
+  .table-header,
+  .hotline-row {
+    grid-template-columns:
+      minmax(210px, 2fr)
+      110px
+      100px
+      110px
+      70px
+      115px;
+  }
+
+
+  /*
+   Hide the default column on smaller screens.
+  */
+
+  .default-column {
+    display: none;
+  }
+
+}
+
+
+/* 
+   SMALL TABLET / LARGE MOBILE
+    */
+
+@media (max-width: 700px) {
+
+  .admin-page {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+
+  /*
+   Hide number column.
+   Phone number will still be available inside
+   the mobile hotline card if needed.
+  */
+
+  .table-header,
+  .hotline-row {
+    grid-template-columns:
+      minmax(200px, 1fr)
+      100px
+      110px;
+  }
+
+
+  .number-column {
+    display: none;
+  }
+
+
+  .status-column {
+    grid-column: 2;
+  }
+
+
+  .actions-column {
+    grid-column: 3;
+  }
+
+}
+
+
+/* 
+   MOBILE
+    */
+
+@media (max-width: 600px) {
+
+  .admin-page {
+    padding: 22px 12px 40px;
+  }
+
+
+  /* 
+     PAGE HEADER
+      */
+
+  .page-header {
+    margin-bottom: 18px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .page-header p {
+    font-size: 12px;
+
+    line-height: 1.5;
+  }
+
+
+  /* 
+     MANAGEMENT TOOLBAR
+      */
+
+  .management-toolbar {
+    padding: 12px;
+  }
+
+
+  .toolbar-actions {
+    width: 100%;
+  }
+
+
+  .toolbar-actions button {
+    flex: 1;
+  }
+
+
+  /* 
+     DIRECTORY
+      */
+
+  .directory-bar {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 8px;
+  }
+
+
+  .filter-tabs {
+    width: 100%;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+  }
+
+
+  .filter-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+
+  .filter-tabs button {
+    flex-shrink: 0;
+  }
+
+
+  /* 
+     TABLE → MOBILE CARDS
+      */
+
+  .hotlines-table {
+    border-radius: 10px;
+  }
+
+
+  .table-header {
+    display: none;
+  }
+
+
+  .hotline-row {
+    display: grid;
+
+    grid-template-columns: 1fr auto;
+
+    gap: 12px;
+
+    min-height: auto;
+
+    padding: 15px;
+  }
+
+
+  /* 
+     HOTLINE
+      */
+
+  .hotline-column {
+    grid-column: 1;
+  }
+
+
+  .hotline-cell {
+    gap: 10px;
+  }
+
 
   .avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: #036a5d;
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    letter-spacing: 0.5px;
+    width: 40px;
+    height: 40px;
+
+    border-radius: 10px;
   }
 
-  .hotline-info {
-    flex: 1;
-    min-width: 0;
 
-    h2 {
-      font-size: 16px;
-      font-weight: 700;
-      color: #0f2a26;
-      margin: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    p {
-      font-size: 13px;
-      color: #6b8a84;
-      margin: 3px 0 0;
-    }
-  }
-}
-
-.hotline-details {
-  background: #eef8f6;
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin-bottom: 12px;
-
-  p {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: #365a54;
-    margin: 5px 0;
-
-    ion-icon {
-      font-size: 15px;
-      flex-shrink: 0;
-      color: #036a5d;
-    }
-  }
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-
-  ion-button {
-    --border-radius: 10px;
+  .hotline-info h3 {
     font-size: 12px;
-    font-weight: 600;
-    flex: 1;
-    min-width: 70px;
   }
+
+
+  .hotline-info p {
+    font-size: 10px;
+  }
+
+
+  /* 
+     STATUS
+      */
+
+  .status-column {
+    grid-column: 1;
+
+    grid-row: 2;
+  }
+
+
+  .status-badge {
+    font-size: 10px;
+  }
+
+
+  /* 
+     DEFAULT
+      */
+
+  .default-column {
+    display: flex;
+
+    grid-column: 2;
+
+    grid-row: 1;
+  }
+
+
+  .default-badge {
+    font-size: 0;
+  }
+
+
+  .default-badge ion-icon {
+    font-size: 16px;
+  }
+
+
+  /* 
+     ORDER
+      */
+
+  .order-column {
+    display: none;
+  }
+
+
+  /* 
+     NUMBER
+      */
+
+  .number-column {
+    display: flex;
+
+    grid-column: 1;
+
+    grid-row: 3;
+
+    font-size: 10px;
+  }
+
+
+  .number-cell {
+    margin-top: 2px;
+  }
+
+
+  /* 
+     ACTIONS
+      */
+
+  .actions-column {
+    grid-column: 2;
+
+    grid-row: 2 / 4;
+
+    align-self: center;
+  }
+
+
+  .actions-cell {
+    flex-direction: column;
+
+    gap: 5px;
+  }
+
+
+  .action-button.edit {
+    width: 31px;
+
+    padding: 0;
+
+    font-size: 0;
+  }
+
+
+  .action-button.edit span {
+    display: none;
+  }
+
+
+  .action-button {
+    width: 31px;
+    height: 31px;
+  }
+
+
+  /* 
+     MOBILE MODAL
+      */
+
+  .hotline-form-modal {
+    --width: 94vw;
+
+    --height: 90vh;
+
+    --max-height: 90vh;
+
+    --border-radius: 12px;
+  }
+
+
+  .hotline-form {
+    padding: 20px 18px 26px;
+  }
+
+
+  .form-description {
+    margin-bottom: 20px;
+  }
+
+
+  .form-field {
+    margin-bottom: 18px;
+  }
+
 }
 
-@media (min-width: 768px) {
-  .hotline-list {
-    max-width: 720px;
-    margin: auto;
+
+/* 
+   VERY SMALL PHONES
+    */
+
+@media (max-width: 380px) {
+
+  .admin-page {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
-  .hotlines-hero {
-    max-width: 720px;
-    margin: auto;
-    padding-top: 32px;
+
+  .management-toolbar {
+    padding: 10px;
   }
 
-  .filter-row {
-    max-width: 720px;
-    margin: auto;
+
+  .toolbar-actions button {
+    padding: 0 8px;
+
+    font-size: 10px;
   }
+
+
+  .hotline-form-modal {
+    --width: 96vw;
+  }
+
+
+  .hotline-form {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
 }

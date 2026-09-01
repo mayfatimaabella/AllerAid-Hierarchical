@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone} from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { MenuController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
@@ -7,6 +7,7 @@ import { PatientNotificationService } from './core/services/patient-notification
 import { MedicationReminderService } from './core/services/medication-reminder.service';
 import { MedicationService } from './core/services/medication.service';
 import { PushNotificationService } from './core/services/push-notification.service';
+
 
 @Component({
   selector: 'app-root',
@@ -41,30 +42,29 @@ export class AppComponent implements OnInit {
     const user = await this.authService.waitForAuthInit();
 
     if (user) {
-      // Ensure role is loaded for an authenticated user
+      // Load the user's role
       await this.loadUserRole();
+
+      // Initialize push notifications
       await this.pushNotificationService.init();
-
-      // If the app started on the login screen, redirect to the main area
-      if (this.router.url === '/login' || this.router.url === '/') {
-        await this.router.navigate(['/tabs'], { replaceUrl: true });
-      }
     } else {
+      // No authenticated user
       this.userRole = '';
-
-      // If there is no authenticated user, make sure we are on the login page
-      if (this.router.url !== '/login') {
-        await this.router.navigate(['/login'], { replaceUrl: true });
-      }
     }
 
-    // Keep reacting to auth changes (e.g., after login/logout while app is open)
+    // Keep reacting to auth changes
+    // e.g. after login/logout while app is open
     this.authService.getCurrentUser$().subscribe(async (currentUser) => {
+
       if (currentUser) {
+
         await this.loadUserRole();
-        // Ensure push notifications are registered once the user is authenticated
+
+        // Initialize push notifications
         await this.pushNotificationService.init();
+
       } else {
+
         this.userRole = '';
       }
     });
@@ -108,14 +108,6 @@ export class AppComponent implements OnInit {
         this.medicationReminderService.startListeningForNotifications();
         console.log('Medication notification listener initialized');
 
-        // FIX: restore/reschedule reminders for every existing medication
-        // on login/launch. Previously only startListeningForNotifications()
-        // was called here, which just wires up the TAKEN/SKIP action
-        // listeners - it does not queue any actual notifications. Without
-        // this, a medication only ever got its reminder scheduled at the
-        // moment it was created or edited in that same session; anything
-        // created before, or if the app was reinstalled/notifications were
-        // cleared by the OS, would silently have no reminders at all.
         try {
           const meds = await this.medicationService.getUserMedications();
           const activeMeds = meds.filter(m => m.isActive && (m.quantity ?? 0) > 0);

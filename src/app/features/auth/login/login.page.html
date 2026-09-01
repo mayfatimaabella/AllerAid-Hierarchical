@@ -1,37 +1,80 @@
-<ion-content [fullscreen]="true" class="ion-padding login-bg">
+<ion-content [fullscreen]="true" class="ion-padding">
 
   <div class="form-container">
 
     <ion-card class="login-card">
+
       <ion-card-header>
         <ion-card-title>Welcome to AllerAid</ion-card-title>
         <ion-card-subtitle>Log in to continue</ion-card-subtitle>
       </ion-card-header>
 
       <ion-card-content>
+
         <ion-list lines="none">
-          <ion-item>
+
+          <!-- EMAIL -->
+          <ion-item [class.input-invalid]="submitted && (!email || !isValidEmail())">
+            
             <ion-icon slot="start" name="mail-outline"></ion-icon>
             <ion-input type="email" placeholder="Email" [(ngModel)]="email"></ion-input>
           </ion-item>
 
-          <ion-item>
+          <!-- Email required -->
+          <ion-text color="danger" *ngIf="submitted && !email">
+            <p class="field-error">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              Email is required.
+            </p>
+          </ion-text>
+
+          <!-- Invalid email -->
+          <ion-text color="danger" *ngIf="submitted && email && !isValidEmail()">
+            <p class="field-error">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              Please enter a valid email address.
+            </p>
+          </ion-text>
+
+          <!-- PASSWORD -->
+          <ion-item [class.input-invalid]="submitted && !password">
             <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
             <ion-input type="password" placeholder="Password" [(ngModel)]="password"></ion-input>
           </ion-item>
+
+          <!-- Password required -->
+          <ion-text color="danger" *ngIf="submitted && !password">
+            <p class="field-error">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              Password is required.
+            </p>
+          </ion-text>
+
         </ion-list>
 
+        <!-- LOGIN BUTTON -->
         <ion-button expand="block" class="loginBtn" shape="round" (click)="login()">
           Login
         </ion-button>
+
+        <!-- FORGOT PASSWORD -->
         <div class="text-center forgot-password-link">
-          <a (click)="openForgotPasswordModal()">Forgot Password?</a>
+          <a (click)="openForgotPasswordModal()">
+            Forgot Password?
+          </a>
         </div>
+
+        <!-- REGISTER -->
         <div class="text-center">
-          <p>Don’t have an account? <a routerLink="/registration">Sign up</a></p>
+          <p> Don’t have an account? 
+            <a routerLink="/registration"> Register</a>
+          </p>
         </div>
+
       </ion-card-content>
+
     </ion-card>
+
   </div>
 
 </ion-content>

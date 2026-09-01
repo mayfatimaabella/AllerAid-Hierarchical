@@ -1,126 +1,680 @@
-<ion-header>
-  <ion-toolbar class="toolbar--teal">
+<!-- 
+     HEADER
+ -->
+
+<ion-header class="admin-header">
+
+  <ion-toolbar>
+
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+
+      <ion-back-button
+        defaultHref="/admin-dashboard"
+        text="">
+      </ion-back-button>
+
     </ion-buttons>
-    <ion-title>Allergy Categories</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="addCategory()">
-        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
-      </ion-button>
-      <ion-button (click)="loadCategories()">
-        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+
+    <ion-title>
+      Category Management
+    </ion-title>
+
   </ion-toolbar>
 
-  <ion-toolbar class="search-toolbar">
-    <ion-searchbar
-      [(ngModel)]="searchTerm"
-      (ionInput)="filterCategories()"
-      placeholder="Search categories..."
-      debounce="300">
-    </ion-searchbar>
-  </ion-toolbar>
 </ion-header>
+
+
+<!-- 
+     MAIN PAGE CONTENT
+ -->
 
 <ion-content class="categories-bg">
 
-  <section class="categories-hero" >
-    <h1>Allergy Categories</h1>
-    <p>Manage the categories used to group allergy options.</p>
-  </section>
+  <main class="admin-page">
 
-  <!-- FILTER CHIPS -->
-  <div class="filter-row">
-    <ion-chip
-      [color]="activeFilter === 'all' ? 'primary' : 'medium'"
-      (click)="setFilter('all')">
-      All
-    </ion-chip>
-    <ion-chip
-      [color]="activeFilter === 'active' ? 'primary' : 'medium'"
-      (click)="setFilter('active')">
-      Active
-    </ion-chip>
-    <ion-chip
-      [color]="activeFilter === 'inactive' ? 'primary' : 'medium'"
-      (click)="setFilter('inactive')">
-      Inactive
-    </ion-chip>
-  </div>
 
-  <!-- LOADING -->
-  <div class="empty-state" *ngIf="isLoading">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading categories...</p>
-  </div>
+    <!-- 
+         PAGE HEADER
+     -->
 
-  <!-- EMPTY -->
-  <div class="empty-state" *ngIf="!isLoading && filtered.length === 0">
-    <ion-icon name="pricetags-outline"></ion-icon>
-    <h2>No categories found</h2>
-    <p>Try adjusting your search or add a new category.</p>
-  </div>
+    <section class="page-header">
 
-  <!-- CATEGORY LIST -->
-  <section class="category-list" *ngIf="!isLoading && filtered.length > 0">
+      <div>
 
-    <ion-card *ngFor="let category of filtered">
-      <ion-card-content>
+        <span class="eyebrow">
+          ADMINISTRATION
+        </span>
 
-        <div class="category-header">
-          <div class="avatar">{{ getInitials(category.name) }}</div>
-          <div class="category-info">
-            <h2>{{ category.name }}</h2>
-            <p>Display order: {{ category.order }}</p>
+        <h1>
+          Allergy Management
+        </h1>
+
+        <p>
+          Manage allergy categories, visibility, and display order.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- 
+         SEARCH AND ACTIONS
+     -->
+
+    <section class="management-toolbar">
+
+
+      <!-- SEARCH -->
+
+      <div class="search-box">
+
+        <ion-icon
+          name="search-outline">
+        </ion-icon>
+
+        <ion-searchbar
+          [(ngModel)]="searchTerm"
+          (ionInput)="filterCategories()"
+          placeholder="Search categories..."
+          debounce="300">
+        </ion-searchbar>
+
+      </div>
+
+
+      <!-- ACTION BUTTONS -->
+
+      <div class="toolbar-actions">
+
+
+        <!-- REFRESH -->
+
+        <button
+          type="button"
+          class="refresh-button"
+          (click)="loadCategories()">
+
+          <ion-icon
+            name="refresh-outline">
+          </ion-icon>
+
+          <span>
+            Refresh
+          </span>
+
+        </button>
+
+
+        <!-- ADD CATEGORY -->
+
+        <button
+          type="button"
+          class="add-category-button"
+          (click)="addCategory()">
+
+          <ion-icon
+            name="add-outline">
+          </ion-icon>
+
+          <span>
+            Add Category
+          </span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+    <!-- 
+         DIRECTORY BAR
+     -->
+
+    <section class="directory-bar">
+
+
+      <!-- DIRECTORY TITLE -->
+
+      <div class="directory-title">
+
+        <div>
+
+          <span class="section-label">
+            ALLERGY DIRECTORY
+          </span>
+
+          <h2>
+            Categories
+          </h2>
+
+        </div>
+
+        <span class="user-count">
+          {{ filtered.length }}
+        </span>
+
+      </div>
+
+
+      <!-- FILTER TABS -->
+
+      <div class="filter-tabs">
+
+
+        <!-- ALL -->
+
+        <button
+          type="button"
+          [class.active]="activeFilter === 'all'"
+          (click)="setFilter('all')">
+
+          All
+
+          <span>
+            {{ categories.length }}
+          </span>
+
+        </button>
+
+
+        <!-- ACTIVE -->
+
+        <button
+          type="button"
+          [class.active]="activeFilter === 'active'"
+          (click)="setFilter('active')">
+
+          Active
+
+          <span>
+            {{ activeCategoryCount }}
+          </span>
+
+        </button>
+
+
+        <!-- INACTIVE -->
+
+        <button
+          type="button"
+          [class.active]="activeFilter === 'inactive'"
+          (click)="setFilter('inactive')">
+
+          Inactive
+
+          <span>
+            {{ inactiveCategoryCount }}
+          </span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- LOADING STATE -->
+
+    <section
+      class="state-container"
+      *ngIf="isLoading">
+
+      <div class="state-icon">
+
+        <ion-spinner
+          name="crescent">
+        </ion-spinner>
+
+      </div>
+
+      <h2>
+        Loading categories
+      </h2>
+
+      <p>
+        Please wait while the allergy category directory is loaded.
+      </p>
+
+    </section>
+
+
+    <!-- EMPTY STATE -->
+
+    <section
+      class="state-container"
+      *ngIf="!isLoading && filtered.length === 0">
+
+      <div class="state-icon">
+
+        <ion-icon
+          name="pricetags-outline">
+        </ion-icon>
+
+      </div>
+
+      <h2>
+        No categories found
+      </h2>
+
+      <p>
+        Try adjusting your search or filter.
+      </p>
+
+    </section>
+
+
+    <!-- CATEGORY TABLE -->
+
+    <section
+      class="categories-table"
+      *ngIf="!isLoading && filtered.length > 0">
+
+
+      <!-- TABLE HEADER -->
+
+      <div class="table-header">
+
+        <div class="category-column">
+          Category
+        </div>
+
+        <div class="status-column">
+          Status
+        </div>
+
+        <div class="order-column">
+          Order
+        </div>
+
+        <div class="visibility-column">
+          Visibility
+        </div>
+
+        <div class="actions-column">
+          Actions
+        </div>
+
+      </div>
+
+
+      <!-- CATEGORY ROWS -->
+
+      <div
+        class="category-row"
+        *ngFor="let category of filtered">
+
+
+        <!-- CATEGORY -->
+
+        <div class="category-column category-cell">
+
+          <div class="avatar">
+
+            {{ getInitials(category.name) }}
+
           </div>
-          <ion-badge [color]="category.active ? 'success' : 'medium'">
-            {{ category.active ? 'Active' : 'Inactive' }}
-          </ion-badge>
+
+          <div class="category-info">
+
+            <h3>
+              {{ category.name }}
+            </h3>
+
+            <p>
+              Allergy category
+            </p>
+
+          </div>
+
         </div>
 
-        <div class="category-details">
-          <p>
+
+        <!-- STATUS -->
+
+        <div class="status-column">
+
+          <span
+            class="status-badge"
+            [class.suspended]="!category.active">
+
+            <span class="status-dot"></span>
+
+            {{
+              category.active
+                ? 'Active'
+                : 'Inactive'
+            }}
+
+          </span>
+
+        </div>
+
+
+        <!-- ORDER -->
+
+        <div class="order-column order-cell">
+
+          <span class="mobile-label">
+            Order
+          </span>
+
+          <strong>
+            {{ category.order }}
+          </strong>
+
+        </div>
+
+
+        <!-- VISIBILITY -->
+
+        <div class="visibility-column visibility-cell">
+
+          <ion-icon
+            [name]="
+              category.active
+                ? 'eye-outline'
+                : 'eye-off-outline'
+            ">
+          </ion-icon>
+
+          <span>
+            {{
+              category.active
+                ? 'Visible'
+                : 'Hidden'
+            }}
+          </span>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="actions-column actions-cell">
+
+
+          <!-- EDIT -->
+
+          <button
+            type="button"
+            class="action-button edit"
+            (click)="editCategory(category)"
+            aria-label="Edit category"
+            title="Edit category">
+
             <ion-icon
-              [name]="category.active ? 'checkmark-circle-outline' : 'ban-outline'"
-              [color]="category.active ? 'success' : 'medium'">
+              name="create-outline">
             </ion-icon>
-            {{ category.active ? 'Visible to users' : 'Hidden from users' }}
-          </p>
-          <p>
-            <ion-icon name="reorder-four-outline"></ion-icon>
-            Order position: {{ category.order }}
-          </p>
-        </div>
 
-        <div class="actions">
-          <ion-button fill="outline" size="small" (click)="editCategory(category)">
-            <ion-icon slot="start" name="create-outline"></ion-icon>
-            Edit
-          </ion-button>
+            <span>
+              Edit
+            </span>
 
-          <ion-button
-            fill="outline"
-            size="small"
-            [color]="category.active ? 'warning' : 'success'"
-            (click)="toggleActive(category)">
+          </button>
+
+
+          <!-- ACTIVATE / DEACTIVATE -->
+
+          <button
+            type="button"
+            class="action-button suspend"
+            [class.restore]="!category.active"
+            (click)="toggleActive(category)"
+            [attr.aria-label]="
+              category.active
+                ? 'Deactivate category'
+                : 'Activate category'
+            "
+            [title]="
+              category.active
+                ? 'Deactivate category'
+                : 'Activate category'
+            ">
+
             <ion-icon
-              slot="start"
-              [name]="category.active ? 'ban-outline' : 'checkmark-outline'">
+              [name]="
+                category.active
+                  ? 'ban-outline'
+                  : 'checkmark-circle-outline'
+              ">
             </ion-icon>
-            {{ category.active ? 'Deactivate' : 'Activate' }}
-          </ion-button>
 
-          <ion-button fill="outline" size="small" color="danger" (click)="deleteCategory(category)">
-            <ion-icon slot="start" name="trash-outline"></ion-icon>
-            Delete
-          </ion-button>
+          </button>
+
+
+          <!-- DELETE -->
+
+          <button
+            type="button"
+            class="action-button delete"
+            (click)="deleteCategory(category)"
+            aria-label="Delete category"
+            title="Delete category">
+
+            <ion-icon
+              name="trash-outline">
+            </ion-icon>
+
+          </button>
+
         </div>
 
-      </ion-card-content>
-    </ion-card>
+      </div>
 
-  </section>
+    </section>
+
+  </main>
 
 </ion-content>
+
+
+<!-- 
+     ADD / EDIT CATEGORY MODAL
+
+     IMPORTANT:
+     This is OUTSIDE ion-content.
+-->
+
+<ion-modal
+  [isOpen]="isCategoryModalOpen"
+  (didDismiss)="closeCategoryModal()"
+  class="category-form-modal">
+
+  <ng-template>
+
+
+    <!-- 
+         MODAL HEADER
+     -->
+
+    <ion-header>
+
+      <ion-toolbar class="modal-toolbar">
+
+
+        <!-- TITLE -->
+
+        <ion-title>
+
+          {{ modalMode === 'add'
+            ? 'Add Category'
+            : 'Edit Category'
+          }}
+
+        </ion-title>
+
+
+        <!-- CLOSE -->
+
+        <ion-buttons slot="end">
+
+          <ion-button
+            fill="clear"
+            (click)="closeCategoryModal()"
+            aria-label="Close">
+
+            <ion-icon
+              name="close-outline">
+            </ion-icon>
+
+          </ion-button>
+
+        </ion-buttons>
+
+      </ion-toolbar>
+
+    </ion-header>
+
+
+    <!-- 
+         MODAL CONTENT
+     -->
+
+    <ion-content class="category-form-content">
+
+      <div class="category-form">
+
+
+        <!-- 
+             DESCRIPTION
+         -->
+
+        <p class="form-description">
+
+          {{ modalMode === 'add'
+            ? 'Create a new allergy category and configure its display settings.'
+            : 'Update this allergy category and its display settings.'
+          }}
+
+        </p>
+
+
+        <!-- 
+             CATEGORY NAME
+         -->
+
+        <div class="form-field">
+
+          <ion-label>
+            Category Name
+          </ion-label>
+
+          <ion-input
+            [(ngModel)]="form.name"
+            name="name"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            placeholder="Enter category name"
+            fill="outline"
+            maxlength="50">
+          </ion-input>
+
+          <small>
+            Required. Enter the name of the allergy category.
+          </small>
+
+        </div>
+
+
+        <!--DISPLAY ORDER -->
+
+        <div class="form-field">
+
+          <ion-label>
+            Display Order
+          </ion-label>
+
+          <ion-input
+            [(ngModel)]="form.order"
+            name="order"
+            type="number"
+            inputmode="numeric"
+            placeholder="Enter display order"
+            fill="outline"
+            min="1"
+            max="999">
+          </ion-input>
+
+          <small>
+            Determines the order in which this category appears.
+          </small>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="form-field">
+
+          <ion-label>
+            Status
+          </ion-label>
+
+          <ion-select
+            [(ngModel)]="form.active"
+            name="active"
+            interface="popover"
+            fill="outline"
+            placeholder="Select status">
+
+            <ion-select-option [value]="true">
+              Active
+            </ion-select-option>
+
+            <ion-select-option [value]="false">
+              Inactive
+            </ion-select-option>
+
+          </ion-select>
+
+          <small>
+            Inactive categories will not be available to users.
+          </small>
+
+        </div>
+
+
+        <!-- FORM ACTIONS -->
+
+        <div class="form-actions">
+
+
+          <!-- SAVE -->
+
+          <ion-button
+            expand="block"
+            class="save-form-button"
+            (click)="saveCategory()">
+
+            {{ modalMode === 'add'
+              ? 'Create Category'
+              : 'Save Changes'
+            }}
+
+          </ion-button>
+
+
+          <!-- CANCEL -->
+
+          <ion-button
+            expand="block"
+            fill="outline"
+            class="cancel-form-button"
+            (click)="closeCategoryModal()">
+
+            Cancel
+
+          </ion-button>
+
+        </div>
+
+
+      </div>
+
+    </ion-content>
+
+  </ng-template>
+
+</ion-modal>

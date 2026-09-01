@@ -1,7 +1,7 @@
 // Services
 export { ProfileDetailService } from './profile-details.service';
 export { UserService } from './user.service';
-export { MedicalService } from './medical.profile.service';
+export { MedicalService } from './medical.service';
 
 // Models
 export type { UserProfile } from '../models/user-profile.model';

@@ -234,14 +234,14 @@ ion-header {
   p { color: #6b8581; font-size: 14px; line-height: 1.5; margin: 0; }
 }
 
-// ==========================================================================
+// 
 // SINGLE-SCREEN PRODUCT DETAIL SPECIFIC MODIFIERS
-// ==========================================================================
+// 
 .inspection-hero-card {
   padding: 20px 14px !important;
   box-shadow: none !important;
   border-color: #e0e6e4 !important;
-  pointer-events: none; // Disables layout press behaviors in item inspection mode
+  pointer-events: none;
 
   .large-view {
     width: 85px;
@@ -250,7 +250,7 @@ ion-header {
 
   .detailed-view-title {
     font-size: 18px !important;
-    -webkit-line-clamp: unset !important; // Unclamps constraints to display product name lengths
+    -webkit-line-clamp: unset !important;
     overflow: visible !important;
   }
 

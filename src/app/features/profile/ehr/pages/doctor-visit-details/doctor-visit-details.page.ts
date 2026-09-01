@@ -148,7 +148,6 @@ export class VisitDetailsPage implements OnInit {
       header: 'Delete Visit',
       message: 'Are you sure you want to delete this visit? This action cannot be undone.',
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
         { text: 'Delete', role: 'destructive', handler: async () => {
             try {
               await this.ehrService.deleteDoctorVisit(this.visit!.id!);
@@ -168,7 +167,8 @@ export class VisitDetailsPage implements OnInit {
               await toast.present();
             }
           }
-        }
+        },
+        { text: 'Cancel', role: 'cancel' }
       ]
     });
     await alert.present();

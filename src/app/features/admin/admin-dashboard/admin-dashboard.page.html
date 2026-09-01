@@ -1,112 +1,584 @@
-<ion-header>
-  <ion-toolbar class="toolbar--teal">
-    <ion-title>Admin Dashboard</ion-title>
+<ion-header class="mobile-header">
+  <ion-toolbar class="admin-toolbar">
+
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>AllerAid Admin</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button fill="clear">
+        <ion-icon name="notifications-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
   </ion-toolbar>
 </ion-header>
 
+
 <ion-content class="admin-bg">
 
-  <!-- HERO -->
-  <section class="admin-hero">
+  <div class="admin-layout">
 
-    <div class="hero-text">
-      <h1>Welcome, Admin</h1>
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
 
-      <p>
-        Monitor the AllerAid platform, manage users, verify doctors,
-        and oversee emergency operations from one place.
-      </p>
-    </div>
+    <aside class="admin-sidebar">
 
-    <div class="hero-status">
-      <ion-chip color="success">
-        <ion-icon name="checkmark-circle"></ion-icon>
-        <ion-label>System Online</ion-label>
-      </ion-chip>
-    </div>
+      <!-- BRAND -->
+      <div class="sidebar-brand">
 
-  </section>
+        <div class="brand-icon">
+          <ion-icon name="medical-outline"></ion-icon>
+        </div>
 
-  <!-- STATS -->
-  <section class="stats-grid">
+        <div>
+          <h2>AllerAid</h2>
+          <span>ADMIN PANEL</span>
+        </div>
 
-    <ion-card>
-      <ion-card-content>
-        <h2>{{ totalUsers }}</h2>
-        <p>Total Users</p>
-      </ion-card-content>
-    </ion-card>
+      </div>
 
-    <ion-card>
-      <ion-card-content>
-        <h2>{{ pendingDoctors }}</h2>
-        <p>Pending Doctors</p>
-      </ion-card-content>
-    </ion-card>
 
-    <ion-card>
-      <ion-card-content>
-        <h2>{{ totalEmergencies }}</h2>
-        <p>Emergency Reports</p>
-      </ion-card-content>
-    </ion-card>
+      <!-- MAIN NAVIGATION -->
+      <div class="sidebar-section">
 
-  </section>
+        <span class="sidebar-label">MAIN</span>
 
-  <!-- QUICK ACTIONS -->
-  <section class="dashboard-section">
+        <a
+          class="nav-item active"
+          routerLink="/admin-dashboard">
 
-    <div class="section-header">
-      <h2>Quick Actions</h2>
-      <p>Access AllerAid administration tools.</p>
-    </div>
+          <ion-icon name="grid-outline"></ion-icon>
+          <span>Dashboard</span>
 
-    <ion-list>
+        </a>
 
-      <ion-item button routerLink="/admin-dashboard/users">
-        <ion-icon name="people-outline" slot="start"></ion-icon>
-        <ion-label>Manage Users</ion-label>
-      </ion-item>
 
-      <ion-item button routerLink="/admin-dashboard/doctors">
-        <ion-icon name="medkit-outline" slot="start"></ion-icon>
-        <ion-label>Verify Doctors</ion-label>
-      </ion-item>
+        <a
+          class="nav-item"
+          routerLink="/admin-dashboard/users">
 
-      <ion-item button routerLink="/admin-dashboard/allergies">
-        <ion-icon name="leaf-outline" slot="start"></ion-icon>
-        <ion-label>Manage Allergy Options</ion-label>
-      </ion-item>
+          <ion-icon name="people-outline"></ion-icon>
+          <span>Users</span>
 
-      <ion-item button routerLink="/admin-dashboard/emergencies">
-        <ion-icon name="warning-outline" slot="start"></ion-icon>
-        <ion-label>Emergency Logs</ion-label>
-      </ion-item>
+        </a>
 
-      <ion-item button routerLink="/admin-dashboard/allergy-categories">
-        <ion-icon name="pricetags-outline" slot="start"></ion-icon>
-        <ion-label>Manage Allergy Categories</ion-label>
-      </ion-item>
 
-      <ion-item button routerLink="/admin-dashboard/emergency-hotlines">
-        <ion-icon name="call-outline" slot="start"></ion-icon>
-        <ion-label>Emergency Hotlines</ion-label>
-      </ion-item>
+        <a
+          class="nav-item"
+          routerLink="/admin-dashboard/doctors">
 
-      <ion-item button (click)="logout()">
-        <ion-icon
-          name="log-out-outline"
-          slot="start"
-          color="danger">
-        </ion-icon>
+          <ion-icon name="medkit-outline"></ion-icon>
+          <span>Doctors</span>
 
-        <ion-label color="danger">
-          Logout
-        </ion-label>
-      </ion-item>
+          <span
+            class="nav-badge"
+            *ngIf="pendingDoctors > 0">
 
-    </ion-list>
+            {{ pendingDoctors }}
 
-  </section>
+          </span>
+
+        </a>
+
+
+        <a
+          class="nav-item"
+          routerLink="/admin-dashboard/emergencies">
+
+          <ion-icon name="warning-outline"></ion-icon>
+          <span>Emergency Alerts</span>
+
+        </a>
+
+      </div>
+
+
+      <!-- MANAGEMENT -->
+      <div class="sidebar-section">
+
+        <span class="sidebar-label">MANAGEMENT</span>
+
+
+        <a
+          class="nav-item"
+          routerLink="/admin-dashboard/allergies">
+
+          <ion-icon name="leaf-outline"></ion-icon>
+          <span>Allergy Options</span>
+
+        </a>
+
+
+        <a
+          class="nav-item"
+          routerLink="/admin-dashboard/allergy-categories">
+
+          <ion-icon name="pricetags-outline"></ion-icon>
+          <span>Allergy Categories</span>
+
+        </a>
+
+
+        <a
+          class="nav-item"
+          routerLink="/admin-dashboard/emergency-hotlines">
+
+          <ion-icon name="call-outline"></ion-icon>
+          <span>Emergency Hotlines</span>
+
+        </a>
+
+      </div>
+
+
+      <!-- LOGOUT -->
+      <div class="sidebar-bottom">
+
+        <button
+          class="logout-button"
+          (click)="logout()">
+
+          <ion-icon name="log-out-outline"></ion-icon>
+          <span>Logout</span>
+
+        </button>
+
+      </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="admin-main">
+
+
+      <!-- =================================================
+           TOP BAR
+      ================================================== -->
+
+      <header class="top-bar">
+
+        <div class="page-heading">
+
+          <span class="breadcrumb">
+            ADMINISTRATION / DASHBOARD
+          </span>
+
+          <h1>Dashboard</h1>
+
+          <p>
+            Overview of your AllerAid platform.
+          </p>
+
+        </div>
+
+
+        <div class="admin-user">
+
+          <div class="system-status">
+            <span class="status-dot"></span>
+            System Online
+          </div>
+
+
+          <div class="admin-avatar">
+            A
+          </div>
+
+
+          <div class="admin-user-info">
+
+            <strong>Administrator</strong>
+            <span>System Admin</span>
+
+          </div>
+
+        </div>
+
+      </header>
+
+
+      <!-- =================================================
+           OVERVIEW
+      ================================================== -->
+
+      <section class="dashboard-section">
+
+        <div class="section-heading">
+
+          <div>
+            <h2>Overview</h2>
+            <p>Current platform statistics.</p>
+          </div>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+
+          <!-- USERS -->
+          <div class="stat-card">
+
+            <div class="stat-icon users">
+              <ion-icon name="people-outline"></ion-icon>
+            </div>
+
+            <div class="stat-information">
+
+              <span>Total Users</span>
+
+              <strong>
+                {{ totalUsers }}
+              </strong>
+
+              <small>
+                Registered accounts
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <!-- PENDING DOCTORS -->
+          <div class="stat-card">
+
+            <div class="stat-icon doctors">
+              <ion-icon name="medkit-outline"></ion-icon>
+            </div>
+
+            <div class="stat-information">
+
+              <span>Pending Doctors</span>
+
+              <strong>
+                {{ pendingDoctors }}
+              </strong>
+
+              <small
+                [class.warning-text]="pendingDoctors > 0">
+
+                {{
+                  pendingDoctors > 0
+                    ? 'Requires review'
+                    : 'Nothing pending'
+                }}
+
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <!-- EMERGENCY ALERTS -->
+          <div class="stat-card">
+
+            <div class="stat-icon emergencies">
+              <ion-icon name="warning-outline"></ion-icon>
+            </div>
+
+            <div class="stat-information">
+
+              <span>Emergency Alerts</span>
+
+              <strong>
+                {{ totalEmergencies }}
+              </strong>
+
+              <small>
+                Total recorded alerts
+              </small>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           DASHBOARD CONTENT
+      ================================================== -->
+
+      <section class="dashboard-columns">
+
+
+        <!-- EMERGENCY ACTIVITY -->
+        <div class="dashboard-panel emergency-panel">
+
+          <div class="panel-header">
+
+            <div>
+
+              <h2>Emergency Activity</h2>
+
+              <p>
+                Overview of recorded emergency alerts.
+              </p>
+
+            </div>
+
+
+            <ion-button
+              fill="outline"
+              size="small"
+              routerLink="/admin-dashboard/emergencies">
+
+              View Alerts
+
+            </ion-button>
+
+          </div>
+
+
+          <div class="emergency-content">
+
+            <div class="emergency-total">
+
+              <div class="live-indicator"></div>
+
+              <strong>
+                {{ totalEmergencies }}
+              </strong>
+
+              <span>
+                Total emergency alerts
+              </span>
+
+            </div>
+
+
+            <div class="emergency-message">
+
+              <div class="message-icon">
+                <ion-icon name="shield-checkmark-outline"></ion-icon>
+              </div>
+
+              <div>
+
+                <strong>
+                  Emergency monitoring active
+                </strong>
+
+                <p>
+                  AllerAid is currently monitoring emergency activity.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- NEEDS ATTENTION -->
+        <div class="dashboard-panel tasks-panel">
+
+          <div class="panel-header">
+
+            <div>
+
+              <h2>Needs Attention</h2>
+
+              <p>
+                Items that may require action.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="attention-content">
+
+
+            <!-- PENDING DOCTORS -->
+            <a
+              *ngIf="pendingDoctors > 0"
+              class="attention-item"
+              routerLink="/admin-dashboard/doctors">
+
+              <div class="attention-icon doctor-task">
+                <ion-icon name="medkit-outline"></ion-icon>
+              </div>
+
+
+              <div class="attention-text">
+
+                <strong>
+                  Doctor Verification
+                </strong>
+
+                <span>
+                  {{ pendingDoctors }}
+                  pending application{{ pendingDoctors !== 1 ? 's' : '' }}
+                </span>
+
+              </div>
+
+
+              <ion-icon
+                name="chevron-forward-outline"
+                class="task-arrow">
+              </ion-icon>
+
+            </a>
+
+
+            <!-- NOTHING PENDING -->
+            <div
+              *ngIf="pendingDoctors === 0"
+              class="all-clear">
+
+              <div class="all-clear-icon">
+                <ion-icon name="checkmark-outline"></ion-icon>
+              </div>
+
+              <div>
+
+                <strong>
+                  All caught up
+                </strong>
+
+                <span>
+                  No pending items require attention.
+                </span>
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           QUICK LINKS
+      ================================================== -->
+
+      <section class="quick-links-section">
+
+        <div class="section-heading">
+
+          <div>
+
+            <h2>Quick Access</h2>
+
+            <p>
+              Common management areas.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="quick-links">
+
+
+          <a
+            class="quick-link"
+            routerLink="/admin-dashboard/users">
+
+            <ion-icon name="people-outline"></ion-icon>
+
+            <span>Users</span>
+
+            <ion-icon
+              name="arrow-forward-outline"
+              class="quick-link-arrow">
+            </ion-icon>
+
+          </a>
+
+
+          <a
+            class="quick-link"
+            routerLink="/admin-dashboard/doctors">
+
+            <ion-icon name="medkit-outline"></ion-icon>
+
+            <span>Doctors</span>
+
+            <ion-icon
+              name="arrow-forward-outline"
+              class="quick-link-arrow">
+            </ion-icon>
+
+          </a>
+
+
+          <a
+            class="quick-link"
+            routerLink="/admin-dashboard/allergies">
+
+            <ion-icon name="leaf-outline"></ion-icon>
+
+            <span>Allergy Options</span>
+
+            <ion-icon
+              name="arrow-forward-outline"
+              class="quick-link-arrow">
+            </ion-icon>
+
+          </a>
+
+
+          <a
+            class="quick-link"
+            routerLink="/admin-dashboard/allergy-categories">
+
+            <ion-icon name="pricetags-outline"></ion-icon>
+
+            <span>Categories</span>
+
+            <ion-icon
+              name="arrow-forward-outline"
+              class="quick-link-arrow">
+            </ion-icon>
+
+          </a>
+
+
+          <a
+            class="quick-link"
+            routerLink="/admin-dashboard/emergency-hotlines">
+
+            <ion-icon name="call-outline"></ion-icon>
+
+            <span>Hotlines</span>
+
+            <ion-icon
+              name="arrow-forward-outline"
+              class="quick-link-arrow">
+            </ion-icon>
+
+          </a>
+
+        </div>
+
+      </section>
+
+
+    </main>
+
+  </div>
 
 </ion-content>

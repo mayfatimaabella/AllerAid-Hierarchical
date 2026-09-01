@@ -1,191 +1,941 @@
-<ion-header>
-  <ion-toolbar class="toolbar--teal">
+<ion-header class="admin-header">
+
+  <ion-toolbar>
 
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+
+      <ion-back-button
+        defaultHref="/admin-dashboard"
+        text="">
+      </ion-back-button>
+
     </ion-buttons>
 
-    <ion-title>Emergency Logs</ion-title>
+    <ion-title>
+      Emergency Logs
+    </ion-title>
 
   </ion-toolbar>
+
 </ion-header>
+
 
 <ion-content class="logs-bg">
 
-  <section class="logs-hero">
-    <h1>Emergency Reports</h1>
-    <p>Monitor emergency alerts, patient incidents, and responder activity.</p>
-  </section>
+  <main class="admin-page">
 
-  <!-- Filter Tabs -->
-  <div class="filter-tabs">
 
-    <ion-button
-      size="small"
-      [fill]="selectedFilter === 'all' ? 'solid' : 'outline'"
-      (click)="applyFilter('all')">
-      All
-      <ion-badge slot="end">{{ emergencies.length }}</ion-badge>
-    </ion-button>
+    <!-- 
+         PAGE HEADER
+          -->
 
-    <ion-button
-      size="small"
-      color="danger"
-      [fill]="selectedFilter === 'active' ? 'solid' : 'outline'"
-      (click)="applyFilter('active')">
-      Active
-      <ion-badge slot="end">{{ countByStatus('active') }}</ion-badge>
-    </ion-button>
+    <section class="page-header">
 
-    <ion-button
-      size="small"
-      color="warning"
-      [fill]="selectedFilter === 'responding' ? 'solid' : 'outline'"
-      (click)="applyFilter('responding')">
-      Responding
-      <ion-badge slot="end">{{ countByStatus('responding') }}</ion-badge>
-    </ion-button>
+      <div>
 
-    <ion-button
-      size="small"
-      color="success"
-      [fill]="selectedFilter === 'resolved' ? 'solid' : 'outline'"
-      (click)="applyFilter('resolved')">
-      Resolved
-      <ion-badge slot="end">{{ countByStatus('resolved') }}</ion-badge>
-    </ion-button>
+        <span class="eyebrow">
+          ADMINISTRATION
+        </span>
 
-    <ion-button
-      size="small"
-      color="medium"
-      [fill]="selectedFilter === 'archived' ? 'solid' : 'outline'"
-      (click)="applyFilter('archived')">
-      Archived
-      <ion-badge slot="end">{{ countByStatus('archived') }}</ion-badge>
-    </ion-button>
+        <h1>
+          Emergency Reports
+        </h1>
 
-  </div>
+        <p>
+          Monitor emergency alerts, patient incidents, and responder activity.
+        </p>
 
-  <!-- Loading State -->
-  <div class="empty-state" *ngIf="isLoading">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading emergency reports...</p>
-  </div>
+      </div>
 
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="!isLoading && filteredEmergencies.length === 0">
-    <ion-icon name="warning-outline"></ion-icon>
-    <h2>No {{ selectedFilter === 'all' ? '' : selectedFilter }} emergencies</h2>
-    <p>Nothing to show for this category.</p>
-  </div>
+    </section>
 
-  <!-- Emergency Cards -->
-  <section class="logs-list" *ngIf="!isLoading && filteredEmergencies.length > 0">
 
-    <ion-card *ngFor="let emergency of filteredEmergencies">
-      <ion-card-content>
+    <!-- 
+         SEARCH / ACTION TOOLBAR
+          -->
 
-        <!-- Card Header -->
-        <div class="log-header">
-          <div>
-            <h2>
-              {{ emergency.patientName || emergency.userName || emergency.name || 'Unknown Patient' }}
-            </h2>
-            <p class="reported-at">
-              {{ emergency.createdAt?.toDate() | date:'medium' }}
-            </p>
+    <section class="management-toolbar">
+
+
+      <!-- SEARCH -->
+
+      <div class="search-box">
+
+        <ion-icon
+          name="search-outline">
+        </ion-icon>
+
+        <ion-searchbar
+          [(ngModel)]="searchTerm"
+          (ionInput)="filterEmergencies()"
+          placeholder="Search patient, ID, location, contact..."
+          debounce="300">
+        </ion-searchbar>
+
+      </div>
+
+
+      <!-- ACTIONS -->
+
+      <div class="toolbar-actions">
+
+        <button
+          class="refresh-button"
+          type="button"
+          (click)="loadEmergencies()">
+
+          <ion-icon
+            name="refresh-outline">
+          </ion-icon>
+
+          <span>
+            Refresh
+          </span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- 
+         EMERGENCY DIRECTORY
+          -->
+
+    <section class="directory-bar">
+
+
+      <!-- TITLE -->
+
+      <div class="directory-title">
+
+        <div>
+
+          <span class="section-label">
+            EMERGENCY DIRECTORY
+          </span>
+
+          <h2>
+            Reports
+          </h2>
+
+        </div>
+
+        <span class="user-count">
+          {{ filteredEmergencies.length }}
+        </span>
+
+      </div>
+
+
+      <!-- STATUS FILTERS -->
+
+      <div class="filter-tabs">
+
+
+        <!-- ALL -->
+
+        <button
+          type="button"
+          [class.active]="selectedFilter === 'all'"
+          (click)="applyFilter('all')">
+
+          All
+
+          <span>
+            {{ emergencies.length }}
+          </span>
+
+        </button>
+
+
+        <!-- ACTIVE -->
+
+        <button
+          type="button"
+          [class.active]="selectedFilter === 'active'"
+          (click)="applyFilter('active')">
+
+          Active
+
+          <span>
+            {{ countByStatus('active') }}
+          </span>
+
+        </button>
+
+
+        <!-- RESPONDING -->
+
+        <button
+          type="button"
+          [class.active]="selectedFilter === 'responding'"
+          (click)="applyFilter('responding')">
+
+          Responding
+
+          <span>
+            {{ countByStatus('responding') }}
+          </span>
+
+        </button>
+
+
+        <!-- RESOLVED -->
+
+        <button
+          type="button"
+          [class.active]="selectedFilter === 'resolved'"
+          (click)="applyFilter('resolved')">
+
+          Resolved
+
+          <span>
+            {{ countByStatus('resolved') }}
+          </span>
+
+        </button>
+
+
+        <!-- ARCHIVED -->
+
+        <button
+          type="button"
+          [class.active]="selectedFilter === 'archived'"
+          (click)="applyFilter('archived')">
+
+          Archived
+
+          <span>
+            {{ countByStatus('archived') }}
+          </span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- 
+         LOADING
+          -->
+
+    <section
+      class="state-container"
+      *ngIf="isLoading">
+
+      <div class="state-icon">
+
+        <ion-spinner
+          name="crescent">
+        </ion-spinner>
+
+      </div>
+
+      <h2>
+        Loading emergency reports
+      </h2>
+
+      <p>
+        Please wait while the emergency directory is loaded.
+      </p>
+
+    </section>
+
+
+    <!-- 
+         EMPTY
+          -->
+
+    <section
+      class="state-container"
+      *ngIf="
+        !isLoading &&
+        filteredEmergencies.length === 0
+      ">
+
+      <div class="state-icon">
+
+        <ion-icon
+          name="warning-outline">
+        </ion-icon>
+
+      </div>
+
+      <h2>
+        No emergency reports found
+      </h2>
+
+      <p>
+        Try adjusting your search or status filter.
+      </p>
+
+    </section>
+
+
+    <!-- 
+         EMERGENCY TABLE
+          -->
+
+    <section
+      class="emergency-table"
+      *ngIf="
+        !isLoading &&
+        filteredEmergencies.length > 0
+      ">
+
+
+      <!-- TABLE HEADER -->
+
+      <div class="table-header">
+
+        <div class="patient-column">
+          Patient
+        </div>
+
+        <div class="status-column">
+          Status
+        </div>
+
+        <div class="incident-column">
+          Emergency
+        </div>
+
+        <div class="location-column">
+          Location
+        </div>
+
+        <div class="reported-column">
+          Reported
+        </div>
+
+        <div class="actions-column">
+          Actions
+        </div>
+
+      </div>
+
+
+      <!-- 
+           EMERGENCY ROW
+            -->
+
+      <div
+        class="emergency-row"
+        *ngFor="let emergency of filteredEmergencies">
+
+
+        <!-- PATIENT -->
+
+        <div class="patient-column patient-cell">
+
+          <div class="patient-avatar">
+
+            <ion-icon
+              name="person-outline">
+            </ion-icon>
+
           </div>
 
-          <ion-badge
-            [color]="
-              emergency.status === 'resolved'   ? 'success' :
-              emergency.status === 'responding' ? 'warning' :
-              emergency.status === 'archived'   ? 'medium'  :
-              'danger'
+
+          <div class="patient-info">
+
+            <h3>
+              {{
+                emergency.patientName ||
+                emergency.userName ||
+                emergency.name ||
+                'Unknown Patient'
+              }}
+            </h3>
+
+            <p>
+              ID:
+              {{ emergency.id | slice:0:8 }}...
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="status-column">
+
+          <span
+            class="status-badge"
+            [class.status-active]="
+              getStatus(emergency) === 'active'
+            "
+            [class.status-responding]="
+              getStatus(emergency) === 'responding'
+            "
+            [class.status-resolved]="
+              getStatus(emergency) === 'resolved'
+            "
+            [class.status-archived]="
+              getStatus(emergency) === 'archived'
             ">
-            {{ emergency.status || 'active' }}
-          </ion-badge>
+
+            <span class="status-dot"></span>
+
+            {{ getStatus(emergency) }}
+
+          </span>
+
         </div>
 
-        <!-- Card Details -->
-        <div class="log-details">
 
-          <p>
-            <strong>Emergency ID:</strong>
-            {{ emergency.id | slice:0:8 }}...
-          </p>
+        <!-- EMERGENCY / INSTRUCTION -->
 
-          <p>
-            <strong>Allergies:</strong>
-            {{ getAllergies(emergency) }}
-          </p>
+        <div class="incident-column incident-cell">
 
-          <p>
-            <strong>Instruction:</strong>
-            {{ emergency.instruction || emergency.message || emergency.emergencyMessage || 'No instruction provided' }}
-          </p>
+          <div class="incident-content">
 
-          <p>
-            <strong>Location:</strong>
-            <span *ngIf="emergency.location">
-              {{ emergency.location.latitude ?? emergency.location.lat }},
-              {{ emergency.location.longitude ?? emergency.location.lng }}
+            <span class="incident-label">
+              Instruction
             </span>
-            <span *ngIf="!emergency.location">Unknown location</span>
-          </p>
 
-          <p>
-            <strong>Contact:</strong>
-            {{ emergency.contactNumber || emergency.phone || 'Not provided' }}
-          </p>
+            <p>
+              {{
+                emergency.instruction ||
+                emergency.message ||
+                emergency.emergencyMessage ||
+                'No instruction provided'
+              }}
+            </p>
 
-          <p>
-            <strong>Reported By:</strong>
-            {{ emergency.userName || 'Unknown User' }}
-          </p>
-
-        </div>
-
-        <!-- Actions -->
-        <div class="actions">
-
-          <ion-button
-            expand="block"
-            fill="outline"
-            (click)="viewDetails(emergency)">
-            View Details
-          </ion-button>
-
-          <ion-button
-            expand="block"
-            color="warning"
-            *ngIf="emergency.status === 'active'"
-            (click)="updateStatus(emergency, 'responding')">
-            Mark Responding
-          </ion-button>
-
-          <ion-button
-            expand="block"
-            color="success"
-            *ngIf="emergency.status === 'active' || emergency.status === 'responding'"
-            (click)="updateStatus(emergency, 'resolved')">
-            Mark Resolved
-          </ion-button>
-
-          <ion-button
-            expand="block"
-            color="medium"
-            fill="outline"
-            *ngIf="emergency.status !== 'archived'"
-            (click)="updateStatus(emergency, 'archived')">
-            Archive
-          </ion-button>
+          </div>
 
         </div>
 
-      </ion-card-content>
-    </ion-card>
 
-  </section>
+        <!-- LOCATION -->
+
+        <div class="location-column location-cell">
+
+          <ion-icon
+            name="location-outline">
+          </ion-icon>
+
+          <span>
+            {{ emergency.readableLocation || 'Loading location...' }}
+          </span>
+
+        </div>
+
+
+        <!-- REPORTED -->
+
+        <div class="reported-column reported-cell">
+
+          <span>
+
+            {{
+              emergency.createdAt?.toDate()
+                | date:'MMM d, y'
+            }}
+
+          </span>
+
+          <small>
+
+            {{
+              emergency.createdAt?.toDate()
+                | date:'shortTime'
+            }}
+
+          </small>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="actions-column actions-cell">
+
+
+          <!-- VIEW -->
+
+          <button
+            type="button"
+            class="action-button view"
+            (click)="viewDetails(emergency)"
+            aria-label="View emergency details"
+            title="View emergency details">
+
+            <ion-icon
+              name="eye-outline">
+            </ion-icon>
+
+            <span>
+              View
+            </span>
+
+          </button>
+
+
+          <!-- RESPOND -->
+
+          <button
+            type="button"
+            class="action-button respond"
+            *ngIf="getStatus(emergency) === 'active'"
+            (click)="updateStatus(emergency, 'responding')"
+            title="Mark as responding">
+
+            <ion-icon
+              name="time-outline">
+            </ion-icon>
+
+          </button>
+
+
+          <!-- RESOLVE -->
+
+          <button
+            type="button"
+            class="action-button resolve"
+            *ngIf="
+              getStatus(emergency) === 'active' ||
+              getStatus(emergency) === 'responding'
+            "
+            (click)="updateStatus(emergency, 'resolved')"
+            title="Mark as resolved">
+
+            <ion-icon
+              name="checkmark-outline">
+            </ion-icon>
+
+          </button>
+
+
+          <!-- ARCHIVE -->
+
+          <button
+            type="button"
+            class="action-button archive"
+            *ngIf="getStatus(emergency) !== 'archived'"
+            (click)="updateStatus(emergency, 'archived')"
+            title="Archive emergency">
+
+            <ion-icon
+              name="archive-outline">
+            </ion-icon>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- DETAILS MODAL -->
+
+    <ion-modal
+      [isOpen]="selectedEmergency !== null"
+      (didDismiss)="closeDetails()"
+      class="emergency-details-modal">
+
+      <ng-template>
+
+
+        <!-- MODAL HEADER -->
+
+        <ion-header>
+
+          <ion-toolbar class="modal-toolbar">
+
+            <ion-title>
+              Emergency Details
+            </ion-title>
+
+            <ion-buttons slot="end">
+
+              <ion-button
+                fill="clear"
+                (click)="closeDetails()">
+
+                <ion-icon
+                  slot="icon-only"
+                  name="close-outline">
+                </ion-icon>
+
+              </ion-button>
+
+            </ion-buttons>
+
+          </ion-toolbar>
+
+        </ion-header>
+
+
+        <!-- MODAL CONTENT -->
+
+        <ion-content
+          class="details-content"
+          *ngIf="selectedEmergency">
+
+
+          <!-- PATIENT HEADER -->
+
+          <div class="details-patient-header">
+
+
+            <div class="details-avatar">
+
+              <ion-icon
+                name="person-outline">
+              </ion-icon>
+
+            </div>
+
+
+            <div class="details-patient-info">
+
+              <h2>
+
+                {{
+                  selectedEmergency.patientName ||
+                  selectedEmergency.userName ||
+                  selectedEmergency.name ||
+                  'Unknown Patient'
+                }}
+
+              </h2>
+
+              <p>
+
+                ID:
+                {{ selectedEmergency.id | slice:0:8 }}...
+
+                <span>
+                  •
+                </span>
+
+                {{
+                  selectedEmergency.createdAt?.toDate()
+                    | date:'medium'
+                }}
+
+              </p>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <span
+              class="status-badge"
+              [class.status-active]="
+                getStatus(selectedEmergency) === 'active'
+              "
+              [class.status-responding]="
+                getStatus(selectedEmergency) === 'responding'
+              "
+              [class.status-resolved]="
+                getStatus(selectedEmergency) === 'resolved'
+              "
+              [class.status-archived]="
+                getStatus(selectedEmergency) === 'archived'
+              ">
+
+              <span class="status-dot"></span>
+
+              {{ getStatus(selectedEmergency) }}
+
+            </span>
+
+          </div>
+
+
+          <!-- DETAILS GRID -->
+
+          <div class="details-grid">
+
+
+            <!-- ALLERGIES -->
+
+            <div class="modal-detail">
+
+              <div class="modal-icon allergy-icon">
+
+                <ion-icon
+                  name="flower-outline">
+                </ion-icon>
+
+              </div>
+
+              <div>
+
+                <span>
+                  Allergies
+                </span>
+
+                <p>
+                  {{ getAllergies(selectedEmergency) }}
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <!-- PATIENT STATUS -->
+
+            <div class="modal-detail">
+
+              <div class="modal-icon status-icon">
+
+                <ion-icon
+                  name="pulse-outline">
+                </ion-icon>
+
+              </div>
+
+              <div>
+
+                <span>
+                  Patient Status
+                </span>
+
+                <p>
+                  {{ getStatus(selectedEmergency) }}
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <!-- INSTRUCTION -->
+
+            <div class="modal-detail full-width">
+
+              <div class="modal-icon instruction-icon">
+
+                <ion-icon
+                  name="medical-outline">
+                </ion-icon>
+
+              </div>
+
+              <div>
+
+                <span>
+                  Emergency Instruction
+                </span>
+
+                <p>
+
+                  {{
+                    selectedEmergency.instruction ||
+                    selectedEmergency.message ||
+                    selectedEmergency.emergencyMessage ||
+                    'No instruction provided'
+                  }}
+
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <!-- CONTACT -->
+
+            <div class="modal-detail">
+
+              <div class="modal-icon contact-icon">
+
+                <ion-icon
+                  name="call-outline">
+                </ion-icon>
+
+              </div>
+
+              <div>
+
+                <span>
+                  Contact
+                </span>
+
+                <p>
+
+                  {{
+                    selectedEmergency.contactNumber ||
+                    selectedEmergency.phone ||
+                    'Not provided'
+                  }}
+
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <!-- LOCATION -->
+
+            <div class="modal-detail">
+
+              <div class="modal-icon location-icon">
+
+                <ion-icon
+                  name="location-outline">
+                </ion-icon>
+
+              </div>
+
+              <div>
+
+                <span>
+                  Location
+                </span>
+
+                <p>
+
+                  {{
+                    selectedEmergency.readableLocation ||
+                    'Loading location...'
+                  }}
+
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <!-- REPORTED BY -->
+
+            <div class="modal-detail">
+
+              <div class="modal-icon reporter-icon">
+
+                <ion-icon
+                  name="person-outline">
+                </ion-icon>
+
+              </div>
+
+              <div>
+
+                <span>
+                  Reported By
+                </span>
+
+                <p>
+
+                  {{
+                    selectedEmergency.userName ||
+                    selectedEmergency.patientName ||
+                    'Unknown User'
+                  }}
+
+                </p>
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+
+          <!-- MODAL ACTIONS -->
+
+          <div class="details-actions">
+
+
+            <ion-button
+              color="warning"
+              *ngIf="
+                getStatus(selectedEmergency) === 'active'
+              "
+              (click)="
+                updateStatus(
+                  selectedEmergency,
+                  'responding'
+                )
+              ">
+
+              <ion-icon
+                slot="start"
+                name="time-outline">
+              </ion-icon>
+
+              Mark Responding
+
+            </ion-button>
+
+
+            <ion-button
+              color="success"
+              *ngIf="
+                getStatus(selectedEmergency) === 'active' ||
+                getStatus(selectedEmergency) === 'responding'
+              "
+              (click)="
+                updateStatus(
+                  selectedEmergency,
+                  'resolved'
+                )
+              ">
+
+              <ion-icon
+                slot="start"
+                name="checkmark-outline">
+              </ion-icon>
+
+              Resolve
+
+            </ion-button>
+
+
+            <ion-button
+              color="medium"
+              fill="outline"
+              *ngIf="
+                getStatus(selectedEmergency) !== 'archived'
+              "
+              (click)="
+                updateStatus(
+                  selectedEmergency,
+                  'archived'
+                )
+              ">
+
+              <ion-icon
+                slot="start"
+                name="archive-outline">
+              </ion-icon>
+
+              Archive
+
+            </ion-button>
+
+
+            <ion-button
+              fill="outline"
+              (click)="closeDetails()">
+
+              Close
+
+            </ion-button>
+
+          </div>
+
+        </ion-content>
+
+      </ng-template>
+
+    </ion-modal>
+
+  </main>
 
 </ion-content>

@@ -5,7 +5,7 @@ import { BuddyService } from '../../../core/services/buddy.service';
 import { EmergencyService } from '../../../core/services/emergency.service';
 import { EmergencyNotificationService } from '../../../core/services/emergency-notification.service';
 import { UserService } from '../../../core/services/user.service';
-import { MedicalService } from '../../../core/services/medical.profile.service';
+import { MedicalService } from '../../../core/services/medical.service';
 import { LocationPermissionService } from '../../../core/services/location-permission.service';
 import { Subscription } from 'rxjs';
 import { AllergyManagerService } from '../../../core/services/allergy-manager.service';
@@ -235,15 +235,14 @@ export class HomePage implements OnDestroy {
         return true;
       }
 
-  await this.presentToast('An emergency alert is already active.','warning');
-  return false;
-}
+    await this.presentToast('An emergency alert is already active.','warning');
+    return false;
+  }
 
-    private async validateLocationPermission(): Promise<boolean> {
+  private async validateLocationPermission(): Promise<boolean> {
       this.sendingStep = 'location';
 
-      const hasLocationPermission =
-        await this.ensureLocationPermission();
+      const hasLocationPermission = await this.ensureLocationPermission();
 
       if (hasLocationPermission) {
         return true;
@@ -257,45 +256,42 @@ export class HomePage implements OnDestroy {
       return false;
     }
 
-private async validateAuthentication(): Promise<boolean> {
+  private async validateAuthentication(): Promise<boolean> {
 
-  const currentUser = await this.authService.waitForAuthInit();
+      const currentUser = await this.authService.waitForAuthInit();
 
-  if (currentUser) {
-    return true;
+      if (currentUser) {
+        return true;
+      }
+
+      await this.presentToast(
+        'You must be logged in to send an emergency alert.',
+        'danger'
+      );
+
+      await this.router.navigate(['/login']);
+
+      return false;
+    }
+
+  private async triggerEmergencyWorkflow(): Promise<void> {
+
+    this.sendingStep = 'sending';
+
+    const result =
+      await this.emergencyAlertService.triggerEmergencyAlert('manual');
+
+    this.currentEmergencyId = result.emergencyId;
+
+    this.activateEmergencyState(result.location);
+
+    this.listenForEmergencyResponses();
+
+    this.sendingStep = 'waiting';
+
+    await this.notifyUserAfterSend(this.userBuddies.length);
+
   }
-
-  await this.presentToast(
-    'You must be logged in to send an emergency alert.',
-    'danger'
-  );
-
-  await this.router.navigate(['/login']);
-
-  return false;
-}
-
-private async triggerEmergencyWorkflow(): Promise<void> {
-
-  this.sendingStep = 'sending';
-
-  const result =
-    await this.emergencyAlertService.triggerEmergencyAlert('manual');
-
-  this.currentEmergencyId = result.emergencyId;
-
-  this.activateEmergencyState(result.location);
-
-  this.listenForEmergencyResponses();
-
-  this.sendingStep = 'waiting';
-
-  await this.notifyUserAfterSend(this.userBuddies.length);
-
-}
-
-
-
 
   private async ensureLocationPermission(): Promise<boolean> {
     try {

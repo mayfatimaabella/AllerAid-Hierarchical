@@ -442,13 +442,13 @@ ion-alert .alert-checkbox-label {
 
 /* (reverted custom popover styles) */
 
-/* =====================================================================
+/* 
    UNIVERSAL PURE WHITE MODAL OVERRIDE
    Apply cssClass="force-white-modal" (and optionally force-white-content) to
    any <ion-modal> to guarantee a white background regardless of theme/dark mode
    or component-level variable leakage. This operates at global level so it
    penetrates Ionic shadow DOM boundaries via ::part + high specificity.
-   ===================================================================== */
+    */
 ion-modal.force-white-modal,
 ion-modal.force-white-modal::part(content),
 ion-modal.force-white-modal .modal-wrapper,
@@ -565,17 +565,236 @@ ion-modal.force-white-modal::part(backdrop) {
 .toolbar--teal ion-button, .toolbar--teal ion-icon,
 .teal-modal-toolbar ion-button, .teal-modal-toolbar ion-icon { --color:#ffffff !important; color:#ffffff !important; }
 
-/* Modal styling for better display */
-ion-modal {
-  --height: 100%;
-  --width: 100%;
-  --border-radius: 0;
-  
-  &.force-white-modal {
-    --background: #ffffff;
-    --width: 100%;
-    --height: 100%;
+/* 
+   ALLERAID - USER MANAGEMENT MODAL
+    */
+
+ion-modal.user-form-modal {
+  --width: 520px;
+  --max-width: calc(100vw - 32px);
+
+  --height: 680px;
+  --max-height: calc(100vh - 40px);
+
+  --border-radius: 18px;
+
+  --box-shadow: 0 20px 60px rgba(0, 0, 0, 0.20);
+}
+
+
+/* 
+   HEADER
+    */
+
+ion-modal.user-form-modal .modal-toolbar {
+  --background: #ffffff;
+  --color: #173b35;
+  --min-height: 60px;
+
+  border-bottom: 1px solid #e4ebe9;
+}
+
+ion-modal.user-form-modal .modal-toolbar ion-title {
+  color: #173b35;
+
+  font-size: 19px;
+  font-weight: 650;
+}
+
+ion-modal.user-form-modal .modal-toolbar ion-button {
+  --color: #66817a;
+}
+
+
+/* 
+   CONTENT
+    */
+
+ion-modal.user-form-modal .user-form-content {
+  --background: #f5f8f7;
+}
+
+
+/* 
+   FORM
+    */
+
+ion-modal.user-form-modal .user-form {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 24px 26px 26px;
+}
+
+
+/* DESCRIPTION */
+
+ion-modal.user-form-modal .form-description {
+  margin: 0 0 22px;
+
+  color: #718782;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* 
+   FORM FIELDS
+    */
+
+ion-modal.user-form-modal .form-field {
+  width: 100%;
+
+  margin-bottom: 17px;
+}
+
+ion-modal.user-form-modal .form-field > ion-label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #294b47;
+
+  font-size: 12px;
+  font-weight: 650;
+}
+
+
+/* 
+   INPUT
+    */
+
+ion-modal.user-form-modal .form-field ion-input {
+  width: 100%;
+  min-height: 46px;
+
+  box-sizing: border-box;
+
+  --background: #ffffff;
+  --color: #173b35;
+  --placeholder-color: #9aa9a5;
+
+  --border-color: #d5e2df;
+  --border-radius: 9px;
+
+  --highlight-color: #036a5d;
+
+  --padding-start: 13px;
+  --padding-end: 13px;
+}
+
+
+/* DISABLED EMAIL */
+
+ion-modal.user-form-modal
+.form-field ion-input[disabled] {
+  opacity: 0.6;
+}
+
+
+/* 
+   ROLE DROPDOWN
+    */
+
+ion-modal.user-form-modal .form-field ion-select {
+  width: 100%;
+  min-height: 46px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #d5e2df;
+  border-radius: 9px;
+
+  color: #173b35;
+
+  --padding-start: 13px;
+  --padding-end: 13px;
+}
+
+
+/* 
+   HELP TEXT
+    */
+
+ion-modal.user-form-modal .form-field small {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #849590;
+
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+
+/* 
+   BUTTONS
+    */
+
+ion-modal.user-form-modal .form-actions {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 10px;
+
+  margin-top: 24px;
+}
+
+ion-modal.user-form-modal .cancel-form-button {
+  --background: #ffffff;
+  --background-hover: #f1f6f4;
+
+  --border-color: #cbdad7;
+  --border-width: 1px;
+  --border-style: solid;
+
+  --color: #54716a;
+
+  height: 44px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+ion-modal.user-form-modal .save-form-button {
+  --background: #036a5d;
+  --background-hover: #045e53;
+
+  --color: #ffffff;
+
+  height: 44px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+//mobile 
+
+@media (max-width: 600px) {
+
+  ion-modal.user-form-modal {
+    --width: calc(100vw - 24px);
+    --max-width: calc(100vw - 24px);
+
+    --height: 92vh;
+    --max-height: 92vh;
+
+    --border-radius: 16px;
   }
+
+  ion-modal.user-form-modal .user-form {
+    padding: 20px 17px 22px;
+  }
+
+  ion-modal.user-form-modal .form-actions {
+    grid-template-columns: 1fr;
+  }
+
 }
 
 .teal-modal-btn {

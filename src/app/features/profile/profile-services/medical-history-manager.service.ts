@@ -1,6 +1,3 @@
-
-
-
 import { Injectable } from '@angular/core';
 import { ModalController, AlertController, ToastController } from '@ionic/angular';
 import { AddDoctorVisitModal } from '../ehr/modals/add-edit-doctor-visit/add-edit-doctor-visit.modal';
@@ -22,11 +19,6 @@ export class MedicalHistoryManagerService {
       header: 'Delete Doctor Visit',
       message: `Are you sure you want to delete ${visitName}? This action cannot be undone.`,
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
         {
           text: 'Delete',
           cssClass: 'danger',
@@ -50,6 +42,11 @@ export class MedicalHistoryManagerService {
               toast.present();
             }
           }
+        },
+                {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary'
         }
       ]
     });

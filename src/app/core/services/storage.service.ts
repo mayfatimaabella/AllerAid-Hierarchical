@@ -6,9 +6,9 @@ import { environment } from '../../../environments/environment';
 export class StorageService {
   constructor(private authService: AuthService) {}
 
-  /* ===============================
+  /* 
    * Convert file to Base64 (for Firestore storage)
-   * =============================== */
+   *  */
   async fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -24,9 +24,9 @@ export class StorageService {
     });
   }
 
-  /* ===============================
+  /* 
    * Upload License as Base64 (stored in Firestore)
-   * =============================== */
+   *  */
   async uploadLicense(file: File, userId: string): Promise<string> {
     try {
       const base64String = await this.fileToBase64(file);
@@ -45,9 +45,9 @@ export class StorageService {
     }
   }
 
-  /* ===============================
+  /* 
    * Recent Scans (LOCAL STORAGE - USER SPECIFIC)
-   * =============================== */
+   *  */
 
   private getRecentScansKey(): string {
     // FIXED: Added () to call the getCurrentUser method

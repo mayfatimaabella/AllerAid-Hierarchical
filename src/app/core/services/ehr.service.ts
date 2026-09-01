@@ -402,56 +402,6 @@ private async getUserInfoForPatient(patientId: string): Promise<any | null> {
     await deleteDoc(ref);
   }
 
-  async addAllergicReaction(reactionData: Omit<AllergicReaction, 'id' | 'patientId'>): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    await addDoc(collection(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'allergicReactions')), {
-      ...reactionData,
-      patientId: currentUser.uid,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-  }
-
-  async getAllergicReactions(): Promise<AllergicReaction[]> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    const q = query(
-      collection(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'allergicReactions')),
-      orderBy('reactionDate', 'desc')
-    );
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as AllergicReaction[];
-  }
-
-  async addTreatmentOutcome(outcomeData: Omit<TreatmentOutcome, 'id' | 'patientId'>): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    await addDoc(collection(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'treatmentOutcomes')), {
-      ...outcomeData,
-      patientId: currentUser.uid,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-  }
-
-  async getTreatmentOutcomes(): Promise<TreatmentOutcome[]> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    const q = query(
-      collection(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'treatmentOutcomes')),
-      orderBy('createdAt', 'desc')
-    );
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as TreatmentOutcome[];
-  }
-
   async grantHealthcareProviderAccess(
     providerEmail: string,
     role: 'doctor',
@@ -509,24 +459,6 @@ private async getUserInfoForPatient(patientId: string): Promise<any | null> {
     return ehrRecord?.healthcareProviders || [];
   }
 
-  hasPermission(provider: HealthcareProvider, permission: string): boolean {
-    const permissions = {
-      doctor: {
-        viewFullEHR: true,
-        viewMedicalHistory: true,
-        viewMedications: true,
-        viewAllergies: true,
-        addDoctorVisit: true,
-        editDoctorVisit: true,
-        deleteDoctorVisit: true,
-        prescribeMedications: true,
-        editMedicalHistory: true
-      }
-    };
-
-    return permissions[provider.role]?.[permission as keyof typeof permissions.doctor] || false;
-  }
-
   async grantEHRAccess(providerEmail: string): Promise<void> {
     const ehrRecord = await this.getEHRRecord();
     if (!ehrRecord) return;
@@ -549,45 +481,6 @@ private async getUserInfoForPatient(patientId: string): Promise<any | null> {
 
     await this.createOrUpdateEHR({
       accessibleBy: updatedAccess
-    });
-  }
-
-  async getDoctorPatients(doctorEmail: string): Promise<DoctorPatient[]> {
-    const usersSnapshot = await getDocs(collection(this.db, 'users'));
-    const patients: DoctorPatient[] = [];
-
-    for (const userDoc of usersSnapshot.docs) {
-      const patientId = userDoc.id;
-      const ehrRef = doc(this.db, this.healthRecordsSummaryPath(patientId));
-      const ehrSnap = await getDoc(ehrRef);
-
-      if (!ehrSnap.exists()) continue;
-
-      const ehrData = ehrSnap.data() as EHRRecord;
-      const provider = ehrData.healthcareProviders?.find(p => p.email === doctorEmail);
-
-      if (!provider) continue;
-
-      const visits = await this.getDoctorVisitsForPatient(patientId);
-      const reactions = await this.getAllergicReactionsForPatient(patientId);
-      const riskLevel = this.calculatePatientRiskLevel(ehrData.allergies || [], reactions);
-
-      patients.push({
-        patientId,
-        patientName: `${ehrData.personalInfo?.firstName || ''} ${ehrData.personalInfo?.lastName || ''}`.trim(),
-        patientEmail: ehrData.personalInfo?.email || '',
-        dateOfBirth: ehrData.personalInfo?.dateOfBirth || '',
-        primaryAllergies: ehrData.allergies?.map(a => a.label || a.name).slice(0, 3) || [],
-        lastVisit: visits[0]?.visitDate || undefined,
-        riskLevel,
-        totalVisits: visits.length,
-        accessGrantedDate: provider.grantedAt
-      });
-    }
-
-    return patients.sort((a, b) => {
-      const riskOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-      return riskOrder[a.riskLevel] - riskOrder[b.riskLevel];
     });
   }
 
@@ -654,26 +547,6 @@ async getPatientAnalysis(patientId: string): Promise<{
     medicalHistory
   };
 }
-
-  private async getAllergicReactionsForPatient(patientId: string): Promise<AllergicReaction[]> {
-    const q = query(
-      collection(this.db, this.healthRecordsCollectionPath(patientId, 'allergicReactions')),
-      orderBy('reactionDate', 'desc')
-    );
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as AllergicReaction[];
-  }
-
-  private async getTreatmentOutcomesForPatient(patientId: string): Promise<TreatmentOutcome[]> {
-    const q = query(
-      collection(this.db, this.healthRecordsCollectionPath(patientId, 'treatmentOutcomes')),
-      orderBy('createdAt', 'desc')
-    );
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as TreatmentOutcome[];
-  }
 
   private async getDoctorVisitsForPatient(patientId: string): Promise<DoctorVisit[]> {
     const q = query(
@@ -754,29 +627,6 @@ async getPatientAnalysis(patientId: string): Promise<{
       doctorData['role'] || 'doctor',
       doctorName,
       specialty || doctorData['specialty'] || 'General Medicine',
-      doctorName
-    );
-  }
-
-  private async autoGrantDoctorAccess(doctorName: string, specialty?: string): Promise<void> {
-    const doctorQuery = query(collection(this.db, 'users'), where('role', '==', 'doctor'));
-    const snapshot = await getDocs(doctorQuery);
-
-    const doctors = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
-
-    const matchedDoctor = doctors.find(doctor => {
-      const fullName = `${doctor.firstName} ${doctor.lastName}`.toLowerCase();
-      const cleanName = doctorName.toLowerCase().replace(/^dr\.?\s*/i, '');
-      return fullName.includes(cleanName) || cleanName.includes(fullName);
-    });
-
-    if (!matchedDoctor) return;
-
-    await this.createAccessRequest(
-      matchedDoctor.email,
-      'doctor',
-      `${matchedDoctor.firstName} ${matchedDoctor.lastName}`,
-      specialty || matchedDoctor.specialty || 'General Medicine',
       doctorName
     );
   }
@@ -904,121 +754,4 @@ async getPatientAnalysis(patientId: string): Promise<{
     });
   }
 
-  async getMyAccessRequests(): Promise<AccessRequest[]> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) return [];
-
-    const q = query(
-      collection(this.db, 'accessRequests'),
-      where('patientId', '==', currentUser.uid),
-      orderBy('requestDate', 'desc')
-    );
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as AccessRequest[];
-  }
-
-  private calculatePatientRiskLevel(
-    allergies: any[],
-    reactions: AllergicReaction[]
-  ): 'low' | 'medium' | 'high' | 'critical' {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const recentSevere = reactions.filter(r => {
-      const date = new Date(r.reactionDate);
-      return date > sixMonthsAgo && ['severe', 'life-threatening'].includes(r.severity);
-    });
-
-    if (recentSevere.length > 0) return 'critical';
-
-    const highRiskAllergens = ['peanuts', 'shellfish', 'insectStings', 'medication'];
-    const hasHighRisk = allergies.some(a => highRiskAllergens.includes(a.name) && a.checked);
-    const allergyCount = allergies.filter(a => a.checked).length;
-
-    if (hasHighRisk && allergyCount >= 3) return 'high';
-    if (hasHighRisk || allergyCount >= 2) return 'medium';
-    return 'low';
-  }
-
-  private generateRiskFactors(
-    ehrData: EHRRecord,
-    reactions: AllergicReaction[],
-    outcomes: TreatmentOutcome[]
-  ): string[] {
-    const riskFactors: string[] = [];
-
-    const severeAllergies = ehrData.allergies?.filter(
-      a => a.checked && ['peanuts', 'shellfish', 'insectStings'].includes(a.name)
-    );
-
-    if (severeAllergies?.length >= 2) {
-      riskFactors.push('Multiple severe allergies');
-    }
-
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const recentSevere = reactions.filter(r => {
-      const date = new Date(r.reactionDate);
-      return date > sixMonthsAgo && ['severe', 'life-threatening'].includes(r.severity);
-    });
-
-    if (recentSevere.length > 0) {
-      riskFactors.push(`${recentSevere.length} severe reaction(s) in last 6 months`);
-    }
-
-    const poorResponses = outcomes.filter(o => o.patientResponse === 'poor' || o.patientResponse === 'fair');
-
-    if (poorResponses.length >= 2) {
-      riskFactors.push('History of poor treatment responses');
-    }
-
-    return riskFactors;
-  }
-
-  private generateRecommendations(
-    ehrData: EHRRecord,
-    reactions: AllergicReaction[],
-    outcomes: TreatmentOutcome[],
-    visits: DoctorVisit[]
-  ): string[] {
-    const recommendations: string[] = [];
-
-    const severeAllergies = ehrData.allergies?.filter(
-      a => a.checked && ['peanuts', 'shellfish', 'insectStings'].includes(a.name)
-    );
-
-    if (severeAllergies?.length > 0) {
-      recommendations.push('Ensure patient carries emergency medication at all times');
-      recommendations.push('Consider medical alert bracelet or allergy identification');
-    }
-
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-    const recentReactions = reactions.filter(r => new Date(r.reactionDate) > oneMonthAgo);
-
-    if (recentReactions.length > 0) {
-      recommendations.push('Schedule follow-up within 2 weeks');
-      recommendations.push('Review trigger avoidance strategies');
-    }
-
-    const activeAllergies = ehrData.allergies?.filter(a => a.checked);
-
-    if (activeAllergies?.length >= 3) {
-      recommendations.push('Regular allergy specialist consultation recommended');
-    }
-
-    const recentPoorOutcomes = outcomes.filter(
-      o => o.patientResponse === 'poor' || o.patientResponse === 'fair'
-    );
-
-    if (recentPoorOutcomes.length > 0) {
-      recommendations.push('Review current medication effectiveness');
-      recommendations.push('Consider alternative treatment options');
-    }
-
-    return recommendations;
-  }
 }
