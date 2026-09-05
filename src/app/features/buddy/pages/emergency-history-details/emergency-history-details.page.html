@@ -1,0 +1,444 @@
+<ion-header [translucent]="true">
+
+  <ion-toolbar>
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/alerts"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Emergency Details</ion-title>
+
+  </ion-toolbar>
+
+</ion-header>
+
+
+<ion-content
+  [fullscreen]="true"
+  class="ion-padding">
+
+
+  <!-- Loading -->
+
+  <div
+    class="state-container"
+    *ngIf="loading">
+
+    <ion-spinner name="crescent"></ion-spinner>
+
+    <p>Loading emergency details...</p>
+
+  </div>
+
+
+  <!-- Error -->
+
+  <div
+    class="state-container error-state"
+    *ngIf="!loading && errorMessage">
+
+    <ion-icon
+      name="alert-circle-outline"
+      size="large">
+    </ion-icon>
+
+    <h2>Unable to Load</h2>
+
+    <p>{{ errorMessage }}</p>
+
+    <ion-button
+      fill="outline"
+      (click)="goBack()">
+
+      <ion-icon
+        slot="start"
+        name="arrow-back-outline">
+      </ion-icon>
+
+      Back to History
+
+    </ion-button>
+
+  </div>
+
+
+  <!-- Emergency Details -->
+
+  <div
+    *ngIf="!loading && emergency"
+    class="details-container">
+
+
+    <!-- Status Header -->
+
+    <ion-card class="status-card">
+
+      <ion-card-content>
+
+        <div class="status-icon">
+
+          <ion-icon
+            name="medical-outline">
+          </ion-icon>
+
+        </div>
+
+        <div class="status-information">
+
+          <h1>
+            Emergency Record
+          </h1>
+
+          <ion-badge
+            [color]="getStatusColor()">
+
+            {{ getStatusDisplay() }}
+
+          </ion-badge>
+
+        </div>
+
+      </ion-card-content>
+
+    </ion-card>
+
+
+    <!-- Patient -->
+
+    <ion-card>
+
+      <ion-card-header>
+
+        <ion-card-title>
+
+          <ion-icon name="person-outline"></ion-icon>
+
+          Patient Information
+
+        </ion-card-title>
+
+      </ion-card-header>
+
+
+      <ion-card-content>
+
+        <div class="detail-row">
+
+          <div class="detail-icon">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+
+          <div class="detail-content">
+
+            <span class="detail-label">
+              Patient
+            </span>
+
+            <span class="detail-value">
+              {{ emergency.userName || 'Unknown' }}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-row">
+
+          <div class="detail-icon">
+            <ion-icon name="time-outline"></ion-icon>
+          </div>
+
+          <div class="detail-content">
+
+            <span class="detail-label">
+              Date & Time
+            </span>
+
+            <span class="detail-value">
+
+              {{ toDate(emergency.timestamp) | date:'medium' }}
+
+            </span>
+
+          </div>
+
+        </div>
+
+      </ion-card-content>
+
+    </ion-card>
+
+
+    <!-- Location -->
+
+    <ion-card>
+
+      <ion-card-header>
+
+        <ion-card-title>
+
+          <ion-icon name="location-outline"></ion-icon>
+
+          Location
+
+        </ion-card-title>
+
+      </ion-card-header>
+
+
+      <ion-card-content>
+
+        <div class="location-box">
+
+          <ion-icon
+            name="location"
+            class="location-icon">
+          </ion-icon>
+
+          <div>
+
+            <p class="address">
+
+              {{
+                emergency.displayAddress ||
+                getLocationDisplay(emergency.location)
+              }}
+
+            </p>
+
+            <p
+              class="coordinates"
+              *ngIf="emergency.location">
+
+              {{
+                getLocationDisplay(emergency.location)
+              }}
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <ion-button
+          expand="block"
+          fill="outline"
+          (click)="viewOnMap()"
+          [disabled]="!emergency.location">
+
+          <ion-icon
+            slot="start"
+            name="map-outline">
+          </ion-icon>
+
+          View on Map
+
+        </ion-button>
+
+      </ion-card-content>
+
+    </ion-card>
+
+
+    <!-- Medical Information -->
+
+    <ion-card>
+
+      <ion-card-header>
+
+        <ion-card-title>
+
+          <ion-icon name="medical-outline"></ion-icon>
+
+          Medical Information
+
+        </ion-card-title>
+
+      </ion-card-header>
+
+
+      <ion-card-content>
+
+
+        <!-- Allergies -->
+
+        <div class="medical-section">
+
+          <div class="section-label">
+
+            <ion-icon name="warning-outline"></ion-icon>
+
+            Allergies
+
+          </div>
+
+          <p
+            *ngIf="
+              emergency.allergies &&
+              emergency.allergies.length
+            "
+            class="section-value">
+
+            {{ emergency.allergies.join(', ') }}
+
+          </p>
+
+          <p
+            *ngIf="
+              !emergency.allergies ||
+              !emergency.allergies.length
+            "
+            class="muted">
+
+            No allergies listed
+
+          </p>
+
+        </div>
+
+
+        <!-- Instructions -->
+
+        <div
+          class="medical-section"
+          *ngIf="emergency.instruction">
+
+          <div class="section-label">
+
+            <ion-icon name="document-text-outline"></ion-icon>
+
+            Emergency Instructions
+
+          </div>
+
+          <p class="instruction-box">
+
+            {{ emergency.instruction }}
+
+          </p>
+
+        </div>
+
+
+      </ion-card-content>
+
+    </ion-card>
+
+
+    <!-- Responder -->
+
+    <ion-card
+      *ngIf="
+        emergency.responderName ||
+        emergency.responderId
+      ">
+
+      <ion-card-header>
+
+        <ion-card-title>
+
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+
+          Responder
+
+        </ion-card-title>
+
+      </ion-card-header>
+
+
+      <ion-card-content>
+
+        <div class="detail-row">
+
+          <div class="detail-icon">
+
+            <ion-icon name="person-circle-outline"></ion-icon>
+
+          </div>
+
+          <div class="detail-content">
+
+            <span class="detail-label">
+              Responder
+            </span>
+
+            <span class="detail-value">
+
+              {{ emergency.responderName || 'Responder' }}
+
+            </span>
+
+          </div>
+
+        </div>
+
+
+      </ion-card-content>
+
+    </ion-card>
+
+
+    <!-- Emergency ID -->
+
+    <ion-card class="technical-card">
+
+      <ion-card-content>
+
+        <div class="technical-row">
+
+          <span>
+            Emergency ID
+          </span>
+
+          <code>
+            {{ emergency.id }}
+          </code>
+
+        </div>
+
+      </ion-card-content>
+
+    </ion-card>
+
+
+    <!-- Actions -->
+
+    <div class="actions">
+
+      <ion-button
+        expand="block"
+        fill="outline"
+        (click)="callPatient()">
+
+        <ion-icon
+          slot="start"
+          name="call-outline">
+        </ion-icon>
+
+        Call Patient
+
+      </ion-button>
+
+
+      <ion-button
+        expand="block"
+        fill="clear"
+        (click)="showRecordInfo()">
+
+        <ion-icon
+          slot="start"
+          name="information-circle-outline">
+        </ion-icon>
+
+        About This Record
+
+      </ion-button>
+
+    </div>
+
+
+  </div>
+
+</ion-content>

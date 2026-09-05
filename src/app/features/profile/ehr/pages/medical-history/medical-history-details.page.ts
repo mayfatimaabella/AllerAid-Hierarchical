@@ -71,12 +71,11 @@ export class MedicalHistoryDetailsPage implements OnInit {
 
   getTimeSinceDiagnosis(): string {
     if (!this.history?.diagnosisDate) return '';
-    
+
     try {
       const dateValue = this.history.diagnosisDate as any;
       let diagnosisDate: Date;
-      
-      // Convert to Date object using the same logic as getDiagnosisDateString
+
       if (typeof dateValue === 'string') {
         diagnosisDate = new Date(dateValue);
       } else if (dateValue instanceof Date) {
@@ -94,29 +93,53 @@ export class MedicalHistoryDetailsPage implements OnInit {
       } else {
         return '';
       }
-      
+
       if (isNaN(diagnosisDate.getTime())) {
         return '';
       }
-      
+
       const now = new Date();
-      const diffTime = Math.abs(now.getTime() - diagnosisDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
+      const diffTime = now.getTime() - diagnosisDate.getTime();
+
+      if (diffTime < 0) {
+        return 'Future date';
+      }
+
+      const diffMinutes = Math.floor(diffTime / (1000 * 60));
+      const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffMinutes < 1) {
+        return 'Just now';
+      }
+
+      if (diffMinutes < 60) {
+        return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+      }
+
+      if (diffHours < 24) {
+        return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+      }
+
       if (diffDays < 30) {
         return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
-      } else if (diffDays < 365) {
+      }
+
+      if (diffDays < 365) {
         const months = Math.floor(diffDays / 30);
         return `${months} month${months !== 1 ? 's' : ''} ago`;
-      } else {
-        const years = Math.floor(diffDays / 365);
-        return `${years} year${years !== 1 ? 's' : ''} ago`;
       }
+
+      const years = Math.floor(diffDays / 365);
+      return `${years} year${years !== 1 ? 's' : ''} ago`;
+
     } catch (error) {
       console.error('Error calculating time since diagnosis:', error);
       return '';
     }
   }
+
 
   getDiagnosisDateString(): string {
     if (!this.history?.diagnosisDate) return '';

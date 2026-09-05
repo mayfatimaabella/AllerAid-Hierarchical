@@ -23,7 +23,7 @@ import { BehaviorSubject } from 'rxjs';
 
 export interface BuddyInvitation {
   id?: string;
-  fromUserId: string;
+  fromUserId: string;   
   fromUserName: string;
   fromUserEmail: string;
   toUserId: string;

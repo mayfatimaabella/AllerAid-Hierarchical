@@ -72,7 +72,7 @@ const routes: Routes = [
   {
     path: 'alerts',
     loadChildren: () =>
-      import('./features/buddy/pages/emergencies/emergencies.module').then(m => m.EmergenciesPageModule),
+      import('./features/buddy/pages/emergencies/emergency-center.module').then(m => m.EmergenciesPageModule),
     canActivate: [AuthGuard]
   },
 
@@ -190,6 +190,16 @@ const routes: Routes = [
   },
 
   // Wildcard
+
+// {
+//   path: 'emergency-history-details/:id',
+//   loadComponent: () =>
+//     import('./features/buddy/pages/emergency-history-details/emergency-history-details.page')
+//       .then(m => m.EmergencyHistoryDetailsPage),
+//   canActivate: [AuthGuard]
+// },
+
+
   {
     path: '**',
     redirectTo: 'login'

@@ -44,7 +44,7 @@ const routes: Routes = [
       // Buddy Routes
       {
         path: 'emergencies',
-        loadChildren: () => import('../../features/buddy/pages/emergencies/emergencies.module').then(m => m.EmergenciesPageModule),
+        loadChildren: () => import('../../features/buddy/pages/emergencies/emergency-center.module').then(m => m.EmergenciesPageModule),
         canActivate: [RoleGuard],
         data: { roles: ['user'] }
       },
@@ -78,7 +78,7 @@ const routes: Routes = [
       // Shared Routes
       {
         path: 'alerts',
-        loadChildren: () => import('../../features/buddy/pages/emergencies/emergencies.module').then(m => m.EmergenciesPageModule)
+        loadChildren: () => import('../../features/buddy/pages/emergencies/emergency-center.module').then(m => m.EmergenciesPageModule)
       },
       {
         path: 'buddy',

@@ -1,0 +1,631 @@
+ion-toolbar {
+  --background: #036a5d;
+  --color: #fff;
+
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+ion-content {
+  --background: #f7f9fb !important;
+}
+
+/* =========================================
+   MAIN CONTAINER
+========================================= */
+
+.details-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 30px;
+}
+
+
+/* =========================================
+   STATUS CARD
+========================================= */
+
+.status-card {
+  --background: #0f766e;
+  --color: white;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 12px 28px rgba(15, 118, 110, 0.28);
+
+  overflow: hidden;
+
+  margin: 0 0 16px;
+}
+
+.status-card ion-card-content {
+  display: flex;
+  align-items: center;
+
+  gap: 16px;
+
+  padding: 22px;
+}
+
+.status-icon {
+  width: 58px;
+  height: 58px;
+
+  min-width: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.status-icon ion-icon {
+  font-size: 32px;
+  color: white;
+}
+
+.status-information {
+  flex: 1;
+}
+
+.status-information h1 {
+  margin: 0 0 8px;
+
+  color: white;
+
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.status-information ion-badge {
+  --background: white;
+
+  color: #036a5d;
+
+  padding: 7px 12px;
+
+  border-radius: 999px;
+
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   GENERAL CARDS
+========================================= */
+
+ion-card {
+  --background: white;
+  --color: #111827;
+
+  margin: 14px 0;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.08);
+
+  overflow: hidden;
+}
+
+ion-card-header {
+  padding: 18px 18px 8px;
+}
+
+ion-card-title {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color: #111827 !important;
+
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+ion-card-title ion-icon {
+  color: #036a5d;
+
+  font-size: 21px;
+}
+
+ion-card-content {
+  padding: 12px 18px 18px;
+}
+
+
+/* =========================================
+   DETAIL ROWS
+========================================= */
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+
+  padding: 13px 0;
+
+  border-bottom: 1px solid #edf0f2;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-icon {
+  width: 40px;
+  height: 40px;
+
+  min-width: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: #e9f0ef;
+
+  color: #036a5d;
+}
+
+.detail-icon ion-icon {
+  font-size: 20px;
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.detail-label {
+  color: #6b7280;
+
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #111827;
+
+  font-size: 0.98rem;
+  font-weight: 600;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   LOCATION
+========================================= */
+
+.location-box {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 12px;
+
+  padding: 14px;
+
+  margin-bottom: 14px;
+
+  border-radius: 14px;
+
+  background: #f7f9fb;
+
+  border: 1px solid #e5e9eb;
+}
+
+.location-icon {
+  color: #dc2626;
+
+  font-size: 25px;
+
+  flex-shrink: 0;
+}
+
+.address {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 0.94rem;
+
+  font-weight: 500;
+
+  line-height: 1.55;
+}
+
+.coordinates {
+  margin: 7px 0 0;
+
+  color: #6b7280;
+
+  font-size: 0.76rem;
+}
+
+
+/* =========================================
+   MEDICAL INFORMATION
+========================================= */
+
+.medical-section {
+  padding: 13px 0;
+
+  border-bottom: 1px solid #edf0f2;
+}
+
+.medical-section:last-child {
+  border-bottom: none;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color: #111827;
+
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.section-label ion-icon {
+  color: #036a5d;
+
+  font-size: 19px;
+}
+
+.section-value {
+  margin: 8px 0 0;
+
+  color: #111827;
+
+  font-size: 0.94rem;
+
+  line-height: 1.5;
+}
+
+.muted {
+  margin: 8px 0 0;
+
+  color: #6b7280;
+
+  font-size: 0.9rem;
+
+  font-style: italic;
+}
+
+.instruction-box {
+  margin: 10px 0 0;
+
+  padding: 13px 14px;
+
+  border-radius: 12px;
+
+  background: #fffbeb;
+
+  border-left: 4px solid #f59e0b;
+
+  color: #374151;
+
+  font-size: 0.92rem;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================
+   STATUS BADGES
+========================================= */
+
+ion-badge {
+  padding: 7px 12px;
+
+  border-radius: 999px;
+
+  font-size: 0.78rem;
+
+  font-weight: 600;
+}
+
+ion-badge[color="danger"] {
+  --background: #fee2e2;
+
+  color: #dc2626;
+}
+
+ion-badge[color="warning"] {
+  --background: #fef3c7;
+
+  color: #b45309;
+}
+
+ion-badge[color="success"] {
+  --background: #dcfce7;
+
+  color: #15803d;
+}
+
+ion-badge[color="medium"] {
+  --background: #f3f4f6;
+
+  color: #6b7280;
+}
+
+ion-badge[color="dark"] {
+  --background: #e5e7eb;
+
+  color: #111827;
+}
+
+
+/* =========================================
+   MAP BUTTON
+========================================= */
+
+ion-button {
+  --border-radius: 12px;
+
+  height: 46px;
+
+  font-weight: 600;
+
+  margin-top: 8px;
+
+  transition: 0.25s ease;
+}
+
+ion-button[color="primary"] {
+  --background: #036a5d;
+  --background-hover: #02564d;
+  --color: white;
+}
+
+ion-button[fill="outline"] {
+  --border-width: 2px;
+  --border-color: #036a5d;
+  --color: #036a5d;
+}
+
+
+/* =========================================
+   TECHNICAL INFORMATION
+========================================= */
+
+.technical-card {
+  --background: #fafafa;
+
+  box-shadow: none;
+
+  border: 1px solid #e5e7eb;
+}
+
+.technical-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  color: #6b7280;
+
+  font-size: 0.78rem;
+}
+
+.technical-row code {
+  max-width: 65%;
+
+  padding: 5px 8px;
+
+  border-radius: 6px;
+
+  background: #f0f2f3;
+
+  color: #374151;
+
+  font-size: 0.72rem;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.actions {
+  margin: 20px 0 30px;
+}
+
+.actions ion-button {
+  margin-top: 10px;
+}
+
+.actions ion-button:first-child {
+  --background: #036a5d;
+  --color: white;
+
+  box-shadow:
+    0 5px 12px rgba(3, 106, 93, 0.2);
+}
+
+.actions ion-button:last-child {
+  --color: #036a5d;
+}
+
+
+/* =========================================
+   LOADING STATE
+========================================= */
+
+.state-container {
+  min-height: 60vh;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 30px;
+
+  color: #6b7280;
+}
+
+.state-container ion-spinner {
+  width: 40px;
+  height: 40px;
+
+  margin-bottom: 16px;
+
+  --color: #036a5d;
+}
+
+.state-container ion-icon {
+  color: #036a5d;
+
+  font-size: 60px;
+
+  margin-bottom: 12px;
+}
+
+.state-container h2 {
+  margin: 0 0 8px;
+
+  color: #111827;
+
+  font-size: 1.15rem;
+}
+
+.state-container p {
+  max-width: 320px;
+
+  margin: 0 0 16px;
+
+  color: #6b7280;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   ERROR STATE
+========================================= */
+
+.error-state ion-icon {
+  color: #dc2626;
+}
+
+.error-state ion-button {
+  --border-color: #036a5d;
+  --color: #036a5d;
+}
+
+
+/* =========================================
+   HOVER EFFECTS
+========================================= */
+
+ion-card,
+ion-button {
+  transition: 0.25s ease;
+}
+
+ion-card:hover {
+  transform: translateY(-2px);
+}
+
+ion-button:hover {
+  transform: translateY(-1px);
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 576px) {
+
+  .details-container {
+    padding-bottom: 20px;
+  }
+
+  ion-card {
+    border-radius: 16px;
+
+    margin: 12px 0;
+  }
+
+  ion-card-header {
+    padding: 16px 16px 7px;
+  }
+
+  ion-card-content {
+    padding: 10px 16px 16px;
+  }
+
+  .status-card ion-card-content {
+    padding: 18px;
+  }
+
+  .status-icon {
+    width: 52px;
+    height: 52px;
+
+    min-width: 52px;
+  }
+
+  .status-icon ion-icon {
+    font-size: 28px;
+  }
+
+  .status-information h1 {
+    font-size: 1.1rem;
+  }
+
+  .detail-row {
+    gap: 11px;
+  }
+
+  .detail-icon {
+    width: 36px;
+    height: 36px;
+
+    min-width: 36px;
+  }
+
+  .detail-value {
+    font-size: 0.92rem;
+  }
+
+  .technical-row {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .technical-row code {
+    max-width: 100%;
+  }
+
+}

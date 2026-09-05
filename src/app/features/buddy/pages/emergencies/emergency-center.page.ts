@@ -27,8 +27,8 @@ type EmergencyWithDismissed = EmergencyAlert & {
 
 @Component({
   selector: 'app-emergencies',
-  templateUrl: './emergencies.page.html',
-  styleUrls: ['./emergencies.page.scss'],
+  templateUrl: './emergency-center.page.html',
+  styleUrls: ['./emergency-center.page.scss'],
   standalone: true,
   imports: [CommonModule, FormsModule, IonicModule]
 })
@@ -283,10 +283,24 @@ private getDismissedAlertsForCurrentUser(): EmergencyWithDismissed[] {
 
   }
 
-  viewEmergencyDetails(emergency: EmergencyAlert) {
+  async viewEmergencyDetails(emergency: EmergencyAlert) {
 
-    this.router.navigate(['/emergency-details', emergency.id]);
-  }
+    if (!emergency?.id) {
+      console.error('Cannot open emergency: missing ID');
+      return;
+    }
+
+    console.log(
+      'Opening emergency history:',
+      emergency.id
+    );
+
+    await this.router.navigate([
+      '/emergency-history-details',
+      emergency.id
+    ]);
+}
+
 
 private async populateAddresses(emergencies: EmergencyAlert[]): Promise<void> {
 

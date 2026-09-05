@@ -232,32 +232,21 @@ export class ProfileEHRManagerService {
         },
         {
           text: 'Delete History',
-          role: 'destructive',
-          icon: 'trash-outline',
-          handler: async () => {
-            const id = history.id ?? '';
-            if (!id) return;
-            
-            const confirm = await this.alertController.create({
-              header: 'Delete History',
-              message: 'Are you sure you want to delete this history?',
-              buttons: [
-                { text: 'Cancel', role: 'cancel' },
-                { 
-                  text: 'Delete', 
-                  role: 'destructive', 
-                  handler: () => this.deleteMedicalHistory(id, onLoadComplete)
-                }
-              ]
-            });
-            await confirm.present();
-          }
-        },
-        { text: 'Cancel', role: 'cancel', icon: 'close-outline' }
-      ]
-    });
-    await actionSheet.present();
-  }
+            role: 'destructive',
+            icon: 'trash-outline',
+            handler: () => {
+              const id = history.id ?? '';
+              if (!id) return;
+
+              return this.deleteMedicalHistory(id, onLoadComplete);
+            }
+                  },
+                  { text: 'Cancel', role: 'cancel', icon: 'close-outline' }
+                ]
+              });
+              await actionSheet.present();
+            }
+  
 
   /**
    * Edit medical history
