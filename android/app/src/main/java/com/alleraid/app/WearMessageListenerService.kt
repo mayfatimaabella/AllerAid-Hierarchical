@@ -1,31 +1,43 @@
 package com.alleraid.app
 
+import android.content.Intent
 import android.util.Log
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 
 class WearMessageListenerService : WearableListenerService() {
 
-  override fun onMessageReceived(messageEvent: MessageEvent) {
+    override fun onMessageReceived(messageEvent: MessageEvent) {
 
-    super.onMessageReceived(messageEvent)
+        super.onMessageReceived(messageEvent)
 
-    if (messageEvent.path == "/emergency") {
+        if (messageEvent.path == "/emergency") {
 
-      val message = String(messageEvent.data)
+            val message = String(messageEvent.data)
 
-      Log.d("WearListener", "Received: $message")
+            Log.d("WearListener", "Received: $message")
 
-      if (message == "START_EMERGENCY") {
+            if (message == "START_EMERGENCY") {
 
-        Log.d("WearListener", "Emergency Triggered")
+                Log.d(
+                    "WearListener",
+                    "🚨 WATCH EMERGENCY TRIGGERED"
+                )
 
-        // We'll connect this to Ionic later.
+                val intent = Intent(
+                    this,
+                    MainActivity::class.java
+                )
 
-      }
+                intent.action = "WATCH_EMERGENCY"
 
+                intent.addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                )
+
+                startActivity(intent)
+            }
+        }
     }
-
-  }
-
 }

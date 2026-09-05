@@ -13,7 +13,7 @@ export interface EmergencyInstructionEntry {
   styleUrls: ['./emergency-details-modal.component.scss'],
   standalone: true,
   imports: [CommonModule, IonicModule]
-})
+})  
 export class EmergencyDetailsModalComponent implements OnInit {
   @Input() emergencyMessageName: string = '';
   @Input() userAllergies: any[] = [];

@@ -3,50 +3,204 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Smartwatch</ion-title>
+
+    <ion-title>Smartwatch Support</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <!-- Hardcoded Health Stats Section -->
+<ion-content class="ion-padding">
+
+  <!-- Smartwatch Connection -->
   <ion-card>
     <ion-card-header>
-      <ion-card-title>Health Stats</ion-card-title>
+      <ion-card-title>Smartwatch</ion-card-title>
     </ion-card-header>
+
     <ion-card-content>
-      <section class="health-stats-section">
-        <article class="smartwatch-card">
-          <header class="smartwatch-info">
-            <img src="assets/icon/smartwatch.png" alt="Smart Watch" style="width: 48px; height: 48px; margin-right: 16px;" />
-            <div>
-              <h2 class="smartwatch-title">Smart Watch</h2>
-              <nav class="smartwatch-link"><a href="#" style="font-weight: 500; text-decoration: underline;">Connect to Smartwatch</a></nav>
-            </div>
-          </header>
-        </article>
-        <section class="health-stats-grid">
-          <article class="health-stat-card">
-            <h3 class="stat-title">Heart Rate</h3>
-            <span class="stat-value">0</span>
-            <span class="stat-unit">bpm</span>
-          </article>
-          <article class="health-stat-card">
-            <h3 class="stat-title">Steps</h3>
-            <span class="stat-value">0</span>
-            <span class="stat-unit">steps</span>
-          </article>
-          <article class="health-stat-card">
-            <h3 class="stat-title">SPO₂</h3>
-            <span class="stat-value">0%</span>
-            <span class="stat-unit">Blood Oxygen</span>
-          </article>
-          <article class="health-stat-card">
-            <h3 class="stat-title">Calories</h3>
-            <span class="stat-value">0</span>
-            <span class="stat-unit">kcal</span>
-          </article>
-        </section>
-      </section>
+
+      <div class="watch-header">
+
+        <img
+          src="assets/icon/smartwatch.png"
+          alt="Smartwatch"
+          class="watch-icon"
+        >
+
+        <div class="watch-info">
+
+          <h2>
+            {{ connected ? watchName : 'No smartwatch connected' }}
+          </h2>
+
+          <p
+            class="status"
+            [class.connected]="connected"
+            [class.disconnected]="!connected"
+          >
+
+            <ion-icon
+              [name]="connected ? 'checkmark-circle' : 'ellipse'"
+            ></ion-icon>
+
+            {{ connected ? 'Connected' : 'Not Connected' }}
+
+          </p>
+
+        </div>
+
+      </div>
+
+      <p class="description">
+        Connect a compatible smartwatch to send an emergency alert
+        directly from your wrist.
+      </p>
+
+      <ion-button
+        expand="block"
+        color="primary"
+        (click)="checkConnection()"
+      >
+
+        <ion-icon
+          name="watch-outline"
+          slot="start"
+        ></ion-icon>
+
+        {{ connected ? 'Check Connection' : 'Check for Smartwatch' }}
+
+      </ion-button>
+
     </ion-card-content>
   </ion-card>
+
+
+  <!-- Emergency Triggers -->
+  <ion-card>
+
+    <ion-card-header>
+      <ion-card-title>Emergency Triggers</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+
+      <!-- SOS Button -->
+      <ion-item lines="none">
+
+        <ion-icon
+          name="alert-circle-outline"
+          slot="start"
+          color="danger"
+        ></ion-icon>
+
+        <ion-label>
+
+          <h2>SOS Button</h2>
+
+          <p>
+            Press the SOS button on your smartwatch to send an
+            emergency alert.
+          </p>
+
+        </ion-label>
+
+      </ion-item>
+
+
+      <!-- Watch Button -->
+      <ion-item lines="none">
+
+        <ion-icon
+          name="radio-button-on-outline"
+          slot="start"
+          color="warning"
+        ></ion-icon>
+
+        <ion-label>
+
+          <h2>Watch Button</h2>
+
+          <p>
+            Some smartwatches may support a physical-button shortcut
+            for emergency alerts.
+          </p>
+
+        </ion-label>
+
+      </ion-item>
+
+    </ion-card-content>
+  </ion-card>
+
+
+  <!-- Connection Status -->
+  <ion-card>
+
+    <ion-card-header>
+      <ion-card-title>Connection Status</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+
+      <!-- Watch Status -->
+      <ion-item>
+        <ion-label>
+
+          <h3>Smartwatch</h3>
+
+          <p>
+            {{ connected ? watchName + ' connected' : 'No smartwatch connected' }}
+          </p>
+
+        </ion-label>
+
+        <ion-icon
+          slot="end"
+          [name]="connected ? 'checkmark-circle' : 'close-circle'"
+          [color]="connected ? 'success' : 'medium'"
+        ></ion-icon>
+
+      </ion-item>
+
+
+      <!-- Emergency Status -->
+      <ion-item>
+        <ion-label>
+
+          <h3>Emergency Alerts</h3>
+
+          <p>
+            {{ connected ? 'Ready to use' : 'Connect a smartwatch first' }}
+          </p>
+
+        </ion-label>
+
+        <ion-icon
+          slot="end"
+          [name]="connected ? 'checkmark-circle' : 'close-circle'"
+          [color]="connected ? 'success' : 'medium'"
+        ></ion-icon>
+
+      </ion-item>
+
+
+      <!-- Test Connection -->
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="medium"
+        (click)="testConnection()"
+      >
+
+        <ion-icon
+          name="checkmark-circle-outline"
+          slot="start"
+        ></ion-icon>
+
+        Test Connection
+
+      </ion-button>
+
+    </ion-card-content>
+  </ion-card>
+
 </ion-content>

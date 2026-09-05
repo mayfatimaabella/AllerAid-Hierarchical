@@ -10,7 +10,7 @@ import { EmergencySettingsService, EmergencySettings } from './emergency-setting
 export class EmergencyDetectorService {
 
   private isShakeDetectionActive = false;
-  private isVolumeButtonDetectionActive = false;
+  private isVolumeButtonDetectionActive = false; 
 
   private lastShakeTime = 0;
   private shakeThreshold = 15;
@@ -23,6 +23,8 @@ export class EmergencyDetectorService {
   private shakeEmergencyCooldown = 60000;
 
   private volumeButtonListenerAdded = false;
+
+  private watchListenerAdded = false;
 
   private emergencySettings: EmergencySettings = {
     shakeToAlert: false,
@@ -46,6 +48,7 @@ export class EmergencyDetectorService {
 
     this.setupShakeDetection();
     this.setupVolumeButtonDetection();
+     this.setupWatchDetection();
 
     console.log('Emergency detector service initialized');
   }
@@ -196,6 +199,17 @@ export class EmergencyDetectorService {
     }
   }
 
+  private async triggerWatchEmergency(): Promise<void> {
+  try {
+    console.log('Smartwatch emergency detected!');
+
+    await this.emergencyAlertService.triggerEmergencyAlert('smartwatch');
+
+  } catch (error) {
+    console.error('Error triggering smartwatch emergency:', error);
+  }
+}
+
   async testShakeDetection(): Promise<void> {
     console.log('Testing shake detection...');
 
@@ -245,4 +259,20 @@ export class EmergencyDetectorService {
 
     return true;
   }
+
+  private setupWatchDetection(): void {
+  if (this.watchListenerAdded) return;
+
+  window.addEventListener('alleraidWatchEmergency', () => {
+    console.log('Smartwatch emergency detected!');
+
+    this.ngZone.run(() => {
+      this.triggerWatchEmergency();
+    });
+  });
+
+  this.watchListenerAdded = true;
+
+  console.log('Smartwatch detection listener activated');
+}
 }
