@@ -1,230 +1,513 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy
+} from '@angular/core';
+
 import { Router } from '@angular/router';
-import { EmergencyService } from '../../../../core/services/emergency.service';
-import { BuddyService } from '../../../../core/services/buddy.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-import { EmergencyAlert } from '../../../../core/models/emergency-alert.model';
-import { EmergencyLocation } from 'src/app/core/models/emergency-location.model';
-import { Timestamp } from '@angular/fire/firestore';
 
-interface DismissedEmergency {
-  id: string;
-  status?: string;
-  createdAt: string;
-  location?: EmergencyLocation;
-  responderId?: string;
-  responderName?: string;
-  patientName?: string;
-}
+import { EmergencyService }
+  from '../../../../core/services/emergency.service';
 
-type EmergencyWithDismissed = EmergencyAlert & {
-  dismissed?: boolean;
-};
+import { BuddyService }
+  from '../../../../core/services/buddy.service';
+
+import { AuthService }
+  from '../../../../core/services/auth.service';
+
+import { Subscription }
+  from 'rxjs';
+
+import { CommonModule }
+  from '@angular/common';
+
+import { FormsModule }
+  from '@angular/forms';
+
+import { IonicModule }
+  from '@ionic/angular';
+
+import { EmergencyAlert }
+  from '../../../../core/models/emergency-alert.model';
+
+import { EmergencyLocation }
+  from 'src/app/core/models/emergency-location.model';
+
+import { Timestamp }
+  from '@angular/fire/firestore';
+
 
 @Component({
   selector: 'app-emergencies',
-  templateUrl: './emergency-center.page.html',
-  styleUrls: ['./emergency-center.page.scss'],
+
+  templateUrl:
+    './emergency-center.page.html',
+
+  styleUrls:
+    ['./emergency-center.page.scss'],
+
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule
+  ]
 })
-export class EmergenciesPage implements OnInit, OnDestroy {
+export class EmergenciesPage
+  implements OnInit, OnDestroy {
+
+
+  
+  // EMERGENCY DATA
+  
+
   activeEmergencies: EmergencyAlert[] = [];
-  allEmergencies: EmergencyAlert[] = [];
-  filteredEmergencies: EmergencyWithDismissed[] = [];
-  selectedFilter: string = 'all';
+
+  historyEmergencies: EmergencyAlert[] = [];
+
+
+  
+  // CURRENT TAB
+  
+
   selectedTab: string = 'incoming';
-  private resolvedEmergencies: EmergencyAlert[] = [];
-  private dismissedEmergencyIds = new Set<string>();
-  private emergencySubscription: Subscription | null = null;
-  private locationAddressCache = new Map<string, string>();
+
+
+  
+  // CURRENT USER
+  
+
+  private currentUserId: string | null = null;
+
+
+  
+  // SUBSCRIPTION
+  
+
+  private emergencySubscription:
+    Subscription | null = null;
+
+
+  
+  // LOCATION ADDRESS CACHE
+  
+
+  private locationAddressCache =
+    new Map<string, string>();
+
+
+  
+  // CONSTRUCTOR
+  
 
   constructor(
     private router: Router,
-    private emergencyService: EmergencyService,
-    private buddyService: BuddyService,
-    private authService: AuthService,
-  ) { }
 
-  async ngOnInit() {
+    private emergencyService:
+      EmergencyService,
+
+    private buddyService:
+      BuddyService,
+
+    private authService:
+      AuthService
+  ) {}
+
+
+  
+  // INIT
+  
+
+  async ngOnInit(): Promise<void> {
+
     await this.setupRealTimeEmergencyListener();
+
   }
+
+
+  
+  // DESTROY
+  
 
   ngOnDestroy(): void {
-    this.emergencySubscription?.unsubscribe();
-  }
-
-  private async setupRealTimeEmergencyListener(): Promise<void> {
 
     this.emergencySubscription?.unsubscribe();
+
     this.emergencySubscription = null;
 
+  }
+
+
+  
+  // REAL-TIME EMERGENCY LISTENER
+  
+
+  private async setupRealTimeEmergencyListener():
+    Promise<void> {
+
+
+    // Prevent duplicate subscriptions
+
+    this.emergencySubscription?.unsubscribe();
+
+    this.emergencySubscription = null;
+
+
     try {
-      const user = await this.authService.waitForAuthInit();
+
+      // Get authenticated user
+
+      const user =
+        await this.authService.waitForAuthInit();
+
+
       if (!user) {
+
+        console.warn(
+          'Emergency Center: no authenticated user.'
+        );
+
         return;
+
       }
 
-      this.buddyService.listenForEmergencyAlerts(user.uid);
+
+      // Save user ID
+
+      this.currentUserId =
+        user.uid;
+
+
+      // Start buddy emergency listener
+
+      this.buddyService
+        .listenForEmergencyAlerts(
+          user.uid
+        );
+
+
+      // Subscribe to real-time alerts
 
       this.emergencySubscription =
-        this.buddyService.activeEmergencyAlerts$.subscribe(async emergencies => {
+        this.buddyService
+          .activeEmergencyAlerts$
+          .subscribe(
+            async emergencies => {
 
-          this.resolvedEmergencies =
-            await this.emergencyService.getBuddyEmergenciesByStatus(
-              user.uid,
-              ['resolved', 'cancelled'] 
-            );
+              try {
 
-          const userInitiated =
-            await this.emergencyService.getUserEmergenciesByStatus(
-              user.uid,
-              ['active', 'responding', 'resolved', 'cancelled']
-            );
+                // =================================================
+                // GET COMPLETED BUDDY EMERGENCIES
+                // =================================================
 
-          const buddyActive = emergencies
-            .filter(e =>
-              e.status === 'active' ||
-              e.status === 'responding'
-            )
-            .filter(e => !this.dismissedEmergencyIds.has(e.id!));
+                const resolvedEmergencies =
+                  await this.emergencyService
+                    .getBuddyEmergenciesByStatus(
+                      user.uid,
+                      [
+                        'resolved',
+                        'cancelled'
+                      ]
+                    );
 
-          this.activeEmergencies = [...buddyActive];
 
-          const merged = new Map<string, EmergencyAlert>();
+                // =================================================
+                // GET USER-INITIATED EMERGENCIES
+                // =================================================
 
-          [
-            ...emergencies,
-            ...this.resolvedEmergencies,
-            ...userInitiated
-          ].forEach(e => {
-            if (e.id) {
-              merged.set(e.id, e);
+                const userInitiated =
+                  await this.emergencyService
+                    .getUserEmergenciesByStatus(
+                      user.uid,
+                      [
+                        'active',
+                        'responding',
+                        'resolved',
+                        'cancelled'
+                      ]
+                    );
+
+
+                // =================================================
+                // SEPARATE ACTIVE EMERGENCIES
+                // =================================================
+
+                const active =
+                  emergencies.filter(
+                    emergency => {
+
+                      if (!emergency.id) {
+                        return false;
+                      }
+
+                      const status =
+                        this.getStatusDisplay(
+                          emergency
+                        );
+
+                      return (
+                        status === 'active' ||
+                        status === 'responding'
+                      );
+
+                    }
+                  );
+
+
+                // =================================================
+                // BUILD HISTORY
+                // =================================================
+
+                const historyMap =
+                  new Map<
+                    string,
+                    EmergencyAlert
+                  >();
+
+
+                [
+                  ...resolvedEmergencies,
+                  ...userInitiated
+                ].forEach(
+                  emergency => {
+
+                    if (!emergency.id) {
+                      return;
+                    }
+
+
+                    const status =
+                      this.getStatusDisplay(
+                        emergency
+                      );
+
+
+                    // Only completed emergencies belong
+                    // in History.
+
+                    if (
+                      status === 'resolved' ||
+                      status === 'cancelled'
+                    ) {
+
+                      historyMap.set(
+                        emergency.id,
+                        emergency
+                      );
+
+                    }
+
+                  }
+                );
+
+
+                // Also include completed emergencies
+                // that may already exist in the listener.
+
+                emergencies.forEach(
+                  emergency => {
+
+                    if (!emergency.id) {
+                      return;
+                    }
+
+
+                    const status =
+                      this.getStatusDisplay(
+                        emergency
+                      );
+
+
+                    if (
+                      status === 'resolved' ||
+                      status === 'cancelled'
+                    ) {
+
+                      historyMap.set(
+                        emergency.id,
+                        emergency
+                      );
+
+                    }
+
+                  }
+                );
+
+
+                // =================================================
+                // UPDATE PAGE DATA
+                // =================================================
+
+                this.activeEmergencies = [
+                  ...active
+                ];
+
+
+                this.historyEmergencies =
+                  Array.from(
+                    historyMap.values()
+                  );
+
+
+                // =================================================
+                // POPULATE ADDRESSES
+                // =================================================
+
+                await this.populateAddresses(
+                  [
+                    ...this.activeEmergencies,
+                    ...this.historyEmergencies
+                  ]
+                );
+
+
+              } catch (error) {
+
+                console.error(
+                  'Error processing emergencies:',
+                  error
+                );
+
+              }
+
             }
-          });
+          );
 
-          this.allEmergencies = Array.from(merged.values());
-
-          await this.populateAddresses(this.allEmergencies);
-
-          this.filterEmergencies();
-        });
 
     } catch (error) {
-      console.error(error);
+
+      console.error(
+        'Error setting up emergency listener:',
+        error
+      );
+
     }
+
   }
 
-  async dismissEmergency(emergency: EmergencyAlert) {
+
+  
+  // DISMISS
+  
+
+  async dismissEmergency(
+    emergency: EmergencyAlert
+  ): Promise<void> {
+
     try {
-      const user = await this.authService.waitForAuthInit();
-      if (user && emergency.id) {
 
-        this.buddyService.dismissEmergencyForUser(user.uid, emergency.id);
+      const user =
+        await this.authService
+          .waitForAuthInit();
 
-        this.buddyService.saveDismissedAlertData(user.uid, emergency);
 
-        this.dismissedEmergencyIds.add(emergency.id);
-        this.activeEmergencies = this.activeEmergencies.filter(e => e.id !== emergency.id);
+      if (!user) {
 
-        this.filterEmergencies();
-      }
-    } catch (error) {
-      console.error('Error dismissing emergency:', error);
-    }
-  }
-
-  filterEmergencies(): void {
-    switch (this.selectedFilter) {
-
-      case 'completed':
-        this.filteredEmergencies = this.allEmergencies.filter(
-          e => e.status === 'resolved' || e.status === 'cancelled'
+        console.warn(
+          'Cannot dismiss: no authenticated user.'
         );
-        break;
 
-      case 'dismissed':
-        this.filteredEmergencies = this.getDismissedAlertsForCurrentUser();
-        break;
+        return;
 
-      case 'all':
-      default: {
-        const dismissed = this.getDismissedAlertsForCurrentUser();
-        const merged = new Map<string, EmergencyAlert>();
-
-        [...this.allEmergencies, ...dismissed].forEach(e => {
-          if (e.id) {
-            merged.set(e.id, e);
-          }
-        });
-
-        this.filteredEmergencies = Array.from(merged.values());
-        break;
       }
-    }
-  }
 
-  onTabChange() {
-    this.selectedFilter = 'all';
-    this.filterEmergencies();
-  }
 
-private getDismissedAlertsForCurrentUser(): EmergencyWithDismissed[] {
-  try {
+      if (!emergency.id) {
 
-    const user: { uid?: string } =
-      JSON.parse(localStorage.getItem('currentUser') || '{}');
+        console.warn(
+          'Cannot dismiss emergency without an ID.'
+        );
 
-    if (!user.uid) {
-      return [];
-    }
+        return;
 
-    const key = `dismissedAlerts_${user.uid}`;
+      }
 
-    const stored: DismissedEmergency[] =
-      JSON.parse(localStorage.getItem(key) || '[]');
 
-    return stored.map(a => {
+      // Hide only for this responder.
 
-      const match = this.allEmergencies.find(e => e.id === a.id);
+      this.buddyService
+        .dismissEmergencyForUser(
+          user.uid,
+          emergency.id
+        );
 
-      return {
-        ...(match ?? {}),
-        id: a.id,
-        status: match?.status ?? 'resolved',
-        dismissed: true,
-        timestamp: match?.timestamp ?? a.createdAt,
-        location: match?.location ?? a.location,
-        responderId: match?.responderId ?? a.responderId,
-        responderName: match?.responderName ?? a.responderName,
-        userName: match?.userName ?? a.patientName ?? 'Unknown'
-      } as EmergencyWithDismissed;
 
-    });
+      // Remove from Incoming.
 
-  } catch {
+      this.activeEmergencies =
+        this.activeEmergencies.filter(
+          item =>
+            item.id !== emergency.id
+        );
 
-    return [];
 
-  }
-}
+      console.log(
+        'Emergency dismissed from responder view:',
+        emergency.id
+      );
 
-  getStatusDisplay(emergency: EmergencyWithDismissed): string {
 
-    if (emergency.dismissed) {
-      return 'dismissed';
+    } catch (error) {
+
+      console.error(
+        'Error dismissing emergency:',
+        error
+      );
+
     }
 
-    return emergency.status;
+  }
+
+
+  
+  // TAB CHANGE
+  
+
+  onTabChange(): void {
+
+    console.log(
+      'Emergency Center tab:',
+      this.selectedTab
+    );
 
   }
 
-  getStatusColor(status: string): string {
-    switch (status) {
+
+  
+  // STATUS DISPLAY
+  
+
+  getStatusDisplay(
+    emergency: EmergencyAlert
+  ): string {
+
+    return (
+      emergency.status
+        ?.toString()
+        .trim()
+        .toLowerCase() ||
+      'unknown'
+    );
+
+  }
+
+
+  
+  // STATUS COLOR
+  
+
+  getStatusColor(
+    status: string
+  ): string {
+
+    switch (
+      status
+        ?.toString()
+        .trim()
+        .toLowerCase()
+    ) {
+
       case 'active':
         return 'danger';
 
@@ -237,177 +520,501 @@ private getDismissedAlertsForCurrentUser(): EmergencyWithDismissed[] {
       case 'cancelled':
         return 'medium';
 
-      case 'dismissed':
-        return 'dark';
-
       default:
         return 'medium';
+
     }
+
   }
+
+
+  
+  // REFRESH
+  
 
   async refreshEmergencies(): Promise<void> {
+
     await this.setupRealTimeEmergencyListener();
+
   }
 
-  async respondToEmergency(emergency: EmergencyAlert) {
+
+  
+  // RESPOND TO EMERGENCY
+  
+
+  async respondToEmergency(
+    emergency: EmergencyAlert
+  ): Promise<void> {
+
     try {
-      const user = await this.authService.waitForAuthInit();
-      if (user) {
 
-        await this.emergencyService.respondToEmergency(
-          emergency.id!,
-          user.uid,
-          user.displayName || 'Buddy Response'
+      const user =
+        await this.authService
+          .waitForAuthInit();
+
+
+      if (!user) {
+
+        console.warn(
+          'Cannot respond: no authenticated user.'
         );
-        this.viewOnMap(emergency);
+
+        return;
+
       }
+
+
+      if (!emergency.id) {
+
+        console.warn(
+          'Cannot respond without emergency ID.'
+        );
+
+        return;
+
+      }
+
+
+      // Update actual emergency status.
+
+      await this.emergencyService
+        .respondToEmergency(
+          emergency.id,
+          user.uid,
+          user.displayName ||
+          'Buddy Response'
+        );
+
+
+      // Open responder dashboard.
+
+      await this.viewOnMap(
+        emergency
+      );
+
+
     } catch (error) {
-      console.error('Error responding to emergency:', error);
+
+      console.error(
+        'Error responding to emergency:',
+        error
+      );
+
     }
+
   }
 
-  async viewOnMap(emergency: EmergencyAlert) {
-    await this.router.navigate(['/tabs/responder-dashboard'], {
-      state: {
-        emergencyData: {
-          emergencyId: emergency.id,
-          alert: emergency,
-          userName: emergency.userName
+
+  
+  // VIEW ON MAP / RESPONDER DASHBOARD
+  
+
+  async viewOnMap(
+    emergency: EmergencyAlert
+  ): Promise<void> {
+
+    await this.router.navigate(
+      [
+        '/tabs/responder-dashboard'
+      ],
+      {
+        state: {
+
+          emergencyData: {
+
+            emergencyId:
+              emergency.id,
+
+            alert:
+              emergency,
+
+            userName:
+              emergency.userName
+
+          }
+
         }
+
       }
-    });
-  }
-  callPatient(emergency: EmergencyAlert) {
-
-    console.log('Calling patient for emergency:', emergency.id);
+    );
 
   }
 
-  async viewEmergencyDetails(emergency: EmergencyAlert) {
 
-    if (!emergency?.id) {
-      console.error('Cannot open emergency: missing ID');
-      return;
-    }
+  
+  // CALL PATIENT
+  
+
+  callPatient(
+    emergency: EmergencyAlert
+  ): void {
 
     console.log(
-      'Opening emergency history:',
+      'Calling patient:',
       emergency.id
     );
 
-    await this.router.navigate([
-      '/emergency-history-details',
-      emergency.id
-    ]);
-}
+  }
 
 
-private async populateAddresses(emergencies: EmergencyAlert[]): Promise<void> {
+  
+  // VIEW HISTORY DETAILS
+  
 
-  const tasks: Promise<void>[] = [];
+  async viewEmergencyDetails(
+    emergency: EmergencyAlert
+  ): Promise<void> {
 
-  for (const emergency of emergencies) {
+    if (!emergency?.id) {
 
-    if (emergency.displayAddress) {
-      continue;
+      console.error(
+        'Cannot open emergency: missing ID'
+      );
+
+      return;
+
     }
 
-    if (!emergency.location) {
-      continue;
-    }
 
-    const { latitude, longitude } = emergency.location;
+    await this.router.navigate(
+      [
+        '/emergency-history-details',
+        emergency.id
+      ]
+    );
 
-    const key = `${latitude},${longitude}`;
+  }
 
-    const cached = this.locationAddressCache.get(key);
 
-    if (cached) {
-      emergency.displayAddress = cached;
-      continue;
-    }
+  
+  // POPULATE ADDRESSES
+  
 
-    tasks.push((async () => {
+  private async populateAddresses(
+    emergencies: EmergencyAlert[]
+  ): Promise<void> {
 
-      try {
+    const toGeocode: {
+      emergency: EmergencyAlert;
+      key: string;
+    }[] = [];
 
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
-        );
 
-        const data = await response.json();
+    for (
+      const emergency of emergencies
+    ) {
 
-        const address = data?.display_name ?? this.getLocationDisplay(emergency.location);
-        
-        emergency.displayAddress = address;
-        
-        this.locationAddressCache.set(key, address);
+      if (
+        emergency.displayAddress
+      ) {
 
-      } catch {
-
-        emergency.displayAddress =
-          this.getLocationDisplay(emergency.location);
+        continue;
 
       }
 
-    })());
 
-  }
+      if (
+        !emergency.location
+      ) {
 
-  await Promise.all(tasks);
-}
+        continue;
 
-  getLocationDisplay(location: EmergencyLocation | null | undefined): string {
-    if (!location) {
-      return 'Location unavailable';
+      }
+
+
+      const {
+        latitude,
+        longitude
+      } = emergency.location;
+
+
+      const key =
+        `${latitude},${longitude}`;
+
+
+      const cached =
+        this.locationAddressCache.get(
+          key
+        );
+
+
+      if (cached) {
+
+        emergency.displayAddress =
+          cached;
+
+        continue;
+
+      }
+
+
+      toGeocode.push({
+        emergency,
+        key
+      });
+
     }
 
-    return `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;
+
+    // Sequential reverse geocoding
+
+    for (
+      const {
+        emergency,
+        key
+      } of toGeocode
+    ) {
+
+      try {
+
+        const response =
+          await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${emergency.location!.latitude}&lon=${emergency.location!.longitude}`
+          );
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            `HTTP ${response.status}`
+          );
+
+        }
+
+
+        const data =
+          await response.json();
+
+
+        const address =
+          data?.display_name ??
+          this.getLocationDisplay(
+            emergency.location
+          );
+
+
+        emergency.displayAddress =
+          address;
+
+
+        this.locationAddressCache.set(
+          key,
+          address
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          'Reverse geocoding failed:',
+          error
+        );
+
+
+        emergency.displayAddress =
+          this.getLocationDisplay(
+            emergency.location
+          );
+
+      }
+
+
+      // Respect Nominatim request rate
+
+      if (
+        toGeocode.length > 1
+      ) {
+
+        await new Promise(
+          resolve =>
+            setTimeout(
+              resolve,
+              1100
+            )
+        );
+
+      }
+
+    }
+
   }
 
- getTimeAgo(
-  timestamp: Timestamp | Date | string | null | undefined
-): string {
+
+  
+  // LOCATION DISPLAY
+  
+
+  getLocationDisplay(
+    location:
+      EmergencyLocation |
+      null |
+      undefined
+  ): string {
+
+    if (!location) {
+
+      return 'Location unavailable';
+
+    }
+
+
+    return (
+      `${location.latitude.toFixed(4)}, ` +
+      `${location.longitude.toFixed(4)}`
+    );
+
+  }
+
+
+  
+  // TIME AGO
+  
+
+  getTimeAgo(
+    timestamp:
+      Timestamp |
+      Date |
+      string |
+      null |
+      undefined
+  ): string {
+
+    if (!timestamp) {
+
+      return 'Unknown time';
+
+    }
+
+
+    const alertTime =
+      this.toDate(timestamp);
+
+
+    if (!alertTime) {
+
+      return 'Unknown time';
+
+    }
+
+
+    const now =
+      new Date();
+
+
+    const diffMs =
+      now.getTime() -
+      alertTime.getTime();
+
+
+    const diffMins =
+      Math.floor(
+        diffMs / 60000
+      );
+
+
+    if (diffMins < 1) {
+
+      return 'Just now';
+
+    }
+
+
+    if (diffMins < 60) {
+
+      return `${diffMins}m ago`;
+
+    }
+
+
+    const diffHours =
+      Math.floor(
+        diffMins / 60
+      );
+
+
+    if (diffHours < 24) {
+
+      return `${diffHours}h ago`;
+
+    }
+
+
+    return (
+      `${Math.floor(
+        diffHours / 24
+      )}d ago`
+    );
+
+  }
+
+
+  
+  // TO DATE
+  
+
+toDate(timestamp: any): Date | null {
 
   if (!timestamp) {
-    return 'Unknown time';
+    return null;
   }
 
-  let alertTime: Date;
-
+  // JavaScript Date
   if (timestamp instanceof Date) {
-    alertTime = timestamp;
-  } else if (timestamp instanceof Timestamp) {
-    alertTime = timestamp.toDate();
-  } else {
-    alertTime = new Date(timestamp);
+    return isNaN(timestamp.getTime())
+      ? null
+      : timestamp;
   }
 
-  const now = new Date();
-  const diffMs = now.getTime() - alertTime.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
+  // Firestore Timestamp
+  if (
+    typeof timestamp.toDate === 'function'
+  ) {
+    const date = timestamp.toDate();
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
+    return date instanceof Date &&
+           !isNaN(date.getTime())
+      ? date
+      : null;
+  }
 
-  const diffHours = Math.floor(diffMins / 60);
+  // Firestore Timestamp-like object
+  if (
+    typeof timestamp.seconds === 'number'
+  ) {
+    return new Date(
+      timestamp.seconds * 1000
+    );
+  }
 
-  if (diffHours < 24) return `${diffHours}h ago`;
+  // String / number
+  const date = new Date(timestamp);
 
-  return `${Math.floor(diffHours / 24)}d ago`;
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
 }
 
-toDate(timestamp: Timestamp | Date | string | null | undefined): Date | null {
-  if (!timestamp) return null;
 
-  if (timestamp instanceof Date) {
-    return timestamp;
+formatEmergencyDate(timestamp: any): string {
+  const date = this.toDate(timestamp);
+
+  if (!date) {
+    return 'Unknown date';
   }
 
-  if (timestamp instanceof Timestamp) {
-    return timestamp.toDate();
-  }
-
-  return new Date(timestamp);
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
 }
+
+
+
 }

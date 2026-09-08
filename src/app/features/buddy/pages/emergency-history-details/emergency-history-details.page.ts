@@ -2,14 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonicModule, AlertController, ToastController } from '@ionic/angular';
-import { Timestamp } from '@angular/fire/firestore';
+import { Timestamp } from 'firebase/firestore';
 
 import { EmergencyService } from '../../../../core/services/emergency.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 import { EmergencyAlert } from '../../../../core/models/emergency-alert.model';
 import { EmergencyLocation } from '../../../../core/models/emergency-location.model';
+
+import { IonicModule,AlertController  } from '@ionic/angular';
+
+
 
 @Component({
   selector: 'app-emergency-history-details',
@@ -36,28 +39,42 @@ export class EmergencyHistoryDetailsPage implements OnInit {
     private router: Router,
     private emergencyService: EmergencyService,
     private authService: AuthService,
-    private alertController: AlertController,
-    private toastController: ToastController
+    private alertController: AlertController
   ) {}
 
+  
+  // LIFECYCLE
+  
+
   async ngOnInit(): Promise<void> {
+
     this.emergencyId =
       this.route.snapshot.paramMap.get('id') || '';
 
     if (!this.emergencyId) {
-      this.errorMessage = 'Emergency record not found.';
+
+      this.errorMessage =
+        'Emergency record not found.';
+
       this.loading = false;
+
       return;
     }
 
     await this.loadEmergency();
   }
 
+  
+  // LOAD EMERGENCY
+  
+
   /**
    * Load the selected emergency.
    */
   private async loadEmergency(): Promise<void> {
+
     try {
+
       this.loading = true;
       this.errorMessage = '';
 
@@ -65,8 +82,10 @@ export class EmergencyHistoryDetailsPage implements OnInit {
         await this.authService.waitForAuthInit();
 
       if (!user) {
+
         this.errorMessage =
           'You must be logged in to view this emergency.';
+
         return;
       }
 
@@ -87,10 +106,27 @@ export class EmergencyHistoryDetailsPage implements OnInit {
 
       const userEmergency =
         userEmergencies.find(
-          emergency => emergency.id === this.emergencyId
+          emergency =>
+            emergency.id === this.emergencyId
         );
 
       if (userEmergency) {
+
+        console.log(
+          'Loaded user emergency:',
+          userEmergency
+        );
+
+        console.log(
+          'Emergency timestamp:',
+          userEmergency.timestamp
+        );
+
+        console.log(
+          'Timestamp type:',
+          typeof userEmergency.timestamp
+        );
+
         this.emergency = userEmergency;
 
         await this.populateAddress();
@@ -116,10 +152,27 @@ export class EmergencyHistoryDetailsPage implements OnInit {
 
       const buddyEmergency =
         buddyEmergencies.find(
-          emergency => emergency.id === this.emergencyId
+          emergency =>
+            emergency.id === this.emergencyId
         );
 
       if (buddyEmergency) {
+
+        console.log(
+          'Loaded buddy emergency:',
+          buddyEmergency
+        );
+
+        console.log(
+          'Emergency timestamp:',
+          buddyEmergency.timestamp
+        );
+
+        console.log(
+          'Timestamp type:',
+          typeof buddyEmergency.timestamp
+        );
+
         this.emergency = buddyEmergency;
 
         await this.populateAddress();
@@ -131,6 +184,7 @@ export class EmergencyHistoryDetailsPage implements OnInit {
         'This emergency record could not be found.';
 
     } catch (error) {
+
       console.error(
         'Error loading emergency details:',
         error
@@ -140,9 +194,14 @@ export class EmergencyHistoryDetailsPage implements OnInit {
         'Unable to load emergency details. Please try again.';
 
     } finally {
+
       this.loading = false;
     }
   }
+
+  
+  // REVERSE GEOCODING
+  
 
   /**
    * Reverse geocode the emergency location.
@@ -169,12 +228,14 @@ export class EmergencyHistoryDetailsPage implements OnInit {
       );
 
       if (!response.ok) {
+
         throw new Error(
           `Reverse geocoding failed: ${response.status}`
         );
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       this.emergency.displayAddress =
         data?.display_name ||
@@ -195,6 +256,10 @@ export class EmergencyHistoryDetailsPage implements OnInit {
         );
     }
   }
+
+  
+  // STATUS
+  
 
   /**
    * Return a readable status.
@@ -252,11 +317,18 @@ export class EmergencyHistoryDetailsPage implements OnInit {
     }
   }
 
+  
+  // LOCATION
+  
+
   /**
    * Get readable location.
    */
   getLocationDisplay(
-    location: EmergencyLocation | null | undefined
+    location:
+      | EmergencyLocation
+      | null
+      | undefined
   ): string {
 
     if (!location) {
@@ -266,42 +338,170 @@ export class EmergencyHistoryDetailsPage implements OnInit {
     return `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
   }
 
+  
+  // DATE / TIME
+  
+
   /**
-   * Convert Firestore Timestamp, Date, or string
+   * Convert Firestore Timestamp, Date, string,
+   * number, or serialized Firestore Timestamp
    * into a JavaScript Date.
+   *
+   * This is intentionally more robust than using
+   * `timestamp instanceof Timestamp`, because data
+   * can sometimes arrive as a serialized object.
    */
   toDate(
     timestamp:
       | Timestamp
       | Date
       | string
+      | number
+      | {
+          seconds?: number;
+          nanoseconds?: number;
+          _seconds?: number;
+          _nanoseconds?: number;
+        }
       | null
       | undefined
   ): Date | null {
 
-    if (!timestamp) {
+    // Nothing supplied
+    if (timestamp == null) {
       return null;
     }
 
+    // Already a JavaScript Date
     if (timestamp instanceof Date) {
-      return timestamp;
+
+      return isNaN(timestamp.getTime())
+        ? null
+        : timestamp;
     }
 
-    if (timestamp instanceof Timestamp) {
-      return timestamp.toDate();
+    /*
+     * Firebase Timestamp.
+     *
+     * We check for toDate() rather than relying
+     * exclusively on instanceof Timestamp.
+     */
+    if (
+      typeof timestamp === 'object' &&
+      'toDate' in timestamp &&
+      typeof (timestamp as any).toDate === 'function'
+    ) {
+
+      try {
+
+        const date =
+          (timestamp as any).toDate();
+
+        if (
+          date instanceof Date &&
+          !isNaN(date.getTime())
+        ) {
+          return date;
+        }
+
+      } catch (error) {
+
+        console.warn(
+          'Could not convert Firestore Timestamp:',
+          error
+        );
+      }
     }
 
-    const date = new Date(timestamp);
+    /*
+     * Serialized Firestore Timestamp.
+     *
+     * Example:
+     *
+     * {
+     *   seconds: 1757040000,
+     *   nanoseconds: 123000000
+     * }
+     *
+     * Some serialized objects use _seconds.
+     */
+    if (typeof timestamp === 'object') {
 
-    if (isNaN(date.getTime())) {
+      const seconds =
+        (timestamp as any).seconds ??
+        (timestamp as any)._seconds;
+
+      const nanoseconds =
+        (timestamp as any).nanoseconds ??
+        (timestamp as any)._nanoseconds ??
+        0;
+
+      if (
+        typeof seconds === 'number' &&
+        isFinite(seconds)
+      ) {
+
+        const milliseconds =
+          seconds * 1000 +
+          Math.floor(
+            nanoseconds / 1_000_000
+          );
+
+        const date =
+          new Date(milliseconds);
+
+        return isNaN(date.getTime())
+          ? null
+          : date;
+      }
+    }
+
+    /*
+     * Unix timestamp in milliseconds.
+     */
+    if (typeof timestamp === 'number') {
+
+      const date =
+        new Date(timestamp);
+
+      return isNaN(date.getTime())
+        ? null
+        : date;
+    }
+
+    /*
+     * ISO/date string.
+     */
+    if (typeof timestamp === 'string') {
+
+      const date =
+        new Date(timestamp);
+
+      return isNaN(date.getTime())
+        ? null
+        : date;
+    }
+
+    return null;
+  }
+
+  /**
+   * Get the emergency date.
+   */
+  getEmergencyDate(): Date | null {
+
+    if (!this.emergency) {
       return null;
     }
 
-    return date;
+    return this.toDate(
+      this.emergency.timestamp as any
+    );
   }
 
   /**
    * Get a relative time such as:
+   *
    * Just now
    * 5m ago
    * 2h ago
@@ -312,23 +512,35 @@ export class EmergencyHistoryDetailsPage implements OnInit {
       | Timestamp
       | Date
       | string
+      | number
+      | {
+          seconds?: number;
+          nanoseconds?: number;
+          _seconds?: number;
+          _nanoseconds?: number;
+        }
       | null
       | undefined
   ): string {
 
-    const date = this.toDate(timestamp);
+    const date =
+      this.toDate(timestamp);
 
     if (!date) {
       return 'Unknown time';
     }
 
-    const now = new Date();
+    const now =
+      new Date();
 
     const difference =
-      now.getTime() - date.getTime();
+      now.getTime() -
+      date.getTime();
 
     const minutes =
-      Math.floor(difference / 60000);
+      Math.floor(
+        difference / 60000
+      );
 
     if (minutes < 1) {
       return 'Just now';
@@ -339,91 +551,25 @@ export class EmergencyHistoryDetailsPage implements OnInit {
     }
 
     const hours =
-      Math.floor(minutes / 60);
+      Math.floor(
+        minutes / 60
+      );
 
     if (hours < 24) {
       return `${hours}h ago`;
     }
 
     const days =
-      Math.floor(hours / 24);
+      Math.floor(
+        hours / 24
+      );
 
     return `${days}d ago`;
   }
 
-  /**
-   * Open the emergency location.
-   */
-  async viewOnMap(): Promise<void> {
-
-    if (!this.emergency) {
-      return;
-    }
-
-    if (!this.emergency.location) {
-      await this.showToast(
-        'Emergency location is unavailable.'
-      );
-
-      return;
-    }
-
-    try {
-
-      await this.router.navigate(
-        ['/responder-map'],
-        {
-          state: {
-            emergencyData: {
-              emergencyId:
-                this.emergency.id,
-
-              alert:
-                this.emergency,
-
-              userName:
-                this.emergency.userName
-            }
-          }
-        }
-      );
-
-    } catch (error) {
-
-      console.error(
-        'Error opening emergency map:',
-        error
-      );
-
-      await this.showToast(
-        'Unable to open the map.'
-      );
-    }
-  }
-
-  /**
-   * Call patient.
-   *
-   * This currently only provides a placeholder because
-   * your EmergencyAlert model shown earlier does not
-   * contain a phone number.
-   */
-  async callPatient(): Promise<void> {
-
-    if (!this.emergency) {
-      return;
-    }
-
-    console.log(
-      'Calling patient:',
-      this.emergency.userName,
-      this.emergency.id
-    );
-
-    await this.showToast(
-      `Calling ${this.emergency.userName || 'patient'}...`
-    );
-  }
+  
+  // RECORD INFORMATION
+  
 
   /**
    * Display information about the history record.
@@ -432,9 +578,13 @@ export class EmergencyHistoryDetailsPage implements OnInit {
 
     const alert =
       await this.alertController.create({
-        header: 'Emergency Record',
+
+        header:
+          'Emergency Record',
+
         message:
           'This page contains the details of a previous emergency alert.',
+
         buttons: [
           {
             text: 'OK',
@@ -446,15 +596,24 @@ export class EmergencyHistoryDetailsPage implements OnInit {
     await alert.present();
   }
 
+  
+  // RETRY
+  
+
   /**
    * Retry loading the emergency.
    */
   async retry(): Promise<void> {
+
     await this.loadEmergency();
   }
 
+  
+  // NAVIGATION
+  
+
   /**
-   * Navigate back to Emergency Center.
+   * Navigate back to Emergency Center. 
    */
   goBack(): void {
 
@@ -463,20 +622,4 @@ export class EmergencyHistoryDetailsPage implements OnInit {
     ]);
   }
 
-  /**
-   * Display a toast.
-   */
-  private async showToast(
-    message: string
-  ): Promise<void> {
-
-    const toast =
-      await this.toastController.create({
-        message,
-        duration: 2000,
-        position: 'bottom'
-      });
-
-    await toast.present();
-  }
 }

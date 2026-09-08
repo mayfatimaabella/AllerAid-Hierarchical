@@ -191,13 +191,13 @@ const routes: Routes = [
 
   // Wildcard
 
-// {
-//   path: 'emergency-history-details/:id',
-//   loadComponent: () =>
-//     import('./features/buddy/pages/emergency-history-details/emergency-history-details.page')
-//       .then(m => m.EmergencyHistoryDetailsPage),
-//   canActivate: [AuthGuard]
-// },
+{
+  path: 'emergency-history-details/:id',
+  loadComponent: () =>
+    import('./features/buddy/pages/emergency-history-details/emergency-history-details.page')
+      .then(m => m.EmergencyHistoryDetailsPage),
+  canActivate: [AuthGuard]
+},
 
 
   {

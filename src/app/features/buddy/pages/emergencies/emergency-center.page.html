@@ -1,5 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
+
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
@@ -7,42 +8,95 @@
     <ion-title>Emergency Center</ion-title>
 
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="refreshEmergencies()">
+      <ion-button
+        fill="clear"
+        (click)="refreshEmergencies()">
+
         <ion-icon name="refresh-outline"></ion-icon>
+
       </ion-button>
     </ion-buttons>
+
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+
+<ion-content
+  [fullscreen]="true"
+  class="ion-padding">
+
+
+  <!-- =========================================================
+       MAIN TABS
+       ========================================================= -->
 
   <ion-segment
     [(ngModel)]="selectedTab"
     (ionChange)="onTabChange()"
     class="main-segment">
 
+    <!-- INCOMING -->
+
     <ion-segment-button value="incoming">
+
       <ion-icon name="notifications-outline"></ion-icon>
-      <ion-label>Incoming</ion-label>
+
+      <ion-label>
+        Incoming
+      </ion-label>
+
     </ion-segment-button>
 
+
+    <!-- HISTORY -->
+
     <ion-segment-button value="history">
+
       <ion-icon name="time-outline"></ion-icon>
-      <ion-label>History</ion-label>
+
+      <ion-label>
+        History
+      </ion-label>
+
     </ion-segment-button>
 
   </ion-segment>
 
+
+
+  <!-- =========================================================
+       INCOMING EMERGENCIES
+       ========================================================= -->
+
   <ion-card
-    *ngIf="selectedTab === 'incoming' && activeEmergencies.length"
+    *ngIf="
+      selectedTab === 'incoming' &&
+      activeEmergencies.length > 0
+    "
     class="active-emergency-card">
 
     <ion-card-header>
-      <ion-card-title style="display:flex;align-items:center;gap:8px;color:white;">
-        <ion-icon name="warning" size="large"></ion-icon>
-        Active Emergencies ({{ activeEmergencies.length }})
+
+      <ion-card-title
+        style="
+          display:flex;
+          align-items:center;
+          gap:8px;
+          color:white;
+        ">
+
+        <ion-icon
+          name="warning"
+          size="large">
+        </ion-icon>
+
+        Active Emergencies
+        ({{ activeEmergencies.length }})
+
       </ion-card-title>
+
     </ion-card-header>
+
 
     <ion-card-content>
 
@@ -50,53 +104,109 @@
         class="emergency-card"
         *ngFor="let emergency of activeEmergencies">
 
+
+        <!-- Emergency Header -->
+
         <div class="emergency-header">
 
-          <h2>{{ emergency.userName }}</h2>
+          <h2>
+            {{ emergency.userName }}
+          </h2>
 
-          <ion-badge color="light">
-            {{ emergency.status | titlecase }}
+          <ion-badge
+            [color]="getStatusColor(getStatusDisplay(emergency))">
+
+            {{ getStatusDisplay(emergency) | titlecase }}
+
           </ion-badge>
 
         </div>
 
+
+
+        <!-- Emergency Details -->
+
         <div class="emergency-details">
 
           <p>
-            <strong>Location:</strong>
-            {{ emergency.displayAddress || getLocationDisplay(emergency.location) }}
+
+            <strong>
+              Location:
+            </strong>
+
+            {{
+              emergency.displayAddress ||
+              getLocationDisplay(emergency.location)
+            }}
+
           </p>
 
+
           <p>
-            <strong>Time:</strong>
+
+            <strong>
+              Time:
+            </strong>
+
             {{ getTimeAgo(emergency.timestamp) }}
+
           </p>
 
+
           <p>
-            <strong>Allergies:</strong>
-            {{ emergency.allergies?.join(', ') || 'None listed' }}
+
+            <strong>
+              Allergies:
+            </strong>
+
+            {{
+              emergency.allergies?.join(', ') ||
+              'None listed'
+            }}
+
           </p>
+
 
           <p *ngIf="emergency.instruction">
-            <strong>Instructions:</strong>
+
+            <strong>
+              Instructions:
+            </strong>
+
             {{ emergency.instruction }}
+
           </p>
 
         </div>
 
+
+
+        <!-- Emergency Actions -->
+
         <div class="emergency-actions">
 
+
+          <!-- Respond -->
+
           <ion-button
-            *ngIf="emergency.status === 'active'"
+            *ngIf="getStatusDisplay(emergency) === 'active'"
             expand="block"
             fill="solid"
             color="light"
             (click)="respondToEmergency(emergency)">
 
-            <ion-icon slot="start" name="car-outline"></ion-icon>
+            <ion-icon
+              slot="start"
+              name="car-outline">
+            </ion-icon>
+
             I'm On My Way
 
           </ion-button>
+
+
+
+          <!-- Map -->
 
           <ion-button
             expand="block"
@@ -104,10 +214,18 @@
             color="light"
             (click)="viewOnMap(emergency)">
 
-            <ion-icon slot="start" name="map-outline"></ion-icon>
+            <ion-icon
+              slot="start"
+              name="map-outline">
+            </ion-icon>
+
             View on Map
 
           </ion-button>
+
+
+
+          <!-- Dismiss -->
 
           <ion-button
             expand="block"
@@ -115,10 +233,18 @@
             color="light"
             (click)="dismissEmergency(emergency)">
 
-            <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+            <ion-icon
+              slot="start"
+              name="close-circle-outline">
+            </ion-icon>
+
             Dismiss
 
           </ion-button>
+
+
+
+          <!-- Call -->
 
           <ion-button
             expand="block"
@@ -126,7 +252,11 @@
             color="light"
             (click)="callPatient(emergency)">
 
-            <ion-icon slot="start" name="call-outline"></ion-icon>
+            <ion-icon
+              slot="start"
+              name="call-outline">
+            </ion-icon>
+
             Call {{ emergency.userName }}
 
           </ion-button>
@@ -139,83 +269,110 @@
 
   </ion-card>
 
+
+
+  <!-- =========================================================
+       NO ACTIVE EMERGENCIES
+       ========================================================= -->
+
   <div
     class="empty-state"
-    *ngIf="selectedTab === 'incoming' && activeEmergencies.length === 0">
+    *ngIf="
+      selectedTab === 'incoming' &&
+      activeEmergencies.length === 0
+    ">
 
     <ion-icon
       name="checkmark-circle-outline"
       size="large">
     </ion-icon>
 
-    <p>No active emergencies</p>
-    <p>This is good news!</p>
+    <p>
+      No active emergencies
+    </p>
+
+    <p>
+      This is good news!
+    </p>
 
   </div>
 
-  <ion-card *ngIf="selectedTab === 'history'">
+
+
+  <!-- =========================================================
+       HISTORY
+       ========================================================= -->
+
+  <ion-card
+    *ngIf="selectedTab === 'history'">
 
     <ion-card-header>
 
       <ion-card-title
-        style="display:flex;align-items:center;gap:8px;">
+        style="
+          display:flex;
+          align-items:center;
+          gap:8px;
+        ">
 
-        <ion-icon name="time-outline"></ion-icon>
+        <ion-icon
+          name="time-outline">
+        </ion-icon>
+
         Emergency History
 
       </ion-card-title>
 
     </ion-card-header>
 
+
     <ion-card-content>
 
-      <!-- History Filter -->
 
-      <ion-segment
-        [(ngModel)]="selectedFilter"
-        (ionChange)="filterEmergencies()"
-        scrollable="true"
-        class="main-segment">
+      <!-- HISTORY LIST -->
 
-        <ion-segment-button value="all">
-          <ion-label>All</ion-label>
-        </ion-segment-button>
-
-        <ion-segment-button value="completed">
-          <ion-label>Completed</ion-label>
-        </ion-segment-button>
-
-        <ion-segment-button value="dismissed">
-          <ion-label>Dismissed</ion-label>
-        </ion-segment-button>
-
-      </ion-segment>
-
-      <!-- History List -->
-
-      <ion-list *ngIf="filteredEmergencies.length">
+      <ion-list
+        *ngIf="historyEmergencies.length > 0">
 
         <ion-item
-          *ngFor="let emergency of filteredEmergencies"
+          *ngFor="let emergency of historyEmergencies"
+          button
           (click)="viewEmergencyDetails(emergency)">
 
           <ion-label>
 
-            <h2>{{ emergency.userName }}</h2>
+            <h2>
+              {{ emergency.userName }}
+            </h2>
+
 
             <p>
-              <strong>Location:</strong>
-              {{ emergency.displayAddress || getLocationDisplay(emergency.location) }}
+
+              <strong>
+                Location:
+              </strong>
+
+              {{
+                emergency.displayAddress ||
+                getLocationDisplay(emergency.location)
+              }}
+
             </p>
 
-            <p>
-              <strong>Date &amp; Time:</strong>
+        <p class="emergency-date">
+          <ion-icon name="calendar-outline"></ion-icon>
 
-                {{ toDate(emergency.timestamp) | date:'short' }}
-
-            </p>
+          <span class="date-content">
+            <strong>Date &amp; Time</strong>
+            <span>{{ formatEmergencyDate(emergency.timestamp) }}</span>
+          </span>
+        </p>
 
           </ion-label>
+
+
+
+          <!-- HISTORY STATUS -->
 
           <ion-badge
             slot="end"
@@ -234,10 +391,12 @@
 
       </ion-list>
 
-      <!-- Empty History -->
+
+
+      <!-- EMPTY HISTORY -->
 
       <div
-        *ngIf="filteredEmergencies.length === 0"
+        *ngIf="historyEmergencies.length === 0"
         class="empty-state">
 
         <ion-icon
@@ -245,8 +404,13 @@
           size="large">
         </ion-icon>
 
-        <p>No emergencies found</p>
-        <p>This is good news!</p>
+        <p>
+          No emergency history
+        </p>
+
+        <p>
+          Completed emergencies will appear here.
+        </p>
 
       </div>
 

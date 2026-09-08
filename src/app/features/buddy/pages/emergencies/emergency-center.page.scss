@@ -285,8 +285,8 @@ ion-badge[color="medium"] {
 }
 
 ion-badge[color="dark"] {
-  --background: #e5e7eb;
-  color: #111827;
+  --background: #25282c;
+  --color: white;
 }
 
 
@@ -305,4 +305,35 @@ ion-button:hover {
 ion-card:hover {
 
   transform: translateY(-2px);
+}
+
+.emergency-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.emergency-date ion-icon {
+  font-size: 20px;
+  color: #d32f2f;
+}
+
+.date-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.date-content strong {
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.date-content span {
+  color: #666;
+  font-size: 14px;
 }

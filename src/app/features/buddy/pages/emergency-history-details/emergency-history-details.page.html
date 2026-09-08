@@ -13,16 +13,11 @@
 </ion-header>
 
 
-<ion-content
-  [fullscreen]="true"
-  class="ion-padding">
-
+<ion-content [fullscreen]="true" class="ion-padding">
 
   <!-- Loading -->
 
-  <div
-    class="state-container"
-    *ngIf="loading">
+  <div class="state-container" *ngIf="loading">
 
     <ion-spinner name="crescent"></ion-spinner>
 
@@ -33,27 +28,17 @@
 
   <!-- Error -->
 
-  <div
-    class="state-container error-state"
-    *ngIf="!loading && errorMessage">
+  <div class="state-container error-state" *ngIf="!loading && errorMessage">
 
-    <ion-icon
-      name="alert-circle-outline"
-      size="large">
-    </ion-icon>
+    <ion-icon name="alert-circle-outline" size="large"></ion-icon>
 
     <h2>Unable to Load</h2>
 
     <p>{{ errorMessage }}</p>
 
-    <ion-button
-      fill="outline"
-      (click)="goBack()">
+    <ion-button fill="outline" (click)="goBack()">
 
-      <ion-icon
-        slot="start"
-        name="arrow-back-outline">
-      </ion-icon>
+      <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
 
       Back to History
 
@@ -64,10 +49,7 @@
 
   <!-- Emergency Details -->
 
-  <div
-    *ngIf="!loading && emergency"
-    class="details-container">
-
+  <div *ngIf="!loading && emergency" class="details-container">
 
     <!-- Status Header -->
 
@@ -220,22 +202,6 @@
           </div>
 
         </div>
-
-
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="viewOnMap()"
-          [disabled]="!emergency.location">
-
-          <ion-icon
-            slot="start"
-            name="map-outline">
-          </ion-icon>
-
-          View on Map
-
-        </ion-button>
 
       </ion-card-content>
 
@@ -405,38 +371,24 @@
 
     <!-- Actions -->
 
-    <div class="actions">
+<div class="actions">
 
-      <ion-button
-        expand="block"
-        fill="outline"
-        (click)="callPatient()">
+  <ion-button
+    expand="block"
+    fill="clear"
+    (click)="showRecordInfo()">
 
-        <ion-icon
-          slot="start"
-          name="call-outline">
-        </ion-icon>
+    <ion-icon
+      slot="start"
+      name="information-circle-outline">
+    </ion-icon>
 
-        Call Patient
+    About This Record
 
-      </ion-button>
+  </ion-button>
 
+</div>
 
-      <ion-button
-        expand="block"
-        fill="clear"
-        (click)="showRecordInfo()">
-
-        <ion-icon
-          slot="start"
-          name="information-circle-outline">
-        </ion-icon>
-
-        About This Record
-
-      </ion-button>
-
-    </div>
 
 
   </div>

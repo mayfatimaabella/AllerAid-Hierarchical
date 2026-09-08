@@ -9,9 +9,9 @@ ion-content {
   --background: #f7f9fb !important;
 }
 
-/* =========================================
+/* 
    MAIN CONTAINER
-========================================= */
+ */
 
 .details-container {
   max-width: 800px;
@@ -20,9 +20,9 @@ ion-content {
 }
 
 
-/* =========================================
+/* 
    STATUS CARD
-========================================= */
+ */
 
 .status-card {
   --background: #0f766e;
@@ -94,9 +94,9 @@ ion-content {
 }
 
 
-/* =========================================
+/* 
    GENERAL CARDS
-========================================= */
+ */
 
 ion-card {
   --background: white;
@@ -139,9 +139,9 @@ ion-card-content {
 }
 
 
-/* =========================================
+/* 
    DETAIL ROWS
-========================================= */
+ */
 
 .detail-row {
   display: flex;
@@ -205,9 +205,9 @@ ion-card-content {
 }
 
 
-/* =========================================
+/* 
    LOCATION
-========================================= */
+ */
 
 .location-box {
   display: flex;
@@ -256,9 +256,9 @@ ion-card-content {
 }
 
 
-/* =========================================
+/* 
    MEDICAL INFORMATION
-========================================= */
+ */
 
 .medical-section {
   padding: 13px 0;
@@ -327,9 +327,9 @@ ion-card-content {
 }
 
 
-/* =========================================
+/* 
    STATUS BADGES
-========================================= */
+ */
 
 ion-badge {
   padding: 7px 12px;
@@ -372,9 +372,9 @@ ion-badge[color="dark"] {
 }
 
 
-/* =========================================
+/* 
    MAP BUTTON
-========================================= */
+ */
 
 ion-button {
   --border-radius: 12px;
@@ -401,9 +401,9 @@ ion-button[fill="outline"] {
 }
 
 
-/* =========================================
+/* 
    TECHNICAL INFORMATION
-========================================= */
+ */
 
 .technical-card {
   --background: #fafafa;
@@ -447,9 +447,9 @@ ion-button[fill="outline"] {
 }
 
 
-/* =========================================
+/* 
    ACTIONS
-========================================= */
+ */
 
 .actions {
   margin: 20px 0 30px;
@@ -459,22 +459,14 @@ ion-button[fill="outline"] {
   margin-top: 10px;
 }
 
-.actions ion-button:first-child {
-  --background: #036a5d;
-  --color: white;
-
-  box-shadow:
-    0 5px 12px rgba(3, 106, 93, 0.2);
-}
-
-.actions ion-button:last-child {
+.actions ion-button[fill="clear"] {
   --color: #036a5d;
 }
 
 
-/* =========================================
+/* 
    LOADING STATE
-========================================= */
+ */
 
 .state-container {
   min-height: 60vh;
@@ -528,9 +520,9 @@ ion-button[fill="outline"] {
 }
 
 
-/* =========================================
+/* 
    ERROR STATE
-========================================= */
+ */
 
 .error-state ion-icon {
   color: #dc2626;
@@ -542,9 +534,9 @@ ion-button[fill="outline"] {
 }
 
 
-/* =========================================
+/* 
    HOVER EFFECTS
-========================================= */
+ */
 
 ion-card,
 ion-button {
@@ -560,9 +552,9 @@ ion-button:hover {
 }
 
 
-/* =========================================
+/* 
    MOBILE
-========================================= */
+ */
 
 @media (max-width: 576px) {
 
