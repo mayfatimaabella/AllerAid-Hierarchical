@@ -6,11 +6,13 @@ import { UserService } from '../../../core/services/user.service';
 import { UserProfile } from '../../../core/models/user-profile.model';
 import { AllergyService } from '../../../core/services/allergy.service';
 import { MedicalService } from '../../../core/services/medical.service';
+import { DoctorVisitService } from '../../../core/services/doctor-visit.service';
 import { EHRService } from '../../../core/services/ehr.service';
-
 import { EmergencySettingsService } from 'src/app/core';
 
 import { ProfileDetailService } from 'src/app/core';
+
+import { MedicalHistoryService } from '../../../core/services/medical-history.service';
 
 @Injectable({
   providedIn: 'root'
@@ -35,9 +37,11 @@ export class ProfileDataLoaderService {
     private userService: UserService,
     private allergyService: AllergyService,
     private medicalService: MedicalService,
+    private doctorVisitService: DoctorVisitService, 
     private ehrService: EHRService,
     private emergencySettingsService: EmergencySettingsService,
-    private profileDetailService: ProfileDetailService
+    private profileDetailService: ProfileDetailService,
+    private medicalHistoryService: MedicalHistoryService
   ) {}
 
   get userProfileValue(): UserProfile | null { return this.userProfileSubject.value; }
@@ -103,8 +107,8 @@ export class ProfileDataLoaderService {
 
       const [emergencySettings, doctorVisits, medicalHistory, ehrRecord] = await Promise.all([
         this.emergencySettingsService.getEmergencySettings(user.uid),
-        this.ehrService.getDoctorVisits(),
-        this.ehrService.getMedicalHistory(),
+        this.doctorVisitService.getDoctorVisits(),
+        this.medicalHistoryService.getMedicalHistory(),
         this.ehrService.getEHRRecord()
       ]);
 

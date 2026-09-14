@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
-import { EHRService, MedicalHistory } from '../../../../../core/services/ehr.service';
+import { MedicalHistory, MedicalHistoryService} from '../../../../../core/services/medical-history.service';
+
 
 @Component({
   selector: 'app-add-medical-history',
@@ -49,7 +50,7 @@ export class AddMedicalHistoryModal implements OnInit {
   constructor(
     private modalController: ModalController,
     private toastController: ToastController,
-    private ehrService: EHRService
+    private medicalHistoryService: MedicalHistoryService
   ) {}
 
   ngOnInit() {
@@ -94,10 +95,10 @@ export class AddMedicalHistoryModal implements OnInit {
       }
 
       if (this.isEditMode && this.history?.id) {
-        await this.ehrService.updateMedicalHistory(this.history.id, this.historyData);
+        await this.medicalHistoryService.updateMedicalHistory(this.history.id, this.historyData);
         await this.showToast('Medical history updated successfully', 'success');
       } else {
-        await this.ehrService.addMedicalHistory(this.historyData);
+        await this.medicalHistoryService.addMedicalHistory(this.historyData);
         await this.showToast('Medical history added successfully', 'success');
       }
 
@@ -111,7 +112,7 @@ export class AddMedicalHistoryModal implements OnInit {
   async deleteHistory() {
     if (this.history?.id) {
       try {
-        await this.ehrService.deleteMedicalHistory(this.history.id);
+        await this.medicalHistoryService.deleteMedicalHistory(this.history.id);
         await this.showToast('Medical history deleted successfully', 'success');
         this.modalController.dismiss(true);
       } catch (error) {

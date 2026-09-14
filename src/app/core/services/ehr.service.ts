@@ -1,31 +1,8 @@
 import { Injectable } from '@angular/core';
-import {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  setDoc,
-  query,
-  orderBy,
-  where,
-  serverTimestamp
-} from 'firebase/firestore';
+import { collection, addDoc, getDocs,doc,updateDoc,deleteDoc,getDoc,setDoc,query,orderBy,where,serverTimestamp} from 'firebase/firestore';
 import { FirebaseService } from './firebase.service';
 import { AuthService } from './auth.service';
-
-export interface MedicalHistory {
-  id?: string;
-  patientId: string;
-  condition: string;
-  diagnosisDate: string;
-  status: 'active' | 'resolved' | 'chronic' | 'not-cured';
-  notes?: string;
-  createdAt?: any;
-  updatedAt?: any;
-}
+import { MedicalHistory } from './medical-history.service';
 
 export interface DoctorVisit {
   id?: string;
@@ -89,18 +66,27 @@ export interface HealthcareProvider {
 
 export interface AccessRequest {
   id?: string;
+
   patientId: string;
+
+  doctorId: string;
+
   patientName: string;
   patientEmail: string;
+
   doctorEmail: string;
   doctorName: string;
   doctorRole: 'doctor';
+
   specialty?: string;
   originalVisitName: string;
+
   status: 'pending' | 'accepted' | 'declined' | 'expired';
+
   requestDate: any;
   responseDate?: any;
   expiryDate: any;
+
   message?: string;
   notes?: string;
 }
@@ -218,59 +204,6 @@ private async getUserInfoForPatient(patientId: string): Promise<any | null> {
     } as EHRRecord;
   }
 
-  async addMedicalHistory(historyData: Omit<MedicalHistory, 'id' | 'patientId'>): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    await addDoc(collection(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'medicalHistory')), {
-      ...historyData,
-      patientId: currentUser.uid,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-  }
-
-  async getMedicalHistory(): Promise<MedicalHistory[]> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    const q = query(
-      collection(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'medicalHistory')),
-      orderBy('diagnosisDate', 'desc')
-    );
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as MedicalHistory[];
-  }
-
-  async getMedicalHistoryById(recordId: string): Promise<MedicalHistory | null> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    const ref = doc(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'medicalHistory'), recordId);
-    const snap = await getDoc(ref);
-
-    return snap.exists() ? ({ id: snap.id, ...snap.data() } as MedicalHistory) : null;
-  }
-
-  async updateMedicalHistory(historyId: string, historyData: Partial<MedicalHistory>): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    const ref = doc(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'medicalHistory'), historyId);
-    await updateDoc(ref, {
-      ...historyData,
-      updatedAt: serverTimestamp()
-    });
-  }
-
-  async deleteMedicalHistory(historyId: string): Promise<void> {
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    const ref = doc(this.db, this.healthRecordsCollectionPath(currentUser.uid, 'medicalHistory'), historyId);
-    await deleteDoc(ref);
-  }
 
   async addDoctorVisit(visitData: Omit<DoctorVisit, 'id' | 'patientId'>): Promise<void> {
   const currentUser = await this.authService.waitForAuthInit();
@@ -641,40 +574,95 @@ async getPatientAnalysis(patientId: string): Promise<{
     const currentUser = await this.authService.waitForAuthInit();
     if (!currentUser) return;
 
-    const patientDoc = await getDoc(doc(this.db, `users/${currentUser.uid}`));
+    const patientDoc = await getDoc(
+      doc(this.db, `users/${currentUser.uid}`)
+    );
+
     const patientData = patientDoc.data();
 
     if (!patientData) return;
 
+    // Normalize email
+    const normalizedDoctorEmail = doctorEmail.trim().toLowerCase();
+
+    // Find the doctor so we can store their UID
+    const doctorQuery = query(
+      collection(this.db, 'users'),
+      where('email', '==', normalizedDoctorEmail),
+      where('role', '==', 'doctor')
+    );
+
+    const doctorSnapshot = await getDocs(doctorQuery);
+
+    if (doctorSnapshot.empty) {
+      throw new Error('Doctor not found in system.');
+    }
+
+    const doctorDoc = doctorSnapshot.docs[0];
+    const doctorData = doctorDoc.data();
+
+    const doctorId = doctorDoc.id;
+
+    // Prevent duplicate pending requests
     const existingQuery = query(
       collection(this.db, 'accessRequests'),
       where('patientId', '==', currentUser.uid),
-      where('doctorEmail', '==', doctorEmail),
+      where('doctorId', '==', doctorId),
       where('status', '==', 'pending')
     );
 
     const existingRequests = await getDocs(existingQuery);
-    if (!existingRequests.empty) return;
 
+    if (!existingRequests.empty) {
+      return;
+    }
+
+    // Request expires after 30 days
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 30);
 
     const accessRequest: Omit<AccessRequest, 'id'> = {
       patientId: currentUser.uid,
-      patientName: `${patientData['firstName']} ${patientData['lastName']}`,
-      patientEmail: patientData['email'],
-      doctorEmail,
-      doctorName,
+
+      // FIX: doctorId is now included
+      doctorId,
+
+      patientName:
+        `${patientData['firstName'] || ''} ${patientData['lastName'] || ''}`.trim(),
+
+      patientEmail: patientData['email'] || '',
+
+      doctorEmail: normalizedDoctorEmail,
+
+      doctorName:
+        doctorName ||
+        `${doctorData['firstName'] || ''} ${doctorData['lastName'] || ''}`.trim(),
+
       doctorRole: role,
-      specialty,
+
+      specialty:
+        specialty ||
+        doctorData['specialty'] ||
+        'General Medicine',
+
       originalVisitName,
+
       status: 'pending',
+
       requestDate: serverTimestamp(),
+
       expiryDate,
-      message: `Patient ${patientData['firstName']} ${patientData['lastName']} would like to grant you access to their medical records.`
+
+      message:
+        `Patient ${patientData['firstName'] || ''} ` +
+        `${patientData['lastName'] || ''} ` +
+        `would like to grant you access to their medical records.`
     };
 
-    await addDoc(collection(this.db, 'accessRequests'), accessRequest);
+    await addDoc(
+      collection(this.db, 'accessRequests'),
+      accessRequest
+    );
   }
 
   async getPendingAccessRequests(): Promise<AccessRequest[]> {
@@ -688,7 +676,7 @@ async getPatientAnalysis(patientId: string): Promise<{
 
     const q = query(
       collection(this.db, 'accessRequests'),
-      where('doctorEmail', '==', userData['email']),
+      where('doctorId', '==', currentUser.uid),
       where('status', '==', 'pending'),
       orderBy('requestDate', 'desc')
     );
@@ -697,61 +685,99 @@ async getPatientAnalysis(patientId: string): Promise<{
     return snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as AccessRequest[];
   }
 
-  async respondToAccessRequest(
-    requestId: string,
-    response: 'accepted' | 'declined',
-    notes?: string
-  ): Promise<void> {
-    const requestRef = doc(this.db, `accessRequests/${requestId}`);
-    const requestDoc = await getDoc(requestRef);
+async respondToAccessRequest(
+  requestId: string,
+  response: 'accepted' | 'declined',
+  notes?: string
+): Promise<void> {
+  const requestRef = doc(this.db, `accessRequests/${requestId}`);
+  const requestDoc = await getDoc(requestRef);
 
-    if (!requestDoc.exists()) throw new Error('Access request not found');
+  if (!requestDoc.exists()) {
+    throw new Error('Access request not found');
+  }
 
-    const requestData = requestDoc.data() as AccessRequest;
+  const requestData = requestDoc.data() as AccessRequest;
 
-    await updateDoc(requestRef, {
-      status: response,
-      responseDate: serverTimestamp(),
-      notes: notes || ''
-    });
+  // Get currently logged-in doctor
+  const currentUser = await this.authService.waitForAuthInit();
 
-    if (response !== 'accepted') return;
+  if (!currentUser) {
+    throw new Error('User not logged in');
+  }
 
-    const currentUser = await this.authService.waitForAuthInit();
-    if (!currentUser) throw new Error('User not logged in');
-
-    const doctorDoc = await getDoc(doc(this.db, `users/${currentUser.uid}`));
-    const doctorData = doctorDoc.data();
-
-    const patientEHRRef = doc(this.db, this.healthRecordsSummaryPath(requestData.patientId));
-    const patientEHR = await getDoc(patientEHRRef);
-
-    if (!patientEHR.exists() || !doctorData) return;
-
-    const ehrData = patientEHR.data() as EHRRecord;
-    const healthcareProviders = ehrData.healthcareProviders || [];
-
-    const alreadyExists = healthcareProviders.some(
-      p => p.email === requestData.doctorEmail
+  // Make sure this request belongs to the logged-in doctor
+  if (requestData.doctorId !== currentUser.uid) {
+    throw new Error(
+      'You are not authorized to respond to this access request.'
     );
+  }
 
-    if (!alreadyExists) {
-      healthcareProviders.push({
-        email: requestData.doctorEmail,
-        role: requestData.doctorRole,
-        name: requestData.doctorName,
-        license: doctorData['license'],
-        specialty: requestData.specialty,
-        hospital: doctorData['hospital'],
-        grantedAt: serverTimestamp(),
-        grantedBy: requestData.patientId
-      });
-    }
+  // Update request status
+  await updateDoc(requestRef, {
+    status: response,
+    responseDate: serverTimestamp(),
+    notes: notes || ''
+  });
 
-    await updateDoc(patientEHRRef, {
-      healthcareProviders,
-      lastUpdated: serverTimestamp()
+  // Nothing else to do if declined
+  if (response !== 'accepted') {
+    return;
+  }
+
+  // Get doctor information
+  const doctorDoc = await getDoc(
+    doc(this.db, `users/${currentUser.uid}`)
+  );
+
+  const doctorData = doctorDoc.data();
+
+  if (!doctorData) {
+    throw new Error('Doctor profile not found.');
+  }
+
+  // Get patient's EHR
+  const patientEHRRef = doc(
+    this.db,
+    this.healthRecordsSummaryPath(requestData.patientId)
+  );
+
+  const patientEHR = await getDoc(patientEHRRef);
+
+  if (!patientEHR.exists()) {
+    throw new Error('Patient EHR record not found.');
+  }
+
+  const ehrData = patientEHR.data() as EHRRecord;
+
+  const healthcareProviders = ehrData.healthcareProviders || [];
+
+  // Check if doctor is already authorized
+  const alreadyExists = healthcareProviders.some(
+    provider =>
+      provider.email?.toLowerCase() ===
+      requestData.doctorEmail?.toLowerCase()
+  );
+
+  if (!alreadyExists) {
+    healthcareProviders.push({
+      email: requestData.doctorEmail,
+      role: requestData.doctorRole,
+      name: requestData.doctorName,
+      license: doctorData['license'],
+      specialty: requestData.specialty,
+      hospital: doctorData['hospital'],
+      grantedAt: serverTimestamp(),
+      grantedBy: requestData.patientId
     });
   }
+
+  // Save updated provider access
+  await updateDoc(patientEHRRef, {
+    healthcareProviders,
+    lastUpdated: serverTimestamp()
+  });
+}
+
 
 }

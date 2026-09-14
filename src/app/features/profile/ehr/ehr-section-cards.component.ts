@@ -3,7 +3,8 @@ import { IonicModule, NavController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIf, NgFor, DatePipe, SlicePipe } from '@angular/common';
-import { DoctorVisit, MedicalHistory, HealthcareProvider } from '../../../core/services/ehr.service';
+import { DoctorVisit, HealthcareProvider } from '../../../core/services/ehr.service';
+import { MedicalHistory } from '../../../core/services/medical-history.service';
 
 @Component({
   selector: 'app-ehr-section-cards',

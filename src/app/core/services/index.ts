@@ -26,6 +26,7 @@ export { EmergencyAlertService } from './emergency-alert.service';
 export { EmergencyDetectorService } from './emergency-detector.service';
 export { EmergencyNotificationService } from './emergency-notification.service';
 export {EmergencySettingsService,} from './emergency-settings.service';
+export { MedicalHistoryService, MedicalHistory} from './medical-history.service';
 
 export {
   VoiceRecordingService,
@@ -44,7 +45,6 @@ export { ProductService } from './product.service';
 export {
   EHRService,
   DoctorVisit,
-  MedicalHistory,
   HealthcareProvider,
   AccessRequest,
   DoctorPatient,

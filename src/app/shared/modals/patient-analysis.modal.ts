@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
-import { DoctorPatient, AllergicReaction, TreatmentOutcome, DoctorVisit, MedicalHistory, EHRService } from '../../core/services/ehr.service';
+import { DoctorPatient, AllergicReaction, TreatmentOutcome, DoctorVisit,EHRService } from '../../core/services/ehr.service';
 import { AuthService } from '../../core/services/auth.service';
-
+import { MedicalHistory } from '../../core/services/medical-history.service';
 @Component({
   selector: 'app-patient-analysis',
   templateUrl: './patient-analysis.modal.html',

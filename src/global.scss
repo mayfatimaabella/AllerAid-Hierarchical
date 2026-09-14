@@ -246,29 +246,7 @@ ion-app {
   color: #1f4a42 !important;
 }
 
-/* Profile menu popover: enforce white background regardless of app theme */
-// .profile-menu-popover {
-//   --background: #ffffff;
-//   --color: #000000;
-// }
 
-// .profile-menu-popover::part(content) {
-//   background: #ffffff !important;
-// }
-
-// .profile-menu-popover ion-content,
-// .profile-menu-popover ion-list,
-// .profile-menu-popover ion-item {
-//   --background: #ffffff !important;
-//   background: #ffffff !important;
-// }
-
-// .profile-menu-popover ion-item,
-// .profile-menu-popover ion-label,
-// .profile-menu-popover ion-icon {
-//   color: #000000 !important;
-//   --color: #000000 !important;
-// }
 
 /* Reusable Card Style */
 .app-card {
@@ -885,4 +863,28 @@ ion-modal.responder-map-modal {
       font-weight: bold;
     }
   }
+}
+
+/* Doctor Select Popover */
+.doctor-select-popover {
+  --width: min(450px, calc(100vw - 32px));
+}
+
+.doctor-select-popover ion-list {
+  width: 100%;
+  padding: 0;
+}
+
+.doctor-select-popover ion-item {
+  --min-height: 48px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.doctor-select-popover ion-label {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
 }

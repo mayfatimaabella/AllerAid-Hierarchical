@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
-import { MedicalHistory, EHRService } from '../../../../../core/services/ehr.service';
+import {EHRService } from '../../../../../core/services/ehr.service';
+import { MedicalHistory, MedicalHistoryService } from '../../../../../core/services/medical-history.service';
 
 @Component({
   selector: 'app-medical-history-details',
@@ -16,7 +17,8 @@ export class MedicalHistoryDetailsPage implements OnInit {
   constructor(
     private navCtrl: NavController,
     private route: ActivatedRoute,
-    private ehrService: EHRService
+    private ehrService: EHRService,
+    private medicalHistoryService: MedicalHistoryService
   ) { }
 
   ngOnInit() {
@@ -25,7 +27,7 @@ export class MedicalHistoryDetailsPage implements OnInit {
       if (params['id']) {
         try {
           console.log('Loading medical history with ID:', params['id']);
-          this.history = await this.ehrService.getMedicalHistoryById(params['id']);
+          this.history = await this.medicalHistoryService.getMedicalHistoryById(params['id']);
           console.log('Medical history details loaded:', this.history);
         } catch (error) {
           console.error('Error loading medical history data:', error);

@@ -645,9 +645,9 @@ export class EmergencyAlertService {
     }
 
     try {
-      // -------------------------------------------------------
+     
       // NATIVE
-      // -------------------------------------------------------
+     
 
       if (Capacitor.isNativePlatform()) {
         await TextToSpeech.speak({
@@ -668,9 +668,9 @@ export class EmergencyAlertService {
         return;
       }
 
-      // -------------------------------------------------------
+     
       // WEB
-      // -------------------------------------------------------
+     
 
       if (typeof window === 'undefined') {
         console.warn(
@@ -1098,9 +1098,9 @@ private async logEmergencyAlert(
         return;
       }
 
-      // -------------------------------------------------------
+     
       // NATIVE
-      // -------------------------------------------------------
+     
 
       if (Capacitor.isNativePlatform()) {
         await TextToSpeech.speak({
@@ -1121,9 +1121,9 @@ private async logEmergencyAlert(
         return;
       }
 
-      // -------------------------------------------------------
+     
       // WEB
-      // -------------------------------------------------------
+     
 
       if (
         typeof window === 'undefined'
