@@ -73,25 +73,55 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="action-buttons">
-      <ion-button 
-        expand="block" 
-        type="submit" 
-        class="teal-modal-btn"
-        [disabled]="!historyData.condition.trim()">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
-        {{ isEditMode ? 'Update' : 'Save' }} Medical History
-      </ion-button>
+  <div class="action-buttons">
 
-      <ion-button 
-        expand="block" 
-        fill="outline" 
-        color="medium"
-        (click)="cancel()">
-        <ion-icon name="close-outline" slot="start"></ion-icon>
-        Cancel
-      </ion-button>
+    <ion-button
+      expand="block"
+      type="submit"
+      class="teal-modal-btn"
+      [disabled]="
+        isSaving ||
+        !historyData.condition.trim()
+      ">
 
-    </div>
+      <ion-spinner
+        *ngIf="isSaving"
+        name="crescent"
+        slot="start">
+      </ion-spinner>
+
+      <ion-icon
+        *ngIf="!isSaving"
+        [name]="isEditMode ? 'checkmark-outline' : 'add-outline'"
+        slot="start">
+      </ion-icon>
+
+      {{
+        isSaving
+          ? 'Saving...'
+          : (isEditMode ? 'Update Medical History' : 'Save Medical History')
+      }}
+
+    </ion-button>
+
+    <ion-button
+      expand="block"
+      fill="outline"
+      color="medium"
+      type="button"
+      (click)="cancel()"
+      [disabled]="isSaving">
+
+      <ion-icon
+        name="close-outline"
+        slot="start">
+      </ion-icon>
+
+      Cancel
+
+    </ion-button>
+
+  </div>
+
   </form>
 </ion-content>

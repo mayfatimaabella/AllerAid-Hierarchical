@@ -22,7 +22,7 @@ import { firebaseConfig } from './core/services/firebase.config';
 
   imports: [
     BrowserModule,
-    IonicModule.forRoot(),
+    IonicModule.forRoot({innerHTMLTemplatesEnabled: true}),
     IonicStorageModule.forRoot(),
     AppRoutingModule,
     FormsModule,

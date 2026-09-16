@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController, ToastController } from '@ionic/angular';
+import { ModalController, ToastController, AlertController, LoadingController} from '@ionic/angular';
 import { DoctorVisitService, DoctorVisit } from '../../../../../core/services/doctor-visit.service';
 import { DoctorService } from '../../../../../core/services/doctor.service';
 import { UserService } from '../../../../../core/services/user.service';
@@ -39,7 +39,9 @@ export class AddDoctorVisitModal implements OnInit {
     private doctorVisitService: DoctorVisitService, 
     private userService: UserService,
     private doctorService: DoctorService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private alertController: AlertController,
+    private loadingController: LoadingController
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -190,14 +192,11 @@ async saveVisit(): Promise<void> {
     );
   }
 
-  // For a new visit, a connected doctor is required.
   if (!this.isEditMode && !selectedDoctor) {
     await this.presentToast('Please select a doctor');
     return;
   }
 
-  // If a connected doctor is selected,
-  // refresh doctor information from the profile.
   if (selectedDoctor) {
     this.visitData.doctorName = selectedDoctor.name;
     this.visitData.doctorEmail = selectedDoctor.email;
@@ -216,49 +215,75 @@ async saveVisit(): Promise<void> {
 
   this.isSaving = true;
 
-  try {
-    console.log(
-      'Attempting to save doctor visit:',
-      this.visitData
-    );
+  const loading = await this.showLoading(
+    this.isEditMode
+      ? 'Updating doctor visit...'
+      : 'Saving doctor visit...'
+  );
 
+  try {
+
+    // EDIT
     if (this.isEditMode && this.visit?.id) {
-      console.log(
-        'Updating existing visit:',
-        this.visit.id
-      );
 
       await this.doctorVisitService.updateDoctorVisit(
         this.visit.id,
         this.visitData
       );
 
+      await loading.dismiss();
+
       await this.presentToast(
         'Doctor visit updated successfully'
       );
-    } else {
-      console.log('Adding new doctor visit');
 
+      await this.modalCtrl.dismiss({
+        saved: true
+      });
+
+      return;
+    }
+
+    // ADD
+    const possibleDuplicates =
       await this.doctorVisitService.addDoctorVisit(
         this.visitData
       );
 
+    await loading.dismiss();
+
+    // No duplicate
+    if (possibleDuplicates.length === 0) {
+
       await this.presentToast(
         'Doctor visit added successfully'
       );
+
+      await this.modalCtrl.dismiss({
+        saved: true
+      });
+
+      return;
     }
 
-    await this.modalCtrl.dismiss({
-      saved: true
-    });
+    // Duplicate found
+    this.isSaving = false;
+
+    await this.showDuplicateWarning(
+      possibleDuplicates
+    );
 
   } catch (error) {
+
+    await loading.dismiss();
+
     console.error(
       'Error saving doctor visit:',
       error
     );
 
-    let errorMessage = 'Error saving doctor visit';
+    let errorMessage =
+      'Error saving doctor visit';
 
     if (error instanceof Error) {
       errorMessage += `: ${error.message}`;
@@ -270,6 +295,7 @@ async saveVisit(): Promise<void> {
     this.isSaving = false;
   }
 }
+
 
 
   private async presentToast(
@@ -284,4 +310,120 @@ async saveVisit(): Promise<void> {
 
     await toast.present();
   }
+
+private async showDuplicateWarning(
+  duplicates: DoctorVisit[]
+): Promise<void> {
+
+  const duplicate = duplicates[0];
+
+  const doctorName =
+    duplicate.doctorName || 'this doctor';
+
+  const date =
+    this.formatVisitDate(duplicate.visitDate);
+
+  const reason =
+    duplicate.chiefComplaint || 'No reason recorded';
+
+  const alert =
+    await this.alertController.create({
+      header: 'Possible Duplicate Visit',
+
+      message:
+        `You already have a visit recorded with ` +
+        `${doctorName} on ${date}.\n\n` +
+        `Reason: ${reason}\n\n` +
+        `This could be a separate medical encounter. ` +
+        `Do you want to save this visit anyway?`,
+
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Save Anyway',
+          handler: async () => {
+
+            try {
+
+              this.isSaving = true;
+
+              await this.doctorVisitService.addDoctorVisit(
+                this.visitData,
+                true
+              );
+
+              await this.presentToast(
+                'Doctor visit added successfully'
+              );
+
+              await this.modalCtrl.dismiss({
+                saved: true
+              });
+
+            } catch (error) {
+
+              console.error(
+                'Error saving duplicate visit:',
+                error
+              );
+
+              await this.presentToast(
+                'Failed to save doctor visit'
+              );
+
+            } finally {
+              this.isSaving = false;
+            }
+          }
+        }
+      ]
+    });
+
+  await alert.present();
 }
+
+
+private formatVisitDate(
+  visitDate: string
+): string {
+
+  if (!visitDate) {
+    return 'Unknown date';
+  }
+
+  const date = new Date(visitDate);
+
+  if (isNaN(date.getTime())) {
+    return visitDate;
+  }
+
+  return date.toLocaleDateString(
+    'en-US',
+    {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }
+  );
+}
+
+private async showLoading(message = 'Saving...'): Promise<HTMLIonLoadingElement> {
+  const loading = await this.loadingController.create({
+    message,
+    spinner: 'crescent',
+    backdropDismiss: false
+  });
+
+  await loading.present();
+
+  return loading;
+}
+
+
+
+}
+
+

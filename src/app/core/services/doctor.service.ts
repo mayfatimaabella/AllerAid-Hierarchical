@@ -404,7 +404,7 @@ export class DoctorService {
     }
   }
 
-  // ─── Delete doctor relation ───────────────────────────────────────────────────
+  //  Delete doctor relation 
 
   async deleteDoctor(doctorToDelete: any, currentUserId: string): Promise<void> {
     const doctorUid =

@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { collection, addDoc, getDocs, doc,updateDoc,deleteDoc,getDoc,query,orderBy,where,serverTimestamp} from 'firebase/firestore';
-
 import { FirebaseService } from './firebase.service';
 import { AuthService } from './auth.service';
 
@@ -41,70 +40,73 @@ export class DoctorVisitService {
    * Add a doctor visit
    */
   async addDoctorVisit(
-    visitData: Omit<DoctorVisit, 'id' | 'patientId'>
-  ): Promise<void> {
+  visitData: Omit<DoctorVisit, 'id' | 'patientId'>,
+  allowDuplicate = false
+): Promise<DoctorVisit[]> {
 
-    const currentUser =
-      await this.authService.waitForAuthInit();
+  const currentUser =
+    await this.authService.waitForAuthInit();
 
-    if (!currentUser) {
-      throw new Error('User not logged in');
-    }
-
-    const cleanedData = {
-      doctorName:
-        visitData.doctorName?.trim() || '',
-
-      doctorEmail:
-        visitData.doctorEmail?.trim().toLowerCase() || '',
-
-      specialty:
-        visitData.specialty?.trim() || '',
-
-      visitDate:
-        visitData.visitDate ||
-        new Date().toISOString(),
-
-      chiefComplaint:
-        visitData.chiefComplaint?.trim() || '',
-
-      diagnosis:
-        visitData.diagnosis?.trim() || '',
-
-      notes:
-        visitData.notes?.trim() || '',
-
-      status: 'pending' as const,
-
-      patientId: currentUser.uid,
-
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    };
-
-    // Prevent obvious duplicate visits
-    const isDuplicate =
-      await this.checkDuplicateDoctorVisit(
-        currentUser.uid,
-        cleanedData.doctorEmail,
-        cleanedData.visitDate,
-        cleanedData.chiefComplaint
-      );
-
-    if (isDuplicate) {
-      throw new Error(
-        'A doctor visit with the same doctor, date, and reason already exists.'
-      );
-    }
-
-    await addDoc(
-      collection(
-        this.db,
-        this.doctorVisitsPath(currentUser.uid)
-      ),
-      cleanedData
-    );
+  if (!currentUser) {
+    throw new Error('User not logged in');
   }
+
+  const cleanedData = {
+    doctorName:
+      visitData.doctorName?.trim() || '',
+
+    doctorEmail:
+      visitData.doctorEmail?.trim().toLowerCase() || '',
+
+    specialty:
+      visitData.specialty?.trim() || '',
+
+    visitDate:
+      visitData.visitDate ||
+      new Date().toISOString(),
+
+    chiefComplaint:
+      visitData.chiefComplaint?.trim() || '',
+
+    diagnosis:
+      visitData.diagnosis?.trim() || '',
+
+    notes:
+      visitData.notes?.trim() || '',
+
+    status: 'pending' as const,
+
+    patientId: currentUser.uid,
+
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+
+  // Check for possible duplicate
+  const possibleDuplicates =
+    await this.findPossibleDuplicateDoctorVisits(
+      currentUser.uid,
+      cleanedData.doctorName,
+      cleanedData.doctorEmail,
+      cleanedData.visitDate
+    );
+
+  // Don't save yet. Let the UI ask the user.
+  if (possibleDuplicates.length > 0 && !allowDuplicate) {
+    return possibleDuplicates;
+  }
+
+  // User chose "Save Anyway", or there was no duplicate
+  await addDoc(
+    collection(
+      this.db,
+      this.doctorVisitsPath(currentUser.uid)
+    ),
+    cleanedData
+  );
+
+  return [];
+}
 
   /**
    * Get all doctor visits for current patient
@@ -168,90 +170,116 @@ export class DoctorVisitService {
     } as DoctorVisit;
   }
 
-  /**
-   * Update doctor visit
-   */
-  async updateDoctorVisit(
-    visitId: string,
-    visitData: Partial<DoctorVisit>
-  ): Promise<void> {
+/**
+ * Update doctor visit
+ */
+async updateDoctorVisit(
+  visitId: string,
+  visitData: Partial<DoctorVisit>
+): Promise<void> {
 
-    const currentUser =
-      await this.authService.waitForAuthInit();
+  const currentUser =
+    await this.authService.waitForAuthInit();
 
-    if (!currentUser) {
-      throw new Error('User not logged in');
-    }
+  if (!currentUser) {
+    throw new Error('User not logged in');
+  }
 
-    const cleanedUpdate: any = {
-      updatedAt: serverTimestamp()
-    };
+  // Get the existing visit first
+  const existingVisit =
+    await this.getDoctorVisitById(visitId);
 
-    if (visitData.doctorName !== undefined) {
-      cleanedUpdate.doctorName =
-        visitData.doctorName?.trim() || '';
-    }
+  if (!existingVisit) {
+    throw new Error('Doctor visit not found');
+  }
 
-    if (visitData.doctorEmail !== undefined) {
-      cleanedUpdate.doctorEmail =
-        visitData.doctorEmail?.trim().toLowerCase() || '';
-    }
+  const cleanedUpdate: any = {
+    updatedAt: serverTimestamp()
+  };
 
-    if (visitData.specialty !== undefined) {
-      cleanedUpdate.specialty =
-        visitData.specialty?.trim() || '';
-    }
+  if (visitData.doctorName !== undefined) {
+    cleanedUpdate.doctorName =
+      visitData.doctorName?.trim() || '';
+  }
 
-    if (visitData.visitDate !== undefined) {
-      cleanedUpdate.visitDate =
-        visitData.visitDate;
-    }
+  if (visitData.doctorEmail !== undefined) {
+    cleanedUpdate.doctorEmail =
+      visitData.doctorEmail?.trim().toLowerCase() || '';
+  }
 
-    if (visitData.chiefComplaint !== undefined) {
-      cleanedUpdate.chiefComplaint =
-        visitData.chiefComplaint?.trim() || '';
-    }
+  if (visitData.specialty !== undefined) {
+    cleanedUpdate.specialty =
+      visitData.specialty?.trim() || '';
+  }
 
-    if (visitData.diagnosis !== undefined) {
-      cleanedUpdate.diagnosis =
-        visitData.diagnosis?.trim() || '';
-    }
+  if (visitData.visitDate !== undefined) {
+    cleanedUpdate.visitDate =
+      visitData.visitDate;
+  }
 
-    if (visitData.notes !== undefined) {
-      cleanedUpdate.notes =
-        visitData.notes?.trim() || '';
-    }
+  if (visitData.chiefComplaint !== undefined) {
+    cleanedUpdate.chiefComplaint =
+      visitData.chiefComplaint?.trim() || '';
+  }
 
-    // Check duplicates when editing
-    if (
-      cleanedUpdate.doctorEmail &&
-      cleanedUpdate.visitDate &&
-      cleanedUpdate.chiefComplaint
-    ) {
-      const isDuplicate =
-        await this.checkDuplicateDoctorVisit(
-          currentUser.uid,
-          cleanedUpdate.doctorEmail,
-          cleanedUpdate.visitDate,
-          cleanedUpdate.chiefComplaint,
-          visitId
-        );
+  if (visitData.diagnosis !== undefined) {
+    cleanedUpdate.diagnosis =
+      visitData.diagnosis?.trim() || '';
+  }
 
-      if (isDuplicate) {
-        throw new Error(
-          'A doctor visit with the same doctor, date, and reason already exists.'
-        );
-      }
-    }
+  if (visitData.notes !== undefined) {
+    cleanedUpdate.notes =
+      visitData.notes?.trim() || '';
+  }
 
-    const ref = doc(
-      this.db,
-      this.doctorVisitsPath(currentUser.uid),
+  
+  // Determine the FINAL values after the updates
+
+  const finalDoctorName =
+    cleanedUpdate.doctorName !== undefined
+      ? cleanedUpdate.doctorName
+      : existingVisit.doctorName;
+
+  const finalDoctorEmail =
+    cleanedUpdate.doctorEmail !== undefined
+      ? cleanedUpdate.doctorEmail
+      : existingVisit.doctorEmail || '';
+
+  const finalVisitDate =
+    cleanedUpdate.visitDate !== undefined
+      ? cleanedUpdate.visitDate
+      : existingVisit.visitDate;
+
+  
+  // Check for possible duplicate
+  
+  const possibleDuplicates =
+    await this.findPossibleDuplicateDoctorVisits(
+      currentUser.uid,
+      finalDoctorName,
+      finalDoctorEmail,
+      finalVisitDate,
       visitId
     );
 
-    await updateDoc(ref, cleanedUpdate);
+  if (possibleDuplicates.length > 0) {
+    throw new Error(
+      'A possible duplicate doctor visit already exists for this doctor on this date.'
+    );
   }
+
+  
+  // Save update
+
+  const ref = doc(
+    this.db,
+    this.doctorVisitsPath(currentUser.uid),
+    visitId
+  );
+
+  await updateDoc(ref, cleanedUpdate);
+}
+
 
   /**
    * Delete doctor visit
@@ -267,14 +295,21 @@ export class DoctorVisitService {
       throw new Error('User not logged in');
     }
 
-    const ref = doc(
+    const visitRef = doc(
       this.db,
       this.doctorVisitsPath(currentUser.uid),
       visitId
     );
 
-    await deleteDoc(ref);
+    const visitSnap = await getDoc(visitRef);
+
+    if (!visitSnap.exists()) {
+      throw new Error('Doctor visit not found');
+    }
+
+    await deleteDoc(visitRef);
   }
+
 
   /**
    * Confirm doctor visit
@@ -328,53 +363,108 @@ export class DoctorVisitService {
     });
   }
 
-  /**
-   * Check if a similar doctor visit already exists.
-   *
-   * Same:
-   * - doctor
-   * - date
-   * - chief complaint
-   *
-   * is considered a duplicate.
-   */
-  private async checkDuplicateDoctorVisit(
-    patientId: string,
-    doctorEmail: string,
-    visitDate: string,
-    chiefComplaint: string,
-    excludeVisitId?: string
-  ): Promise<boolean> {
+  private async findPossibleDuplicateDoctorVisits(
+  patientId: string,
+  doctorName: string,
+  doctorEmail: string,
+  visitDate: string,
+  excludeVisitId?: string
+): Promise<DoctorVisit[]> {
 
-    const q = query(
-      collection(
-        this.db,
-        this.doctorVisitsPath(patientId)
-      ),
-      where('doctorEmail', '==', doctorEmail),
-      where('visitDate', '==', visitDate)
-    );
+  const snapshot = await getDocs(
+    collection(
+      this.db,
+      this.doctorVisitsPath(patientId)
+    )
+  );
 
-    const snapshot = await getDocs(q);
+  const normalizedName =
+    doctorName.trim().toLowerCase();
 
-    const normalizedComplaint =
-      chiefComplaint.trim().toLowerCase();
+  const normalizedEmail =
+    doctorEmail.trim().toLowerCase();
 
-    return snapshot.docs.some(d => {
+  const newDateKey =
+    this.getVisitDateKey(visitDate);
 
-      // Ignore the current record when editing
-      if (excludeVisitId && d.id === excludeVisitId) {
+  return snapshot.docs
+    .filter(d => {
+
+      // Ignore the visit currently being edited
+      if (
+        excludeVisitId &&
+        d.id === excludeVisitId
+      ) {
         return false;
       }
 
       const data = d.data();
 
-      const existingComplaint =
-        (data['chiefComplaint'] || '')
+      const existingName =
+        (data['doctorName'] || '')
           .trim()
           .toLowerCase();
 
-      return existingComplaint === normalizedComplaint;
-    });
+      const existingEmail =
+        (data['doctorEmail'] || '')
+          .trim()
+          .toLowerCase();
+
+      const existingDateKey =
+        this.getVisitDateKey(data['visitDate']);
+
+      // Prefer email when available.
+      // Fall back to doctor name when email isn't available.
+      const sameDoctor =
+        normalizedEmail && existingEmail
+          ? normalizedEmail === existingEmail
+          : normalizedName === existingName;
+
+      const sameDate =
+        newDateKey === existingDateKey;
+
+      return sameDoctor && sameDate;
+    })
+    .map(d => ({
+      id: d.id,
+      status: d.data()['status'] ?? 'confirmed',
+      ...d.data()
+    })) as DoctorVisit[];
+}
+
+private getVisitDateKey(
+  visitDate: any
+): string {
+
+  if (!visitDate) {
+    return '';
   }
+
+  // Normal ISO string:
+  // 2026-09-15
+  // 2026-09-15T08:30:00.000Z
+  if (typeof visitDate === 'string') {
+    return visitDate.substring(0, 10);
+  }
+
+  // Firestore Timestamp
+  if (
+    visitDate.toDate &&
+    typeof visitDate.toDate === 'function'
+  ) {
+    const date = visitDate.toDate();
+
+    return date.toISOString().substring(0, 10);
+  }
+
+  // Firestore timestamp object
+  if (visitDate.seconds) {
+    return new Date(
+      visitDate.seconds * 1000
+    ).toISOString().substring(0, 10);
+  }
+
+  return '';
+}
+
 }

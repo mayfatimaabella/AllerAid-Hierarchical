@@ -1,40 +1,15 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy
-} from '@angular/core';
-
+import { Component, OnInit,OnDestroy} from '@angular/core';
 import { Router } from '@angular/router';
-
-import { EmergencyService }
-  from '../../../../core/services/emergency.service';
-
-import { BuddyService }
-  from '../../../../core/services/buddy.service';
-
-import { AuthService }
-  from '../../../../core/services/auth.service';
-
-import { Subscription }
-  from 'rxjs';
-
-import { CommonModule }
-  from '@angular/common';
-
-import { FormsModule }
-  from '@angular/forms';
-
-import { IonicModule }
-  from '@ionic/angular';
-
-import { EmergencyAlert }
-  from '../../../../core/models/emergency-alert.model';
-
-import { EmergencyLocation }
-  from 'src/app/core/models/emergency-location.model';
-
-import { Timestamp }
-  from '@angular/fire/firestore';
+import { EmergencyService } from '../../../../core/services/emergency.service';
+import { BuddyService } from '../../../../core/services/buddy.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
+import { EmergencyAlert } from '../../../../core/models/emergency-alert.model';
+import { EmergencyLocation } from 'src/app/core/models/emergency-location.model';
+import { Timestamp } from '@angular/fire/firestore';
 
 
 @Component({
@@ -125,10 +100,7 @@ export class EmergenciesPage
 
   }
 
-
-  
   // DESTROY
-  
 
   ngOnDestroy(): void {
 

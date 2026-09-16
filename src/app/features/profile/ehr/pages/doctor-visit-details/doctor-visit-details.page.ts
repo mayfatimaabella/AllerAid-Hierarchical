@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController, ModalController, AlertController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
-import { DoctorVisit, EHRService } from '../../../../../core/services/ehr.service';
+import { DoctorVisit } from '../../../../../core/services/ehr.service';
+import {DoctorVisitService} from '../../../../../core/services/doctor-visit.service';
 import { AddDoctorVisitModal } from '../../modals/add-edit-doctor-visit/add-edit-doctor-visit.modal';
 
 @Component({
@@ -17,7 +18,7 @@ export class VisitDetailsPage implements OnInit {
   constructor(
     private navCtrl: NavController,
     private route: ActivatedRoute,
-    private ehrService: EHRService,
+    private doctorVisitService: DoctorVisitService,
     private modalController: ModalController,
     private alertController: AlertController,
     private toastController: ToastController
@@ -29,7 +30,7 @@ export class VisitDetailsPage implements OnInit {
       if (params['id']) {
         try {
           console.log('Loading doctor visit with ID:', params['id']);
-          this.visit = await this.ehrService.getDoctorVisitById(params['id']);
+          this.visit = await this.doctorVisitService.getDoctorVisitById(params['id']);
           console.log('Visit details loaded:', this.visit);
         } catch (error) {
           console.error('Error loading visit data:', error);
@@ -136,7 +137,7 @@ export class VisitDetailsPage implements OnInit {
     });
     modal.onDidDismiss().then(async (res) => {
       if (res.data?.saved && this.visit?.id) {
-        this.visit = await this.ehrService.getDoctorVisitById(this.visit.id);
+        this.visit = await this.doctorVisitService.getDoctorVisitById(this.visit.id);
       }
     });
     await modal.present();
@@ -150,7 +151,7 @@ export class VisitDetailsPage implements OnInit {
       buttons: [
         { text: 'Delete', role: 'destructive', handler: async () => {
             try {
-              await this.ehrService.deleteDoctorVisit(this.visit!.id!);
+              await this.doctorVisitService.deleteDoctorVisit(this.visit!.id!);
               const toast = await this.toastController.create({
                 message: 'Visit deleted',
                 duration: 2000,

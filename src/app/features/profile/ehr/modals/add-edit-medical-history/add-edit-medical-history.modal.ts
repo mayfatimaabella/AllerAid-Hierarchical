@@ -1,7 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
-import { MedicalHistory, MedicalHistoryService} from '../../../../../core/services/medical-history.service';
-
+import {
+  MedicalHistory,
+  MedicalHistoryService
+} from '../../../../../core/services/medical-history.service';
 
 @Component({
   selector: 'app-add-medical-history',
@@ -11,8 +13,9 @@ import { MedicalHistory, MedicalHistoryService} from '../../../../../core/servic
 })
 export class AddMedicalHistoryModal implements OnInit {
   @Input() history?: MedicalHistory;
-  
+
   currentDate: string = new Date().toISOString();
+
   historyData: Omit<MedicalHistory, 'id' | 'patientId'> = {
     condition: '',
     diagnosisDate: new Date().toISOString(),
@@ -21,6 +24,7 @@ export class AddMedicalHistoryModal implements OnInit {
   };
 
   isEditMode = false;
+  isSaving = false;
 
   statusOptions = [
     { value: 'active', label: 'Active' },
@@ -53,86 +57,233 @@ export class AddMedicalHistoryModal implements OnInit {
     private medicalHistoryService: MedicalHistoryService
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (this.history) {
       this.isEditMode = true;
-      
-      // Ensure proper date formatting for the datetime component
-      let diagnosisDate = this.history.diagnosisDate;
-      if (diagnosisDate && typeof diagnosisDate === 'string') {
-        // If it's already a string, ensure it's in ISO format
-        diagnosisDate = new Date(diagnosisDate).toISOString();
-      } else if (diagnosisDate && typeof diagnosisDate === 'object') {
-        // Handle Firestore timestamp objects
-        const timestampObj = diagnosisDate as any;
-        if (timestampObj.seconds) {
-          diagnosisDate = new Date(timestampObj.seconds * 1000).toISOString();
-        } else if (timestampObj.toDate && typeof timestampObj.toDate === 'function') {
-          diagnosisDate = timestampObj.toDate().toISOString();
-        }
-      }
-      
+
+      const diagnosisDate = this.normalizeDate(
+        this.history.diagnosisDate
+      );
+
       this.historyData = {
         condition: this.history.condition || '',
-        diagnosisDate: diagnosisDate || new Date().toISOString(),
+        diagnosisDate:
+          diagnosisDate || new Date().toISOString(),
         status: this.history.status || 'active',
         notes: this.history.notes || ''
       };
-      
-      console.log('Edit mode - Pre-filling form with:', this.historyData);
+
+      console.log(
+        'Edit mode - Pre-filling form with:',
+        this.historyData
+      );
     }
   }
 
-  selectCondition(condition: string) {
+  /**
+   * Converts different possible date formats into
+   * the ISO format expected by ion-datetime.
+   */
+  private normalizeDate(dateValue: any): string {
+    if (!dateValue) {
+      return '';
+    }
+
+    // Already a Date object
+    if (dateValue instanceof Date) {
+      return dateValue.toISOString();
+    }
+
+    // Firestore Timestamp
+    if (
+      typeof dateValue === 'object' &&
+      typeof dateValue.toDate === 'function'
+    ) {
+      return dateValue.toDate().toISOString();
+    }
+
+    // Firestore Timestamp with seconds
+    if (
+      typeof dateValue === 'object' &&
+      dateValue.seconds
+    ) {
+      return new Date(
+        dateValue.seconds * 1000
+      ).toISOString();
+    }
+
+    // String / number
+    const parsedDate = new Date(dateValue);
+
+    if (!isNaN(parsedDate.getTime())) {
+      return parsedDate.toISOString();
+    }
+
+    return '';
+  }
+
+  selectCondition(condition: string): void {
     this.historyData.condition = condition;
   }
 
-  async saveHistory() {
+  /**
+   * Saves either a new medical history record
+   * or updates an existing one.
+   */
+  async saveHistory(): Promise<void> {
+    // Prevent double submission
+    if (this.isSaving) {
+      return;
+    }
+
+    // Validate medical condition
+    if (!this.historyData.condition.trim()) {
+      await this.presentToast(
+        'Please enter a medical condition'
+      );
+      return;
+    }
+
+    // Validate diagnosis date
+    if (!this.historyData.diagnosisDate) {
+      await this.presentToast(
+        'Please select diagnosis date'
+      );
+      return;
+    }
+
+    this.isSaving = true;
+
     try {
-      if (!this.historyData.condition.trim()) {
-        await this.showToast('Please enter a medical condition', 'warning');
+
+      // ================================
+      // EDIT EXISTING MEDICAL HISTORY
+      // ================================
+
+      if (this.isEditMode && this.history?.id) {
+
+        await this.medicalHistoryService.updateMedicalHistory(
+          this.history.id,
+          this.historyData
+        );
+
+        await this.presentToast(
+          'Medical history updated successfully'
+        );
+
+        await this.modalController.dismiss({
+          saved: true
+        });
+
         return;
       }
 
-      if (this.isEditMode && this.history?.id) {
-        await this.medicalHistoryService.updateMedicalHistory(this.history.id, this.historyData);
-        await this.showToast('Medical history updated successfully', 'success');
-      } else {
-        await this.medicalHistoryService.addMedicalHistory(this.historyData);
-        await this.showToast('Medical history added successfully', 'success');
-      }
 
-      this.modalController.dismiss(true);
+      // ================================
+      // ADD NEW MEDICAL HISTORY
+      // ================================
+
+      await this.medicalHistoryService.addMedicalHistory(
+        this.historyData
+      );
+
+      await this.presentToast(
+        'Medical history added successfully'
+      );
+
+      await this.modalController.dismiss({
+        saved: true
+      });
+
     } catch (error) {
-      console.error('Error saving medical history:', error);
-      await this.showToast('Error saving medical history', 'danger');
-    }
-  }
 
-  async deleteHistory() {
-    if (this.history?.id) {
-      try {
-        await this.medicalHistoryService.deleteMedicalHistory(this.history.id);
-        await this.showToast('Medical history deleted successfully', 'success');
-        this.modalController.dismiss(true);
-      } catch (error) {
-        console.error('Error deleting medical history:', error);
-        await this.showToast('Error deleting medical history', 'danger');
+      console.error(
+        'Error saving medical history:',
+        error
+      );
+
+      let errorMessage =
+        'Error saving medical history';
+
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
       }
+
+      await this.presentToast(errorMessage);
+
+    } finally {
+      this.isSaving = false;
     }
   }
 
-  cancel() {
+  /**
+   * Deletes the existing medical history record.
+   */
+  async deleteHistory(): Promise<void> {
+    if (this.isSaving) {
+      return;
+    }
+
+    if (!this.history?.id) {
+      return;
+    }
+
+    this.isSaving = true;
+
+    try {
+
+      await this.medicalHistoryService.deleteMedicalHistory(
+        this.history.id
+      );
+
+      await this.presentToast(
+        'Medical history deleted successfully'
+      );
+
+      await this.modalController.dismiss({
+        deleted: true
+      });
+
+    } catch (error) {
+
+      console.error(
+        'Error deleting medical history:',
+        error
+      );
+
+      let errorMessage =
+        'Error deleting medical history';
+
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+
+      await this.presentToast(errorMessage);
+
+    } finally {
+      this.isSaving = false;
+    }
+  }
+
+  cancel(): void {
+    if (this.isSaving) {
+      return;
+    }
+
     this.modalController.dismiss();
   }
 
-  private async showToast(message: string, color: string) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      color,
-      position: 'top'
-    });
+  private async presentToast(
+    message: string
+  ): Promise<void> {
+
+    const toast =
+      await this.toastController.create({
+        message,
+        duration: 2000,
+        position: 'bottom'
+      });
+
     await toast.present();
   }
 }
