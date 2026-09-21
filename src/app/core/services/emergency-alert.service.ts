@@ -32,7 +32,7 @@ export interface EmergencyLocation {
 })
 export class EmergencyAlertService {
 
-  private emergencyAlarmLoopTimer: ReturnType<typeof setInterval> | null = null;
+  // private emergencyAlarmLoopTimer: ReturnType<typeof setInterval> | null = null;
   private isEmergencyAlarmLooping = false;
 
   private readonly defaultEmergencyAlarmText =
@@ -398,10 +398,7 @@ export class EmergencyAlertService {
     );
   }
 
-  /**
-   * Starts the repeating emergency alarm.
-   */
-  async playEmergencyAlarmSound(
+    async playEmergencyAlarmSound(
     textToSpeak: string = this.defaultEmergencyAlarmText
   ): Promise<void> {
     this.stopEmergencyAlarmSound();
@@ -412,33 +409,61 @@ export class EmergencyAlertService {
 
     this.isEmergencyAlarmLooping = true;
 
-    try {
-      await this.speakEmergencyAlarmText(message);
+    console.log('Emergency alarm loop started');
 
-      if (!this.isEmergencyAlarmLooping) {
-        return;
+    // Start the loop without blocking triggerEmergencyAlert()
+    void this.runEmergencyAlarmLoop(message);
+  }
+
+  private async runEmergencyAlarmLoop(
+    message: string
+  ): Promise<void> {
+    while (this.isEmergencyAlarmLooping) {
+      try {
+        console.log(
+          'Starting emergency alarm speech...'
+        );
+
+        await this.speakEmergencyAlarmText(message);
+
+        console.log(
+          'Emergency alarm speech finished.'
+        );
+
+      } catch (error) {
+        console.error(
+          'Emergency alarm loop speech error:',
+          error
+        );
       }
 
-      this.emergencyAlarmLoopTimer =
-        setInterval(() => {
-          if (!this.isEmergencyAlarmLooping) {
-            return;
-          }
-
-          void this.speakEmergencyAlarmText(message);
-        }, this.emergencyAlarmInterval);
+      // User stopped the alarm while TTS was speaking.
+      if (!this.isEmergencyAlarmLooping) {
+        break;
+      }
 
       console.log(
-        'Emergency alarm loop started'
+        `Waiting ${this.emergencyAlarmInterval}ms before repeating alarm...`
       );
 
-    } catch (error) {
-      console.warn(
-        'Could not play emergency alarm sound:',
-        error
+      await this.delay(
+        this.emergencyAlarmInterval
       );
     }
+
+    console.log(
+      'Emergency alarm loop ended'
+    );
   }
+
+  private delay(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+}
+
+
+
 
   /**
    * Reverse geocodes coordinates into a readable address.
@@ -513,6 +538,7 @@ export class EmergencyAlertService {
         medicalData
       );
 
+    // Get the general emergency instruction.
     const generalInstruction =
       String(
         medicalData?.generalEmergencyInstruction ??
@@ -520,34 +546,77 @@ export class EmergencyAlertService {
         ''
       ).trim();
 
+    console.log(
+      'General emergency instruction:',
+      generalInstruction
+    );
+
+    console.log(
+      'Per-allergy emergency instructions:',
+      specificInstructions
+    );
+
     const allergies =
       allergyList.length > 0
         ? allergyList.join(', ')
         : 'No known allergies listed';
 
-    let instructions: string;
+    const messageParts: string[] = [];
 
+    // PATIENT
+    messageParts.push(
+      `Emergency alert for ${patientName}.`
+    );
+
+    // ALLERGIES
+    messageParts.push(
+      `Allergies: ${allergies}.`
+    );
+
+    // PER-ALLERGY INSTRUCTIONS
     if (specificInstructions.length > 0) {
-      instructions =
-        specificInstructions.join('. ');
-
-      if (generalInstruction) {
-        instructions += `. ${generalInstruction}`;
-      }
-    } else if (generalInstruction) {
-      instructions = generalInstruction;
-    } else {
-      instructions =
-        'Follow general emergency instructions and call emergency services immediately';
+      messageParts.push(
+        `Allergy specific instructions: ${
+          specificInstructions.join('. ')
+        }.`
+      );
     }
 
-    return (
-      `Emergency alert for ${patientName}. ` +
-      `Allergies: ${allergies}. ` +
-      `Instructions: ${instructions}. ` +
+    // GENERAL INSTRUCTION
+    if (generalInstruction) {
+      messageParts.push(
+        `General emergency instruction: ${
+          generalInstruction
+        }.`
+      );
+    }
+
+    // FALLBACK IF THERE ARE NO INSTRUCTIONS
+    if (
+      specificInstructions.length === 0 &&
+      !generalInstruction
+    ) {
+      messageParts.push(
+        'Call emergency services immediately.'
+      );
+    }
+
+    // LOCATION
+    messageParts.push(
       `Location: ${locationText}.`
     );
+
+    const finalMessage =
+      messageParts.join(' ');
+
+    console.log(
+      'FINAL EMERGENCY TTS MESSAGE:',
+      finalMessage
+    );
+
+    return finalMessage;
   }
+
 
   /**
    * Extracts allergy names from different possible data formats.
@@ -645,10 +714,9 @@ export class EmergencyAlertService {
     }
 
     try {
-     
+      
       // NATIVE
-     
-
+    
       if (Capacitor.isNativePlatform()) {
         await TextToSpeech.speak({
           text: textToSpeak,
@@ -657,25 +725,23 @@ export class EmergencyAlertService {
           pitch: 1,
           volume: 1,
           category: 'playback',
-          queueStrategy: 1
+          queueStrategy: 0
         });
 
         console.log(
-          'Speaking emergency alarm natively:',
-          textToSpeak
+          'Finished native emergency alarm speech'
         );
 
         return;
       }
 
-     
       // WEB
-     
 
       if (typeof window === 'undefined') {
         console.warn(
           'Text-to-speech unavailable: window is undefined'
         );
+
         return;
       }
 
@@ -686,50 +752,77 @@ export class EmergencyAlertService {
         console.warn(
           'Text-to-speech is not supported on this device'
         );
+
         return;
       }
 
-      // Prevent queued emergency messages from piling up.
+      // Stop any previous speech.
       window.speechSynthesis.cancel();
 
-      const utterance =
-        new SpeechSynthesisUtterance(
-          textToSpeak
-        );
+      await new Promise<void>((resolve, reject) => {
+        const utterance =
+          new SpeechSynthesisUtterance(
+            textToSpeak
+          );
 
-      utterance.lang = 'en-US';
-      utterance.rate = 0.9;
-      utterance.volume = 1;
-      utterance.pitch = 1;
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        utterance.volume = 1;
+        utterance.pitch = 1;
 
-      const voices =
-        window.speechSynthesis.getVoices();
+        const voices =
+          window.speechSynthesis.getVoices();
 
-      const englishVoice =
-        voices.find(
-          voice =>
-            voice.lang.startsWith('en') &&
-            (
-              voice.name.includes('Google') ||
-              voice.name.includes('Microsoft')
+        const englishVoice =
+          voices.find(
+            voice =>
+              voice.lang.startsWith('en') &&
+              (
+                voice.name.includes('Google') ||
+                voice.name.includes('Microsoft')
+              )
+          ) ||
+          voices.find(
+            voice =>
+              voice.lang.startsWith('en')
+          );
+
+        if (englishVoice) {
+          utterance.voice = englishVoice;
+        }
+
+        utterance.onstart = () => {
+          console.log(
+            'Emergency TTS started:',
+            textToSpeak
+          );
+        };
+
+        utterance.onend = () => {
+          console.log(
+            'Emergency TTS finished'
+          );
+
+          resolve();
+        };
+
+        utterance.onerror = event => {
+          console.error(
+            'Emergency TTS error:',
+            event
+          );
+
+          reject(
+            new Error(
+              `Speech synthesis failed: ${event.error}`
             )
-        ) ||
-        voices.find(
-          voice => voice.lang.startsWith('en')
+          );
+        };
+
+        window.speechSynthesis.speak(
+          utterance
         );
-
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
-
-      window.speechSynthesis.speak(
-        utterance
-      );
-
-      console.log(
-        'Speaking emergency alarm:',
-        textToSpeak
-      );
+      });
 
     } catch (error) {
       console.error(
@@ -739,21 +832,13 @@ export class EmergencyAlertService {
     }
   }
 
+
   /**
    * Stops the emergency alarm and cancels TTS.
    */
   stopEmergencyAlarmSound(): void {
     this.isEmergencyAlarmLooping = false;
 
-    if (
-      this.emergencyAlarmLoopTimer !== null
-    ) {
-      clearInterval(
-        this.emergencyAlarmLoopTimer
-      );
-
-      this.emergencyAlarmLoopTimer = null;
-    }
 
     if (Capacitor.isNativePlatform()) {
       void TextToSpeech.stop().catch(error => {

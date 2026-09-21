@@ -9,6 +9,8 @@ import {
 import { FirebaseService } from './firebase.service';
 import { MedicalInfo } from '../models/medical-info.model';
 import { EmergencyInstruction } from '../models/emergency-instruction.model';
+import { EmergencyData } from '../models/emergency-data.model';
+
 
 @Injectable({
   providedIn: 'root'
@@ -244,48 +246,80 @@ export class MedicalService {
   }
 
 
-  /**
-   * Get all emergency-relevant data for alert display.
-   */
-  async getEmergencyData(uid: string): Promise<any | null> {
-    try {
-      const medicalRef = doc(this.db, `users/${uid}/medical/info`);
-      const userDoc = await getDoc(medicalRef);
+/**
+ * Get all emergency-relevant data for alert display.
+ */
+async getEmergencyData(
+  uid: string
+): Promise<EmergencyData | null> {
+  try {
+    const medicalRef =
+      doc(this.db, `users/${uid}/medical/info`);
 
-      if (!userDoc.exists()) {
-        return null;
-      }
+    const userDoc =
+      await getDoc(medicalRef);
 
-      const data = userDoc.data();
-
-      const emergencyMessage = data['emergencyMessage'] ?? {};
-
-      const generalEmergencyInstruction =
-        data['generalEmergencyInstruction'] ?? '';
-
-      const allergyEmergencyInstructions =
-        (data['allergyEmergencyInstructions'] ??
-          []) as EmergencyInstruction[];
-
-      return {
-        generalEmergencyInstruction,
-        allergyEmergencyInstructions,
-
-        emergencyMessage: {
-          ...emergencyMessage,
-          location: emergencyMessage['location'] ?? ''
-        },
-
-        emergencyLocation: data['emergencyLocation'] ?? null,
-
-        name: emergencyMessage['name'] ?? '',
-        allergies: emergencyMessage['allergies'] ?? '',
-
-        uid
-      };
-    } catch (error) {
-      console.error('Error getting emergency data:', error);
-      throw error;
+    if (!userDoc.exists()) {
+      return null;
     }
+
+    const data = userDoc.data();
+
+    const emergencyMessage =
+      data['emergencyMessage'] ?? {};
+
+    const generalEmergencyInstruction =
+      data['generalEmergencyInstruction'] ?? '';
+
+    const allergyEmergencyInstructions =
+      (data['allergyEmergencyInstructions'] ??
+        []) as EmergencyInstruction[];
+
+    return {
+      name:
+        data['name'] ??
+        emergencyMessage['name'] ??
+        '',
+
+      allergies:
+        data['allergies'] ??
+        emergencyMessage['allergies'] ??
+        '',
+
+      emergencyInstruction:
+        data['emergencyInstruction'] ??
+        '',
+
+      generalEmergencyInstruction,
+
+      allergyEmergencyInstructions,
+
+      emergencyInstructions:
+        allergyEmergencyInstructions.map(
+          instruction => ({
+            allergyName:
+              instruction.allergyName,
+            instruction:
+              instruction.instruction
+          })
+        ),
+
+      emergencyMessage: {
+        audioUrl:
+          emergencyMessage['audioUrl'],
+
+        instructions:
+          emergencyMessage['instructions']
+      }
+    };
+
+  } catch (error) {
+    console.error(
+      'Error getting emergency data:',
+      error
+    );
+
+    throw error;
   }
+}
 }

@@ -159,8 +159,7 @@ export class HomePage implements OnDestroy {
     
     this.rebuildBuddyStatusKeyMap();
 
-    const pendingInvites =
-      await this.buddyService.getSentInvitations(userId);
+    const pendingInvites = await this.buddyService.getSentInvitations(userId);
 
     this.pendingBuddyInviteCount = pendingInvites.filter(
       invite => invite.status === 'pending'
@@ -278,8 +277,7 @@ export class HomePage implements OnDestroy {
 
     this.sendingStep = 'sending';
 
-    const result =
-      await this.emergencyAlertService.triggerEmergencyAlert('manual');
+    const result = await this.emergencyAlertService.triggerEmergencyAlert('manual');
 
     this.currentEmergencyId = result.emergencyId;
 
@@ -660,20 +658,6 @@ private listenForEmergencyUpdates(): void {
     this.minimizedResponder = null;
   }
 
-  dismissToMinimized(): void {
-    this.minimizedResponder = this.respondingBuddy;
-    this.respondingBuddy = null;
-  }
-
-  restoreResponder(): void {
-    this.respondingBuddy = this.minimizedResponder;
-    this.minimizedResponder = null;
-  }
-
-  dismissMinimized(): void {
-    this.minimizedResponder = null;
-  }
-
   getBuddyResponseStatus(buddyId: string): string {
     const resolvedId = this.buddyStatusKeyMap.get(buddyId) ?? buddyId;
     const response = this.buddyResponses[resolvedId];
@@ -795,12 +779,6 @@ private listenForEmergencyUpdates(): void {
     this.router.navigate(['/tabs/pollen-map']);
   }
 
-  getAllergensDisplay(): string {
-    return this.userAllergies
-      .map(a => a.label ?? a.name ?? '')
-      .filter(Boolean)
-      .join(', ');
-  }
 
   getAllergensCount(): number {
     return this.userAllergies?.length ?? 0;

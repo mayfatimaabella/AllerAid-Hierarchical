@@ -25,6 +25,8 @@ import { MedicalInfo } from '../models/medical-info.model';
 import { EmergencyLocation } from '../models/emergency-location.model';
 import { EmergencyResponse } from '../models/emergency-response.model';
 import { EmergencyStatus, EmergencyStatusValues } from '../models/emergency-status.model';
+import { EmergencyAlertService } from './emergency-alert.service';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 
 type EmergencyAlertWithId = EmergencyAlert & {
   id: string;
@@ -55,13 +57,13 @@ export class EmergencyService {
   private readonly GEOCODE_DEBOUNCE_MS = 30_000;
 
 
-  constructor(
-    private emergencyNotificationService?: EmergencyNotificationService,
-    private userService?: UserService
-  ) {
-    const app = initializeApp(firebaseConfig);
-    this.db = getFirestore(app);
-  }
+constructor(
+  private emergencyNotificationService?: EmergencyNotificationService,
+  private userService?: UserService
+) {
+  const app = initializeApp(firebaseConfig);
+  this.db = getFirestore(app);
+}
 
   getEmergencyInstruction(medicalProfile: MedicalInfo  | null, fallback: string = ''): string {
     const fromMessage =medicalProfile?.emergencyMessage?.instructions;
@@ -461,38 +463,102 @@ export class EmergencyService {
   /**
    * Listen for Firestore changes on the emergency document.
    */
-  listenForResponses(emergencyId: string, userId: string): void {
+  listenForResponses(
+    emergencyId: string,
+    userId: string
+  ): void {
     if (this.emergencySnapshotUnsubscribe) {
       this.emergencySnapshotUnsubscribe();
       this.emergencySnapshotUnsubscribe = null;
     }
 
-    const emergencyRef = doc(this.db, 'emergencies', emergencyId);
+    const emergencyRef =
+      doc(this.db, 'emergencies', emergencyId);
 
-    const unsubscribe = onSnapshot(emergencyRef, (docSnapshot) => {
-      if (docSnapshot.exists()) {
-      const data: EmergencyAlertWithId = {
-        id: docSnapshot.id,
-        ...(docSnapshot.data() as EmergencyAlert)
-      };
-        
-        if (data.status === EmergencyStatusValues.RESPONDING && data.responderId) {
+    let previousBuddyResponses:
+      | EmergencyAlert['buddyResponses']
+      | undefined;
+
+    let isFirstSnapshot = true;
+
+    const unsubscribe = onSnapshot(
+      emergencyRef,
+      (docSnapshot) => {
+        if (!docSnapshot.exists()) {
+          return;
+        }
+
+        const data: EmergencyAlertWithId = {
+          id: docSnapshot.id,
+          ...(docSnapshot.data() as EmergencyAlert)
+        };
+
+        const currentResponses =
+          data.buddyResponses || {};
+
+        // Detect responder changes
+        if (!isFirstSnapshot) {
+          Object.entries(currentResponses).forEach(
+            ([buddyId, response]) => {
+
+              const previousResponse =
+                previousBuddyResponses?.[buddyId];
+
+              if (
+                previousResponse?.status ===
+                response.status
+              ) {
+                return;
+              }
+
+              if (
+                response.status === 'responded' ||
+                response.status === 'cannot_respond'
+              ) {
+                this.responderStatusSubject.next({
+                  emergencyId: data.id!,
+                  responderId: buddyId,
+                  responderName:
+                    response.name || 'A buddy',
+                  status: response.status
+                });
+              }
+            }
+          );
+        }
+
+        previousBuddyResponses =
+          currentResponses;
+
+        isFirstSnapshot = false;
+
+        // Existing primary responder logic
+        if (
+          data.status ===
+            EmergencyStatusValues.RESPONDING &&
+          data.responderId
+        ) {
           this.emergencyResponseSubject.next({
             responderId: data.responderId,
-            responderName: data.responderName || 'A buddy',
+            responderName:
+              data.responderName || 'A buddy',
             emergencyId: data.id!,
             location: data.location,
-            estimatedArrival: data.estimatedArrival || 0,
-            distance: data.distance || 0
+            estimatedArrival:
+              data.estimatedArrival || 0,
+            distance:
+              data.distance || 0
           });
         }
 
         this.userEmergencySubject.next(data);
       }
-    });
+    );
 
-    this.emergencySnapshotUnsubscribe = unsubscribe;
+    this.emergencySnapshotUnsubscribe =
+      unsubscribe;
   }
+
 
   /**
    * Stop listening to the active emergency document.
@@ -886,4 +952,92 @@ export class EmergencyService {
   private toRadians(degrees: number): number {
     return degrees * (Math.PI / 180);
   }
+
+  async announceResponderAction(
+  responderName: string,
+  action: 'responded' | 'declined' | 'resolved'
+): Promise<void> {
+  const name = responderName?.trim() || 'A responder';
+
+  let message: string;
+
+  switch (action) {
+    case 'responded':
+      message = `${name} has responded to the emergency.`;
+      break;
+
+    case 'declined':
+      message = `${name} has declined the emergency alert.`;
+      break;
+
+    case 'resolved':
+      message = `${name} has marked the emergency as resolved.`;
+      break;
+  }
+
+  await this.speakResponderStatus(message);
+}
+
+
+private async speakResponderStatus(
+  text: string
+): Promise<void> {
+  try {
+    if (!text?.trim()) {
+      return;
+    }
+
+    if (Capacitor.isNativePlatform()) {
+      await TextToSpeech.speak({
+        text,
+        lang: 'en-US',
+        rate: 0.9,
+        pitch: 1,
+        volume: 1,
+        category: 'playback',
+        queueStrategy: 0
+      });
+
+      return;
+    }
+
+    if (
+      typeof window === 'undefined' ||
+      !('speechSynthesis' in window) ||
+      typeof SpeechSynthesisUtterance === 'undefined'
+    ) {
+      return;
+    }
+
+    const utterance =
+      new SpeechSynthesisUtterance(text);
+
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.volume = 1;
+    utterance.pitch = 1;
+
+    window.speechSynthesis.speak(utterance);
+
+  } catch (error) {
+    console.error(
+      'Responder status TTS failed:',
+      error
+    );
+  }
+}
+
+private responderStatusSubject =
+  new BehaviorSubject<{
+    emergencyId: string;
+    responderId: string;
+    responderName: string;
+    status: 'responded' | 'cannot_respond';
+  } | null>(null);
+
+responderStatus$ =
+  this.responderStatusSubject.asObservable();
+
+
+
 }

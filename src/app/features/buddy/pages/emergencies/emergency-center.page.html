@@ -21,27 +21,17 @@
 </ion-header>
 
 
-<ion-content
-  [fullscreen]="true"
-  class="ion-padding">
-
+<ion-content [fullscreen]="true" class="ion-padding">
 
   <!--MAIN TABS -->
 
-  <ion-segment
-    [(ngModel)]="selectedTab"
-    (ionChange)="onTabChange()"
-    class="main-segment">
-
+  <ion-segment [(ngModel)]="selectedTab" (ionChange)="onTabChange()" class="main-segment">
     <!-- INCOMING -->
 
     <ion-segment-button value="incoming">
-
       <ion-icon name="notifications-outline"></ion-icon>
 
-      <ion-label>
-        Incoming
-      </ion-label>
+      <ion-label> Incoming </ion-label>
 
     </ion-segment-button>
 
@@ -49,12 +39,9 @@
     <!-- HISTORY -->
 
     <ion-segment-button value="history">
-
       <ion-icon name="time-outline"></ion-icon>
 
-      <ion-label>
-        History
-      </ion-label>
+      <ion-label> History </ion-label>
 
     </ion-segment-button>
 
@@ -62,27 +49,12 @@
 
   <!-- INCOMING EMERGENCIES -->
 
-  <ion-card
-    *ngIf="
-      selectedTab === 'incoming' &&
-      activeEmergencies.length > 0
-    "
-    class="active-emergency-card">
-
+  <ion-card *ngIf=" selectedTab === 'incoming' && activeEmergencies.length > 0" class="active-emergency-card">
     <ion-card-header>
 
-      <ion-card-title
-        style="
-          display:flex;
-          align-items:center;
-          gap:8px;
-          color:white;
-        ">
+      <ion-card-title>
 
-        <ion-icon
-          name="warning"
-          size="large">
-        </ion-icon>
+        <ion-icon name="warning" size="large"></ion-icon>
 
         Active Emergencies
         ({{ activeEmergencies.length }})
@@ -94,64 +66,36 @@
 
     <ion-card-content>
 
-      <div
-        class="emergency-card"
-        *ngFor="let emergency of activeEmergencies">
-
+      <div class="emergency-card" *ngFor="let emergency of activeEmergencies">
 
         <!-- Emergency Header -->
 
         <div class="emergency-header">
 
-          <h2>
-            {{ emergency.userName }}
-          </h2>
+          <h2> {{ emergency.userName }} </h2>
 
-          <ion-badge
-            [color]="getStatusColor(getStatusDisplay(emergency))">
-
+          <ion-badge [color]="getStatusColor(getStatusDisplay(emergency))">
             {{ getStatusDisplay(emergency) | titlecase }}
-
           </ion-badge>
 
         </div>
-
-
 
         <!-- Emergency Details -->
 
         <div class="emergency-details">
 
           <p>
+            <strong> Location:</strong>
+            {{ emergency.displayAddress || getLocationDisplay(emergency.location) }}
+          </p>
 
-            <strong>
-              Location:
-            </strong>
-
-            {{
-              emergency.displayAddress ||
-              getLocationDisplay(emergency.location)
-            }}
-
+          <p>
+            <strong> Time: </strong> {{ getTimeAgo(emergency.timestamp) }}
           </p>
 
 
           <p>
-
-            <strong>
-              Time:
-            </strong>
-
-            {{ getTimeAgo(emergency.timestamp) }}
-
-          </p>
-
-
-          <p>
-
-            <strong>
-              Allergies:
-            </strong>
+            <strong> Allergies: </strong>
 
             {{
               emergency.allergies?.join(', ') ||

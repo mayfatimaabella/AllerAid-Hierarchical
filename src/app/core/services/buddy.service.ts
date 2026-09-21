@@ -600,4 +600,33 @@ export class BuddyService {
         return 'Protected Patient';
     }
   }
+
+  async getConnectedBuddyIds(userId: string): Promise<string[]> {
+  const buddiesRef = collection(
+    this.db,
+    'users',
+    userId,
+    'buddies'
+  );
+
+  const q = query(
+    buddiesRef,
+    where('status', '==', 'accepted')
+  );
+
+  const snap = await getDocs(q);
+
+  return snap.docs
+    .map(docSnap => {
+      const data = docSnap.data() as BuddyReference;
+
+      return (
+        data.buddyUid ||
+        data.connectedUserId ||
+        docSnap.id
+      );
+    })
+    .filter((uid): uid is string => !!uid);
+}
+
 }
