@@ -163,11 +163,13 @@ export class EmergencyNotificationService {
         profile_picture: profileDetails.profile_picture || ''
       },
 
-      location: {
-        latitude: hasLocation ? emergencyAlert.location!.latitude : 0,
-        longitude: hasLocation ? emergencyAlert.location!.longitude : 0,
-        locationLink: hasLocation ? locationLink : 'Location unavailable'
-      },
+      location: hasLocation
+        ? {
+            latitude: emergencyAlert.location!.latitude,
+            longitude: emergencyAlert.location!.longitude,
+            locationLink
+          }
+        : undefined,
 
       emergencyId: emergencyAlert.id || '',
       timestamp: new Date().toISOString()

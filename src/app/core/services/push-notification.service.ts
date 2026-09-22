@@ -5,7 +5,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { Subject } from 'rxjs';
 import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
-import { doc,setDoc,serverTimestamp,arrayUnion,collection,getDocs,writeBatch,arrayRemove} from 'firebase/firestore';
+import { doc,setDoc,serverTimestamp,arrayUnion} from 'firebase/firestore';
 import { Router } from '@angular/router';
 
 @Injectable({
@@ -28,7 +28,7 @@ export class PushNotificationService {
   ) {}
 
   async init(): Promise<void> {
-    console.log('PushNotificationService init called');
+    console.log(' PushNotificationService init called');
 
     if (!Capacitor.isNativePlatform()) {
       console.log('Push notifications only work on a real Android/iOS app, not browser.');
@@ -113,48 +113,87 @@ export class PushNotificationService {
     // The OS does not show a tray banner in this state, so we have to:
     //   1. write a real "delivered" ack (independent of the backend's report)
     //   2. surface it ourselves (in-app banner + local notification)
-    PushNotifications.addListener('pushNotificationReceived', async (notification: any) => {
-      console.log('Push received while app is open:', notification);
+PushNotifications.addListener(
+  'pushNotificationReceived',
+  async (notification) => {
+    console.log('PUSH RECEIVED IN FOREGROUND ');
+    console.log('FULL NOTIFICATION:', JSON.stringify(notification, null, 2));
 
-      const data = notification?.data ?? notification?.notification?.data;
-      if (data?.type !== 'emergency' || !data?.emergencyId) return;
+    const data =
+      notification?.data ??
+      notification?.notification?.data ??
+      {};
 
-      await this.acknowledgeDelivery(data.emergencyId);
+    console.log('PUSH DATA:', JSON.stringify(data, null, 2));
 
-      // Let subscribed pages react (banner/sound/navigation).
-      this.emergencyReceivedSubject.next(data);
+    if (data?.type !== 'emergency') {
+      console.log('Push received, but it is not an emergency:', data);
+      return;
+    }
 
-      // Also fire a local notification so it's noticeable even if the
-      // person isn't looking at the screen right now (e.g. phone locked
-      // but app technically foregrounded/backgrounded-resumable).
-      try {
-        await LocalNotifications.schedule({
-          notifications: [
-            {
-              id: Date.now() % 2147483647,
-              title: data.title || 'EMERGENCY ALERT',
-              body: data.body || `${data.patientName || 'A buddy'} needs immediate help!`,
-              extra: data,
-            }
-          ]
-        });
-      } catch (err) {
-        console.warn('Could not schedule local notification for foreground push:', err);
-      }
-    });
+    if (!data?.emergencyId) {
+      console.warn('Emergency push has no emergencyId:', data);
+      return;
+    }
 
-    PushNotifications.addListener('pushNotificationActionPerformed', notification => {
-      console.log('Push tapped:', notification);
+    console.log('🚨 EMERGENCY PUSH RECEIVED:', data.emergencyId);
 
-      const data = notification.notification.data;
+    await this.acknowledgeDelivery(data.emergencyId);
 
-      if (data?.type === 'emergency' && data?.emergencyId) {
-        this.router.navigate(['/tabs/responder-dashboard'],{
-          queryParams: {emergency: data.emergencyId}
+    this.emergencyReceivedSubject.next(data);
+
+    try {
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: Date.now() % 2147483647,
+            title: data.title || 'EMERGENCY ALERT',
+            body:
+              data.body ||
+              `${data.patientName || 'A buddy'} needs immediate help!`,
+            extra: data
+          }
+        ]
+      });
+
+      console.log('Local emergency notification scheduled');
+    } catch (err) {
+      console.error(
+        'Could not schedule local notification:',
+        err
+      );
+    }
   }
 );
-      }
-    });
+
+PushNotifications.addListener(
+  'pushNotificationActionPerformed',
+  notification => {
+    console.log('PUSH TAPPED');
+    console.log(
+      'FULL ACTION:',
+      JSON.stringify(notification, null, 2)
+    );
+
+    const data = notification?.notification?.data;
+
+    console.log(
+      'TAPPED PUSH DATA:',
+      JSON.stringify(data, null, 2)
+    );
+
+    if (data?.type === 'emergency' && data?.emergencyId) {
+      this.router.navigate(
+        ['/tabs/responder-dashboard'],
+        {
+          queryParams: {
+            emergency: data.emergencyId
+          }
+        }
+      );
+    }
+  }
+);
 
     LocalNotifications.addListener('localNotificationActionPerformed', notification => {
       console.log('Foreground local notification tapped:', notification);
@@ -195,45 +234,67 @@ export class PushNotificationService {
     }
   }
 
-  private async removeTokenFromOtherUsers(
+//   private async removeTokenFromOtherUsers(
+//   token: string,
+//   currentUserId: string
+// ): Promise<void> {
+
+//   const db = this.firebaseService.getDb();
+
+//   const snapshot = await getDocs(collection(db, 'users'));
+
+//   const batch = writeBatch(db);
+
+//   snapshot.forEach(userDoc => {
+//     if (userDoc.id === currentUserId) {
+//       return;
+//     }
+
+//     const data = userDoc.data();
+
+//     const pushTokens = Array.isArray(data['pushTokens'])
+//       ? data['pushTokens']
+//       : [];
+
+//     if (pushTokens.includes(token)) {
+//       batch.update(userDoc.ref, {
+//         pushTokens: arrayRemove(token)
+//       });
+
+//       if (data['fcmToken'] === token) {
+//         batch.update(userDoc.ref, {
+//           fcmToken: null
+//         });
+//       }
+
+//       console.log(
+//         `Removed duplicate token from user ${userDoc.id}`
+//       );
+//     }
+//   });
+
+//   await batch.commit();
+// }
+
+private async removeTokenFromOtherUsers(
   token: string,
   currentUserId: string
 ): Promise<void> {
 
-  const db = this.firebaseService.getDb();
+  // Temporarily disabled.
+  //
+  // The previous implementation did:
+  //
+  // getDocs(collection(db, 'users'))
+  //
+  // which requires permission to read the entire users collection.
+  //
+  // We will replace this with a safer token lookup later.
 
-  const snapshot = await getDocs(collection(db, 'users'));
-
-  const batch = writeBatch(db);
-
-  snapshot.forEach(userDoc => {
-    if (userDoc.id === currentUserId) {
-      return;
-    }
-
-    const data = userDoc.data();
-
-    const pushTokens = Array.isArray(data['pushTokens'])
-      ? data['pushTokens']
-      : [];
-
-    if (pushTokens.includes(token)) {
-      batch.update(userDoc.ref, {
-        pushTokens: arrayRemove(token)
-      });
-
-      if (data['fcmToken'] === token) {
-        batch.update(userDoc.ref, {
-          fcmToken: null
-        });
-      }
-
-      console.log(
-        `Removed duplicate token from user ${userDoc.id}`
-      );
-    }
-  });
-
-  await batch.commit();
+  console.log(
+    'Skipping duplicate-token cleanup temporarily for token:',
+    token
+  );
 }
+
 }

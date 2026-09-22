@@ -37,38 +37,123 @@ export class AppComponent implements OnInit {
     this.initializeMedicationNotifications();
   }
 
-  async ngOnInit() {
-    // Wait for Firebase Auth to finish restoring any saved session
-    const user = await this.authService.waitForAuthInit();
+async ngOnInit() {
 
-    if (user) {
-      // Load the user's role
-      await this.loadUserRole();
+  console.log('======================================');
+  console.log('APP INITIALIZATION');
+  console.log('======================================');
 
-      // Initialize push notifications
-      await this.pushNotificationService.init();
-    } else {
-      // No authenticated user
-      this.userRole = '';
+  // Wait for Firebase to restore the saved login session
+  const user = await this.authService.waitForAuthInit();
+
+  console.log(
+    'Firebase restored user:',
+    user?.email ?? 'NO USER'
+  );
+
+  if (user) {
+
+    // Load user's Firestore profile/role
+    await this.loadUserRole();
+
+    console.log(
+      'Restored user role:',
+      this.userRole
+    );
+
+    /*
+     * Firebase restored a logged-in user.
+     *
+     * If Angular started us on the login page,
+     * send the user back into the application.
+     */
+    if (
+      this.router.url === '/login' ||
+      this.router.url === '/' ||
+      this.router.url === ''
+    ) {
+
+      if (this.userRole === 'user') {
+
+        console.log(
+          'Restored patient session. Navigating to /tabs/home'
+        );
+
+        await this.router.navigate(
+          ['/tabs/home'],
+          { replaceUrl: true }
+        );
+
+      } else if (this.userRole === 'doctor') {
+
+        console.log(
+          'Restored doctor session. Navigating to /doctor-dashboard'
+        );
+
+        await this.router.navigate(
+          ['/doctor-dashboard'],
+          { replaceUrl: true }
+        );
+
+      } else if (this.userRole === 'admin') {
+
+        /*
+         * Admin uses the website, so don't send the
+         * admin account into the patient mobile app.
+         */
+        console.log(
+          'Admin account detected. Admin uses the web application.'
+        );
+
+      } else {
+
+        console.warn(
+          'Authenticated user has no recognized role:',
+          this.userRole
+        );
+      }
     }
 
-    // Keep reacting to auth changes
-    // e.g. after login/logout while app is open
-    this.authService.getCurrentUser$().subscribe(async (currentUser) => {
+  } else {
+
+    console.log(
+      'No Firebase session found.'
+    );
+
+    this.userRole = '';
+  }
+
+
+  /*
+   * Continue listening for login/logout changes
+   * while the app is running.
+   */
+  this.authService.getCurrentUser$().subscribe(
+    async (currentUser) => {
 
       if (currentUser) {
 
+        console.log(
+          'Auth state changed:',
+          currentUser.email
+        );
+
         await this.loadUserRole();
 
-        // Initialize push notifications
+        // Initialize push notifications after login
         await this.pushNotificationService.init();
 
       } else {
 
+        console.log(
+          'Auth state changed: logged out'
+        );
+
         this.userRole = '';
       }
-    });
-  }
+    }
+  );
+}
 
   private async loadUserRole() {
     try {

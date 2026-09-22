@@ -1,112 +1,110 @@
 import { Injectable } from '@angular/core';
-
-import {
-  getApps,
-  getApp,
-  initializeApp,
-  FirebaseApp
-} from 'firebase/app';
+import { getApps, getApp, initializeApp,FirebaseApp} from 'firebase/app';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
+import { Auth, getAuth, initializeAuth, indexedDBLocalPersistence } from 'firebase/auth';
 
 import { firebaseConfig } from './firebase.config';
 
-import {
-  getFirestore,
-  Firestore
-} from 'firebase/firestore';
 
-import {
-  getStorage,
-  FirebaseStorage
-} from 'firebase/storage';
 
-import {
-  Auth,
-  initializeAuth,
-  getAuth,
-  indexedDBLocalPersistence
-} from 'firebase/auth';
+// FIREBASE APP
 
-//Firebase App
+
 const app: FirebaseApp =
   getApps().length
     ? getApp()
     : initializeApp(firebaseConfig);
 
 
-//FirebaseAuth
+
+// FIREBASE AUTH
+
 
 let auth: Auth;
 
 try {
 
   auth = initializeAuth(app, {
-    persistence: indexedDBLocalPersistence
+    persistence: [
+      indexedDBLocalPersistence
+    ]
   });
 
-} catch {
+  console.log(
+    'Firebase Auth: persistent authentication enabled'
+  );
 
-  /*
-   * Auth may already have been initialized.
-   * In that case, get the existing Auth instance.
-   */
+} catch (error) {
+
+  // Auth was already initialized.
+  // This can happen during development/hot reload.
+
+  console.log(
+    'Firebase Auth already initialized'
+  );
 
   auth = getAuth(app);
-
 }
 
+// FIRESTORE
 
-//Firebase Service
+const db: Firestore =
+  getFirestore(app);
+
+// STORAGE
+
+const storage: FirebaseStorage =
+  getStorage(app);
+
+// FIREBASE SERVICE
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class FirebaseService {
 
-  private db: Firestore =
-    getFirestore(app);
+  private db: Firestore = db;
+
+  private storage: FirebaseStorage = storage;
+
+  private auth: Auth = auth;
 
 
-  private storage: FirebaseStorage =
-    getStorage(app);
-
-
-  private auth: Auth =
-    auth;
-
-
-//Firestore 
+  
+  // FIRESTORE
+  
 
   getDb(): Firestore {
-
     return this.db;
-
   }
 
 
-//Storage
+  
+  // STORAGE
+  
 
   getStorage(): FirebaseStorage {
-
     return this.storage;
-
   }
 
 
-//Auth
+  
+  // AUTH
+  
 
   getAuth(): Auth {
-
     return this.auth;
-
   }
 
 
-//Firebase Config
+  
+  // FIREBASE CONFIG
+  
 
   getFirebaseConfig() {
-
     return firebaseConfig;
-
   }
 
 }
