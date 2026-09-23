@@ -339,10 +339,6 @@ private async showDuplicateWarning(
 
       buttons: [
         {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
           text: 'Save Anyway',
           handler: async () => {
 
@@ -378,6 +374,10 @@ private async showDuplicateWarning(
               this.isSaving = false;
             }
           }
+        },
+                {
+          text: 'Cancel',
+          role: 'cancel'
         }
       ]
     });

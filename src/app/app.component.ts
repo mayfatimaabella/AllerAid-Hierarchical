@@ -1,5 +1,5 @@
 import { Component, OnInit} from '@angular/core';
-import { MenuController } from '@ionic/angular';
+import { MenuController,LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { UserService } from './core/services/user.service';
@@ -7,7 +7,7 @@ import { PatientNotificationService } from './core/services/patient-notification
 import { MedicationReminderService } from './core/services/medication-reminder.service';
 import { MedicationService } from './core/services/medication.service';
 import { PushNotificationService } from './core/services/push-notification.service';
-
+import { SplashScreen } from '@capacitor/splash-screen';
 
 @Component({
   selector: 'app-root',
@@ -15,8 +15,12 @@ import { PushNotificationService } from './core/services/push-notification.servi
   styleUrls: ['app.component.scss'],
   standalone: false,
 })
+
+
 export class AppComponent implements OnInit {
   userRole: string = '';
+  showStartupScreen = true;
+   private startupLoading?: HTMLIonLoadingElement;
 
   constructor(
     private menuController: MenuController, 
@@ -24,9 +28,10 @@ export class AppComponent implements OnInit {
     private userService: UserService,
     private router: Router,
     private patientNotificationService: PatientNotificationService,
+    private loadingController: LoadingController,
     private pushNotificationService: PushNotificationService,
     private medicationReminderService: MedicationReminderService,
-    private medicationService: MedicationService
+    private medicationService: MedicationService,
   ) {
     // this.allergyService.resetAllergyOptions();
     // Initialize emergency detection on app startup
@@ -39,118 +44,124 @@ export class AppComponent implements OnInit {
 
 async ngOnInit() {
 
-  console.log('======================================');
-  console.log('APP INITIALIZATION');
-  console.log('======================================');
+  // Show loading while Firebase restores the session
+  this.startupLoading = await this.loadingController.create({
+    message: 'Loading your account...',
+    spinner: 'crescent',
+    backdropDismiss: false,
+    cssClass: 'alleraid-startup-loading'
+  });
 
-  // Wait for Firebase to restore the saved login session
-  const user = await this.authService.waitForAuthInit();
+  await this.startupLoading.present();
 
-  console.log(
-    'Firebase restored user:',
-    user?.email ?? 'NO USER'
-  );
+    await SplashScreen.hide();
 
-  if (user) {
+  try {
 
-    // Load user's Firestore profile/role
-    await this.loadUserRole();
+    console.log('Starting app initialization...');
+
+    // Wait for Firebase to restore authentication
+    const user = await this.authService.waitForAuthInit();
 
     console.log(
-      'Restored user role:',
-      this.userRole
+      'Firebase restored user:',
+      user?.email ?? 'NO USER'
     );
 
-    /*
-     * Firebase restored a logged-in user.
-     *
-     * If Angular started us on the login page,
-     * send the user back into the application.
-     */
-    if (
-      this.router.url === '/login' ||
-      this.router.url === '/' ||
-      this.router.url === ''
-    ) {
+    if (user) {
 
-      if (this.userRole === 'user') {
+      // Load role from Firestore
+      await this.loadUserRole();
 
-        console.log(
-          'Restored patient session. Navigating to /tabs/home'
-        );
+      console.log(
+        'Restored user role:',
+        this.userRole
+      );
 
-        await this.router.navigate(
-          ['/tabs/home'],
-          { replaceUrl: true }
-        );
+      // Only redirect if app started on login/root
+      if (
+        this.router.url === '/login' ||
+        this.router.url === '/' ||
+        this.router.url === ''
+      ) {
 
-      } else if (this.userRole === 'doctor') {
+        if (this.userRole === 'user') {
 
-        console.log(
-          'Restored doctor session. Navigating to /doctor-dashboard'
-        );
+          console.log(
+            'Restored patient session. Navigating to home.'
+          );
 
-        await this.router.navigate(
-          ['/doctor-dashboard'],
-          { replaceUrl: true }
-        );
+          await this.router.navigate(
+            ['/tabs/home'],
+            { replaceUrl: true }
+          );
 
-      } else if (this.userRole === 'admin') {
+        } else if (this.userRole === 'doctor') {
 
-        /*
-         * Admin uses the website, so don't send the
-         * admin account into the patient mobile app.
-         */
-        console.log(
-          'Admin account detected. Admin uses the web application.'
-        );
+          console.log(
+            'Restored doctor session. Navigating to doctor dashboard.'
+          );
 
-      } else {
+          await this.router.navigate(
+            ['/doctor-dashboard'],
+            { replaceUrl: true }
+          );
 
-        console.warn(
-          'Authenticated user has no recognized role:',
-          this.userRole
-        );
+        } else if (this.userRole === 'admin') {
+
+          // Admin uses the web application
+          console.log(
+            'Admin account detected. Admin uses the web application.'
+          );
+
+        }
+
       }
+
+    } else {
+
+      console.log(
+        'No authenticated session found.'
+      );
+
+      this.userRole = '';
+
     }
 
-  } else {
+  } catch (error) {
 
-    console.log(
-      'No Firebase session found.'
+    console.error(
+      'App initialization error:',
+      error
     );
 
-    this.userRole = '';
+  } finally {
+
+    // Remove loading screen after initialization
+    if (this.startupLoading) {
+      await this.startupLoading.dismiss();
+      this.startupLoading = undefined;
+    }
+      this.showStartupScreen = false;
   }
 
 
-  /*
-   * Continue listening for login/logout changes
-   * while the app is running.
-   */
+  // Continue listening for authentication changes
   this.authService.getCurrentUser$().subscribe(
     async (currentUser) => {
 
       if (currentUser) {
 
-        console.log(
-          'Auth state changed:',
-          currentUser.email
-        );
-
         await this.loadUserRole();
 
-        // Initialize push notifications after login
         await this.pushNotificationService.init();
 
       } else {
 
-        console.log(
-          'Auth state changed: logged out'
-        );
-
         this.userRole = '';
+
       }
+
     }
   );
 }

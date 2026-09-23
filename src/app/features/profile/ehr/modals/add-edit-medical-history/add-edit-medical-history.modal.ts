@@ -156,9 +156,9 @@ export class AddMedicalHistoryModal implements OnInit {
 
     try {
 
-      // ================================
+      
       // EDIT EXISTING MEDICAL HISTORY
-      // ================================
+      
 
       if (this.isEditMode && this.history?.id) {
 
@@ -179,9 +179,9 @@ export class AddMedicalHistoryModal implements OnInit {
       }
 
 
-      // ================================
+      
       // ADD NEW MEDICAL HISTORY
-      // ================================
+      
 
       await this.medicalHistoryService.addMedicalHistory(
         this.historyData

@@ -624,7 +624,6 @@ async getPatientAnalysis(patientId: string): Promise<{
     const accessRequest: Omit<AccessRequest, 'id'> = {
       patientId: currentUser.uid,
 
-      // FIX: doctorId is now included
       doctorId,
 
       patientName:

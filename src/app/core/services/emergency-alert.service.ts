@@ -195,9 +195,8 @@ export class EmergencyAlertService {
         emergencyId
       );
 
-      
+
       // LOG ALERT
-      
 
       await this.logEmergencyAlert(
         currentUser.uid,
@@ -208,7 +207,7 @@ export class EmergencyAlertService {
         emergencyId
       );
 
-      return {
+      return {  
         emergencyId,
         location
       };
@@ -831,6 +830,127 @@ export class EmergencyAlertService {
       );
     }
   }
+
+  async speakBuddyResponse(
+  buddyName: string,
+  response: 'accepted' | 'declined' | 'timeout'
+): Promise<void> {
+
+  const name = buddyName?.trim() || 'Your buddy';
+
+  let message: string;
+
+  switch (response) {
+
+    case 'accepted':
+      message =
+        `${name} accepted your emergency alert. Help is on the way.`;
+      break;
+
+    case 'declined':
+      message =
+        `${name} declined your emergency alert.`;
+      break;
+
+    case 'timeout':
+      message =
+        `${name} did not respond to your emergency alert.`;
+      break;
+
+    default:
+      return;
+  }
+
+  try {
+
+    
+    // NATIVE
+    
+
+    if (Capacitor.isNativePlatform()) {
+
+      await TextToSpeech.speak({
+        text: message,
+        lang: 'en-US',
+        rate: 0.9,
+        pitch: 1,
+        volume: 1,
+        category: 'playback',
+        queueStrategy: 0
+      });
+
+      console.log(
+        'Buddy response TTS:',
+        message
+      );
+
+      return;
+    }
+
+    
+    // WEB
+    
+
+    if (
+      typeof window === 'undefined' ||
+      !('speechSynthesis' in window) ||
+      typeof SpeechSynthesisUtterance === 'undefined'
+    ) {
+      console.warn(
+        'Buddy response TTS is not supported.'
+      );
+
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance =
+      new SpeechSynthesisUtterance(message);
+
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    const voices =
+      window.speechSynthesis.getVoices();
+
+    const englishVoice =
+      voices.find(
+        voice =>
+          voice.lang.startsWith('en') &&
+          (
+            voice.name.includes('Google') ||
+            voice.name.includes('Microsoft')
+          )
+      ) ||
+      voices.find(
+        voice =>
+          voice.lang.startsWith('en')
+      );
+
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+
+    window.speechSynthesis.speak(
+      utterance
+    );
+
+    console.log(
+      'Buddy response TTS:',
+      message
+    );
+
+  } catch (error) {
+
+    console.error(
+      'Error speaking buddy response:',
+      error
+    );
+  }
+}
 
 
   /**

@@ -369,7 +369,7 @@ async restoreActiveEmergency(): Promise<void> {
 
   this.restoreEmergencyState(emergency);
   this.restoreEmergencyAddress(emergency);
-  this.restoreBuddyInformation(emergency, currentUser.uid);
+  this.restoreBuddyInformation(emergency, currentUser.uid,false);
 
 
 
@@ -400,13 +400,15 @@ private restoreEmergencyState(emergency: EmergencyAlert): void {
 
   private restoreBuddyInformation(
     emergency: EmergencyAlert,
-    currentUserId: string
+    currentUserId: string,
+    announceChanges = true
   ): void {
 
     if (emergency.buddyResponses) {
       this.processBuddyResponses(
         emergency.buddyResponses,
-        currentUserId
+        currentUserId,
+        announceChanges
       );
     }
 
@@ -549,8 +551,9 @@ private listenForEmergencyUpdates(): void {
    *
    * @param responses   Raw Firestore map.
    * @param excludeUid  Optional UID to skip (e.g. current user on restore).
+   * @param announceChanges  Whether to announce status changes.
    */
-  private processBuddyResponses(responses: Record<string, BuddyResponsePayload>, excludeUid?: string): void {
+  private processBuddyResponses(responses: Record<string, BuddyResponsePayload>, excludeUid?: string,  announceChanges = true): void {
     const previous = { ...this.buddyResponses };
     this.buddyResponses = {};
 
@@ -566,27 +569,80 @@ private listenForEmergencyUpdates(): void {
         name: response.name ?? 'Buddy',
       };
 
-      this.handleBuddyStatusChange(response.name ?? 'A buddy', oldStatus, newStatus);
+      if (announceChanges) { 
+        this.handleBuddyStatusChange(
+          response.name ?? 'A buddy',
+          oldStatus,
+          newStatus
+        );
+      }
     }
 
     this.checkIfNoRespondersAvailable();
   }
 
   private handleBuddyStatusChange(
-      buddyName: string,
-      oldStatus: BuddyResponseStatus | undefined,
-      newStatus: BuddyResponseStatus,
+    buddyName: string,
+    oldStatus: BuddyResponseStatus | undefined,
+    newStatus: BuddyResponseStatus,
   ): void {
-    if (newStatus === oldStatus) return;
+
+    // Prevent duplicate announcements
+    if (newStatus === oldStatus) {
+      return;
+    }
 
     switch (newStatus) {
+
+      // BUDDY ACCEPTED
+      
       case BuddyStatus.RESPONDED:
+
+        this.presentToast(
+          `${buddyName} accepted your emergency alert.`,
+          'success'
+        );
+
+        // 🔊 Speak the response
+        void this.emergencyAlertService.speakBuddyResponse(
+          buddyName,
+          'accepted'
+        );
+
         break;
+      
+      // BUDDY DECLINED
+      
       case BuddyStatus.CANNOT_RESPOND:
-        this.presentToast(`${buddyName} declined your emergency alert.`, 'warning');
+
+        this.presentToast(
+          `${buddyName} declined your emergency alert.`,
+          'warning'
+        );
+
+        // 🔊 Speak the response
+        void this.emergencyAlertService.speakBuddyResponse(
+          buddyName,
+          'declined'
+        );
+
         break;
+      
+      // BUDDY DID NOT RESPOND
+      
       case BuddyStatus.TIMED_OUT:
-        this.presentToast(`${buddyName} did not respond in time.`, 'warning');
+
+        this.presentToast(
+          `${buddyName} did not respond in time.`,
+          'warning'
+        );
+
+        // 🔊 Speak the response
+        void this.emergencyAlertService.speakBuddyResponse(
+          buddyName,
+          'timeout'
+        );
+
         break;
     }
   }
