@@ -29,8 +29,6 @@ export class AuthService {
   private currentUserSubject =
     new BehaviorSubject<User | null>(null);
 
-  private authInitialized = false;
-
   constructor(private firebase: FirebaseService) {
 
     this.auth = firebase.getAuth();
@@ -43,7 +41,6 @@ export class AuthService {
       );
 
       this.currentUserSubject.next(user);
-      this.authInitialized = true;
     });
   }
 
@@ -62,33 +59,12 @@ export class AuthService {
   /**
    * Wait until Firebase has restored the authentication session.
    */
-  async waitForAuthInit(): Promise<User | null> {
-
-    if (this.authInitialized) {
-      return this.auth.currentUser;
-    }
-
-    return new Promise<User | null>((resolve) => {
-
-      const unsubscribe = onAuthStateChanged(
-        this.auth,
-        (user) => {
-
-          console.log(
-            'Auth initialization completed:',
-            user?.email || 'No user'
-          );
-
-          this.authInitialized = true;
-
-          unsubscribe();
-
-          resolve(user);
-        }
-      );
-
-    });
-  }
+async waitForAuthInit(): Promise<User | null> {
+  console.log('[Auth] waitForAuthInit: waiting...');
+  await this.auth.authStateReady();
+  console.log('[Auth] authStateReady resolved. currentUser =', this.auth.currentUser?.email ?? 'NULL');
+  return this.auth.currentUser;
+}
 
   async resendVerificationEmail() {
     await this.sendVerificationEmail();

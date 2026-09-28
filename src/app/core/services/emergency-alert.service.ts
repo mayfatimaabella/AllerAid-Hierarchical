@@ -13,7 +13,6 @@ import { EmergencySettingsService } from './emergency-settings.service';
 
 import { Buddy } from '../models/buddy.model';
 import { EmergencyData } from '../models/emergency-data.model';
-import { EmergencyAlert } from '../models/emergency-alert.model';
 
 export type EmergencyAlertTrigger =
   | 'shake'
@@ -32,7 +31,6 @@ export interface EmergencyLocation {
 })
 export class EmergencyAlertService {
 
-  // private emergencyAlarmLoopTimer: ReturnType<typeof setInterval> | null = null;
   private isEmergencyAlarmLooping = false;
 
   private readonly defaultEmergencyAlarmText =
@@ -63,9 +61,7 @@ export class EmergencyAlertService {
    * 7. Send emergency through EmergencyService.
    * 8. Log the emergency locally.
    */
-  async triggerEmergencyAlert(
-    alertType: EmergencyAlertTrigger = 'manual'
-  ): Promise<{
+  async triggerEmergencyAlert(alertType: EmergencyAlertTrigger = 'manual'): Promise<{
     emergencyId: string;
     location: EmergencyLocation | undefined;
   }> {
@@ -78,56 +74,28 @@ export class EmergencyAlertService {
         throw new Error('No authenticated user found');
       }
 
-      console.log(
-        'Triggering emergency alert:',
-        alertType,
-        'for user:',
-        currentUser.uid
-      );
+      console.log('Triggering emergency alert:',alertType,'for user:',currentUser.uid);
 
       
       // USER PROFILE
       
+      const userProfile = await this.userService.getUserProfile(currentUser.uid);
 
-      const userProfile = await this.userService.getUserProfile(
-        currentUser.uid
-      );
+      const userName = this.getUserDisplayName(userProfile,currentUser);
 
-      const userName = this.getUserDisplayName(
-        userProfile,
-        currentUser
-      );
-
-      
       // MEDICAL DATA
-      
 
-      const medicalData =
-        await this.medicalService.getEmergencyData(
-          currentUser.uid
-        );
+      const medicalData = await this.medicalService.getEmergencyData(currentUser.uid);
 
-      const resolvedInstruction =
-        medicalData?.emergencyInstruction?.trim() || '';
+      const resolvedInstruction = medicalData?.emergencyInstruction?.trim() || '';
 
-      
       // EMERGENCY BUDDIES
       
+      const buddies = await this.buddyService.getUserBuddies(currentUser.uid);
 
-      const buddies =
-        await this.buddyService.getUserBuddies(
-          currentUser.uid
-        );
+      const buddyIds = this.getBuddyIds( buddies,currentUser.uid);
 
-      const buddyIds = this.getBuddyIds(
-        buddies,
-        currentUser.uid
-      );
-
-      if (buddyIds.length === 0) {
-        console.warn(
-          'No emergency buddies configured.'
-        );
+      if (buddyIds.length === 0) { console.warn( 'No emergency buddies configured.');
 
         await this.showToast(
           'Warning: No emergency contacts configured. Alert will be sent without notifying anyone.',
@@ -135,28 +103,18 @@ export class EmergencyAlertService {
         );
       }
 
-      const initialBuddyResponses =
-        this.buildInitialBuddyResponses(
-          buddies,
-          currentUser.uid
-        );
-
+      const initialBuddyResponses = this.buildInitialBuddyResponses(buddies,currentUser.uid);
       
       // LOCATION
       
-
-      console.log(
-        'Getting current location before sending emergency alert...'
-      );
+      console.log('Getting current location before sending emergency alert...');
 
       location = await this.getEmergencyLocation();
 
-      const locationText =
-        await this.getLocationDisplayText(location);
+      const locationText = await this.getLocationDisplayText(location);
 
       
       // EMERGENCY ALARM
-      
 
       const emergencyAlarmText =
         this.buildEmergencyAlarmText(
@@ -172,7 +130,6 @@ export class EmergencyAlertService {
       
       // SEND EMERGENCY
       
-
       console.log(
         'Sending emergency via EmergencyService from',
         alertType,
@@ -461,9 +418,6 @@ export class EmergencyAlertService {
   });
 }
 
-
-
-
   /**
    * Reverse geocodes coordinates into a readable address.
    */
@@ -529,13 +483,9 @@ export class EmergencyAlertService {
     medicalData: EmergencyData | null | undefined,
     locationText: string
   ): string {
-    const allergyList =
-      this.extractAllergyLabels(medicalData);
+    const allergyList = this.extractAllergyLabels(medicalData);
 
-    const specificInstructions =
-      this.extractPerAllergyEmergencyInstructions(
-        medicalData
-      );
+    const specificInstructions = this.extractPerAllergyEmergencyInstructions( medicalData );
 
     // Get the general emergency instruction.
     const generalInstruction =

@@ -16,10 +16,10 @@ import { Component, OnInit,OnDestroy} from '@angular/core';
     selector: 'app-emergencies',
 
     templateUrl:
-      './emergency-center.page.html',
+      './emergency.page.html',
 
     styleUrls:
-      ['./emergency-center.page.scss'],
+      ['./emergency.page.scss'],
 
     standalone: true,
 

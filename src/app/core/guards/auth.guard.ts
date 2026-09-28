@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate {
   ) {}
   
   async canActivate(): Promise<boolean> {
-    // Uncommented authentication guard logic for production
+
     const user = await this.authService.waitForAuthInit();
     
     if (user) {

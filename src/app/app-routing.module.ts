@@ -38,6 +38,13 @@ const routes: Routes = [
   },
 
   // Home
+
+  {
+  path: '',
+  redirectTo: 'home',
+  pathMatch: 'full'
+},
+
   {
     path: 'home',
     loadChildren: () =>
@@ -72,7 +79,7 @@ const routes: Routes = [
   {
     path: 'alerts',
     loadChildren: () =>
-      import('./features/buddy/pages/emergencies/emergency-center.module').then(m => m.EmergenciesPageModule),
+      import('./features/buddy/pages/emergencies/emergency.module').then(m => m.EmergenciesPageModule),
     canActivate: [AuthGuard]
   },
 
