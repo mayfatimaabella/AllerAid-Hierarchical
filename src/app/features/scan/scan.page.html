@@ -8,36 +8,46 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-card>
+  <div class="scan-intro">
+    <p class="intro-eyebrow">FOOD & PRODUCT CHECK</p>
+    <h1>Check before you eat</h1>
+    <p>Scan a product barcode to see how it matches your allergy profile.</p>
+  </div>
+
+  <ion-card class="scanner-card">
     <ion-card-header>
-      <ion-card-title>Scan Product Barcode</ion-card-title>
+      <ion-card-title>Scan a barcode</ion-card-title>
+      <p class="scanner-subtitle">Center the barcode in the guide below</p>
     </ion-card-header>
     <ion-card-content>
       <div class="scanner-container">
-        <div class="scanner-overlay"></div>
+        <div class="scanner-scene" aria-hidden="true"></div>
+        <div class="scanner-overlay" aria-hidden="true"></div>
         <div class="scanner-frame">
-          <ion-icon name="barcode-outline" style="font-size: 50px; color: #b3dfd9;"></ion-icon>
+          <span class="frame-corner corner-tl"></span>
+          <span class="frame-corner corner-tr"></span>
+          <ion-icon name="barcode-outline" aria-hidden="true"></ion-icon>
+          <span class="frame-corner corner-bl"></span>
+          <span class="frame-corner corner-br"></span>
         </div>
         <ion-button id="scanBtn" class="pulse scanner-btn" (click)="startCameraScan()">
           <ion-icon slot="start" name="camera-outline"></ion-icon>
           Scan Barcode
         </ion-button>
       </div>
-      <p class="ion-text-center ion-margin-top">
-        Align the barcode within the frame to scan
-      </p>
+      <p class="scan-tip"><ion-icon name="sunny-outline"></ion-icon> Use good lighting and keep the barcode steady.</p>
     </ion-card-content>
   </ion-card>
 
   <div class="button-row">
-    <ion-button class="recent-scans-btn" (click)="viewRecentScans()">
+    <ion-button fill="outline" class="recent-scans-btn" (click)="viewRecentScans()">
       <ion-icon slot="start" name="time-outline"></ion-icon>
-      Recent
+      Recent scans
     </ion-button>
 
-    <ion-button class="manual-input-btn" (click)="openManualInputModal()">
+    <ion-button fill="outline" class="manual-input-btn" (click)="openManualInputModal()">
       <ion-icon slot="start" name="pencil-outline"></ion-icon>
-      Manual
+      Enter barcode
     </ion-button>
   </div>
 

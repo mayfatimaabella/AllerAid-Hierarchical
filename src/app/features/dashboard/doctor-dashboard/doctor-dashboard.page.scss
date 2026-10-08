@@ -607,3 +607,116 @@ ion-fab-button {
     width: 320px !important;
   }
 }
+
+.welcome-section {
+  align-items: center;
+  margin-bottom: 20px;
+
+  h2 {
+    margin-bottom: 6px;
+    font-size: clamp(24px, 5.5vw, 32px);
+    letter-spacing: -0.7px;
+  }
+
+  p:not(.welcome-eyebrow) {
+    line-height: 1.5;
+  }
+}
+
+.welcome-eyebrow {
+  margin: 0 0 5px !important;
+  color: var(--brand) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1.3px;
+}
+
+.welcome-separator {
+  padding: 0 4px;
+  color: #9aaea9 !important;
+}
+
+.welcome-meta {
+  background: #fff7e8;
+  color: #8a5200;
+  border: 1px solid #f4dfb8;
+}
+
+.directory-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 2px 12px;
+
+  h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+}
+
+.hero-card ion-card-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.hero-card .stat-icon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  margin: 0;
+  border-radius: 16px;
+  font-size: 27px;
+}
+
+.hero-card .stat-caption {
+  max-width: 440px;
+}
+
+.patient-card {
+  cursor: default;
+}
+
+.patient-card:hover {
+  transform: translateY(-1px);
+}
+
+.patient-card .patient-actions ion-button {
+  min-width: 120px;
+  min-height: 42px;
+}
+
+.doctor-fab ion-fab-button {
+  width: 58px;
+  height: 58px;
+  --border-radius: 18px;
+}
+
+@media (max-width: 480px) {
+  .welcome-section {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .hero-card ion-card-content {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .hero-card .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    font-size: 23px;
+  }
+
+  .directory-heading {
+    margin-top: 0;
+  }
+}

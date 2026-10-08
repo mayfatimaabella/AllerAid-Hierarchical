@@ -1,426 +1,332 @@
-// Color variables
-$primary-color: #036a5d;
-$light-bg: #e8f2f0;
-$light-bg-alt: #eaf1ee;
-$light-bg-alt2: #e3ece7;
-$card-shadow: 0 4px 16px rgba(229, 94, 118, 0.10);
-$dark-text: #333;
-$medium-text: #666;
-$light-text: #999;
+$primary: #126e63;
+$ink: #193b37;
+$muted: #657875;
+$line: #e2ece9;
 
-// Shadow system
-$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-$shadow-md: $card-shadow;
-$shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
-
-ion-header {
-  ion-toolbar {
-    --background: $primary-color !important;
-    color: #fff !important;
-  }
+ion-header ion-toolbar {
+  --background: #126e63;
+  --color: #fff;
 }
 
 ion-content {
-  --background: linear-gradient(135deg, #f5faf8 0%, #eef4f1 100%) !important;
+  --background: #f4f8f7;
 }
 
 .page-header {
-  background: linear-gradient(135deg, $primary-color 0%, #024d45 100%);
-  color: white;
-  padding: 24px 20px 32px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px max(20px, calc((100vw - 900px) / 2)) 34px;
+  color: #fff;
+  background: linear-gradient(120deg, #126e63 0%, #0d514a 100%);
+}
+
+.page-header-copy {
+  max-width: 620px;
+
+  .header-title {
+    display: block;
+    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+  }
 
   h1 {
     margin: 0 0 8px;
-    font-size: 28px;
+    font-size: clamp(24px, 4vw, 32px);
     font-weight: 700;
     letter-spacing: -0.5px;
   }
 
   .header-subtitle {
+    max-width: 480px;
     margin: 0;
+    color: rgba(255, 255, 255, 0.86);
     font-size: 14px;
-    opacity: 0.9;
-    font-weight: 400;
+    line-height: 1.5;
   }
+}
+
+.pending-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pending-count {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .invitations-container {
-  max-width: 100%;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-top: 24px;
 }
 
-// Invitation Cards
-.invitation-card {
-  background: white;
-  border-radius: 16px;
-  margin-bottom: 16px;
-  overflow: hidden;
-  box-shadow: $shadow-md;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(3, 106, 93, 0.08);
+.list-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 2px 14px;
 
-  &:hover {
-    box-shadow: $shadow-lg;
-    transform: translateY(-2px);
+  h2 {
+    margin: 0;
+    color: $ink;
+    font-size: 17px;
+    font-weight: 700;
   }
 
-  &.accepted,
-  &.declined {
-    opacity: 0.75;
+  span {
+    color: $muted;
+    font-size: 12px;
+  }
+}
+
+.invitation-card {
+  margin-bottom: 14px;
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(25, 59, 55, 0.05);
+  transition: box-shadow 160ms ease, transform 160ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(25, 59, 55, 0.09);
   }
 
   .card-header {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
-    padding: 16px 20px;
-    border-bottom: 1px solid rgba(3, 106, 93, 0.08);
-    background: linear-gradient(135deg, rgba(3, 106, 93, 0.03) 0%, rgba(3, 106, 93, 0.01) 100%);
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 20px;
+    border-bottom: 1px solid $line;
   }
 
   .sender-info {
     display: flex;
+    align-items: center;
+    min-width: 0;
     gap: 12px;
-    align-items: flex-start;
-    flex: 1;
+  }
 
-    .sender-avatar {
-      min-width: 44px;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, $light-bg 0%, $light-bg-alt 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: $primary-color;
+  .sender-avatar {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    border-radius: 50%;
+    background: #eaf4f1;
+    color: $primary;
 
-      ion-icon {
-        font-size: 28px;
-      }
-    }
+    ion-icon { font-size: 27px; }
+  }
 
-    .sender-details {
-      padding-top: 2px;
+  .sender-details {
+    min-width: 0;
+  }
 
-      .sender-name {
-        margin: 0;
-        font-size: 15px;
-        font-weight: 600;
-        color: $dark-text;
-        line-height: 1.3;
-      }
+  .sender-name {
+    overflow: hidden;
+    margin: 0;
+    color: $ink;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+  }
 
-      .sender-email {
-        margin: 4px 0 0;
-        font-size: 13px;
-        color: $light-text;
-        line-height: 1.3;
-      }
-    }
+  .sender-email {
+    overflow-wrap: anywhere;
+    margin: 3px 0 0;
+    color: $muted;
+    font-size: 13px;
+    line-height: 1.4;
   }
 
   .status-badge {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    gap: 7px;
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: capitalize;
 
     .status-indicator {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      display: inline-block;
-      animation: pulse 2s ease-in-out infinite;
+      background: currentColor;
     }
 
-    &.pending {
-      background: rgba(255, 193, 7, 0.15);
-      color: #f59e0b;
-
-      .status-indicator {
-        background: #f59e0b;
-      }
-    }
-
-    &.accepted {
-      background: rgba(45, 211, 111, 0.15);
-      color: #2dd36f;
-      animation: none;
-
-      .status-indicator {
-        background: #2dd36f;
-        animation: none;
-      }
-    }
-
-    &.declined {
-      background: rgba(255, 58, 48, 0.15);
-      color: #ff3a30;
-      animation: none;
-
-      .status-indicator {
-        background: #ff3a30;
-        animation: none;
-      }
-    }
+    &.pending { background: #fff5dc; color: #916000; }
+    &.accepted { background: #e8f6ee; color: #237447; }
+    &.declined { background: #fff0ee; color: #a33d35; }
   }
 
   .card-content {
     padding: 16px 20px;
+  }
 
-    .invitation-message {
-      margin: 0 0 12px;
-      padding: 12px 14px;
-      background: $light-bg;
-      border-left: 3px solid $primary-color;
-      border-radius: 8px;
-      font-size: 14px;
-      color: $dark-text;
-      line-height: 1.6;
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
+  .invitation-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border-left: 3px solid #78aa9e;
+    border-radius: 4px 10px 10px 4px;
+    background: #f3f8f6;
+    color: #35534e;
+    font-size: 14px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
 
-      ion-icon {
-        min-width: 18px;
-        color: $primary-color;
-        margin-top: 2px;
-        font-size: 18px;
-      }
-    }
+    ion-icon { flex: 0 0 auto; margin-top: 2px; color: $primary; font-size: 17px; }
+  }
 
-    .invitation-date {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: $light-text;
+  .invitation-date {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: $muted;
+    font-size: 12px;
 
-      ion-icon {
-        font-size: 14px;
-        opacity: 0.7;
-      }
-
-      small {
-        margin: 0;
-      }
-    }
+    ion-icon { font-size: 15px; }
   }
 
   .card-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 16px 20px;
-    background: rgba(3, 106, 93, 0.02);
-    border-top: 1px solid rgba(3, 106, 93, 0.08);
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid $line;
+    background: #fbfdfc;
 
     ion-button {
-      --border-radius: 10px;
-      --padding-start: 16px;
-      --padding-end: 16px;
       min-height: 44px;
-      font-weight: 600;
-      font-size: 14px;
-      letter-spacing: 0.3px;
       margin: 0;
-      transition: all 0.3s ease;
+      --border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
 
-      ion-icon {
-        font-size: 18px;
-        margin-right: 6px;
-      }
+      ion-icon { font-size: 17px; }
+    }
 
-      &.accept-btn {
-        --background: linear-gradient(135deg, #2dd36f 0%, #26b347 100%) !important;
-        --color: white !important;
-        box-shadow: 0 4px 12px rgba(45, 211, 111, 0.3);
+    .accept-btn {
+      --background: #187b62;
+      --background-hover: #126b55;
+      --background-activated: #105b49;
+      --color: #fff;
+    }
 
-        &:active,
-        &:focus {
-          --background: linear-gradient(135deg, #26b347 0%, #1d8a37 100%) !important;
-          box-shadow: 0 6px 16px rgba(45, 211, 111, 0.4);
-        }
-      }
-
-      &.decline-btn {
-        --border-color: #ff3a30;
-        --color: #ff3a30 !important;
-        border: 1px solid #ff3a30;
-        box-shadow: none;
-
-        &:active,
-        &:focus {
-          --background: rgba(255, 58, 48, 0.1) !important;
-        }
-      }
+    .decline-btn {
+      --border-color: #d5a19c;
+      --color: #a33d35;
+      --background-hover: #fff4f2;
     }
   }
 
   .card-status-footer {
-    padding: 12px 20px;
-    background: rgba(3, 106, 93, 0.04);
-    border-top: 1px solid rgba(3, 106, 93, 0.08);
     display: flex;
     align-items: center;
+    padding: 12px 20px;
+    border-top: 1px solid $line;
+    background: #fbfdfc;
+  }
 
-    .status-text {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 500;
+  .status-text {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
 
-      ion-icon {
-        font-size: 16px;
-      }
-
-      &.accepted {
-        color: #2dd36f;
-
-        ion-icon {
-          animation: slideInRight 0.4s ease-out;
-        }
-      }
-
-      &.declined {
-        color: #ff3a30;
-
-        ion-icon {
-          animation: slideInRight 0.4s ease-out;
-        }
-      }
-    }
+    &.accepted { color: #237447; }
+    &.declined { color: #a33d35; }
   }
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(-8px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-// Empty State
 .empty-state {
   display: flex;
+  min-height: 330px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 24px 80px;
+  padding: 44px 24px;
+  border: 1px dashed #cbdcd7;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
   text-align: center;
-  min-height: 400px;
 
   .empty-icon {
-    font-size: 72px;
-    color: rgba(3, 106, 93, 0.15);
-    margin-bottom: 20px;
+    display: grid;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 18px;
+    place-items: center;
+    border-radius: 50%;
+    background: #eaf4f1;
+    color: #398577;
+    font-size: 34px;
   }
 
-  h2 {
-    margin: 0 0 8px;
-    font-size: 18px;
-    font-weight: 600;
-    color: $dark-text;
-  }
-
-  p {
-    margin: 4px 0;
-    font-size: 14px;
-    color: $medium-text;
-    line-height: 1.6;
-
-    &.empty-hint {
-      color: $light-text;
-      font-size: 13px;
-      margin-top: 12px;
-    }
-  }
+  h2 { margin: 0 0 8px; color: $ink; font-size: 19px; font-weight: 700; }
+  p { max-width: 340px; margin: 3px 0; color: $muted; font-size: 14px; line-height: 1.55; }
+  .empty-hint { color: #82938f; font-size: 13px; }
 }
 
-/* Responsive design */
-@media (max-width: 480px) {
+@media (max-width: 520px) {
   .page-header {
-    padding: 20px 16px 24px;
-
-    h1 {
-      font-size: 24px;
-    }
-
-    .header-subtitle {
-      font-size: 13px;
-    }
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px 20px;
   }
 
-  .invitations-container {
-    --ion-padding: 12px;
-  }
-
+  .pending-summary { padding: 9px 12px; }
+  .pending-count { font-size: 24px; }
+  .invitations-container { padding: 18px 14px; }
   .invitation-card {
-    margin-bottom: 12px;
     border-radius: 14px;
 
-    .card-actions {
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 12px 16px;
-
-      ion-button {
-        min-height: 40px;
-        font-size: 13px;
-
-        ion-icon {
-          font-size: 16px;
-          margin-right: 4px;
-        }
-      }
-    }
+    .card-header { padding: 15px; }
+    .sender-avatar { width: 40px; height: 40px; flex-basis: 40px; }
+    .sender-name { font-size: 14px; }
+    .sender-email { font-size: 12px; }
+    .status-badge { gap: 5px; padding: 5px 8px; font-size: 10px; }
+    .card-content { padding: 14px 15px; }
+    .card-actions { gap: 8px; padding: 12px 15px; }
+    .card-actions ion-button { min-height: 42px; font-size: 13px; }
+    .card-status-footer { padding: 11px 15px; }
   }
 
-  .empty-state {
-    padding: 40px 20px 60px;
-    min-height: 300px;
-
-    .empty-icon {
-      font-size: 56px;
-      margin-bottom: 16px;
-    }
-
-    h2 {
-      font-size: 16px;
-    }
-
-    p {
-      font-size: 13px;
-    }
-  }
+  .empty-state { min-height: 280px; padding: 32px 18px; }
 }
 
-@media (min-width: 481px) and (max-width: 768px) {
-  .invitations-container {
-    max-width: 600px;
-    margin: 0 auto;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .invitation-card { transition: none; }
+  .invitation-card:hover { transform: none; }
 }
-

@@ -7,7 +7,8 @@
       <ion-button 
         fill="clear" 
         (click)="openUserMenu($event)"
-        size="small">
+        size="small"
+        aria-label="Open account menu">
         <ion-icon name="person-circle-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -19,12 +20,13 @@
     <!-- Welcome Section -->
     <div class="welcome-section">
       <div>
+        <p class="welcome-eyebrow">CARE OVERVIEW</p>
         <h2>Welcome, Dr. {{ doctorName }}</h2>
-        <p>{{ patients.length }} Active Patient{{ patients.length !== 1 ? 's' : '' }} • Professional Dashboard</p>
+        <p>{{ patients.length }} active patient{{ patients.length !== 1 ? 's' : '' }} <span class="welcome-separator">·</span> Professional dashboard</p>
       </div>
       <div class="welcome-meta" *ngIf="getPendingReviewCount() > 0">
         <ion-icon name="alert-circle-outline"></ion-icon>
-        <span>{{ getPendingReviewCount() }} pending review</span>
+        <span>{{ getPendingReviewCount() }} pending {{ getPendingReviewCount() === 1 ? 'review' : 'reviews' }}</span>
       </div>
     </div>
 
@@ -43,6 +45,13 @@
         </ion-card-content>
       </ion-card>
     </div>
+
+  <!-- Patient directory -->
+  <div class="directory-heading">
+    <div>
+      <h3>Patients</h3>
+    </div>
+  </div>
 
   <!-- Filters and Search -->
   <div class="filters-section">
@@ -143,7 +152,7 @@
 
   <!-- Floating Action Button - Invite Patient -->
   <ion-fab class="doctor-fab" vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button routerLink="/doctor/patient-invite">
+    <ion-fab-button routerLink="/doctor/patient-invite" aria-label="Invite a patient">
       <ion-icon name="people-outline"></ion-icon>
       <ion-badge *ngIf="pendingInviteCount > 0" color="danger">{{ pendingInviteCount }}</ion-badge>
     </ion-fab-button>

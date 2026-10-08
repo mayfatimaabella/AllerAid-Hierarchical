@@ -1,8 +1,16 @@
 <div class="manual-barcode-modal-backdrop" (click)="closeModal()">
-  <div class="manual-barcode-modal-content" (click)="$event.stopPropagation()">
-    <ion-item class="ion-margin-top">
-      <ion-label position="stacked">Enter Barcode Manually</ion-label>
-      <ion-input [(ngModel)]="manualBarcode" placeholder="e.g. 737628064502"></ion-input>
+  <div class="manual-barcode-modal-content" role="dialog" aria-modal="true" aria-labelledby="manual-barcode-title" (click)="$event.stopPropagation()">
+    <div class="manual-modal-heading">
+      <div class="manual-icon"><ion-icon name="barcode-outline"></ion-icon></div>
+      <div>
+        <h2 id="manual-barcode-title">Enter a barcode</h2>
+        <p>Type the numbers printed below the product barcode.</p>
+      </div>
+    </div>
+
+    <ion-item class="barcode-input-item">
+      <ion-label position="stacked">Barcode number</ion-label>
+      <ion-input [(ngModel)]="manualBarcode" inputmode="numeric" autocomplete="off" placeholder="e.g. 737628064502"></ion-input>
     </ion-item>
 
     <ion-button expand="block" id="searchBtn" (click)="onSubmit()">
@@ -10,7 +18,7 @@
       Search Product
     </ion-button>
     
-    <ion-button expand="block" fill="outline" style="outline-color: #036a5d;" (click)="closeModal()">
+    <ion-button expand="block" fill="outline" (click)="closeModal()">
       Cancel
     </ion-button>
   </div>

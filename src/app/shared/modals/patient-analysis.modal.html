@@ -1,6 +1,9 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Patient Analysis - {{ patient.patientName }}</ion-title>
+    <ion-title>
+      <span class="eyebrow">PATIENT RECORD</span>
+      <span class="title-name">{{ patient.patientName }}</span>
+    </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()" fill="clear">
         <ion-icon name="close"></ion-icon>
@@ -18,6 +21,9 @@
       </ion-segment-button>
       <ion-segment-button value="visits">
         <ion-label>Visits</ion-label>
+        <ion-badge *ngIf="getPendingVisitCount() > 0" class="pending-visit-badge">
+          {{ getPendingVisitCount() }}
+        </ion-badge>
       </ion-segment-button>
       <ion-segment-button value="history">
         <ion-label>History</ion-label>
@@ -31,32 +37,35 @@
       <!-- Patient Basic Info -->
       <ion-card>
         <ion-card-header>
-          <ion-card-title>Patient Information</ion-card-title>
+          <div class="section-heading">
+            <span class="section-icon"><ion-icon name="person-outline"></ion-icon></span>
+            <div><ion-card-title>Patient Information</ion-card-title><p>Personal and contact details</p></div>
+          </div>
         </ion-card-header>
         <ion-card-content>
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Name:</span>
+              <span class="label">Full name</span>
               <span class="value">{{ analysis.personalInfo?.firstName }} {{ analysis.personalInfo?.lastName }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Age:</span>
+              <span class="label">Age</span>
               <span class="value">{{ calculateAge(analysis.personalInfo?.dateOfBirth) }} years</span>
             </div>
             <div class="info-item">
-              <span class="label">Gender:</span>
+              <span class="label">Gender</span>
               <span class="value">{{ analysis.personalInfo?.gender | titlecase }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Blood Type:</span>
+              <span class="label">Blood type</span>
               <span class="value">{{ analysis.personalInfo?.bloodType || 'Not specified' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Phone:</span>
+              <span class="label">Phone</span>
               <span class="value">{{ analysis.personalInfo?.phoneNumber }}</span>
             </div>
             <div class="info-item">
-              <span class="label">Email:</span>
+              <span class="label">Email</span>
               <span class="value">{{ analysis.personalInfo?.email }}</span>
             </div>
           </div>
@@ -66,7 +75,10 @@
       <!-- Current Allergies -->
       <ion-card>
         <ion-card-header>
-          <ion-card-title>Current Allergies</ion-card-title>
+          <div class="section-heading">
+            <span class="section-icon allergy-icon"><ion-icon name="alert-circle-outline"></ion-icon></span>
+            <div><ion-card-title>Current Allergies</ion-card-title><p>Known triggers and sensitivities</p></div>
+          </div>
         </ion-card-header>
         <ion-card-content>
           <div class="allergies-list">
@@ -115,6 +127,7 @@
 
           <div class="visit-status-row">
             <ion-chip [color]="visit.status === 'confirmed' ? 'success' : visit.status === 'rejected' ? 'danger' : 'warning'">
+              <ion-icon [name]="visit.status === 'confirmed' ? 'checkmark-circle' : visit.status === 'rejected' ? 'close-circle' : 'time-outline'"></ion-icon>
               <ion-label>
                 {{ visit.status === 'confirmed' ? 'Confirmed' : visit.status === 'rejected' ? 'Rejected' : 'Pending confirmation' }}
               </ion-label>

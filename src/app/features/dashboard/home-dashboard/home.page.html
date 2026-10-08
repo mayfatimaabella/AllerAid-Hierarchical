@@ -138,7 +138,11 @@
   <!-- FULLSCREEN EMERGENCY DASHBOARD -->
 
   <div class="wrapper scrollable-content" [class.hidden-home]="isEmergencyActive">
-    <h2 class="page-title">Welcome, {{ userName }}!</h2>
+    <div class="dashboard-intro">
+      <p class="intro-eyebrow">YOUR SAFETY HUB</p>
+      <h2 class="page-title">Welcome, {{ userName }}!</h2>
+      <p class="intro-copy">Your allergy information and emergency support, all in one place.</p>
+    </div>
 
         <div *ngIf="showAllergyBanner" class="buddy-banner allergy-banner">
           
@@ -231,13 +235,14 @@
         </div>
 
     <div class="emergency-wrapper">
-      <p class="emergency-label">Emergency Trigger</p>
+      <p class="emergency-label">Need help right now?</p>
 
-      <div class="circle-button" (click)="triggerEmergency()">
+      <button class="circle-button" type="button" (click)="triggerEmergency()" aria-label="Send an emergency alert">
         <ion-icon name="notifications"></ion-icon>
-        <h2 class="emergency-title">SOS</h2>
-        <p class="instruction-text">Tap or shake device</p>
-      </div>
+        <span class="emergency-title">SOS</span>
+        <span class="instruction-text">Tap to alert your contacts</span>
+      </button>
+      <p class="emergency-helper">An alert will be sent after a short countdown.</p>
     </div>
 
     <!-- Show the emergency response notification when a buddy responds -->

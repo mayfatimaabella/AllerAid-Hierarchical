@@ -310,14 +310,85 @@ export class PollenMapPage implements OnInit, OnDestroy {
   }
 
   async openHelpModal() {
-    const alert = await this.alertController.create({
-      header: 'Air Quality Guide',
-      cssClass: 'aqi-custom-alert',
-      message: 'PM10: Measures coarse particles (dust/pollen) ≤ 10µm.\n' +
-                'PM2.5: Particles ≤ 2.5µm.\n' +
-                'Note: If the map looks empty, click "Recenter Map".',
-      buttons: ['UNDERSTOOD']
-    });
-    await alert.present();
-  }
+  const alert = await this.alertController.create({
+    header: 'Air Quality Guide',
+    cssClass: 'aqi-custom-alert',
+
+    message: `
+      <div class="aqi-help-content">
+
+        <div class="help-intro">
+          <p>The <strong>Air Quality Index (AQI)</strong> is a measure used to describe how clean or polluted the air is. Lower values generally indicate better air quality.</p>
+          <p><strong>PM10:</strong> Measures coarse particles (dust/pollen) &le; 10 &micro;m.</p>
+          <p><strong>PM2.5:</strong> Measures fine particles &le; 2.5 &micro;m.</p>
+        </div>
+
+        <div class="aqi-levels">
+
+          <div class="aqi-level good">
+            <span class="aqi-range">0&ndash;50</span>
+            <div>
+              <strong>Good</strong>
+              <small>Air quality is satisfactory.</small>
+            </div>
+          </div>
+
+          <div class="aqi-level moderate">
+            <span class="aqi-range">51&ndash;100</span>
+            <div>
+              <strong>Moderate</strong>
+              <small>Air quality is generally acceptable.</small>
+            </div>
+          </div>
+
+          <div class="aqi-level sensitive">
+            <span class="aqi-range">101&ndash;150</span>
+            <div>
+              <strong>Unhealthy for Sensitive Groups</strong>
+              <small>Sensitive individuals may experience health effects.</small>
+            </div>
+          </div>
+
+          <div class="aqi-level unhealthy">
+            <span class="aqi-range">151&ndash;200</span>
+            <div>
+              <strong>Unhealthy</strong>
+              <small>Some health effects may occur.</small>
+            </div>
+          </div>
+
+          <div class="aqi-level very-unhealthy">
+            <span class="aqi-range">201&ndash;300</span>
+            <div>
+              <strong>Very Unhealthy</strong>
+              <small>Health alert conditions.</small>
+            </div>
+          </div>
+
+          <div class="aqi-level hazardous">
+            <span class="aqi-range">301&ndash;500</span>
+            <div>
+              <strong>Hazardous</strong>
+              <small>Health warnings for everyone.</small>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="map-help">
+          <strong>Map tip</strong>
+          <p>
+            If the map looks empty or your location is not visible,
+            tap <strong>Recenter Map</strong>.
+          </p>
+        </div>
+
+      </div>
+    `,
+
+    buttons: ['UNDERSTOOD']
+  });
+
+  await alert.present();
+}
 }

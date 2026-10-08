@@ -26,7 +26,11 @@
           <div 
             class="custom-scan-card" 
             *ngFor="let scan of recentScans; let i = index"
-            (click)="onScanSelected(scan)">
+            role="button"
+            tabindex="0"
+            (click)="onScanSelected(scan)"
+            (keydown.enter)="onScanSelected(scan)"
+            (keydown.space)="$event.preventDefault(); onScanSelected(scan)">
             
             <div class="card-body">
               <div class="image-box">
@@ -58,14 +62,14 @@
             </div>
 
             <div class="card-actions">
-              <button class="delete-icon-btn" (click)="onDeleteScan(i, $event)">
+              <button type="button" class="delete-icon-btn" [attr.aria-label]="'Delete ' + scan.product_name + ' from recent scans'" (click)="onDeleteScan(i, $event)">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>
               <ion-icon name="chevron-forward" class="arrow-icon"></ion-icon>
             </div>
           </div>
 
-          <button class="clear-history-btn" (click)="onClearScans()">
+          <button type="button" class="clear-history-btn" (click)="onClearScans()">
             <ion-icon name="trash-bin-outline"></ion-icon>
             <span>Clear Recent Scans</span>
           </button>

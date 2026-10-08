@@ -9,12 +9,23 @@
 
 <ion-content fullscreen>
   <div class="page-header">
-    <h1>Received Invitations</h1>
-    <p class="header-subtitle">Manage your patient collaboration requests</p>
+    <div class="page-header-copy">
+      <span class="header-title">PATIENT CONNECTIONS</span>
+      <h1>Patient invitations</h1>
+      <p class="header-subtitle">Review requests from patients and manage your connections.</p>
+    </div>
+    <div class="pending-summary" *ngIf="getPendingReceivedCount() > 0" aria-live="polite">
+      <span class="pending-count">{{ getPendingReceivedCount() }}</span>
+      <span>{{ getPendingReceivedCount() === 1 ? 'request needs' : 'requests need' }}<br />your review</span>
+    </div>
   </div>
 
   <div class="invitations-container ion-padding">
-    <div *ngIf="receivedInvitations.length > 0; else noInvitations">
+    <div *ngIf="receivedInvitations.length > 0; else noInvitations" class="invitation-list">
+      <div class="list-heading">
+        <h2>Received requests</h2>
+        <span>{{ receivedInvitations.length }} {{ receivedInvitations.length === 1 ? 'invitation' : 'invitations' }}</span>
+      </div>
       <div
         *ngFor="let invitation of receivedInvitations"
         class="invitation-card"
@@ -31,7 +42,7 @@
             </div>
           </div>
 
-          <div class="status-badge" [ngClass]="invitation.status">
+          <div class="status-badge" [ngClass]="invitation.status" [attr.aria-label]="'Invitation status: ' + invitation.status">
             <span class="status-indicator"></span>
             {{ invitation.status | titlecase }}
           </div>
@@ -45,7 +56,7 @@
 
           <div class="invitation-date">
             <ion-icon name="time-outline"></ion-icon>
-            <small>{{ invitation.createdAt | date: 'MMM d, y' }}</small>
+            <small>Received {{ invitation.createdAt | date: 'MMM d, y' }}</small>
           </div>
         </div>
 

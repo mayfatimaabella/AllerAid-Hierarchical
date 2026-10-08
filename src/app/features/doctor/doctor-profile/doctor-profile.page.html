@@ -1,8 +1,5 @@
 <ion-header [translucent]="true">
   <ion-toolbar class="toolbar--teal">
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
     <ion-title>Doctor Profile</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -16,6 +13,7 @@
     <!-- Doctor Header Card -->
     <section class="profile-header">
       <div class="profile-header-card">
+        <div class="profile-cover" aria-hidden="true"></div>
         <div class="profile-header-content">
           <ion-avatar class="profile-avatar">
             <img [src]="doctorProfile?.profilePhoto || 'https://ionicframework.com/docs/img/demos/avatar.svg'" 
@@ -29,37 +27,47 @@
             <div class="profile-email">
               {{ doctorProfileForm.get('specialization')?.value }}
             </div>
+            <div class="profile-hospital" *ngIf="doctorProfileForm.get('hospital')?.value">
+              <ion-icon name="location-outline"></ion-icon>
+              {{ doctorProfileForm.get('hospital')?.value }}
+            </div>
           </div>
         </div>
 
-        <button class="profile-menu-btn" id="doctorProfileMenuBtn" aria-label="Menu">
-          <ion-icon name="ellipsis-vertical"></ion-icon>
+        <button class="profile-menu-btn" type="button" aria-label="Edit profile" (click)="toggleEditMode()" [disabled]="isEditing">
+          <ion-icon name="pencil-outline"></ion-icon>
         </button>
       </div>
     </section>
 
-    <!-- Profile Menu Popover -->
-    <ion-popover trigger="doctorProfileMenuBtn" [dismissOnSelect]="true">
-      <ng-template>
-        <ion-content>
-          <ion-list>
-            <ion-item button (click)="toggleEditMode()">
-              <ion-icon name="pencil-outline" slot="start"></ion-icon>
-              <ion-label>{{ isEditing ? 'Cancel Edit' : 'Edit Profile' }}</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-content>
-      </ng-template>
-    </ion-popover>
-
     <!-- View Mode -->
 <!-- View Mode -->
 <ng-container *ngIf="!isEditing">
-  <section class="profile-card">
+  <section class="profile-card view-profile-card">
 
     <ion-card class="info-card">
       <ion-card-header>
+        <span class="card-icon"><ion-icon name="document-text-outline"></ion-icon></span>
+        <div class="card-heading-copy">
+        <ion-card-title>About</ion-card-title>
+        <p>A short introduction</p>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content class="about-content">
+        <p class="bio-text">
+          {{ doctorProfileForm.get('bio')?.value || 'No bio added yet.' }}
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="info-card">
+      <ion-card-header>
+        <span class="card-icon"><ion-icon name="briefcase-outline"></ion-icon></span>
+        <div class="card-heading-copy">
         <ion-card-title>Professional Information</ion-card-title>
+        <p>Credentials and practice</p>
+        </div>
       </ion-card-header>
 
       <ion-card-content>
@@ -95,29 +103,11 @@
 
     <ion-card class="info-card">
       <ion-card-header>
-        <ion-card-title>Personal Information</ion-card-title>
-      </ion-card-header>
-
-      <ion-card-content>
-        <ion-item lines="inset">
-          <ion-label>First Name</ion-label>
-          <ion-text slot="end">
-            {{ doctorProfileForm.get('firstName')?.value || 'Not set' }}
-          </ion-text>
-        </ion-item>
-
-        <ion-item>
-          <ion-label>Last Name</ion-label>
-          <ion-text slot="end">
-            {{ doctorProfileForm.get('lastName')?.value || 'Not set' }}
-          </ion-text>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card class="info-card">
-      <ion-card-header>
+        <span class="card-icon"><ion-icon name="call-outline"></ion-icon></span>
+        <div class="card-heading-copy">
         <ion-card-title>Contact Information</ion-card-title>
+        <p>How patients can reach you</p>
+        </div>
       </ion-card-header>
 
       <ion-card-content>
@@ -136,26 +126,25 @@
         </ion-item>
       </ion-card-content>
     </ion-card>
-
-    <ion-card class="info-card">
-      <ion-card-header>
-        <ion-card-title>About</ion-card-title>
-      </ion-card-header>
-
-      <ion-card-content class="about-content">
-        <p class="bio-text">
-          {{ doctorProfileForm.get('bio')?.value || 'No bio added yet.' }}
-        </p>
-      </ion-card-content>
-    </ion-card>
-
   </section>
 </ng-container>
 
     <!-- Edit Mode -->
     <ng-container *ngIf="isEditing">
-      <section class="profile-card">
-        <form [formGroup]="doctorProfileForm">
+      <section class="profile-card edit-profile-card">
+        <form class="edit-profile-form" [formGroup]="doctorProfileForm">
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>About</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="none">
+                <ion-label position="stacked">Bio</ion-label>
+                <ion-textarea formControlName="bio" placeholder="Enter your bio"></ion-textarea>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+
           <ion-card class="info-card">
             <ion-card-header>
               <ion-card-title>Personal Information</ion-card-title>
@@ -196,18 +185,6 @@
               <ion-item lines="none">
                 <ion-label position="stacked">Phone Number</ion-label>
                 <ion-input type="tel" formControlName="phoneNumber" placeholder="Enter phone number"></ion-input>
-              </ion-item>
-            </ion-card-content>
-          </ion-card>
-
-          <ion-card class="info-card">
-            <ion-card-header>
-              <ion-card-title>Additional Information</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <ion-item lines="none">
-                <ion-label position="stacked">Bio</ion-label>
-                <ion-textarea formControlName="bio" placeholder="Enter your bio"></ion-textarea>
               </ion-item>
             </ion-card-content>
           </ion-card>

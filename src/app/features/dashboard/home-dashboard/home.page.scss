@@ -25,11 +25,32 @@ ion-content {
 }
 
 .page-title {
-  margin: 8px 0 16px;
-  font-size: 28px;
+  margin: 3px 0 5px;
+  font-size: clamp(25px, 6vw, 32px);
   font-weight: 800;
   color: #023f37;
   text-align: left;
+  letter-spacing: -0.7px;
+}
+
+.dashboard-intro {
+  padding: 12px 2px 18px;
+}
+
+.intro-eyebrow {
+  margin: 0;
+  color: #43877c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+.intro-copy {
+  max-width: 340px;
+  margin: 0;
+  color: #667d79;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 
@@ -116,24 +137,24 @@ ion-content {
   align-items: center;
   text-align: center;
 
-  margin: 16px 0;
-  padding: 24px 18px;
+  margin: 4px 0 16px;
+  padding: 22px 18px 18px;
 
   background: #ffffff;
-  border-radius: 28px;
+  border-radius: 26px;
 
   border: 1px solid rgba(3, 106, 93, 0.08);
 
-  box-shadow: 0 8px 26px rgba(15, 42, 38, 0.07);
+  box-shadow: 0 10px 30px rgba(15, 42, 38, 0.08);
 }
 
 .emergency-label {
-  margin: 0 0 18px;
+  margin: 0 0 17px;
 
   font-size: 12px;
   font-weight: 800;
 
-  color: #036a5d;
+  color: #334e49;
 
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -168,11 +189,19 @@ ion-content {
     box-shadow 0.18s ease;
 
   cursor: pointer;
+  padding: 0;
+  font: inherit;
+  appearance: none;
 }
 
 .circle-button:active {
   transform: scale(0.95);
   box-shadow: 0 8px 22px rgba(214, 29, 29, 0.28);
+}
+
+.circle-button:focus-visible {
+  outline: 4px solid #183f39;
+  outline-offset: 9px;
 }
 
 .circle-button ion-icon {
@@ -199,6 +228,13 @@ ion-content {
   font-weight: 600;
 }
 
+.emergency-helper {
+  margin: 18px 0 0;
+  color: #6d817d;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 
 /* 
    ALERTS BUTTON
@@ -211,8 +247,9 @@ ion-content {
 
 .alerts-button-wrapper ion-button {
   --border-radius: 14px;
-  --border-color: #036a5d;
-  --color: #036a5d;
+  --border-color: #c8ded9;
+  --color: #075e53;
+  --background: #ffffff;
   font-weight: 700;
   height: 48px;
 }
@@ -233,17 +270,13 @@ ion-content {
 .health-card {
   margin: 0;
 
-  border-radius: 22px;
+  border-radius: 20px;
 
-  background: linear-gradient(
-    135deg,
-    #036a5d,
-    #0a8577
-  );
+  background: linear-gradient(145deg, #075e53, #128879);
 
   border: none;
 
-  box-shadow: 0 8px 24px rgba(3, 106, 93, 0.22);
+  box-shadow: 0 8px 22px rgba(3, 106, 93, 0.16);
 
   overflow: hidden;
 }
@@ -314,7 +347,8 @@ ion-content {
   font-size: 12px;
   color: #ffffff;
 
-  opacity: 0.85;
+  opacity: 0.88;
+  text-align: center;
 }
 
 .clickable-card {
@@ -874,6 +908,36 @@ ion-content {
 
   box-shadow:
     0 7px 18px rgba(40, 200, 90, 0.22);
+}
+
+.dashboard-header,
+.dashboard-card {
+  border: 1px solid rgba(3, 106, 93, 0.07);
+}
+
+.dashboard-header {
+  background: linear-gradient(180deg, #ffffff 0%, #fffafa 100%);
+}
+
+.dashboard-card h3 {
+  padding-bottom: 11px;
+  border-bottom: 1px solid #edf2f1;
+}
+
+.countdown-card,
+.progress-card {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 24px 70px rgba(18, 34, 31, 0.28);
+}
+
+@media (max-width: 360px) {
+  .health-overview-container {
+    grid-template-columns: 1fr;
+  }
+
+  .health-card ion-card-content {
+    padding-bottom: 14px;
+  }
 }
 
 /* 

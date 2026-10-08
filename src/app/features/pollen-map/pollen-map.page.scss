@@ -100,6 +100,147 @@ ion-toolbar {
   }
 }
 
+.aqi-description {
+  margin: 8px 0 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #555;
+}
+
+.aqi-custom-alert {
+
+  .alert-message {
+    max-height: 65vh;
+    overflow-y: auto;
+    text-align: left;
+  }
+
+  .aqi-help-content {
+    font-size: 11px;
+    color: #444;
+  }
+
+  .help-intro {
+    margin: 0 0 12px;
+    line-height: 1.45;
+
+    p {
+      margin: 6px 0 0;
+    }
+  }
+
+  .aqi-levels {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .aqi-level {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 8px;
+    border-radius: 8px;
+    border-left: 4px solid;
+
+    .aqi-range {
+      min-width: 52px;
+      font-weight: 800;
+      font-size: 10px;
+    }
+
+    strong {
+      display: block;
+      font-size: 10px;
+    }
+
+    small {
+      display: block;
+      margin-top: 2px;
+      font-size: 9px;
+      color: #666;
+    }
+  }
+
+  .aqi-level.good {
+    background: #e8f5f0;
+    border-color: #126d61;
+
+    .aqi-range,
+    strong {
+      color: #126d61;
+    }
+  }
+
+  .aqi-level.moderate {
+    background: #fff9df;
+    border-color: #ffc409;
+
+    .aqi-range,
+    strong {
+      color: #8a7000;
+    }
+  }
+
+  .aqi-level.sensitive {
+    background: #fff0dc;
+    border-color: #f7a01c;
+
+    .aqi-range,
+    strong {
+      color: #b45f00;
+    }
+  }
+
+  .aqi-level.unhealthy {
+    background: #fde8ec;
+    border-color: #eb445a;
+
+    .aqi-range,
+    strong {
+      color: #c42d45;
+    }
+  }
+
+  .aqi-level.very-unhealthy {
+    background: #f2e7f7;
+    border-color: #8932b2;
+
+    .aqi-range,
+    strong {
+      color: #702394;
+    }
+  }
+
+  .aqi-level.hazardous {
+    background: #eee0e5;
+    border-color: #7e0023;
+
+    .aqi-range,
+    strong {
+      color: #7e0023;
+    }
+  }
+
+  .map-help {
+    margin-top: 12px;
+    padding: 9px;
+    border-radius: 8px;
+    background: #f5faf8;
+    border: 1px solid rgba(25, 132, 118, 0.15);
+
+    strong {
+      color: #126d61;
+    }
+
+    p {
+      margin: 4px 0 0;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+  }
+}
+
 /* --- Risk Logs --- */
 .logs-container {
   background: white;

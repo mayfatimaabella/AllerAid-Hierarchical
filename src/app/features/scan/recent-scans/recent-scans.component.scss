@@ -1,6 +1,6 @@
 // Root Container Styling
 ion-content {
-  --background: #ffffff !important;
+  --background: #f5fbfa !important;
   color: #1f4a42 !important;
 }
 
@@ -17,7 +17,7 @@ ion-header {
 }
 
 .modal-toolbar {
-  --background: #ffffff;
+  --background: #f5fbfa;
   padding: 10px 0;
   min-height: 44px;
   display: flex;
@@ -26,7 +26,7 @@ ion-header {
 
 // Page Titles
 .scans-header {
-  padding: 0 24px 20px;
+  padding: 0 22px 20px;
   
   .header-title {
     font-size: 28px;
@@ -38,27 +38,35 @@ ion-header {
   
   .header-subtitle {
     font-size: 13px;
-    color: #adb5bd;
+    display: block;
+    margin-top: 4px;
+    color: #6b8581;
     font-weight: 600;
   }
 }
 
 .scans-container {
-  padding: 0 20px 40px;
+  padding: 0 16px 40px;
 }
 
 // Modern Card Layout
 .custom-scan-card {
   background: #ffffff;
-  border-radius: 22px;
+  border-radius: 18px;
   padding: 14px;
   margin-bottom: 16px;
-  border: 1px solid #f0f4f3;
-  box-shadow: 0 8px 20px rgba(3, 106, 93, 0.04);
+  border: 1px solid #e1eeeb;
+  box-shadow: 0 6px 18px rgba(3, 106, 93, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-between;
   transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid #075e53;
+    outline-offset: 2px;
+  }
 
   &:active {
     transform: scale(0.97);
@@ -99,8 +107,8 @@ ion-header {
     border: 3px solid #ffffff;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
     
-    &.safe { background: #2ecc71; }
-    &.warning { background: #eb445a; }
+    &.safe { background: #16815f; }
+    &.warning { background: #c43a4d; }
   }
 }
 
@@ -162,8 +170,8 @@ ion-header {
   text-transform: uppercase;
   flex-shrink: 0;
   
-  &.safe { background: #ebfbee; color: #2ecc71; }
-  &.warning { background: #fff5f5; color: #eb445a; }
+  &.safe { background: #e9f7f1; color: #176d53; }
+  &.warning { background: #fff0f1; color: #a52e40; }
 }
 
 // Actions Operations Layout
@@ -176,7 +184,7 @@ ion-header {
     background: transparent;
     border: none;
     padding: 8px;
-    color: #ffc9c9;
+    color: #8a5b60;
     font-size: 20px;
     transition: color 0.2s;
     
@@ -214,7 +222,11 @@ ion-header {
 
 // Empty State Panel Interface View
 .empty-state {
-  padding: 60px 40px;
+  margin: 8px 0;
+  padding: 44px 28px;
+  border: 1px solid #e1eeeb;
+  border-radius: 22px;
+  background: #ffffff;
   text-align: center;
   
   .empty-icon-circle {

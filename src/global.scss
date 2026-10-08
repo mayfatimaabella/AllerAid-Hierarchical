@@ -809,10 +809,10 @@ ion-modal.responder-map-modal {
 
   .alert-message {
     text-align: left;
-    font-size: 13px !important;
-    line-height: 1.5;
+    font-size: 12px !important;
+    line-height: 1.45;
     color: #333;
-    white-space: pre-wrap !important; 
+    white-space: normal !important;
     padding: 10px 15px !important;
     
     font {
@@ -822,6 +822,91 @@ ion-modal.responder-map-modal {
        font-style: italic;
        color: #666;
     }
+  }
+
+  .aqi-help-content p {
+    margin: 0 0 8px;
+  }
+
+  .aqi-help-content .help-intro {
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .aqi-help-content .aqi-levels {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .aqi-help-content .aqi-level {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-left: 4px solid;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  .aqi-help-content .aqi-range {
+    flex: 0 0 58px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .aqi-help-content .aqi-level strong,
+  .aqi-help-content .aqi-level small {
+    display: block;
+  }
+
+  .aqi-help-content .aqi-level strong {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .aqi-help-content .aqi-level small {
+    margin-top: 2px;
+    color: #555;
+    font-size: 10.5px;
+    line-height: 1.35;
+  }
+
+  .aqi-help-content .aqi-level.good { background: #e8f5f0; border-color: #126d61; }
+  .aqi-help-content .aqi-level.good .aqi-range,
+  .aqi-help-content .aqi-level.good strong { color: #126d61; }
+  .aqi-help-content .aqi-level.moderate { background: #fff9df; border-color: #ffc409; }
+  .aqi-help-content .aqi-level.moderate .aqi-range,
+  .aqi-help-content .aqi-level.moderate strong { color: #806800; }
+  .aqi-help-content .aqi-level.sensitive { background: #fff0dc; border-color: #f7a01c; }
+  .aqi-help-content .aqi-level.sensitive .aqi-range,
+  .aqi-help-content .aqi-level.sensitive strong { color: #a65300; }
+  .aqi-help-content .aqi-level.unhealthy { background: #fde8ec; border-color: #eb445a; }
+  .aqi-help-content .aqi-level.unhealthy .aqi-range,
+  .aqi-help-content .aqi-level.unhealthy strong { color: #c42d45; }
+  .aqi-help-content .aqi-level.very-unhealthy { background: #f2e7f7; border-color: #8932b2; }
+  .aqi-help-content .aqi-level.very-unhealthy .aqi-range,
+  .aqi-help-content .aqi-level.very-unhealthy strong { color: #702394; }
+  .aqi-help-content .aqi-level.hazardous { background: #eee0e5; border-color: #7e0023; }
+  .aqi-help-content .aqi-level.hazardous .aqi-range,
+  .aqi-help-content .aqi-level.hazardous strong { color: #7e0023; }
+
+  .aqi-help-content .map-help {
+    margin-top: 10px;
+    padding: 9px;
+    border: 1px solid rgba(25, 132, 118, 0.15);
+    border-radius: 8px;
+    background: #f5faf8;
+  }
+
+  .aqi-help-content .map-help strong {
+    color: #126d61;
+  }
+
+  .aqi-help-content .map-help p {
+    margin: 4px 0 0;
+    font-size: 11px;
   }
 
   .alert-radio-group {
