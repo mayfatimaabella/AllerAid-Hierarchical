@@ -108,5 +108,10 @@ ion-button {
   box-shadow: 0 4px 10px -2px rgba(0,0,0,0.18);
   transition: background-color .18s ease, transform .18s ease;
 }
-.brand-save-btn:active { transform: translateY(1px); }
-.brand-save-btn[disabled] { --background: #7fbfb6 !important; --color:#f2f2f2 !important; }
+.brand-save-btn:active {
+  transform: translateY(1px);
+}
+.brand-save-btn[disabled] {
+  --background: #7fbfb6 !important;
+  --color:#f2f2f2 !important;
+}

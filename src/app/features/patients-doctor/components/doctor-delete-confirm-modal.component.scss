@@ -43,7 +43,9 @@
   color: #c63c3e;
 }
 
-.delete-icon-wrap ion-icon { font-size: 27px; }
+.delete-icon-wrap ion-icon {
+  font-size: 27px;
+}
 
 .dialog-eyebrow {
   margin: 0 0 6px;
@@ -128,17 +130,28 @@
   --color: #fff;
 }
 
-.button-group ion-button:disabled { opacity: .62; }
-ion-spinner { margin-right: 8px; --color: #fff; }
+.button-group ion-button:disabled {
+  opacity: .62;
+}
+ion-spinner {
+  margin-right: 8px;
+  --color: #fff;
+}
 
 @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dialog-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
 @media (max-width: 420px) {
-  .doctor-modal-backdrop { padding: 16px; }
-  .delete-content { padding: 26px 21px 20px; }
+  .doctor-modal-backdrop {
+    padding: 16px;
+  }
+  .delete-content {
+    padding: 26px 21px 20px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .doctor-modal-backdrop, .doctor-modal-content { animation: none; }
+  .doctor-modal-backdrop, .doctor-modal-content {
+    animation: none;
+  }
 }

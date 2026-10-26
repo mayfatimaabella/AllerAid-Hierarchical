@@ -119,7 +119,9 @@
   margin: 0;
   height: 40px;
 
-  ion-icon { font-size: 20px; }
+  ion-icon {
+    font-size: 20px;
+  }
 }
 
 .text-link,
@@ -158,7 +160,10 @@
   font-size: 0.8rem;
   line-height: 1.35;
 
-  ion-icon { flex: 0 0 auto; font-size: 15px; }
+  ion-icon {
+    flex: 0 0 auto;
+    font-size: 15px;
+  }
 }
 
 .signup-prompt {
@@ -182,16 +187,30 @@
   font-size: 0.8rem;
   text-align: center;
 
-  ion-icon { color: var(--brand-green); font-size: 16px; }
+  ion-icon {
+    color: var(--brand-green);
+    font-size: 16px;
+  }
 }
 
 @media (max-height: 650px) {
-  .page-shell { justify-content: flex-start; padding-top: 20px; }
-  .welcome-copy { margin-bottom: 20px; }
-  .field-group { margin-bottom: 14px; }
-  .supporting-note { margin-top: 12px; }
+  .page-shell {
+    justify-content: flex-start;
+    padding-top: 20px;
+  }
+  .welcome-copy {
+    margin-bottom: 20px;
+  }
+  .field-group {
+    margin-bottom: 14px;
+  }
+  .supporting-note {
+    margin-top: 12px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: 0.01ms !important; }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+  }
 }

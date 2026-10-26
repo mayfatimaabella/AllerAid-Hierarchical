@@ -1,12 +1,19 @@
-:host { display: block; }
+:host {
+  display: block;
+}
 
 ion-header ion-toolbar {
   --background: #08786b;
   --color: #fff;
   --min-height: 58px;
 }
-ion-header ion-title { font-size: 17px; font-weight: 700; }
-ion-header ion-button { --color: #fff; }
+ion-header ion-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+ion-header ion-button {
+  --color: #fff;
+}
 
 .invitation-content {
   --background: #f4f8f7;
@@ -38,14 +45,41 @@ ion-segment-button {
   font-weight: 750;
   text-transform: none;
 }
-ion-segment-button ion-label { white-space: nowrap; }
-.segment-badge { margin-left: 4px; vertical-align: middle; }
+ion-segment-button ion-label {
+  white-space: nowrap;
+}
+.segment-badge {
+  margin-left: 4px;
+  vertical-align: middle;
+}
 
-.invite-section, .received-section, .sent-section { margin: 0; }
-.section-eyebrow { margin: 0 0 5px; color: #08786b; font-size: 10px; font-weight: 750; letter-spacing: 1px; text-transform: uppercase; }
-h3 { margin: 0; color: #193d38; font-size: 20px; line-height: 1.25; font-weight: 750; }
-.section-description { margin: 8px 0 20px; color: #71827e; font-size: 13px; line-height: 1.5; }
-.required-mark { color: #c6494c; }
+.invite-section, .received-section, .sent-section {
+  margin: 0;
+}
+.section-eyebrow {
+  margin: 0 0 5px;
+  color: #08786b;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+h3 {
+  margin: 0;
+  color: #193d38;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 750;
+}
+.section-description {
+  margin: 8px 0 20px;
+  color: #71827e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.required-mark {
+  color: #c6494c;
+}
 
 ion-item {
   --background: #fff;
@@ -58,13 +92,42 @@ ion-item {
   margin: 0 0 12px;
   box-shadow: 0 3px 10px rgba(24, 59, 55, .035);
 }
-ion-item ion-label { color: #536e68 !important; font-size: 12px !important; font-weight: 650 !important; }
-ion-input, ion-textarea { --color: #183b37; --placeholder-color: #9aa9a5; font-size: 13px; }
-.search-item { --min-height: 77px; }
-.selected-check { flex: 0 0 auto; color: #259679; font-size: 20px; }
-.search-hint { margin: -4px 3px 10px; color: #879793; font-size: 11px; }
-.search-status { display: flex; align-items: center; gap: 8px; padding: 8px 4px; color: #71827e; font-size: 11px; }
-.search-status ion-spinner { width: 16px; height: 16px; --color: #08786b; }
+ion-item ion-label {
+  color: #536e68 !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+}
+ion-input, ion-textarea {
+  --color: #183b37;
+  --placeholder-color: #9aa9a5;
+  font-size: 13px;
+}
+.search-item {
+  --min-height: 77px;
+}
+.selected-check {
+  flex: 0 0 auto;
+  color: #259679;
+  font-size: 20px;
+}
+.search-hint {
+  margin: -4px 3px 10px;
+  color: #879793;
+  font-size: 11px;
+}
+.search-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  color: #71827e;
+  font-size: 11px;
+}
+.search-status ion-spinner {
+  width: 16px;
+  height: 16px;
+  --color: #08786b;
+}
 
 .search-dropdown {
   position: absolute;
@@ -79,8 +142,14 @@ ion-input, ion-textarea { --color: #183b37; --placeholder-color: #9aa9a5; font-s
   background: #fff;
   box-shadow: 0 12px 24px rgba(24, 59, 55, .14);
 }
-.search-container { position: relative; margin-bottom: 15px; }
-.search-results { max-height: 280px; overflow-y: auto; }
+.search-container {
+  position: relative;
+  margin-bottom: 15px;
+}
+.search-results {
+  max-height: 280px;
+  overflow-y: auto;
+}
 .search-result-item {
   display: flex;
   width: 100%;
@@ -95,15 +164,49 @@ ion-input, ion-textarea { --color: #183b37; --placeholder-color: #9aa9a5; font-s
   text-align: left;
   cursor: pointer;
 }
-.search-result-item:hover, .search-result-item.selected { background: #f1f8f6; }
-.search-result-item:last-child { border-bottom: 0; }
-.user-info h4, .user-details h4 { margin: 0 0 4px; color: #183b37; font-size: 13px; font-weight: 700; }
-.user-email, .sender-email, .recipient-email { margin: 0; color: #647b76; font-size: 11px; overflow-wrap: anywhere; }
-.user-specialty { margin: 4px 0 0; color: #82938f; font-size: 11px; }
-.no-search-results { margin: 0; padding: 16px; color: #71827e; font-size: 12px; line-height: 1.45; }
+.search-result-item:hover, .search-result-item.selected {
+  background: #f1f8f6;
+}
+.search-result-item:last-child {
+  border-bottom: 0;
+}
+.user-info h4, .user-details h4 {
+  margin: 0 0 4px;
+  color: #183b37;
+  font-size: 13px;
+  font-weight: 700;
+}
+.user-email, .sender-email, .recipient-email {
+  margin: 0;
+  color: #647b76;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.user-specialty {
+  margin: 4px 0 0;
+  color: #82938f;
+  font-size: 11px;
+}
+.no-search-results {
+  margin: 0;
+  padding: 16px;
+  color: #71827e;
+  font-size: 12px;
+  line-height: 1.45;
+}
 
-.selected-user-card { margin: 14px 0 18px; padding: 12px; border: 1px solid #cde7df; border-radius: 15px; background: #f5fbf9; }
-.user-card-content { display: flex; align-items: center; gap: 11px; }
+.selected-user-card {
+  margin: 14px 0 18px;
+  padding: 12px;
+  border: 1px solid #cde7df;
+  border-radius: 15px;
+  background: #f5fbf9;
+}
+.user-card-content {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
 .user-avatar {
   width: 42px;
   height: 42px;
@@ -116,11 +219,23 @@ ion-input, ion-textarea { --color: #183b37; --placeholder-color: #9aa9a5; font-s
   font-size: 14px;
   font-weight: 750;
 }
-.user-details { flex: 1; min-width: 0; }
-.user-details p { overflow-wrap: anywhere; }
-.user-card-content ion-button { --color: #7a8b87; }
-.message-item { --min-height: 132px; align-items: flex-start; }
-.message-item ion-textarea { min-height: 78px; }
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+.user-details p {
+  overflow-wrap: anywhere;
+}
+.user-card-content ion-button {
+  --color: #7a8b87;
+}
+.message-item {
+  --min-height: 132px;
+  align-items: flex-start;
+}
+.message-item ion-textarea {
+  min-height: 78px;
+}
 .send-button {
   min-height: 48px;
   margin: 16px 0 0;
@@ -132,29 +247,132 @@ ion-input, ion-textarea { --color: #183b37; --placeholder-color: #9aa9a5; font-s
   text-transform: none;
   box-shadow: 0 5px 12px rgba(8, 120, 107, .16);
 }
-.send-button:disabled { opacity: .52; }
+.send-button:disabled {
+  opacity: .52;
+}
 
-.received-section h3, .sent-section h3 { margin: 0 0 16px; }
-.invitation-card { margin: 0 0 12px; padding: 15px; border: 1px solid #e5eeeb; border-radius: 16px; background: #fff; box-shadow: 0 4px 12px rgba(24, 59, 55, .04); }
-.invitation-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-.sender-info, .recipient-info { flex: 1; min-width: 0; }
-.sender-info h4, .recipient-info h4 { margin: 0 0 4px; color: #183b37; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
-.invitation-header ion-chip { flex: 0 0 auto; margin: 0; height: 24px; font-size: 10px; }
-.invitation-message { margin: 10px 0; padding: 11px 12px; border-left: 3px solid #8cc9b9; border-radius: 0 10px 10px 0; background: #f3f8f6; color: #536e68; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
-.invitation-date { display: flex; align-items: center; gap: 6px; margin: 10px 0 13px; color: #859590; font-size: 11px; }
-.invitation-date ion-icon { font-size: 15px; }
-.invitation-actions { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #edf2f1; padding-top: 11px; }
-.invitation-actions ion-button { min-height: 36px; margin: 0; --border-radius: 10px; font-size: 11px; font-weight: 650; text-transform: none; }
+.received-section h3, .sent-section h3 {
+  margin: 0 0 16px;
+}
+.invitation-card {
+  margin: 0 0 12px;
+  padding: 15px;
+  border: 1px solid #e5eeeb;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(24, 59, 55, .04);
+}
+.invitation-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.sender-info, .recipient-info {
+  flex: 1;
+  min-width: 0;
+}
+.sender-info h4, .recipient-info h4 {
+  margin: 0 0 4px;
+  color: #183b37;
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.invitation-header ion-chip {
+  flex: 0 0 auto;
+  margin: 0;
+  height: 24px;
+  font-size: 10px;
+}
+.invitation-message {
+  margin: 10px 0;
+  padding: 11px 12px;
+  border-left: 3px solid #8cc9b9;
+  border-radius: 0 10px 10px 0;
+  background: #f3f8f6;
+  color: #536e68;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.invitation-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 13px;
+  color: #859590;
+  font-size: 11px;
+}
+.invitation-date ion-icon {
+  font-size: 15px;
+}
+.invitation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #edf2f1;
+  padding-top: 11px;
+}
+.invitation-actions ion-button {
+  min-height: 36px;
+  margin: 0;
+  --border-radius: 10px;
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: none;
+}
 
-.empty-state { display: flex; min-height: 220px; flex-direction: column; align-items: center; justify-content: center; padding: 28px 18px; text-align: center; }
-.empty-icon-wrap { width: 56px; height: 56px; display: grid; place-items: center; margin-bottom: 13px; border-radius: 18px; background: #e6f3ef; color: #388779; }
-.empty-icon { font-size: 25px; }
-.empty-state h4 { margin: 0 0 5px; color: #183b37; font-size: 14px; font-weight: 700; }
-.empty-state p { max-width: 250px; margin: 0; color: #71827e; font-size: 12px; line-height: 1.5; }
+.empty-state {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 18px;
+  text-align: center;
+}
+.empty-icon-wrap {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 13px;
+  border-radius: 18px;
+  background: #e6f3ef;
+  color: #388779;
+}
+.empty-icon {
+  font-size: 25px;
+}
+.empty-state h4 {
+  margin: 0 0 5px;
+  color: #183b37;
+  font-size: 14px;
+  font-weight: 700;
+}
+.empty-state p {
+  max-width: 250px;
+  margin: 0;
+  color: #71827e;
+  font-size: 12px;
+  line-height: 1.5;
+}
 
 @media (max-width: 480px) {
-  .invitation-content { --padding-start: 13px; --padding-end: 13px; --padding-top: 14px; }
-  ion-segment-button { font-size: 10px; }
-  .invitation-actions { justify-content: stretch; }
-  .invitation-actions ion-button { flex: 1; }
+  .invitation-content {
+    --padding-start: 13px;
+    --padding-end: 13px;
+    --padding-top: 14px;
+  }
+  ion-segment-button {
+    font-size: 10px;
+  }
+  .invitation-actions {
+    justify-content: stretch;
+  }
+  .invitation-actions ion-button {
+    flex: 1;
+  }
 }

@@ -127,10 +127,30 @@ ion-content {
   border-style: solid;
 }
 
-.corner-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 10px 0 0; }
-.corner-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-radius: 0 10px 0 0; }
-.corner-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-radius: 0 0 0 10px; }
-.corner-br { right: -2px; bottom: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 10px; }
+.corner-tl {
+  top: -2px;
+  left: -2px;
+  border-width: 3px 0 0 3px;
+  border-radius: 10px 0 0;
+}
+.corner-tr {
+  top: -2px;
+  right: -2px;
+  border-width: 3px 3px 0 0;
+  border-radius: 0 10px 0 0;
+}
+.corner-bl {
+  bottom: -2px;
+  left: -2px;
+  border-width: 0 0 3px 3px;
+  border-radius: 0 0 0 10px;
+}
+.corner-br {
+  right: -2px;
+  bottom: -2px;
+  border-width: 0 3px 3px 0;
+  border-radius: 0 0 10px;
+}
 
 .scanner-overlay {
   position: absolute;
@@ -194,11 +214,22 @@ ion-content {
 }
 
 @keyframes scan {
-  from { top: 25%; opacity: 0.35; }
-  to { top: 67%; opacity: 1; }
+  from {
+    top: 25%;
+    opacity: 0.35;
+  }
+  to {
+    top: 67%;
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scanner-overlay { animation: none; top: 50%; }
-  .pulse { animation: none; }
+  .scanner-overlay {
+    animation: none;
+    top: 50%;
+  }
+  .pulse {
+    animation: none;
+  }
 }

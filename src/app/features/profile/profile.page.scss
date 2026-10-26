@@ -194,7 +194,10 @@ ion-content.profile-page-bg {
     background: rgba(3, 106, 93, 0.08);
   }
 
-  &:focus-visible { outline: 3px solid rgba(3, 106, 93, 0.35); outline-offset: 2px; }
+  &:focus-visible {
+    outline: 3px solid rgba(3, 106, 93, 0.35);
+    outline-offset: 2px;
+  }
 
   &.active {
     background: var(--profile-teal);
@@ -393,5 +396,8 @@ ion-modal {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

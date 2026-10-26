@@ -10,11 +10,19 @@ ion-toolbar.medication-header {
   --background: #08695d;
   --color: #fff;
   --min-height: 58px;
-  ion-title { font-size: 17px; font-weight: 650; letter-spacing: .1px; }
-  ion-button { --color: #fff; }
+  ion-title {
+    font-size: 17px;
+    font-weight: 650;
+    letter-spacing: .1px;
+  }
+  ion-button {
+    --color: #fff;
+  }
 }
 
-ion-content { --background: #f6f9f8; }
+ion-content {
+  --background: #f6f9f8;
+}
 
 .medication-banner {
   position: relative;
@@ -23,60 +31,353 @@ ion-content { --background: #f6f9f8; }
   color: #fff;
   background: linear-gradient(125deg, #075b51 0%, #087568 62%, #0a8373 100%);
 }
-.banner-content { position: relative; z-index: 1; max-width: 840px; margin: auto; }
-.banner-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.banner-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 1.25px; opacity: .78; }
-.banner-title { margin: 5px 0 3px; font-size: 27px; line-height: 1.15; font-weight: 750; letter-spacing: -.45px; }
-.banner-subtitle { margin: 0; font-size: 13px; color: rgba(255,255,255,.82); }
+.banner-content {
+  position: relative;
+  z-index: 1;
+  max-width: 840px;
+  margin: auto;
+}
+.banner-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.banner-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.25px;
+  opacity: .78;
+}
+.banner-title {
+  margin: 5px 0 3px;
+  font-size: 27px;
+  line-height: 1.15;
+  font-weight: 750;
+  letter-spacing: -.45px;
+}
+.banner-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255,255,255,.82);
+}
 .banner-mark { width: 52px; height: 52px; flex: 0 0 52px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.25); border-radius: 17px; background: rgba(255,255,255,.12); ion-icon { font-size: 27px; } }
-.banner-stats { display: flex; gap: 10px; margin-top: 20px; }
-.stat-item { min-width: 112px; display: flex; align-items: center; gap: 10px; padding: 10px 13px; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; background: rgba(255,255,255,.09); }
-.stat-number { font-size: 20px; line-height: 1; font-weight: 750; }
-.stat-label { font-size: 11px; line-height: 1.25; color: rgba(255,255,255,.82); }
+.banner-stats {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.stat-item {
+  min-width: 112px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 13px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 12px;
+  background: rgba(255,255,255,.09);
+}
+.stat-number {
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 750;
+}
+.stat-label {
+  font-size: 11px;
+  line-height: 1.25;
+  color: rgba(255,255,255,.82);
+}
 
-.medication-controls, .medications-list { width: min(100%, 880px); margin: 0 auto; padding-left: 20px; padding-right: 20px; }
-.medication-controls { padding-top: 18px; padding-bottom: 13px; }
-.medication-search { margin-bottom: 13px; }
-.medication-search ion-searchbar { --background: #fff; --border-radius: 13px; --box-shadow: 0 2px 9px rgba(21,56,49,.045); --color: var(--med-ink); --placeholder-color: #81928e; --icon-color: #718780; --clear-button-color: #718780; padding: 0; }
-.medication-search ion-searchbar::part(container) { border: 1px solid var(--med-border); }
+.medication-controls, .medications-list {
+  width: min(100%, 880px);
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.medication-controls {
+  padding-top: 18px;
+  padding-bottom: 13px;
+}
+.medication-search {
+  margin-bottom: 13px;
+}
+.medication-search ion-searchbar {
+  --background: #fff;
+  --border-radius: 13px;
+  --box-shadow: 0 2px 9px rgba(21,56,49,.045);
+  --color: var(--med-ink);
+  --placeholder-color: #81928e;
+  --icon-color: #718780;
+  --clear-button-color: #718780;
+  padding: 0;
+}
+.medication-search ion-searchbar::part(container) {
+  border: 1px solid var(--med-border);
+}
 .search-results-info { display: flex; align-items: center; gap: 6px; padding: 7px 10px 0; color: var(--med-muted); font-size: 12px; ion-icon { color: var(--med-primary); } }
-.medication-filters ion-segment { --background: #eaf1ef; border-radius: 13px; padding: 4px; }
+.medication-filters ion-segment {
+  --background: #eaf1ef;
+  border-radius: 13px;
+  padding: 4px;
+}
 .medication-filters ion-segment-button { --color: #607772; --color-checked: #075b51; --indicator-color: #fff; --indicator-box-shadow: 0 1px 4px rgba(24,64,57,.1); min-height: 39px; font-size: 12px; font-weight: 600; text-transform: none; ion-icon { margin-inline-end: 6px; font-size: 15px; } }
-.medication-filters ion-segment-button::part(indicator-background) { border-radius: 9px; }
-.medication-filters ion-segment-button::part(label) { text-transform: none; }
+.medication-filters ion-segment-button::part(indicator-background) {
+  border-radius: 9px;
+}
+.medication-filters ion-segment-button::part(label) {
+  text-transform: none;
+}
 
-.medications-list { padding-top: 2px; padding-bottom: 28px; }
+.medications-list {
+  padding-top: 2px;
+  padding-bottom: calc(104px + env(safe-area-inset-bottom));
+}
 .list-heading { display: flex; align-items: center; justify-content: space-between; margin: 3px 2px 12px; h2 { margin: 0; color: var(--med-ink); font-size: 16px; font-weight: 700; } p { margin: 3px 0 0; color: var(--med-muted); font-size: 11px; } }
-.list-add-button { --color: var(--med-primary); font-size: 12px; font-weight: 650; }
+.list-add-button {
+  --background: var(--med-primary);
+  --background-hover: #07584e;
+  --color: #fff;
+  --border-radius: 10px;
+  height: 34px;
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: none;
+}
 .loading-state { padding: 8px 0; ion-skeleton-text { border-radius: 15px; height: 98px !important; margin-bottom: 10px !important; } }
 .medication-card { position: relative; margin: 0 0 10px; padding: 15px; border: 1px solid var(--med-border); border-radius: 16px; background: #fff; box-shadow: 0 2px 8px rgba(20,52,46,.035); cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; &:hover { border-color: #b8d4ce; box-shadow: 0 5px 16px rgba(20,52,46,.08); } &:active { transform: scale(.995); } &:focus-visible { outline: 3px solid rgba(8,105,93,.28); outline-offset: 2px; } }
-.medication-card-inner { display: flex; align-items: flex-start; gap: 13px; }
-.medication-icon-section { flex: 0 0 42px; }
+.medication-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+.medication-icon-section {
+  flex: 0 0 42px;
+}
 .status-icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; font-size: 21px; &.status-ongoing, &.status-active { color: #087364; background: #e7f5f1; } &.status-completed { color: #367861; background: #edf5ef; } &.status-overdue { color: #a75e08; background: #fff3df; } &.status-expired { color: #b43d42; background: #fff0ef; } &.status-inactive { color: #72817e; background: #eff2f1; } }
-.medication-info { flex: 1; min-width: 0; }
-.medication-title { margin: 1px 0 0; color: var(--med-ink); font-size: 15px; line-height: 1.35; font-weight: 700; overflow-wrap: anywhere; }
-.brand-name { margin: 2px 0 0; color: var(--med-muted); font-size: 11px; }
-.medication-details { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.medication-info {
+  flex: 1;
+  min-width: 0;
+}
+.medication-title {
+  margin: 1px 0 0;
+  color: var(--med-ink);
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.brand-name {
+  margin: 2px 0 0;
+  color: var(--med-muted);
+  font-size: 11px;
+}
+.medication-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
 .detail-pill { display: inline-flex; align-items: center; gap: 5px; min-height: 26px; max-width: 100%; padding: 4px 8px; border-radius: 8px; color: #4f6963; background: #f3f7f6; font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; ion-icon { flex: 0 0 auto; font-size: 13px; color: #62837b; } }
-.supply-pill { color: #08695d; background: #eaf5f2; font-weight: 600; }
-.medication-status { flex: 0 0 auto; margin-left: auto; }
-.status-badge { min-height: 24px; margin: 0; padding: 0 8px; font-size: 10px; font-weight: 650; text-transform: none; letter-spacing: 0; }
+.supply-pill {
+  color: #08695d;
+  background: #eaf5f2;
+  font-weight: 600;
+}
+.medication-status {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.status-badge {
+  min-height: 24px;
+  margin: 0;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 650;
+  text-transform: none;
+  letter-spacing: 0;
+}
 .low-stock-warning { display: flex; align-items: center; gap: 6px; margin-top: 9px; padding: 7px 9px; border-radius: 9px; color: #a23d36; background: #fff3f1; font-size: 11px; line-height: 1.35; ion-icon { flex: 0 0 auto; font-size: 15px; } }
-.medication-card.emergency-medication { border-color: #f1c9c4; background: linear-gradient(110deg, #fffaf9, #fff); }
-.medication-card.emergency-medication::before { content: 'EMERGENCY'; position: absolute; top: 21px; right: 13px; color: #a34239; font-size: 9px; font-weight: 750; letter-spacing: .65px; }
-.medication-card.emergency-medication .medication-status { margin-right: 73px; }
-.medication-card.finished-medication { background: #fafcfb; }
-.medication-card.finished-medication .medication-title { color: #536b65; }
+.medication-card.emergency-medication {
+  border-color: #f1c9c4;
+  background: linear-gradient(110deg, #fffaf9, #fff);
+}
+.medication-card.emergency-medication::before {
+  content: 'EMERGENCY';
+  position: absolute;
+  top: 21px;
+  right: 13px;
+  color: #a34239;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .65px;
+}
+.medication-card.emergency-medication .medication-status {
+  margin-right: 73px;
+}
+.medication-card.finished-medication {
+  background: #fafcfb;
+}
+.medication-card.finished-medication .medication-title {
+  color: #536b65;
+}
 
-.no-medications { display: grid; min-height: 280px; place-items: center; padding: 26px 16px; }
-.no-medications-container { width: min(100%, 320px); text-align: center; }
-.no-medications-icon-wrapper { display: grid; width: 62px; height: 62px; place-items: center; margin: 0 auto 14px; border: 1px solid #dcebe7; border-radius: 20px; background: #edf6f3; }
-.no-medications-icon { color: var(--med-primary); font-size: 30px; }
-.no-medications-title { margin: 0 0 7px; color: var(--med-ink); font-size: 17px; font-weight: 700; }
-.no-medications-text { margin: 0 auto 18px; color: var(--med-muted); font-size: 13px; line-height: 1.5; }
-.add-med-btn { --border-radius: 11px; --background: var(--med-primary); height: 44px; font-size: 13px; font-weight: 650; text-transform: none; }
+.no-medications {
+  display: grid;
+  min-height: 280px;
+  place-items: center;
+  padding: 26px 16px;
+}
+.no-medications-container {
+  width: min(100%, 320px);
+  text-align: center;
+}
+.no-medications-icon-wrapper {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  margin: 0 auto 14px;
+  border: 1px solid #dcebe7;
+  border-radius: 20px;
+  background: #edf6f3;
+}
+.no-medications-icon {
+  color: var(--med-primary);
+  font-size: 30px;
+}
+.no-medications-title {
+  margin: 0 0 7px;
+  color: var(--med-ink);
+  font-size: 17px;
+  font-weight: 700;
+}
+.no-medications-text {
+  margin: 0 auto 18px;
+  color: var(--med-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.add-med-btn {
+  --border-radius: 11px;
+  --background: var(--med-primary);
+  height: 44px;
+  font-size: 13px;
+  font-weight: 650;
+  text-transform: none;
+}
 
-@media (min-width: 768px) { .medication-banner { padding-top: 32px; padding-bottom: 26px; } .medication-controls { padding-top: 22px; } }
-@media (max-width: 480px) { .medication-banner { padding: 23px 18px; } .banner-title { font-size: 24px; } .banner-mark { width: 44px; height: 44px; flex-basis: 44px; border-radius: 14px; } .banner-stats { margin-top: 17px; } .stat-item { flex: 1; min-width: 0; } .medication-controls, .medications-list { padding-left: 14px; padding-right: 14px; } .medication-controls { padding-top: 14px; } .medication-card { padding: 13px; } .medication-card-inner { gap: 10px; } .medication-icon-section { flex-basis: 38px; } .status-icon { width: 38px; height: 38px; border-radius: 12px; font-size: 19px; } .medication-title { font-size: 14px; } .status-badge { font-size: 9px; } }
-@media (max-width: 360px) { .medication-status { position: absolute; top: 13px; right: 12px; } .medication-card.emergency-medication .medication-status { margin-right: 0; } .medication-title { padding-right: 67px; } .detail-pill { font-size: 10px; } }
-@media (prefers-reduced-motion: reduce) { .medication-card { transition: none; } .medication-card:active { transform: none; } }
+.medication-fab {
+  margin: 0 16px calc(76px + env(safe-area-inset-bottom)) 0;
+}
+.medication-fab ion-fab-button {
+  --background: var(--med-primary);
+  --background-activated: #07584e;
+  --color: #fff;
+  --box-shadow: 0 5px 16px rgba(8, 105, 93, .28);
+  width: 54px;
+  height: 54px;
+}
+
+@media (min-width: 768px) {
+  .medication-banner {
+    padding-top: 32px;
+    padding-bottom: 26px;
+  }
+
+  .medication-controls {
+    padding-top: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .medication-banner {
+    padding: 23px 18px;
+  }
+
+  .banner-title {
+    font-size: 24px;
+  }
+
+  .banner-mark {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+    border-radius: 14px;
+  }
+
+  .banner-stats {
+    margin-top: 17px;
+  }
+
+  .stat-item {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .medication-controls,
+  .medications-list {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .medication-controls {
+    padding-top: 14px;
+  }
+
+  .medication-card {
+    padding: 13px;
+  }
+
+  .medication-card-inner {
+    gap: 10px;
+  }
+
+  .medication-icon-section {
+    flex-basis: 38px;
+  }
+
+  .status-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    font-size: 19px;
+  }
+
+  .medication-title {
+    font-size: 14px;
+  }
+
+  .status-badge {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 360px) {
+  .medication-status {
+    position: absolute;
+    top: 13px;
+    right: 12px;
+  }
+
+  .medication-card.emergency-medication .medication-status {
+    margin-right: 0;
+  }
+
+  .medication-title {
+    padding-right: 67px;
+  }
+
+  .detail-pill {
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medication-card {
+    transition: none;
+  }
+
+  .medication-card:active {
+    transform: none;
+  }
+}

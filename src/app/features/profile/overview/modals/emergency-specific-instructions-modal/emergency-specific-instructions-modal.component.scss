@@ -85,7 +85,9 @@ ion-textarea {
   margin-top: 5px;
   font-variant-numeric: tabular-nums;
 
-  &.near-limit { color: #b26b00; }
+  &.near-limit {
+    color: #b26b00;
+  }
 }
 
 .helper-text {
@@ -145,5 +147,7 @@ ion-button[fill="outline"] {
 }
 
 @media (max-width: 380px) {
-  .form-section { padding: 13px; }
+  .form-section {
+    padding: 13px;
+  }
 }

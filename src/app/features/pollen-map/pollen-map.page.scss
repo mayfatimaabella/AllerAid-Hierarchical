@@ -18,7 +18,9 @@ ion-content {
   --padding-bottom: calc(88px + env(safe-area-inset-bottom));
 }
 
-.wrapper { padding: 0; }
+.wrapper {
+  padding: 0;
+}
 
 .aqi-main-card {
   margin: 0;
@@ -28,8 +30,12 @@ ion-content {
   background: #f0f8f5;
   box-shadow: 0 8px 24px rgba(18, 71, 65, .1);
 
-  ion-card-header { padding: 18px 18px 12px; }
-  ion-card-content { padding: 8px 14px 14px; }
+  ion-card-header {
+    padding: 18px 18px 12px;
+  }
+  ion-card-content {
+    padding: 8px 14px 14px;
+  }
   ion-card-title {
     color: var(--aqi-ink);
     font-size: 21px;
@@ -46,7 +52,11 @@ ion-content {
   }
 }
 
-.title-row { display: flex; align-items: center; justify-content: space-between; }
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 .help-button {
   width: 42px;
@@ -54,7 +64,9 @@ ion-content {
   margin: -6px -8px -6px 0;
   --color: var(--aqi-primary);
 
-  ion-icon { font-size: 22px; }
+  ion-icon {
+    font-size: 22px;
+  }
 }
 
 .aqi-description {
@@ -90,11 +102,22 @@ ion-content {
 .metric-group {
   min-width: 0;
 
-  p { margin: 0; color: #52615e; font-size: 11px; line-height: 1.55; }
-  strong { color: var(--aqi-primary); font-weight: 700; white-space: nowrap; }
+  p {
+    margin: 0;
+    color: #52615e;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+  strong {
+    color: var(--aqi-primary);
+    font-weight: 700;
+    white-space: nowrap;
+  }
 }
 
-.map-section { margin-bottom: 12px; }
+.map-section {
+  margin-bottom: 12px;
+}
 
 .map-heading {
   display: flex;
@@ -105,7 +128,11 @@ ion-content {
   font-size: 13px;
   font-weight: 700;
 
-  small { color: #80918e; font-size: 11px; font-weight: 500; }
+  small {
+    color: #80918e;
+    font-size: 11px;
+    font-weight: 500;
+  }
 }
 
 .map-wrapper {
@@ -155,11 +182,21 @@ ion-content {
     margin-right: 6px;
     border-radius: 50%;
 
-    &.g { background: #126d61; }
-    &.y { background: #d9a900; }
-    &.o { background: #e88913; }
-    &.r { background: #d94055; }
-    &.p { background: #8932b2; }
+    &.g {
+      background: #126d61;
+    }
+    &.y {
+      background: #d9a900;
+    }
+    &.o {
+      background: #e88913;
+    }
+    &.r {
+      background: #d94055;
+    }
+    &.p {
+      background: #8932b2;
+    }
   }
 }
 
@@ -185,11 +222,20 @@ ion-content {
       font-weight: 700;
     }
 
-    ion-button { margin: 0; }
+    ion-button {
+      margin: 0;
+    }
   }
 
-  ion-list { margin-top: 6px; background: transparent; }
-  ion-item { --background: transparent; --padding-start: 4px; --inner-padding-end: 4px; }
+  ion-list {
+    margin-top: 6px;
+    background: transparent;
+  }
+  ion-item {
+    --background: transparent;
+    --padding-start: 4px;
+    --inner-padding-end: 4px;
+  }
 }
 
 .empty-logs {
@@ -205,14 +251,29 @@ ion-content {
   font-size: 12px;
   text-align: center;
 
-  ion-icon { flex: 0 0 auto; color: #168575; font-size: 17px; }
+  ion-icon {
+    flex: 0 0 auto;
+    color: #168575;
+    font-size: 17px;
+  }
 }
 
-.pollen-low { background-color: #126d61; }
-.pollen-mod { background-color: #ffc409; color: #333; }
-.pollen-orange { background-color: #f7a01c; }
-.pollen-high { background-color: #eb445a; }
-.pollen-purple { background-color: #8932b2; }
+.pollen-low {
+  background-color: #126d61;
+}
+.pollen-mod {
+  background-color: #ffc409;
+  color: #333;
+}
+.pollen-orange {
+  background-color: #f7a01c;
+}
+.pollen-high {
+  background-color: #eb445a;
+}
+.pollen-purple {
+  background-color: #8932b2;
+}
 
 .pollen-map-note {
   margin: 10px 0 8px;
@@ -228,15 +289,34 @@ ion-button[expand='block'] {
   letter-spacing: .5px;
 }
 
-ion-button:focus-visible { outline: 3px solid rgba(8, 119, 106, .35); outline-offset: 2px; }
+ion-button:focus-visible {
+  outline: 3px solid rgba(8, 119, 106, .35);
+  outline-offset: 2px;
+}
 
 /* AQI guide alert */
 .aqi-custom-alert {
-  .alert-message { max-height: 65vh; overflow-y: auto; text-align: left; }
-  .aqi-help-content { color: #44514e; font-size: 12px; }
-  .help-intro { margin: 0 0 12px; line-height: 1.5; }
-  .help-intro p { margin: 6px 0 0; }
-  .aqi-levels { display: flex; flex-direction: column; gap: 7px; }
+  .alert-message {
+    max-height: 65vh;
+    overflow-y: auto;
+    text-align: left;
+  }
+  .aqi-help-content {
+    color: #44514e;
+    font-size: 12px;
+  }
+  .help-intro {
+    margin: 0 0 12px;
+    line-height: 1.5;
+  }
+  .help-intro p {
+    margin: 6px 0 0;
+  }
+  .aqi-levels {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
   .aqi-level {
     display: flex;
     align-items: center;
@@ -245,9 +325,21 @@ ion-button:focus-visible { outline: 3px solid rgba(8, 119, 106, .35); outline-of
     border-left: 4px solid;
     border-radius: 9px;
 
-    .aqi-range { min-width: 52px; font-size: 11px; font-weight: 800; }
-    strong { display: block; font-size: 11px; }
-    small { display: block; margin-top: 2px; color: #66716e; font-size: 10px; }
+    .aqi-range {
+      min-width: 52px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    strong {
+      display: block;
+      font-size: 11px;
+    }
+    small {
+      display: block;
+      margin-top: 2px;
+      color: #66716e;
+      font-size: 10px;
+    }
   }
 
   .aqi-level.good { background: #e8f5f0; border-color: #126d61; .aqi-range, strong { color: #126d61; } }
@@ -263,15 +355,33 @@ ion-button:focus-visible { outline: 3px solid rgba(8, 119, 106, .35); outline-of
     border: 1px solid rgba(25, 132, 118, .15);
     border-radius: 9px;
     background: #f5faf8;
-    strong { color: #126d61; }
-    p { margin: 4px 0 0; font-size: 11px; line-height: 1.45; }
+    strong {
+      color: #126d61;
+    }
+    p {
+      margin: 4px 0 0;
+      font-size: 11px;
+      line-height: 1.45;
+    }
   }
 }
 
 @media (max-width: 360px) {
-  .aqi-main-card ion-card-header { padding: 15px 14px 10px; }
-  .aqi-main-card ion-card-content { padding-inline: 10px; }
-  .data-badge { min-width: 0; padding-inline: 8px; font-size: 10px; }
-  .metric-group p { font-size: 10px; }
-  .map-container { height: 230px; }
+  .aqi-main-card ion-card-header {
+    padding: 15px 14px 10px;
+  }
+  .aqi-main-card ion-card-content {
+    padding-inline: 10px;
+  }
+  .data-badge {
+    min-width: 0;
+    padding-inline: 8px;
+    font-size: 10px;
+  }
+  .metric-group p {
+    font-size: 10px;
+  }
+  .map-container {
+    height: 230px;
+  }
 }

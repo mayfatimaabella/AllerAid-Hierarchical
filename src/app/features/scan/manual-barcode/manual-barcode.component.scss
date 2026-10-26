@@ -39,7 +39,9 @@
   color: #075e53;
 }
 
-.manual-icon ion-icon { font-size: 25px; }
+.manual-icon ion-icon {
+  font-size: 25px;
+}
 
 .manual-modal-heading h2 {
   margin: 0;
@@ -67,8 +69,14 @@
   border-radius: 13px;
 }
 
-.barcode-input-item ion-label { color: #496760; font-weight: 700; }
-.barcode-input-item ion-input { --color: #183f39; --placeholder-color: #98aaa6; }
+.barcode-input-item ion-label {
+  color: #496760;
+  font-weight: 700;
+}
+.barcode-input-item ion-input {
+  --color: #183f39;
+  --placeholder-color: #98aaa6;
+}
 
 .manual-barcode-modal-content ion-button {
   min-height: 46px;
@@ -77,5 +85,11 @@
   font-weight: 750;
 }
 
-ion-button#searchBtn { --background: #036a5d; --color: #ffffff; }
-ion-button[fill="outline"] { --border-color: #c8ded9; --color: #075e53; }
+ion-button#searchBtn {
+  --background: #036a5d;
+  --color: #ffffff;
+}
+ion-button[fill="outline"] {
+  --border-color: #c8ded9;
+  --color: #075e53;
+}

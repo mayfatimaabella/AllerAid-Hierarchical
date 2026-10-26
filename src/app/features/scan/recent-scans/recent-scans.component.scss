@@ -107,8 +107,12 @@ ion-header {
     border: 3px solid #ffffff;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
     
-    &.safe { background: #16815f; }
-    &.warning { background: #c43a4d; }
+    &.safe {
+      background: #16815f;
+    }
+    &.warning {
+      background: #c43a4d;
+    }
   }
 }
 
@@ -156,7 +160,9 @@ ion-header {
     align-items: center;
     gap: 3px;
     
-    ion-icon { font-size: 12px; }
+    ion-icon {
+      font-size: 12px;
+    }
   }
 }
 
@@ -170,8 +176,14 @@ ion-header {
   text-transform: uppercase;
   flex-shrink: 0;
   
-  &.safe { background: #e9f7f1; color: #176d53; }
-  &.warning { background: #fff0f1; color: #a52e40; }
+  &.safe {
+    background: #e9f7f1;
+    color: #176d53;
+  }
+  &.warning {
+    background: #fff0f1;
+    color: #a52e40;
+  }
 }
 
 // Actions Operations Layout
@@ -188,7 +200,9 @@ ion-header {
     font-size: 20px;
     transition: color 0.2s;
     
-    &:active { color: #fa5252; }
+    &:active {
+      color: #fa5252;
+    }
   }
   
   .arrow-icon {
@@ -239,11 +253,24 @@ ion-header {
     justify-content: center;
     margin: 0 auto 20px;
     
-    ion-icon { font-size: 40px; color: #036a5d; }
+    ion-icon {
+      font-size: 40px;
+      color: #036a5d;
+    }
   }
   
-  h3 { color: #1f4a42; font-weight: 800; margin-bottom: 8px; font-size: 18px; }
-  p { color: #6b8581; font-size: 14px; line-height: 1.5; margin: 0; }
+  h3 {
+    color: #1f4a42;
+    font-weight: 800;
+    margin-bottom: 8px;
+    font-size: 18px;
+  }
+  p {
+    color: #6b8581;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+  }
 }
 
 // 

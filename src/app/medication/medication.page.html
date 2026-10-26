@@ -6,11 +6,6 @@
 
     <ion-title>Medication</ion-title>
   
-    <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="onAddMedication()" aria-label="Add medication">
-        <ion-icon name="add-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -74,14 +69,11 @@
   </div>
 
     <div class="medications-list">
-    <div class="list-heading" *ngIf="!isLoading && filteredMedications.length">
+    <div class="list-heading" *ngIf="!isLoading && (filteredMedications.length || medicationFilter === 'active')">
       <div>
         <h2>{{ medicationFilter === 'history' ? 'Medication history' : medicationFilter === 'active' ? 'Active medications' : 'Medication list' }}</h2>
         <p>{{ filteredMedications.length }} {{ filteredMedications.length === 1 ? 'medication' : 'medications' }}<ng-container *ngIf="medicationSearchTerm"> matching your search</ng-container></p>
       </div>
-      <ion-button fill="clear" size="small" (click)="onAddMedication()" class="list-add-button">
-        <ion-icon name="add-outline" slot="start"></ion-icon> Add
-      </ion-button>
     </div>
     <div *ngIf="isLoading && (!userMedications || userMedications.length === 0)" class="loading-state">
       <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
@@ -150,7 +142,7 @@
               </ng-template>
             </ng-template>
           </p>
-          <ion-button *ngIf="!medicationSearchTerm && medicationFilter === 'all'" (click)="onAddMedication()" color="primary" class="add-med-btn">
+          <ion-button *ngIf="!medicationSearchTerm && medicationFilter === 'active'" (click)="onAddMedication()" color="primary" class="add-med-btn">
             <ion-icon name="add-circle-outline" slot="start"></ion-icon>
             Add Medication
           </ion-button>
@@ -158,4 +150,10 @@
       </div>
     </ng-container>
   </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="medication-fab">
+    <ion-fab-button (click)="onAddMedication()" aria-label="Add medication">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

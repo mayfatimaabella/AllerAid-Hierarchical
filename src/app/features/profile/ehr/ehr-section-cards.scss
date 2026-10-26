@@ -124,12 +124,39 @@
   }
 }
 
-.visit-summary-header { display: flex; align-items: flex-start; justify-content: space-between; }
-.visit-summary-info { flex: 1; }
-.visit-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.visit-doctor-name { color: #013a32; font-weight: 600; font-size: 1rem; margin: 0; letter-spacing: 0.3px; }
-.visit-date { color: #365852; font-size: 0.8rem; margin: 3px 0 0 0; display: flex; align-items: center; gap: 4px; }
-.visit-date-icon { font-size: 16px; color: #036a5d; }
+.visit-summary-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.visit-summary-info {
+  flex: 1;
+}
+.visit-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.visit-doctor-name {
+  color: #013a32;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+.visit-date {
+  color: #365852;
+  font-size: 0.8rem;
+  margin: 3px 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.visit-date-icon {
+  font-size: 16px;
+  color: #036a5d;
+}
 
 .visit-status-pill {
   font-size: 11px;
@@ -145,20 +172,59 @@
   align-items: center;
   gap: 4px;
 }
-.visit-status-routine { background: #e6f8ee; color: #047857; }
-.visit-status-urgent { background: #fff4e6; color: #b45309; }
-.visit-status-emergency { background: #fde2e2; color: #dc2626; }
-.visit-status-followup { background: #fdf2f8; color: #be185d; }
-.visit-status-specialist { background: #e6f3ff; color: #1d4ed8; }
-.visit-status-specialty { background: #e6f3ff; color: #1d4ed8; }
-.visit-status-other { background: #eef3f2; color: #365852; }
+.visit-status-routine {
+  background: #e6f8ee;
+  color: #047857;
+}
+.visit-status-urgent {
+  background: #fff4e6;
+  color: #b45309;
+}
+.visit-status-emergency {
+  background: #fde2e2;
+  color: #dc2626;
+}
+.visit-status-followup {
+  background: #fdf2f8;
+  color: #be185d;
+}
+.visit-status-specialist {
+  background: #e6f3ff;
+  color: #1d4ed8;
+}
+.visit-status-specialty {
+  background: #e6f3ff;
+  color: #1d4ed8;
+}
+.visit-status-other {
+  background: #eef3f2;
+  color: #365852;
+}
 
-.visit-header-actions ion-button { --padding-start: 4px; --padding-end: 4px; }
-.visit-action-icon { font-size: 18px; }
+.visit-header-actions ion-button {
+  --padding-start: 4px;
+  --padding-end: 4px;
+}
+.visit-action-icon {
+  font-size: 18px;
+}
 
-.visit-click-hint { margin-top: 6px; display: flex; align-items: center; font-size: 12px; color: #036a5d; }
-.visit-eye-icon { font-size: 16px; color: #036a5d; }
-.visit-details-inline { margin-left: 6px; font-weight: 500; letter-spacing: 0.4px; }
+.visit-click-hint {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #036a5d;
+}
+.visit-eye-icon {
+  font-size: 16px;
+  color: #036a5d;
+}
+.visit-details-inline {
+  margin-left: 6px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+}
 
 .ehr-card-name {
   font-weight: 600;
@@ -415,7 +481,10 @@
   gap: 4px;
 }
 
-.history-date-icon { font-size: 16px; color: #036a5d; }
+.history-date-icon {
+  font-size: 16px;
+  color: #036a5d;
+}
 
 .history-header-actions {
   display: flex;
@@ -446,11 +515,26 @@
   position: relative;
 }
 
-.history-status-active { background: #e6f8ee; color: #047857; }
-.history-status-resolved { background: #e6f3ff; color: #1d4ed8; }
-.history-status-not-cured { background: #fff4e6; color: #b45309; }
-.history-status-chronic { background: #fdf2f8; color: #be185d; }
-.history-status-other { background: #eef3f2; color: #365852; }
+.history-status-active {
+  background: #e6f8ee;
+  color: #047857;
+}
+.history-status-resolved {
+  background: #e6f3ff;
+  color: #1d4ed8;
+}
+.history-status-not-cured {
+  background: #fff4e6;
+  color: #b45309;
+}
+.history-status-chronic {
+  background: #fdf2f8;
+  color: #be185d;
+}
+.history-status-other {
+  background: #eef3f2;
+  color: #365852;
+}
 
 
 .history-menu-icon {
@@ -487,7 +571,9 @@
   color: #036a5d;
 }
 
-.history-notes-more { color: #5a6c69; }
+.history-notes-more {
+  color: #5a6c69;
+}
 
 .empty-state {
   text-align: center;
@@ -530,10 +616,21 @@
 }
 
 @media (max-width: 480px) {
-  .ehr-section-card { padding: 15px 13px; margin: 12px 0; }
-  .section-title { align-items: flex-start; gap: 8px; }
-  .section-title .add-visit-btn { flex-shrink: 0; margin: -6px -7px 0 0; }
-  .history-summary-card { padding: 13px; }
+  .ehr-section-card {
+    padding: 15px 13px;
+    margin: 12px 0;
+  }
+  .section-title {
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .section-title .add-visit-btn {
+    flex-shrink: 0;
+    margin: -6px -7px 0 0;
+  }
+  .history-summary-card {
+    padding: 13px;
+  }
 }
 
 /* EHR section card refinements */
@@ -553,8 +650,14 @@
   line-height: 1.25;
 }
 
-.section-title .title-left { min-width: 0; gap: 10px; }
-.section-title .title-left ion-icon { color: #087568; font-size: 20px; }
+.section-title .title-left {
+  min-width: 0;
+  gap: 10px;
+}
+.section-title .title-left ion-icon {
+  color: #087568;
+  font-size: 20px;
+}
 .section-count {
   display: inline-flex;
   align-items: center;
@@ -583,7 +686,9 @@
   letter-spacing: 0;
 }
 
-.card-content { margin-top: 0; }
+.card-content {
+  margin-top: 0;
+}
 
 .history-summary-card {
   margin-bottom: 10px;
@@ -604,11 +709,27 @@
   box-shadow: 0 0 0 3px rgba(3, 106, 93, 0.18);
 }
 
-.history-condition { line-height: 1.35; overflow-wrap: anywhere; }
-.history-status-pill { letter-spacing: 0.25px; text-transform: none; }
-.history-notes { margin-top: 10px; color: #526560; font-size: 13px; line-height: 1.5; }
-.history-click-hint { margin-top: 10px; font-size: 12px; }
-.history-eye-icon { color: #087568; }
+.history-condition {
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.history-status-pill {
+  letter-spacing: 0.25px;
+  text-transform: none;
+}
+.history-notes {
+  margin-top: 10px;
+  color: #526560;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.history-click-hint {
+  margin-top: 10px;
+  font-size: 12px;
+}
+.history-eye-icon {
+  color: #087568;
+}
 
 .empty-state {
   padding: 24px 12px;
@@ -628,25 +749,68 @@
   font-size: 21px;
 }
 
-.empty-title { color: #24463f; font-size: 14px; margin-bottom: 5px; }
-.empty-subtitle { color: #71847f; font-size: 12px; line-height: 1.45; }
-.empty-state ion-button { margin-top: 12px; --border-radius: 9px; --color: #087568; --border-color: #9bc9bf; }
-.view-all-link { display: flex; justify-content: center; margin-top: 2px; }
-.view-all-link ion-button { --color: #087568; font-size: 12px; font-weight: 600; }
+.empty-title {
+  color: #24463f;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+.empty-subtitle {
+  color: #71847f;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.empty-state ion-button {
+  margin-top: 12px;
+  --border-radius: 9px;
+  --color: #087568;
+  --border-color: #9bc9bf;
+}
+.view-all-link {
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
+}
+.view-all-link ion-button {
+  --color: #087568;
+  font-size: 12px;
+  font-weight: 600;
+}
 
 @media (max-width: 480px) {
-  .ehr-section-card { padding: 15px 13px; }
-  .section-title { align-items: center; }
-  .section-title .add-visit-btn { margin: 0; }
-  .section-title .add-visit-btn::part(native) { min-height: 36px; }
-  .section-title .title-left { gap: 7px; }
-  .section-title .title-left > span:first-of-type { font-size: 14px; }
-  .history-summary-header { gap: 4px; }
-  .history-title-row { gap: 6px; }
-  .history-condition { font-size: 14px; }
+  .ehr-section-card {
+    padding: 15px 13px;
+  }
+  .section-title {
+    align-items: center;
+  }
+  .section-title .add-visit-btn {
+    margin: 0;
+  }
+  .section-title .add-visit-btn::part(native) {
+    min-height: 36px;
+  }
+  .section-title .title-left {
+    gap: 7px;
+  }
+  .section-title .title-left > span:first-of-type {
+    font-size: 14px;
+  }
+  .history-summary-header {
+    gap: 4px;
+  }
+  .history-title-row {
+    gap: 6px;
+  }
+  .history-condition {
+    font-size: 14px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .history-summary-card { transition: none; }
-  .history-summary-card:hover { transform: none; }
+  .history-summary-card {
+    transition: none;
+  }
+  .history-summary-card:hover {
+    transform: none;
+  }
 }

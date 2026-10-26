@@ -107,7 +107,9 @@
   }
 }
 
-.select-row ion-select { width: 100%; }
+.select-row ion-select {
+  width: 100%;
+}
 
 .visibility-toggle {
   --color: #71847f;
@@ -116,7 +118,9 @@
   height: 38px;
   margin: 0;
 
-  ion-icon { font-size: 19px; }
+  ion-icon {
+    font-size: 19px;
+  }
 }
 
 .field-hint {
@@ -182,7 +186,10 @@
   font-size: 0.8rem;
   overflow-wrap: anywhere;
 
-  ion-icon { flex: 0 0 auto; font-size: 17px; }
+  ion-icon {
+    flex: 0 0 auto;
+    font-size: 17px;
+  }
 }
 
 .visually-hidden {
@@ -228,14 +235,25 @@
 }
 
 @media (max-width: 420px) {
-  .name-fields { grid-template-columns: 1fr; gap: 0; }
-  .registration-card { padding: 24px 20px; }
+  .name-fields {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .registration-card {
+    padding: 24px 20px;
+  }
 }
 
 @media (max-height: 720px) {
-  .page-shell { align-items: flex-start; padding-top: 16px; padding-bottom: 16px; }
+  .page-shell {
+    align-items: flex-start;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: 0.01ms !important; }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+  }
 }

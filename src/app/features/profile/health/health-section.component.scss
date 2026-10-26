@@ -105,7 +105,10 @@
   transform: translateY(-1px);
 }
 
-.medication-card:focus-visible { outline: 3px solid rgba(3, 106, 93, 0.25); outline-offset: 2px; }
+.medication-card:focus-visible {
+  outline: 3px solid rgba(3, 106, 93, 0.25);
+  outline-offset: 2px;
+}
 
 /* Emergency Medication Highlight */
 .medication-card.emergency-medication {
@@ -168,8 +171,13 @@
 
 /* Responsive Tweaks */
 @media (max-width: 480px) { 
-  .medication-title { font-size: 16px !important; }
-  .medication-header { flex-direction: row; align-items: flex-start; }
+  .medication-title {
+    font-size: 16px !important;
+  }
+  .medication-header {
+    flex-direction: row;
+    align-items: flex-start;
+  }
 }
 
 /* Medication section polish */
@@ -191,8 +199,18 @@
   font-size: 20px;
 }
 
-.section-heading-copy h2 { margin: 0; color: #173b35; font-size: 16px; font-weight: 700; }
-.section-heading-copy p { margin: 3px 0 0; color: #71827e; font-size: 12px; font-weight: 400; }
+.section-heading-copy h2 {
+  margin: 0;
+  color: #173b35;
+  font-size: 16px;
+  font-weight: 700;
+}
+.section-heading-copy p {
+  margin: 3px 0 0;
+  color: #71827e;
+  font-size: 12px;
+  font-weight: 400;
+}
 
 .medication-card {
   display: grid;
@@ -217,44 +235,147 @@
   font-size: 21px;
 }
 
-.medication-header { min-width: 0; gap: 8px; }
-.medication-title-section { min-width: 0; }
-.medication-title { display: block; margin: 1px 0 4px; color: #173b35 !important; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
-.medication-summary { color: #61736e; font-size: 12px; line-height: 1.55; }
-.medication-actions { flex: 0 0 auto; }
-.medication-status { height: 25px; margin: 0; font-size: 10px; font-weight: 650; }
-.medication-status ion-label { margin: 0 8px; }
+.medication-header {
+  min-width: 0;
+  gap: 8px;
+}
+.medication-title-section {
+  min-width: 0;
+}
+.medication-title {
+  display: block;
+  margin: 1px 0 4px;
+  color: #173b35 !important;
+  font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.medication-summary {
+  color: #61736e;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.medication-actions {
+  flex: 0 0 auto;
+}
+.medication-status {
+  height: 25px;
+  margin: 0;
+  font-size: 10px;
+  font-weight: 650;
+}
+.medication-status ion-label {
+  margin: 0 8px;
+}
 
 .medication-card:hover, .medication-card:focus-visible {
   border-color: #91c3b8;
   box-shadow: 0 5px 14px rgba(3,106,93,.1);
   transform: translateY(-1px);
 }
-.medication-card:focus-visible { outline: 3px solid rgba(3,106,93,.18); outline-offset: 2px; }
-.medication-card.emergency-medication { border-color: #edc2bd; background: #fffdfd; }
-.medication-card.emergency-medication .medication-icon { background: #fff0ee; color: #a83228; }
-.medication-card.emergency-medication::before { top: 8px; right: 10px; font-size: 8px; border-radius: 999px; }
-.medication-card.finished-medication { opacity: .82; }
-.low-stock-text { color: #9a5b00; font-size: 12px; line-height: 1.4; }
-.no-medications-container { padding: 30px 20px; }
-.no-medications-icon { display: block; margin: 0 auto 10px; color: #8aa8a1; font-size: 34px; }
-.no-medications-text { margin: 0; color: #294a43; font-style: normal; font-size: 14px; font-weight: 650; }
-.no-medications-hint { margin: 5px 0 0; color: #73847f; font-size: 12px; line-height: 1.5; }
-.loading-medication { margin: 0 12px 10px; padding: 14px; border: 1px solid #e4eeeb; border-radius: 14px; background: #fff; }
-.loading-medication ion-skeleton-text { display: block; margin: 0; border-radius: 6px; }
-.loading-title { width: 46%; height: 16px; }
-.loading-line { width: 72%; height: 12px; margin-top: 10px !important; }
+.medication-card:focus-visible {
+  outline: 3px solid rgba(3,106,93,.18);
+  outline-offset: 2px;
+}
+.medication-card.emergency-medication {
+  border-color: #edc2bd;
+  background: #fffdfd;
+}
+.medication-card.emergency-medication .medication-icon {
+  background: #fff0ee;
+  color: #a83228;
+}
+.medication-card.emergency-medication::before {
+  top: 8px;
+  right: 10px;
+  font-size: 8px;
+  border-radius: 999px;
+}
+.medication-card.finished-medication {
+  opacity: .82;
+}
+.low-stock-text {
+  color: #9a5b00;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.no-medications-container {
+  padding: 30px 20px;
+}
+.no-medications-icon {
+  display: block;
+  margin: 0 auto 10px;
+  color: #8aa8a1;
+  font-size: 34px;
+}
+.no-medications-text {
+  margin: 0;
+  color: #294a43;
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 650;
+}
+.no-medications-hint {
+  margin: 5px 0 0;
+  color: #73847f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.loading-medication {
+  margin: 0 12px 10px;
+  padding: 14px;
+  border: 1px solid #e4eeeb;
+  border-radius: 14px;
+  background: #fff;
+}
+.loading-medication ion-skeleton-text {
+  display: block;
+  margin: 0;
+  border-radius: 6px;
+}
+.loading-title {
+  width: 46%;
+  height: 16px;
+}
+.loading-line {
+  width: 72%;
+  height: 12px;
+  margin-top: 10px !important;
+}
 
 @media (max-width: 480px) {
-  .medication-card { grid-template-columns: 36px minmax(0, 1fr); gap: 10px; margin-inline: 8px; padding: 12px; }
-  .medication-icon { width: 36px; height: 36px; border-radius: 11px; font-size: 19px; }
-  .medication-header { gap: 5px; }
-  .medication-title { font-size: 14px !important; }
-  .medication-status { height: 23px; font-size: 9px; }
-  .medication-status ion-label { margin: 0 6px; }
+  .medication-card {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 10px;
+    margin-inline: 8px;
+    padding: 12px;
+  }
+  .medication-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    font-size: 19px;
+  }
+  .medication-header {
+    gap: 5px;
+  }
+  .medication-title {
+    font-size: 14px !important;
+  }
+  .medication-status {
+    height: 23px;
+    font-size: 9px;
+  }
+  .medication-status ion-label {
+    margin: 0 6px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .medication-card { transition: none; }
-  .medication-card:hover { transform: none; }
+  .medication-card {
+    transition: none;
+  }
+  .medication-card:hover {
+    transform: none;
+  }
 }

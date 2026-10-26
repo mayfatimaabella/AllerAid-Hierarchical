@@ -84,9 +84,15 @@ ion-card-content {
   font-weight: 600;
 }
 
-.status.connected { color: #18804f; }
-.status.disconnected { color: var(--watch-muted); }
-.status ion-icon { font-size: 17px; }
+.status.connected {
+  color: #18804f;
+}
+.status.disconnected {
+  color: var(--watch-muted);
+}
+.status ion-icon {
+  font-size: 17px;
+}
 
 .description {
   margin: 0 0 16px;
