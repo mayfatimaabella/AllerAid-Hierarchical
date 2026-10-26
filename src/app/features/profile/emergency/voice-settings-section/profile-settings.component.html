@@ -1,16 +1,21 @@
 <div class="voice-settings-section" *ngIf="audioInstructionsEnabled">
   <div class="voice-audio-settings">
-    <h4>Audio Settings</h4>
-    <p>Configure how emergency instructions are played using text-to-speech.</p>
+    <div class="voice-heading">
+      <div class="voice-heading-icon"><ion-icon name="volume-high-outline" aria-hidden="true"></ion-icon></div>
+      <div>
+        <h4>Voice settings</h4>
+        <p>Customize how your emergency instructions sound when read aloud.</p>
+      </div>
+    </div>
 
     <div class="setting-item">
       <div class="setting-info">
-        <label>Default Voice</label>
+        <label id="default-voice-label">Voice</label>
         <p>Choose the built-in speech voice.</p>
       </div>
-      <ion-select [(ngModel)]="profileVoiceFacade.audioSettings.defaultVoice"
+      <ion-select aria-labelledby="default-voice-label" [(ngModel)]="profileVoiceFacade.audioSettings.defaultVoice"
                   (ionChange)="profileVoiceFacade.onAudioSettingChange()"
-                  interface="popover">
+                  interface="popover" mode="ios" placeholder="Select voice">
         <ion-select-option value="female">Female</ion-select-option>
         <ion-select-option value="male">Male</ion-select-option>
       </ion-select>
@@ -18,17 +23,17 @@
 
     <div class="setting-item">
       <div class="setting-info">
-        <label>Speech Rate ({{ profileVoiceFacade.audioSettings.speechRate }}x)</label>
-        <p>How fast the audio plays</p>
+        <label id="speech-rate-label">Speech rate <span>{{ profileVoiceFacade.audioSettings.speechRate | number:'1.1-1' }}×</span></label>
+        <p>Adjust how quickly the instructions are spoken.</p>
       </div>
-      <ion-range [(ngModel)]="profileVoiceFacade.audioSettings.speechRate"
+      <ion-range aria-labelledby="speech-rate-label" [(ngModel)]="profileVoiceFacade.audioSettings.speechRate"
                  (ionChange)="profileVoiceFacade.onAudioSettingChange()"
                  min="0.5"
                  max="2.0"
                  step="0.1"
-                 pin="true">
-        <ion-label slot="start">0.5x</ion-label>
-        <ion-label slot="end">2.0x</ion-label>
+                 pin="true" snaps="false" color="primary">
+        <ion-label slot="start">0.5×</ion-label>
+        <ion-label slot="end">2×</ion-label>
       </ion-range>
     </div>
   </div>

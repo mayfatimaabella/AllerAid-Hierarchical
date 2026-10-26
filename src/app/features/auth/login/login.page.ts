@@ -25,6 +25,7 @@ export class LoginPage implements OnInit {
 
   email: string = '';
   password: string = '';
+  showPassword: boolean = false;
 
   // Used to show validation messages after clicking Login
   submitted: boolean = false;
@@ -56,6 +57,7 @@ export class LoginPage implements OnInit {
     this.email = '';
     this.password = '';
     this.submitted = false;
+    this.showPassword = false;
   }
 
   /**

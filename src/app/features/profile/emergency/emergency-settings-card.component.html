@@ -1,21 +1,24 @@
 <div class="emergency-settings-wrapper-card">
   <ion-item lines="none" class="emergency-settings-header-bar">
     <ion-icon name="settings-outline" slot="start"></ion-icon>
-    <ion-label>Emergency Settings</ion-label>
+    <ion-label>
+      <h2>Emergency settings</h2>
+      <p>Choose how AllerAid can alert someone when you need help.</p>
+    </ion-label>
   </ion-item>
   <div class="settings-group">
     <ion-item lines="none" class="emergency-setting-card compact">
       <ion-label class="emergency-setting-info">
-        <div class="emergency-setting-title">Shake to Alert</div>
-        <div class="emergency-setting-desc">Shake phone to trigger emergency</div>
+        <div class="emergency-setting-title">Shake to alert</div>
+        <div class="emergency-setting-desc">Shake your phone to trigger an emergency alert.</div>
       </ion-label>
       <ion-toggle slot="end" [(ngModel)]="emergencySettings.shakeToAlert" (ionChange)="saveEmergencySettings()"></ion-toggle>
     </ion-item>
 
     <ion-item lines="none" class="emergency-setting-card compact">
       <ion-label class="emergency-setting-info">
-        <div class="emergency-setting-title">Volume Button Alert</div>
-        <div class="emergency-setting-desc">Press Volume Up or Down 3 times within 3 seconds</div>
+        <div class="emergency-setting-title">Volume button alert</div>
+        <div class="emergency-setting-desc">Press either volume button 3 times within 3 seconds.</div>
       </ion-label>
       <ion-toggle slot="end"  [(ngModel)]="emergencySettings.volumeButtonAlert" (ionChange)="saveEmergencySettings()">
 </ion-toggle>
@@ -23,8 +26,8 @@
 
     <ion-item lines="none" class="emergency-setting-card compact">
       <ion-label class="emergency-setting-info">
-        <div class="emergency-setting-title">Audio Instructions</div>
-        <div class="emergency-setting-desc">Play emergency message aloud</div>
+        <div class="emergency-setting-title">Spoken emergency instructions</div>
+        <div class="emergency-setting-desc">Read your emergency message aloud when an alert is triggered.</div>
         <div class="emergency-setting-status" *ngIf="emergencySettings.audioInstructions">
           <span [class]="getAudioSourceClass()">{{ getAudioSourceText() }}</span>
         </div>

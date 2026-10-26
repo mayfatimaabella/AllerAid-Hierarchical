@@ -5,110 +5,140 @@
 
 .doctor-modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  inset: 0;
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  background: rgba(17, 39, 36, .48);
+  backdrop-filter: blur(3px);
+  animation: backdrop-in .18s ease-out;
 }
 
 .doctor-modal-content {
-  width: 90vw;
-  max-width: 400px;
-  min-height: 450px;
-  max-height: 80vh;
-  z-index: 1001;
-  border-radius: 22px;
-  overflow: hidden;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
+  width: min(100%, 390px);
+  max-height: min(90vh, 620px);
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, .75);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(13, 44, 39, .24);
+  animation: dialog-in .2s ease-out;
 }
 
 .delete-content {
-  --background: #ffffff;
-  --padding: 32px 24px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.delete-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 30px 28px 24px;
   text-align: center;
-  margin-bottom: 20px;
-  gap: 12px;
 }
 
-.delete-header ion-icon {
-  font-size: 52px;
-  color: #e82829;
+.delete-icon-wrap {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 17px;
+  border-radius: 19px;
+  background: #fff0ef;
+  color: #c63c3e;
 }
 
-.delete-header h2 {
+.delete-icon-wrap ion-icon { font-size: 27px; }
+
+.dialog-eyebrow {
+  margin: 0 0 6px;
+  color: #718783;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.delete-content h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 800;
-  color: #036a5d;
+  color: #183b37;
+  font-size: 21px;
+  line-height: 1.25;
+  font-weight: 750;
 }
 
-.delete-header p {
-  margin: 0;
-  font-size: 14px;
-  color: #6b827e;
-  line-height: 1.6;
+.delete-description {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 12px 0 18px;
+  color: #71817e;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .doctor-name-highlight {
-  color: #036a5d;
+  color: #183b37;
+  font-size: 15px;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
-.warning-text {
-  margin: 0 0 24px;
-  text-align: center;
-  font-size: 13px;
-  color: #e82829;
-  font-weight: 600;
+.warning-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid #e9efed;
+  border-radius: 13px;
+  background: #f7faf9;
+  color: #6d7f7b;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.warning-note ion-icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #748b86;
+  font-size: 17px;
 }
 
 .button-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: auto;
+  gap: 9px;
+  margin-top: 22px;
 }
 
-.deleteBtn {
-  --background: #e82829 !important;
-  --color: #fff !important;
-  font-weight: 600;
+.button-group ion-button {
+  min-height: 46px;
+  margin: 0;
+  --border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: none;
 }
 
 .cancelBtn {
-  --background: transparent !important;
-  --border-color: #036a5d !important;
-  --color: #036a5d !important;
-  border: 2px solid #036a5d;
-  font-weight: 600;
-  text-transform: none;
-
-  &:disabled {
-    --color: #c0c0c0 !important;
-    --border-color: #d0d0d0 !important;
-    opacity: 0.6;
-  }
+  --background: #edf4f2;
+  --background-hover: #e4eeeb;
+  --color: #245b53;
 }
 
-ion-spinner {
-  margin-right: 8px;
+.deleteBtn {
+  --background: #c53d40;
+  --background-hover: #ad3033;
   --color: #fff;
+}
+
+.button-group ion-button:disabled { opacity: .62; }
+ion-spinner { margin-right: 8px; --color: #fff; }
+
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+@media (max-width: 420px) {
+  .doctor-modal-backdrop { padding: 16px; }
+  .delete-content { padding: 26px 21px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doctor-modal-backdrop, .doctor-modal-content { animation: none; }
 }

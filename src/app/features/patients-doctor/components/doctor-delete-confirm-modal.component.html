@@ -1,29 +1,40 @@
 <ng-container>
-  <div class="doctor-modal-backdrop" (click)="cancel()">
-    <div class="doctor-modal-content" (click)="$event.stopPropagation()">
-      <ion-content class="ion-padding delete-content">
-        <div class="delete-header">
-          <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
-          <h2>Remove Doctor?</h2>
-          <p>
-            Are you sure you want to remove
-            <strong class="doctor-name-highlight">{{ doctor?.firstName }} {{ doctor?.lastName }}</strong>
-            from your doctors list?
-          </p>
+  <div class="doctor-modal-backdrop" (click)="cancel()" [class.is-loading]="isLoading">
+    <section
+      class="doctor-modal-content"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="remove-doctor-title"
+      aria-describedby="remove-doctor-description"
+      (click)="$event.stopPropagation()">
+      <div class="delete-content">
+        <div class="delete-icon-wrap" aria-hidden="true">
+          <ion-icon name="person-remove-outline"></ion-icon>
         </div>
 
-        <p class="warning-text">This action cannot be undone.</p>
+        <p class="dialog-eyebrow">Care team update</p>
+        <h2 id="remove-doctor-title">Remove this doctor?</h2>
+        <p id="remove-doctor-description" class="delete-description">
+          <span>You’re about to remove</span>
+          <strong class="doctor-name-highlight">{{ doctor?.doctorName || ((doctor?.firstName || '') + ' ' + (doctor?.lastName || '')).trim() || 'this doctor' }}</strong>
+          <span>from your connected care team.</span>
+        </p>
+
+        <div class="warning-note">
+          <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+          <span>You can reconnect with this doctor later by sending a new invitation.</span>
+        </div>
 
         <div class="button-group">
           <ion-button expand="block" class="deleteBtn" (click)="confirmDelete()" [disabled]="isLoading">
             <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-            {{ isLoading ? 'Removing...' : 'Yes, Remove' }}
+            {{ isLoading ? 'Removing…' : 'Remove doctor' }}
           </ion-button>
           <ion-button expand="block" class="cancelBtn" (click)="cancel()" [disabled]="isLoading">
-            Cancel
+            Keep doctor
           </ion-button>
         </div>
-      </ion-content>
-    </div>
+      </div>
+    </section>
   </div>
 </ng-container>

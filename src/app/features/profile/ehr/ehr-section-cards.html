@@ -5,6 +5,7 @@
             <div class="title-left">
               <ion-icon name="medical-outline" color="secondary"></ion-icon>
               <span>Doctor Visits</span>
+              <span class="section-count" *ngIf="!isLoadingDoctorVisits">{{ doctorVisits.length }}</span>
             </div>
             <ion-button size="small" fill="clear" (click)="openAddDoctorVisitModal()" class="add-visit-btn">
               <ion-icon name="add-outline" slot="start"></ion-icon>
@@ -25,7 +26,8 @@
                    (click)="openVisitDetailsHandler(visit)"
                    tabindex="0"
                    role="button"
-                   (keydown.enter)="openVisitDetailsHandler(visit)">
+                   (keydown.enter)="openVisitDetailsHandler(visit)"
+                   (keydown.space)="$event.preventDefault(); openVisitDetailsHandler(visit)">
                 <div class="history-summary-header">
                   <div class="history-summary-info">
                     <div class="history-title-row">
@@ -51,8 +53,12 @@
 
             <!-- No data state -->
             <div *ngIf="!isLoadingDoctorVisits && doctorVisits.length === 0" class="empty-state">
-              <p class="empty-title">No doctor visits recorded</p>
+              <div class="empty-icon"><ion-icon name="calendar-clear-outline"></ion-icon></div>
+              <p class="empty-title">No doctor visits yet</p>
               <p class="empty-subtitle">Log your consultations and follow-ups</p>
+              <ion-button fill="outline" size="small" (click)="openAddDoctorVisitModal()">
+                <ion-icon name="add-outline" slot="start"></ion-icon>Add visit
+              </ion-button>
             </div>
           </div>
         </div>
@@ -63,6 +69,7 @@
             <div class="title-left">
               <ion-icon name="document-text-outline" color="secondary"></ion-icon>
               <span>Medical History</span>
+              <span class="section-count" *ngIf="!isLoadingMedicalHistory">{{ medicalHistory.length }}</span>
             </div>
             <ion-button size="small" fill="clear" (click)="openAddMedicalHistoryModal()" class="add-visit-btn">
               <ion-icon name="add-outline" slot="start"></ion-icon>
@@ -85,7 +92,8 @@
                    (click)="openMedicalHistoryDetailsHandler(history)"
                    tabindex="0"
                    role="button"
-                   (keydown.enter)="openMedicalHistoryDetailsHandler(history)">
+                   (keydown.enter)="openMedicalHistoryDetailsHandler(history)"
+                   (keydown.space)="$event.preventDefault(); openMedicalHistoryDetailsHandler(history)">
                 <div class="history-summary-header">
                   <div class="history-summary-info">
                     <div class="history-title-row">
@@ -117,8 +125,12 @@
 
             <!-- No data state -->
             <div *ngIf="!isLoadingMedicalHistory && medicalHistory.length === 0" class="empty-state">
-              <p class="empty-title">No medical history recorded</p>
+              <div class="empty-icon"><ion-icon name="document-text-outline"></ion-icon></div>
+              <p class="empty-title">No medical history yet</p>
               <p class="empty-subtitle">Document your medical conditions and diagnoses</p>
+              <ion-button fill="outline" size="small" (click)="openAddMedicalHistoryModal()">
+                <ion-icon name="add-outline" slot="start"></ion-icon>Add history
+              </ion-button>
             </div>
           </div>
         </div>

@@ -1,80 +1,67 @@
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="login-page">
+  <main class="page-shell">
+    <section class="login-card" aria-labelledby="login-heading">
+      <header class="welcome-copy">
+        <p class="eyebrow">ALLERAID</p>
+        <h1 id="login-heading">Welcome back</h1>
+        <p>Sign in to stay connected to your care.</p>
+      </header>
 
-  <div class="form-container">
-
-    <ion-card class="login-card">
-
-      <ion-card-header>
-        <ion-card-title>Welcome to AllerAid</ion-card-title>
-        <ion-card-subtitle>Log in to continue</ion-card-subtitle>
-      </ion-card-header>
-
-      <ion-card-content>
-
-        <ion-list lines="none">
-
-          <!-- EMAIL -->
-          <ion-item [class.input-invalid]="submitted && (!email || !isValidEmail())">
-            
-            <ion-icon slot="start" name="mail-outline"></ion-icon>
-            <ion-input type="email" placeholder="Email" [(ngModel)]="email"></ion-input>
+      <form (ngSubmit)="login()" novalidate>
+        <div class="field-group">
+          <ion-label for="login-email">Email address</ion-label>
+          <ion-item lines="none" class="input-row" [class.input-invalid]="submitted && (!email || !isValidEmail())">
+            <ion-icon slot="start" name="mail-outline" aria-hidden="true"></ion-icon>
+            <ion-input id="login-email" name="email" type="email" inputmode="email" autocomplete="email"
+              placeholder="you@example.com" [(ngModel)]="email" (ionInput)="clearEmailError()"
+              aria-describedby="email-error" required></ion-input>
           </ion-item>
-
-          <!-- Email required -->
-          <ion-text color="danger" *ngIf="submitted && !email">
-            <p class="field-error">
-              <ion-icon name="alert-circle-outline"></ion-icon>
-              Email is required.
+          <ion-text color="danger" *ngIf="submitted && (!email || !isValidEmail())">
+            <p class="field-error" id="email-error">
+              <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+              {{ !email ? 'Email is required.' : 'Enter a valid email address.' }}
             </p>
           </ion-text>
+        </div>
 
-          <!-- Invalid email -->
-          <ion-text color="danger" *ngIf="submitted && email && !isValidEmail()">
-            <p class="field-error">
-              <ion-icon name="alert-circle-outline"></ion-icon>
-              Please enter a valid email address.
-            </p>
-          </ion-text>
-
-          <!-- PASSWORD -->
-          <ion-item [class.input-invalid]="submitted && !password">
-            <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
-            <ion-input type="password" placeholder="Password" [(ngModel)]="password"></ion-input>
+        <div class="field-group">
+          <div class="label-row">
+            <ion-label for="login-password">Password</ion-label>
+            <button type="button" class="text-link forgot-link" (click)="openForgotPasswordModal()">Forgot password?</button>
+          </div>
+          <ion-item lines="none" class="input-row" [class.input-invalid]="submitted && !password">
+            <ion-icon slot="start" name="lock-closed-outline" aria-hidden="true"></ion-icon>
+            <ion-input id="login-password" name="password" [type]="showPassword ? 'text' : 'password'"
+              autocomplete="current-password" placeholder="Enter your password" [(ngModel)]="password"
+              (ionInput)="clearPasswordError()" aria-describedby="password-error" required></ion-input>
+            <ion-button type="button" fill="clear" slot="end" class="visibility-toggle"
+              (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+              <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" aria-hidden="true"></ion-icon>
+            </ion-button>
           </ion-item>
-
-          <!-- Password required -->
           <ion-text color="danger" *ngIf="submitted && !password">
-            <p class="field-error">
-              <ion-icon name="alert-circle-outline"></ion-icon>
+            <p class="field-error" id="password-error">
+              <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
               Password is required.
             </p>
           </ion-text>
+        </div>
 
-        </ion-list>
-
-        <!-- LOGIN BUTTON -->
-        <ion-button expand="block" class="loginBtn" shape="round" (click)="login()">
-          Login
+        <ion-button type="submit" expand="block" class="login-button">
+          Sign in
+          <ion-icon slot="end" name="arrow-forward-outline" aria-hidden="true"></ion-icon>
         </ion-button>
+      </form>
 
-        <!-- FORGOT PASSWORD -->
-        <div class="text-center forgot-password-link">
-          <a (click)="openForgotPasswordModal()">
-            Forgot Password?
-          </a>
-        </div>
+      <div class="signup-prompt">
+        <span>New to AllerAid?</span>
+        <a routerLink="/registration">Create an account</a>
+      </div>
+    </section>
 
-        <!-- REGISTER -->
-        <div class="text-center">
-          <p> Don’t have an account? 
-            <a routerLink="/registration"> Register</a>
-          </p>
-        </div>
-
-      </ion-card-content>
-
-    </ion-card>
-
-  </div>
-
+    <p class="supporting-note">
+      <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+      Your health, supported every step of the way.
+    </p>
+  </main>
 </ion-content>

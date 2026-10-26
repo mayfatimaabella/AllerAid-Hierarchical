@@ -8,8 +8,6 @@ import { PatientsDoctorPageRoutingModule } from './patients-doctor-routing.modul
 
 import { PatientsDoctorPage } from './pages/patients-doctor.page';
 import { 
-  DoctorActionsModalComponent,
-  DoctorEditModalComponent,
   DoctorDeleteConfirmModalComponent,
   DoctorDetailsModalComponent
 } from './components';
@@ -24,8 +22,6 @@ import { DoctorInviteModalComponent } from './components/doctor-invite-modal.com
   ],
   declarations: [
     PatientsDoctorPage,
-    DoctorActionsModalComponent,
-    DoctorEditModalComponent,
     DoctorDeleteConfirmModalComponent,
     DoctorDetailsModalComponent,
     DoctorInviteModalComponent

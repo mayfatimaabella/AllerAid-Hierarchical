@@ -28,7 +28,7 @@ ion-content.profile-page-bg {
 /* Header */
 .profile-header {
   width: 100%;
-  padding: 14px 0 8px;
+  padding: 8px 0 14px;
   display: flex;
   justify-content: center;
 }
@@ -122,7 +122,7 @@ ion-content.profile-page-bg {
 /* Main card */
 .profile-card {
   width: 100%;
-  max-width: 680px;
+  max-width: 760px;
   margin: 0 auto 24px;
   background: var(--profile-card);
   border-radius: 22px;
@@ -136,12 +136,12 @@ ion-content.profile-page-bg {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  margin: 14px;
+  margin: 16px 16px 12px;
 }
 
 .stat {
   text-align: center;
-  background: var(--profile-teal);
+  background: linear-gradient(140deg, #087969, #036a5d);
   border-radius: 16px;
   padding: 14px 10px;
   box-shadow: 0 5px 14px rgba(3, 106, 93, 0.18);
@@ -164,8 +164,8 @@ ion-content.profile-page-bg {
 .profile-tabs {
   display: flex;
   gap: 8px;
-  margin: 0 14px 14px;
-  padding: 8px;
+  margin: 0 16px 16px;
+  padding: 5px;
   background: var(--profile-teal-soft);
   border-radius: 16px;
   overflow-x: auto;
@@ -178,10 +178,11 @@ ion-content.profile-page-bg {
 
 .tab {
   flex: 1 0 auto;
-  min-width: 86px;
+  min-width: 76px;
   border: none;
   border-radius: 12px;
-  padding: 10px 12px;
+  min-height: 42px;
+  padding: 9px 12px;
   background: transparent;
   color: var(--profile-teal-dark);
   font-size: 14px;
@@ -192,6 +193,8 @@ ion-content.profile-page-bg {
   &:hover {
     background: rgba(3, 106, 93, 0.08);
   }
+
+  &:focus-visible { outline: 3px solid rgba(3, 106, 93, 0.35); outline-offset: 2px; }
 
   &.active {
     background: var(--profile-teal);
@@ -380,11 +383,15 @@ ion-modal {
 
   .tab {
     min-width: 80px;
-    font-size: 13px;
-    padding: 9px 10px;
+    font-size: 12px;
+    padding: 0;
   }
 
   .instructions-list-scrollable {
     max-height: 190px;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

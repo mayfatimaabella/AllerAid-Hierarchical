@@ -1,10 +1,10 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="toolbar--teal">
 
-    <ion-title>Doctor Visit Details</ion-title>
+    <ion-title>Visit details</ion-title>
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="goBack()">
-        <ion-icon name="close"></ion-icon>
+      <ion-button fill="clear" (click)="goBack()" aria-label="Close visit details">
+        <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -15,7 +15,9 @@
     
     <!-- Visit Header -->
     <div class="visit-header-card">
+      <div class="visit-avatar"><ion-icon name="medical-outline"></ion-icon></div>
       <div class="visit-main-info">
+        <span class="visit-eyebrow">DOCTOR VISIT</span>
         <h1>{{ visit.doctorName }}</h1>
         <p class="specialty" *ngIf="visit.specialty">{{ visit.specialty }}</p>
         <div class="visit-meta">
@@ -31,7 +33,7 @@
     <div class="detail-card" *ngIf="visit.chiefComplaint">
       <div class="card-header">
         <ion-icon name="medical-outline"></ion-icon>
-        <h2>Main Reason of Visit</h2>
+        <h2>Reason for visit</h2>
       </div>
       <div class="card-content">
         <p>{{ visit.chiefComplaint }}</p>

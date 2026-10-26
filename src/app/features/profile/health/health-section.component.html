@@ -1,8 +1,18 @@
 <div class="section-title">
-  Medications
+  <div class="section-heading-icon"><ion-icon name="medkit-outline" aria-hidden="true"></ion-icon></div>
+  <div class="section-heading-copy">
+    <h2>Medications</h2>
+    <p>Your recent medication records</p>
+  </div>
 </div>
 
 <div class="medications-list">
+  <div *ngIf="isLoading" class="medication-loading" aria-label="Loading medications">
+    <div class="loading-medication" *ngFor="let item of [1, 2, 3]">
+      <ion-skeleton-text animated class="loading-title"></ion-skeleton-text>
+      <ion-skeleton-text animated class="loading-line"></ion-skeleton-text>
+    </div>
+  </div>
   <ng-container *ngIf="!isLoading">
     <div *ngFor="let medication of recentMedications; trackBy: trackByMedication" 
       class="medication-card" 
@@ -11,7 +21,12 @@
         'finished-medication': getStatusLabel(medication) === 'Completed' || getStatusLabel(medication) === 'Inactive'
       }"
       (click)="viewDetails.emit(medication)"
-      style="cursor: pointer;">
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'View medication details for ' + medication.name"
+      (keydown.enter)="viewDetails.emit(medication)"
+      (keydown.space)="$event.preventDefault(); viewDetails.emit(medication)">
+      <div class="medication-icon" aria-hidden="true"><ion-icon name="medkit-outline"></ion-icon></div>
           
       <div class="medication-header">
         <div class="medication-title-section">
@@ -33,7 +48,7 @@
         </div>
 
         <div class="medication-actions">
-          <ion-chip [color]="getStatusColor(medication)" size="small">
+          <ion-chip [color]="getStatusColor(medication)" size="small" class="medication-status">
             <ion-label>{{ getStatusLabel(medication) }}</ion-label>
           </ion-chip>
         </div>
@@ -44,8 +59,9 @@
       <div class="no-medications-container">
         <ion-icon name="medical-outline" class="no-medications-icon"></ion-icon>
         <p class="no-medications-text">
-          No medications recorded
+          No medications recorded yet
         </p>
+        <p class="no-medications-hint">Medications you add will appear here for quick reference.</p>
       </div>
     </div>
   </ng-container>

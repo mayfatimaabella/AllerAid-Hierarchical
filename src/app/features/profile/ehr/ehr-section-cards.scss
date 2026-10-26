@@ -39,12 +39,11 @@
 
 .ehr-section-card {
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  margin: 18px 0;
-  padding: 18px 20px;
-  border-left: 4px solid #036a5d;
-  border: 1px solid #ececec;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(15, 50, 44, 0.06);
+  margin: 14px 0;
+  padding: 18px;
+  border: 1px solid #dce9e6;
   position: relative;
 }
 
@@ -102,7 +101,7 @@
 
 /* Enhanced Doctor Visit summary card (aligned with medical history styling) */
 .visit-summary-card {
-  margin-bottom: 1.2rem;
+  margin-bottom: 0.75rem;
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 1px 3px rgba(3,106,93,0.08);
@@ -368,10 +367,10 @@
 .history-summary-card {
   margin-bottom: 1.2rem;
   background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 1px 3px rgba(3,106,93,0.08);
-  padding: 0.9rem 1rem 0.85rem;
-  border: 1px solid #d1e7e0;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(3,106,93,0.06);
+  padding: 0.9rem 1rem;
+  border: 1px solid #e0ebe8;
   position: relative;
   cursor: pointer;
   transition: all 0.18s ease;
@@ -528,4 +527,126 @@
   width: 60%;
   height: 30px;
   margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+  .ehr-section-card { padding: 15px 13px; margin: 12px 0; }
+  .section-title { align-items: flex-start; gap: 8px; }
+  .section-title .add-visit-btn { flex-shrink: 0; margin: -6px -7px 0 0; }
+  .history-summary-card { padding: 13px; }
+}
+
+/* EHR section card refinements */
+.ehr-section-card {
+  padding: 18px;
+  border-color: #d9e8e4;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px rgba(15, 50, 44, 0.07);
+}
+
+.section-title {
+  margin: 0 0 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e6efed;
+  color: #173b35;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.section-title .title-left { min-width: 0; gap: 10px; }
+.section-title .title-left ion-icon { color: #087568; font-size: 20px; }
+.section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 23px;
+  height: 23px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #e8f3f0;
+  color: #17685d;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.section-title .add-visit-btn {
+  min-height: 36px;
+  margin: 0;
+  --border-radius: 10px;
+  --padding-start: 11px;
+  --padding-end: 11px;
+  --background: #eaf5f2;
+  --background-hover: #dcefe9;
+  --color: #086b5e;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.card-content { margin-top: 0; }
+
+.history-summary-card {
+  margin-bottom: 10px;
+  padding: 14px 15px;
+  border-color: #e2ece9;
+  border-radius: 13px;
+  box-shadow: 0 1px 4px rgba(15, 50, 44, 0.04);
+}
+
+.history-summary-card:hover {
+  border-color: #91c3b8;
+  box-shadow: 0 5px 14px rgba(3, 106, 93, 0.1);
+  transform: translateY(-1px);
+}
+
+.history-summary-card:focus-visible {
+  border-color: #168474;
+  box-shadow: 0 0 0 3px rgba(3, 106, 93, 0.18);
+}
+
+.history-condition { line-height: 1.35; overflow-wrap: anywhere; }
+.history-status-pill { letter-spacing: 0.25px; text-transform: none; }
+.history-notes { margin-top: 10px; color: #526560; font-size: 13px; line-height: 1.5; }
+.history-click-hint { margin-top: 10px; font-size: 12px; }
+.history-eye-icon { color: #087568; }
+
+.empty-state {
+  padding: 24px 12px;
+  border-radius: 13px;
+  background: #f7faf9;
+}
+
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 10px;
+  border-radius: 13px;
+  background: #e8f3f0;
+  color: #087568;
+  font-size: 21px;
+}
+
+.empty-title { color: #24463f; font-size: 14px; margin-bottom: 5px; }
+.empty-subtitle { color: #71847f; font-size: 12px; line-height: 1.45; }
+.empty-state ion-button { margin-top: 12px; --border-radius: 9px; --color: #087568; --border-color: #9bc9bf; }
+.view-all-link { display: flex; justify-content: center; margin-top: 2px; }
+.view-all-link ion-button { --color: #087568; font-size: 12px; font-weight: 600; }
+
+@media (max-width: 480px) {
+  .ehr-section-card { padding: 15px 13px; }
+  .section-title { align-items: center; }
+  .section-title .add-visit-btn { margin: 0; }
+  .section-title .add-visit-btn::part(native) { min-height: 36px; }
+  .section-title .title-left { gap: 7px; }
+  .section-title .title-left > span:first-of-type { font-size: 14px; }
+  .history-summary-header { gap: 4px; }
+  .history-title-row { gap: 6px; }
+  .history-condition { font-size: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history-summary-card { transition: none; }
+  .history-summary-card:hover { transform: none; }
 }

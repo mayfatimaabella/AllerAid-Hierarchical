@@ -7,7 +7,7 @@
     <ion-title>Buddy</ion-title>
 
     <ion-buttons slot="end">
-      <ion-button class="invite-btn" fill="clear" (click)="openInvitationsModal()">
+      <ion-button class="invite-btn" fill="clear" aria-label="View buddy invitations" (click)="openInvitationsModal()">
         <ion-icon name="person-add-outline"></ion-icon>
 
         <ion-badge *ngIf="invitationCount > 0" color="danger" class="invite-badge">
@@ -83,7 +83,7 @@
   <ion-card *ngIf="buddies.length > 0" class="buddy-list-card">
     <ion-card-header>
       <div>
-        <ion-card-title>Recent Buddies</ion-card-title>
+      <ion-card-title>Your trusted network</ion-card-title>
         <ion-card-subtitle>{{ filteredBuddies.length }} shown</ion-card-subtitle>
       </div>
     </ion-card-header>
@@ -118,6 +118,15 @@
       </ion-list>
     </ion-card-content>
   </ion-card>
+
+  <section *ngIf="buddies.length > 0 && filteredBuddies.length === 0" class="no-results" aria-live="polite">
+    <div class="no-results-icon"><ion-icon name="search-outline"></ion-icon></div>
+    <div>
+      <h2>No buddies found</h2>
+      <p>Try another name, email, or phone number.</p>
+    </div>
+    <ion-button fill="clear" (click)="searchTerm = ''; searchBuddy()">Clear search</ion-button>
+  </section>
 
   <div *ngIf="buddies.length === 0" class="no-buddies-container">
     <ion-card class="no-buddies-card">
@@ -157,7 +166,7 @@
 
         <div class="contact-item" *ngIf="fallbackContact.phone">
           <ion-icon name="call-outline"></ion-icon>
-          <ion-button fill="clear" size="small" (click)="callNumber(fallbackContact.phone)">
+          <ion-button fill="clear" size="small" aria-label="Call trusted contact" (click)="callNumber(fallbackContact.phone)">
             {{ fallbackContact.phone }}
           </ion-button>
         </div>

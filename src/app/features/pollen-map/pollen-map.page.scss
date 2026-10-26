@@ -1,282 +1,277 @@
-/* --- Toolbar Styles --- */
-ion-toolbar {
-  --background: #036a5d;
-  --color: white;
+:host {
+  --aqi-ink: #183d39;
+  --aqi-muted: #657a76;
+  --aqi-primary: #08776a;
+  --aqi-border: #e1ece9;
+  --aqi-surface: #fff;
+  display: block;
 }
 
-/* --- Container Wrappers --- */
-.wrapper {
-  padding: 0; // Keeping it tight to let the card fill the space
+ion-toolbar {
+  --background: #075e54;
+  --color: #fff;
+  --border-width: 0;
 }
+
+ion-content {
+  --background: #f4f8f7;
+  --padding-bottom: calc(88px + env(safe-area-inset-bottom));
+}
+
+.wrapper { padding: 0; }
 
 .aqi-main-card {
-  background: #e9f5f0;
-  border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(18, 109, 97, 0.15);
-  border: 1px solid #198476;
   margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(25, 132, 118, .28);
+  border-radius: 22px;
+  background: #f0f8f5;
+  box-shadow: 0 8px 24px rgba(18, 71, 65, .1);
 
-  ion-card-content {
-    padding: 12px;
+  ion-card-header { padding: 18px 18px 12px; }
+  ion-card-content { padding: 8px 14px 14px; }
+  ion-card-title {
+    color: var(--aqi-ink);
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+  }
+  ion-card-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--aqi-muted);
+    font-size: 12px;
+    line-height: 1.45;
   }
 }
 
-/* --- Stats Row --- */
+.title-row { display: flex; align-items: center; justify-content: space-between; }
+
+.help-button {
+  width: 42px;
+  height: 42px;
+  margin: -6px -8px -6px 0;
+  --color: var(--aqi-primary);
+
+  ion-icon { font-size: 22px; }
+}
+
+.aqi-description {
+  margin: 8px 0 12px;
+  color: #526662;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .live-data-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: white;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(25, 132, 118, 0.1);
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--aqi-border);
+  border-radius: 14px;
+  background: var(--aqi-surface);
+  box-shadow: 0 2px 8px rgba(18, 71, 65, .04);
 }
 
 .data-badge {
-  padding: 6px 10px;
-  border-radius: 8px;
+  min-width: 90px;
+  padding: 8px 11px;
+  border-radius: 9px;
+  color: #fff;
   font-size: 11px;
   font-weight: 800;
-  color: white;
-  min-width: 90px;
   text-align: center;
 }
 
-.metric-group p {
-  margin: 0;
-  font-size: 11px;
-  color: #444;
-  strong { color: #126d61; }
+.metric-group {
+  min-width: 0;
+
+  p { margin: 0; color: #52615e; font-size: 11px; line-height: 1.55; }
+  strong { color: var(--aqi-primary); font-weight: 700; white-space: nowrap; }
 }
 
-/* --- Map Section & Legend --- */
+.map-section { margin-bottom: 12px; }
+
+.map-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 2px 8px;
+  color: #244b46;
+  font-size: 13px;
+  font-weight: 700;
+
+  small { color: #80918e; font-size: 11px; font-weight: 500; }
+}
+
 .map-wrapper {
-  position: relative; // Essential for positioning the legend overlay
-  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 15px;
+  background: #e8eeeb;
+  box-shadow: 0 3px 12px rgba(25, 60, 55, .12);
 }
 
 .map-container {
-  height: 220px; 
+  z-index: 1;
   width: 100%;
-  border-radius: 12px;
-  border: 1px solid #198476;
-  background-color: #f0f0f0; 
-  z-index: 1; // Map sits behind the legend
+  height: clamp(240px, 40vh, 360px);
+  border: 1px solid rgba(25, 132, 118, .35);
+  border-radius: 15px;
+  background: #e8eeeb;
 }
 
 .map-legend-overlay {
   position: absolute;
-  bottom: 8px;
+  z-index: 10;
   right: 8px;
-  z-index: 10; // Legend floats on top of the map tiles
-  background: rgba(255, 255, 255, 0.95); // Slightly more opaque for better legibility
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  bottom: 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  gap: 5px;
+  padding: 9px 10px;
+  border: 1px solid #e5ebe9;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
 
   .legend-item {
     display: flex;
     align-items: center;
-    font-size: 10px;
-    font-weight: 700;
-    color: #333;
-    
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 6px;
-      &.g { background: #126d61; }
-      &.y { background: #ffc409; }
-      &.o { background: #f7a01c; }
-      &.r { background: #eb445a; }
-      &.p { background: #8932b2; }
-    }
-  }
-}
-
-.aqi-description {
-  margin: 8px 0 10px;
-  font-size: 11px;
-  line-height: 1.4;
-  color: #555;
-}
-
-.aqi-custom-alert {
-
-  .alert-message {
-    max-height: 65vh;
-    overflow-y: auto;
-    text-align: left;
-  }
-
-  .aqi-help-content {
+    color: #344541;
     font-size: 11px;
-    color: #444;
+    font-weight: 600;
+    line-height: 1.2;
   }
 
-  .help-intro {
-    margin: 0 0 12px;
-    line-height: 1.45;
+  .dot {
+    flex: 0 0 8px;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-radius: 50%;
 
-    p {
-      margin: 6px 0 0;
-    }
+    &.g { background: #126d61; }
+    &.y { background: #d9a900; }
+    &.o { background: #e88913; }
+    &.r { background: #d94055; }
+    &.p { background: #8932b2; }
   }
+}
 
-  .aqi-levels {
+.logs-container {
+  padding: 11px;
+  border: 1px solid var(--aqi-border);
+  border-radius: 14px;
+  background: var(--aqi-surface);
+  box-shadow: 0 2px 8px rgba(18, 71, 65, .04);
+
+  .logs-header {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    justify-content: space-between;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      color: var(--aqi-primary);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    ion-button { margin: 0; }
   }
 
+  ion-list { margin-top: 6px; background: transparent; }
+  ion-item { --background: transparent; --padding-start: 4px; --inner-padding-end: 4px; }
+}
+
+.empty-logs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 9px;
+  padding: 14px 10px;
+  border: 1px dashed #cbd8d5;
+  border-radius: 10px;
+  color: #71817e;
+  font-size: 12px;
+  text-align: center;
+
+  ion-icon { flex: 0 0 auto; color: #168575; font-size: 17px; }
+}
+
+.pollen-low { background-color: #126d61; }
+.pollen-mod { background-color: #ffc409; color: #333; }
+.pollen-orange { background-color: #f7a01c; }
+.pollen-high { background-color: #eb445a; }
+.pollen-purple { background-color: #8932b2; }
+
+.pollen-map-note {
+  margin: 10px 0 8px;
+  color: #7a8986;
+  font-size: 11px;
+  text-align: center;
+}
+
+ion-button[expand='block'] {
+  height: 46px;
+  --border-radius: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+
+ion-button:focus-visible { outline: 3px solid rgba(8, 119, 106, .35); outline-offset: 2px; }
+
+/* AQI guide alert */
+.aqi-custom-alert {
+  .alert-message { max-height: 65vh; overflow-y: auto; text-align: left; }
+  .aqi-help-content { color: #44514e; font-size: 12px; }
+  .help-intro { margin: 0 0 12px; line-height: 1.5; }
+  .help-intro p { margin: 6px 0 0; }
+  .aqi-levels { display: flex; flex-direction: column; gap: 7px; }
   .aqi-level {
     display: flex;
     align-items: center;
     gap: 9px;
-    padding: 7px 8px;
-    border-radius: 8px;
+    padding: 8px 9px;
     border-left: 4px solid;
+    border-radius: 9px;
 
-    .aqi-range {
-      min-width: 52px;
-      font-weight: 800;
-      font-size: 10px;
-    }
-
-    strong {
-      display: block;
-      font-size: 10px;
-    }
-
-    small {
-      display: block;
-      margin-top: 2px;
-      font-size: 9px;
-      color: #666;
-    }
+    .aqi-range { min-width: 52px; font-size: 11px; font-weight: 800; }
+    strong { display: block; font-size: 11px; }
+    small { display: block; margin-top: 2px; color: #66716e; font-size: 10px; }
   }
 
-  .aqi-level.good {
-    background: #e8f5f0;
-    border-color: #126d61;
-
-    .aqi-range,
-    strong {
-      color: #126d61;
-    }
-  }
-
-  .aqi-level.moderate {
-    background: #fff9df;
-    border-color: #ffc409;
-
-    .aqi-range,
-    strong {
-      color: #8a7000;
-    }
-  }
-
-  .aqi-level.sensitive {
-    background: #fff0dc;
-    border-color: #f7a01c;
-
-    .aqi-range,
-    strong {
-      color: #b45f00;
-    }
-  }
-
-  .aqi-level.unhealthy {
-    background: #fde8ec;
-    border-color: #eb445a;
-
-    .aqi-range,
-    strong {
-      color: #c42d45;
-    }
-  }
-
-  .aqi-level.very-unhealthy {
-    background: #f2e7f7;
-    border-color: #8932b2;
-
-    .aqi-range,
-    strong {
-      color: #702394;
-    }
-  }
-
-  .aqi-level.hazardous {
-    background: #eee0e5;
-    border-color: #7e0023;
-
-    .aqi-range,
-    strong {
-      color: #7e0023;
-    }
-  }
+  .aqi-level.good { background: #e8f5f0; border-color: #126d61; .aqi-range, strong { color: #126d61; } }
+  .aqi-level.moderate { background: #fff9df; border-color: #d9a900; .aqi-range, strong { color: #806800; } }
+  .aqi-level.sensitive { background: #fff0dc; border-color: #e88913; .aqi-range, strong { color: #a85600; } }
+  .aqi-level.unhealthy { background: #fde8ec; border-color: #d94055; .aqi-range, strong { color: #b72c42; } }
+  .aqi-level.very-unhealthy { background: #f2e7f7; border-color: #8932b2; .aqi-range, strong { color: #702394; } }
+  .aqi-level.hazardous { background: #eee0e5; border-color: #7e0023; .aqi-range, strong { color: #7e0023; } }
 
   .map-help {
     margin-top: 12px;
-    padding: 9px;
-    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid rgba(25, 132, 118, .15);
+    border-radius: 9px;
     background: #f5faf8;
-    border: 1px solid rgba(25, 132, 118, 0.15);
-
-    strong {
-      color: #126d61;
-    }
-
-    p {
-      margin: 4px 0 0;
-      font-size: 10px;
-      line-height: 1.4;
-    }
+    strong { color: #126d61; }
+    p { margin: 4px 0 0; font-size: 11px; line-height: 1.45; }
   }
 }
 
-/* --- Risk Logs --- */
-.logs-container {
-  background: white;
-  border-radius: 12px;
-  padding: 8px;
-  border: 1px solid rgba(25, 132, 118, 0.1);
-
-  .logs-header {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    h3 { margin: 0; font-size: 14px; color: #126d61; font-weight: bold; }
-  }
-}
-
-.empty-logs {
-  text-align: center; 
-  padding: 12px; 
-  color: #888; 
-  font-size: 12px; 
-  border: 1px dashed #ccc; 
-  border-radius: 8px;
-  margin-top: 5px;
-}
-
-/* --- Dynamic Status Colors --- */
-.pollen-low    { background-color: #126d61; } 
-.pollen-mod    { background-color: #ffc409; color: #333; } 
-.pollen-orange { background-color: #f7a01c; } 
-.pollen-high   { background-color: #eb445a; } 
-.pollen-purple { background-color: #8932b2; }
-
-/* --- Footer Note --- */
-.pollen-map-note {
-  font-size: 10px;
-  color: #888;
-  margin: 8px 0;
-  text-align: center;
+@media (max-width: 360px) {
+  .aqi-main-card ion-card-header { padding: 15px 14px 10px; }
+  .aqi-main-card ion-card-content { padding-inline: 10px; }
+  .data-badge { min-width: 0; padding-inline: 8px; font-size: 10px; }
+  .metric-group p { font-size: 10px; }
+  .map-container { height: 230px; }
 }

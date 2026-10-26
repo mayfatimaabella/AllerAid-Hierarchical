@@ -1,25 +1,23 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Doctor Invitations</ion-title>
+    <ion-title>Doctor invitations</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal()" fill="clear">
-        <ion-icon name="close"></ion-icon>
+      <ion-button (click)="closeModal()" fill="clear" aria-label="Close invitations">
+        <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange()">
+<ion-content class="invitation-content">
+  <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange()" aria-label="Invitation sections">
     <ion-segment-button value="invite">
-      <ion-label>Invite Doctor</ion-label>
+      <ion-label>Send Invite</ion-label>
     </ion-segment-button>
     <ion-segment-button value="received">
       <ion-label>
         Received
-        <ion-badge *ngIf="receivedInvitations.length > 0" 
-                   color="danger" 
-                   style="margin-left: 4px;">
+        <ion-badge *ngIf="receivedInvitations.length > 0" color="danger" class="segment-badge">
           {{ receivedInvitations.length }}
         </ion-badge>
       </ion-label>
@@ -31,20 +29,21 @@
 
   <!-- Invite Doctor Tab -->
   <div *ngIf="selectedSegment === 'invite'" class="invite-section">
-    <h3>Invite Your Healthcare Provider</h3>
-    <p style="color: #b8cac5; font-size: 14px; margin-bottom: 20px;">
-      Search for doctors by email or name and send them an invitation to manage your care.
+    <p class="section-eyebrow">Grow your care team</p>
+    <h3>Invite a doctor</h3>
+    <p class="section-description">
+      Find an approved doctor by name or email. They’ll receive a request to connect with you on AllerAid.
     </p>
 
     <form (ngSubmit)="sendInvitation()">
       <div class="search-container">
         <ion-item lines="none" class="search-item">
-          <ion-label position="stacked">Search for Doctor *</ion-label>
+          <ion-label position="stacked">Doctor name or email <span class="required-mark">*</span></ion-label>
           <ion-input 
             [(ngModel)]="inviteEmail"
             name="inviteEmail"
             (ionInput)="searchUsers(inviteEmail)"
-            placeholder="Enter name or email"
+            placeholder="Start typing at least 2 characters"
             type="text"
             clearInput="true">
           </ion-input>
@@ -52,14 +51,16 @@
             *ngIf="inviteEmail && selectedUser" 
             name="checkmark-circle" 
             slot="end"
-            style="color: #4CAF50; font-size: 24px;">
+            class="selected-check">
           </ion-icon>
         </ion-item>
 
         <!-- Search Results Dropdown -->
-        <div *ngIf="showSearchDropdown && searchResults.length > 0" class="search-dropdown">
-          <div class="search-results">
-            <div 
+        <p *ngIf="inviteEmail.trim().length === 1" class="search-hint">Enter one more character to search.</p>
+        <div *ngIf="isSearching" class="search-status"><ion-spinner name="crescent"></ion-spinner><span>Searching approved doctors…</span></div>
+        <div *ngIf="showSearchDropdown" class="search-dropdown">
+          <div *ngIf="searchResults.length > 0" class="search-results">
+            <button type="button"
               *ngFor="let user of searchResults" 
               class="search-result-item"
               (click)="selectUser(user)"
@@ -72,17 +73,18 @@
               <ion-icon 
                 *ngIf="selectedUser?.uid === user.uid" 
                 name="checkmark" 
-                style="color: #4CAF50;">
+                class="selected-check">
               </ion-icon>
-            </div>
+            </button>
           </div>
+          <p *ngIf="searchResults.length === 0 && !isSearching" class="no-search-results">No approved doctors found. Check the spelling or email and try again.</p>
         </div>
       </div>
 
       <!-- Selected Doctor Display -->
       <div *ngIf="selectedUser" class="selected-user-card">
         <div class="user-card-content">
-          <ion-icon name="person-circle" class="user-avatar"></ion-icon>
+          <div class="user-avatar" aria-hidden="true">{{ selectedUser.firstName?.charAt(0) }}{{ selectedUser.lastName?.charAt(0) }}</div>
           <div class="user-details">
             <h4>{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h4>
             <p class="user-email">{{ selectedUser.email }}</p>
@@ -91,19 +93,20 @@
           <ion-button 
             fill="clear" 
             size="small"
-            (click)="resetForm()">
+            (click)="resetForm()"
+            aria-label="Choose a different doctor">
             <ion-icon name="close"></ion-icon>
           </ion-button>
         </div>
       </div>
 
-      <ion-item lines="none">
+      <ion-item lines="none" class="message-item">
         <ion-label position="stacked">Personal Message</ion-label>
         <ion-textarea 
           [(ngModel)]="inviteMessage"
           name="inviteMessage"
-          placeholder="Hi! I would like you to be my healthcare provider on AllerAid..."
-          rows="3">
+          placeholder="Add a short note to your invitation (optional)"
+          rows="4">
         </ion-textarea>
       </ion-item>
 
@@ -111,9 +114,10 @@
         expand="block" 
         type="submit"
         [disabled]="!selectedUser || isLoading"
-        style="margin-top: 20px;">
-        <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
-        {{ isLoading ? 'Sending...' : 'Send Invitation' }}
+        class="send-button">
+        <ion-spinner *ngIf="isLoading" name="crescent" slot="start"></ion-spinner>
+        <ion-icon *ngIf="!isLoading" name="paper-plane-outline" slot="start"></ion-icon>
+        {{ isLoading ? 'Sending invitation…' : 'Send invitation' }}
       </ion-button>
     </form>
   </div>
@@ -168,8 +172,9 @@
     </div>
 
     <div *ngIf="receivedInvitations.length === 0" class="empty-state">
-      <ion-icon name="mail-outline" class="empty-icon"></ion-icon>
-      <p>No doctor invitations received</p>
+      <div class="empty-icon-wrap"><ion-icon name="mail-open-outline" class="empty-icon"></ion-icon></div>
+      <h4>All caught up</h4>
+      <p>You don’t have any doctor invitations to review.</p>
     </div>
   </div>
 
@@ -213,8 +218,9 @@
     </div>
 
     <div *ngIf="sentInvitations.length === 0" class="empty-state">
-      <ion-icon name="paper-plane-outline" class="empty-icon"></ion-icon>
-      <p>No doctor invitations sent</p>
+      <div class="empty-icon-wrap"><ion-icon name="paper-plane-outline" class="empty-icon"></ion-icon></div>
+      <h4>No invitations yet</h4>
+      <p>Invitations you send to doctors will show up here.</p>
     </div>
   </div>
 </ion-content>

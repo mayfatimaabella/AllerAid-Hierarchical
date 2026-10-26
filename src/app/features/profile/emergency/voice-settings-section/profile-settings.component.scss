@@ -1,68 +1,86 @@
 .voice-settings-section {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 16px;
-  border: 1px solid var(--ion-color-light-shade);
+  margin: 4px 14px 6px;
+  padding: 18px;
+  background: #f5f9f8;
+  border: 1px solid var(--app-color-border, #dce7e4);
+  border-radius: var(--app-radius-md, 14px);
 }
 
-.voice-audio-settings {
-  h4 {
-    margin: 0 0 8px 0;
-    color: #036a5d;
-    font-weight: 600;
-  }
+.voice-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
 
-  p {
-    margin: 0 0 16px 0;
-    color: var(--ion-color-medium);
-    font-size: 14px;
-  }
+.voice-heading-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: var(--app-color-primary, #036a5d);
+  background: #e3f0ed;
+  font-size: 19px;
+}
+
+.voice-audio-settings h4 {
+  margin: 0 0 4px;
+  color: var(--app-color-text, #173b35);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.voice-audio-settings .voice-heading p {
+  margin: 0;
+  color: var(--app-color-text-soft, #647773);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .setting-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--ion-color-light-shade);
-
-  &:last-of-type {
-    border-bottom: none;
-    padding-bottom: 16px;
-  }
+  gap: 18px;
+  padding: 14px 0;
+  border-top: 1px solid var(--app-color-border, #dce7e4);
 }
 
-.setting-info {
-  flex: 1;
-  min-width: 200px;
+.setting-item:last-of-type { padding-bottom: 2px; }
+.setting-info { flex: 1; min-width: 0; }
+.setting-info label { display: block; color: var(--app-color-text, #173b35); font-size: 13px; font-weight: 650; }
+.setting-info label span { margin-left: 5px; color: var(--app-color-primary, #036a5d); font-variant-numeric: tabular-nums; }
+.setting-info p { margin: 4px 0 0; color: var(--app-color-text-soft, #647773); font-size: 12px; line-height: 1.4; }
 
-  label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 4px;
-    color: var(--ion-color-dark);
-  }
-
-  p {
-    margin: 0;
-    font-size: 12px;
-    color: var(--ion-color-medium);
-  }
-}
-
-ion-select,
-ion-range {
-  flex-shrink: 0;
-  min-width: 100px;
+ion-select {
+  flex: 0 0 auto;
+  min-width: 112px;
+  min-height: 40px;
+  padding: 0 12px;
+  color: var(--app-color-primary, #036a5d);
+  background: #fff;
+  border: 1px solid var(--app-color-border, #dce7e4);
+  border-radius: 10px;
+  font-size: 13px;
 }
 
 ion-range {
-  --bar-background: #d7d8da;
-  --bar-background-active: #0c6f56;
+  flex: 0 1 190px;
+  min-width: 140px;
+  padding: 8px 0;
+  --bar-background: #d7e3e0;
+  --bar-background-active: var(--app-color-primary, #0c6f56);
   --bar-height: 4px;
   --bar-border-radius: 999px;
-  --knob-background: #0c6f56;
+  --knob-background: var(--app-color-primary, #0c6f56);
   --knob-size: 20px;
+}
+
+@media (max-width: 520px) {
+  .voice-settings-section { margin: 4px 10px 6px; padding: 15px 14px; }
+  .setting-item { align-items: stretch; flex-direction: column; gap: 9px; }
+  ion-select { align-self: flex-start; }
+  ion-range { flex: 1 1 auto; width: 100%; min-width: 0; }
 }

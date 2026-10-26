@@ -9,7 +9,7 @@
   flex-direction: row;
   align-items: flex-start;
   gap: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .emergency-setting-info { flex: 1; }
@@ -47,12 +47,12 @@
 
 /* Wrapper card & header for unified look */
 .emergency-settings-wrapper-card {
-  background: var(--app-color-primary-bg);
+  background: var(--app-color-surface, #fff);
   border: 1px solid var(--app-color-border);
   border-radius: var(--app-radius-lg);
-  padding: 0 0 16px 0;
+  padding: 0 0 12px 0;
   margin-bottom: 18px;
-  box-shadow: var(--app-shadow-sm);
+  box-shadow: 0 4px 16px rgba(15, 50, 44, 0.06);
   overflow: hidden;
 }
 .emergency-settings-header-bar {
@@ -61,12 +61,14 @@
   gap: 8px;
   background: var(--app-color-primary);
   color: #fff;
-  padding: 10px 14px 9px 14px;
+  padding: 14px 16px;
   font-weight: 600;
   font-size: 15px;
-  letter-spacing: .5px;
+  letter-spacing: 0;
 }
-.emergency-settings-header-bar ion-icon { font-size: 18px; }
+.emergency-settings-header-bar ion-icon[slot="start"] { flex: 0 0 20px; font-size: 20px; margin: 0 12px 0 0; }
+.emergency-settings-header-bar h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.emergency-settings-header-bar p { margin: 4px 0 0; color: rgba(255,255,255,.82); font-size: 12px; line-height: 1.4; font-weight: 400; }
 .settings-group { padding: 12px 14px 4px 14px; }
 
 /* Harmonize ion-item host for header and setting rows */
@@ -75,12 +77,15 @@ ion-item.emergency-settings-header-bar {
   --color: #fff;
   --padding-start: 14px;
   --padding-end: 14px;
-  --inner-padding-top: 10px;
-  --inner-padding-bottom: 9px;
+  --inner-padding-top: 0;
+  --inner-padding-bottom: 0;
+  --min-height: 0;
 }
 ion-item.emergency-settings-header-bar::part(native) {
   border-bottom: none;
+  align-items: center;
 }
+ion-item.emergency-settings-header-bar ion-label { white-space: normal; margin: 0; }
 ion-item.emergency-setting-card {
   --background: var(--app-color-surface);
   --padding-start: 14px;
@@ -92,6 +97,12 @@ ion-item.emergency-setting-card {
 ion-item.emergency-setting-card::part(native) {
   border: 1px solid var(--app-color-border);
   box-shadow: var(--app-shadow-sm);
+}
+ion-item.emergency-setting-card { --min-height: 76px; }
+
+ion-item.emergency-setting-card:focus-within::part(native) {
+  border-color: #72aa9f;
+  box-shadow: 0 0 0 3px rgba(3, 106, 93, 0.12);
 }
 
 /* Compact card variant */
@@ -158,6 +169,10 @@ ion-toggle.toggle-checked::part(handle) {
 }
 
 @media (max-width: 480px) {
-  .emergency-setting-card { flex-direction: column; align-items: stretch; }
-  .emergency-setting-actions { justify-content: flex-end; }
+  .settings-group { padding: 12px 10px 4px; }
+  ion-item.emergency-setting-card { --padding-start: 12px; --padding-end: 10px; }
+  .emergency-setting-title { font-size: 14px; }
+  .emergency-setting-desc { max-width: 34ch; }
+  .emergency-settings-header-bar { --padding-start: 12px; --padding-end: 12px; }
+  .emergency-settings-header-bar p { max-width: 34ch; }
 }

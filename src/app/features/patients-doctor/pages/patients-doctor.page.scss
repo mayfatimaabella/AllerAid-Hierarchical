@@ -1,218 +1,115 @@
+:host {
+  --care-teal: #08786b;
+  --care-teal-dark: #075d54;
+  --care-ink: #183b37;
+  --care-muted: #718783;
+}
+
 .doctor-header ion-toolbar {
-  --background: #036a5d;
-  --color: #ffffff;
+  --background: #08786b;
+  --color: #fff;
+  --min-height: 58px;
 }
 
-.invite-btn {
-  position: relative;
-  --color: #ffffff;
-}
-
+.invite-btn { position: relative; --color: #fff; }
+.invite-btn ion-icon { font-size: 21px; }
 .invite-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 16px;
-  height: 16px;
-  font-size: 10px;
+  position: absolute; top: 0; right: 0; min-width: 17px; height: 17px;
+  font-size: 10px; border: 2px solid #08786b;
 }
 
 .doctor-page {
-  --background: #f5fbfa;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --padding-top: 16px;
-  --padding-bottom: 90px;
+  --background: #f4f8f7;
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --padding-top: 20px;
+  --padding-bottom: 40px;
 }
 
 .doctor-hero {
-  background: linear-gradient(135deg, #036a5d, #0b8f7f);
-  border-radius: 22px;
-  padding: 20px;
-  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(120deg, #075f56 0%, #0b8d7d 100%);
+  border-radius: 24px;
+  padding: 24px;
+  color: #fff;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 12px 28px rgba(3, 106, 93, 0.22);
+  margin: 0 0 18px;
+  box-shadow: 0 12px 28px rgba(7, 95, 86, .16);
 }
-
-.hero-eyebrow {
-  margin: 0 0 6px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  opacity: 0.85;
-  font-weight: 700;
+.hero-copy { position: relative; z-index: 1; }
+.hero-eyebrow, .empty-eyebrow {
+  margin: 0 0 7px; font-size: 11px; text-transform: uppercase; letter-spacing: 1.1px;
+  opacity: .78; font-weight: 750;
 }
-
-.doctor-hero h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.hero-subtitle {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.4;
-  opacity: 0.9;
-}
-
+.doctor-hero h1 { margin: 0; font-size: 25px; line-height: 1.2; font-weight: 750; letter-spacing: -.3px; }
+.hero-subtitle { max-width: 360px; margin: 8px 0 0; font-size: 13px; line-height: 1.5; opacity: .88; }
 .doctor-count {
-  min-width: 78px;
-  height: 78px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.16);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  position: relative; z-index: 1; flex: 0 0 76px; height: 76px; border-radius: 21px;
+  background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.18);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-
-.doctor-count strong {
-  font-size: 24px;
-}
-
-.doctor-count span {
-  font-size: 11px;
-  font-weight: 700;
-}
+.doctor-count strong { font-size: 25px; line-height: 1.1; }
+.doctor-count span { margin-top: 4px; font-size: 10px; font-weight: 700; opacity: .85; }
 
 .search-bar-item {
-  --background: #ffffff;
-  --border-radius: 16px;
-  --padding-start: 14px;
-  --inner-padding-end: 8px;
-  border-radius: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 6px 18px rgba(15, 42, 38, 0.08);
+  --background: #fff; --border-radius: 15px; --padding-start: 14px; --inner-padding-end: 8px;
+  border: 1px solid #e8efed; border-radius: 15px; margin: 0 0 18px;
+  box-shadow: 0 4px 14px rgba(24,59,55,.045);
 }
+.search-bar-item ion-icon { color: var(--care-teal); font-size: 19px; }
+.search-bar-input { --color: var(--care-ink); --placeholder-color: #91a29f; font-size: 13px; }
+.search-bar-btn { --color: #758985; }
 
-.search-bar-item ion-icon {
-  color: #036a5d;
-  font-size: 20px;
+.doctor-list-card, .no-doctors-card {
+  margin: 0 0 16px; border-radius: 20px; border: 1px solid #e7efed;
+  box-shadow: 0 7px 22px rgba(24,59,55,.055); background: #fff;
 }
-
-.search-bar-input {
-  --color: #173f39;
-  --placeholder-color: #7a928d;
-  font-size: 14px;
-}
-
-.search-bar-btn {
-  --color: #036a5d;
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.doctor-list-card,
-.no-doctors-card {
-  margin: 0 0 16px;
-  border-radius: 22px;
-  border: 1px solid rgba(3, 106, 93, 0.12);
-  box-shadow: 0 8px 24px rgba(15, 42, 38, 0.08);
-}
-
-.doctor-list-card ion-card-header {
-  display: flex;
-  justify-content: space-between;
-  padding-bottom: 8px;
-}
-
-.doctor-list-card ion-card-title {
-  color: #036a5d;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.doctor-list-card ion-card-subtitle {
-  margin-top: 4px;
-  color: #6b827e;
-  font-size: 12px;
-}
-
-.doctor-list {
-  background: transparent;
-}
-
+.doctor-list-card ion-card-header { display: flex; justify-content: space-between; padding: 19px 19px 10px; }
+.doctor-list-card ion-card-title { color: var(--care-ink); font-size: 16px; font-weight: 750; }
+.doctor-list-card ion-card-subtitle { margin-top: 5px; color: #859691; font-size: 11px; }
+.doctor-list-card ion-card-content { padding: 0 14px 12px; }
+.doctor-list { background: transparent; padding: 0; }
 .doctor-item {
-  --background: #f8fffd;
-  --border-radius: 16px;
-  --padding-start: 12px;
-  --inner-padding-end: 8px;
-  margin-bottom: 10px;
-  border-radius: 16px;
-  border: 1px solid rgba(3, 106, 93, 0.08);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 80px;
-  padding: 12px;
+  --background: #fff; --border-radius: 14px; --padding-start: 10px; --inner-padding-end: 7px;
+  --min-height: 76px; margin: 5px 0; border: 1px solid #edf2f1; border-radius: 14px;
+  transition: border-color .18s ease, background .18s ease;
 }
-
-.doctor-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.doctor-item:hover { --background: #f8fcfb; border-color: #d4e9e4; }
+.doctor-avatar {
+  width: 43px; height: 43px; margin: 0 12px 0 2px; border-radius: 14px;
+  display: grid; place-items: center; flex-shrink: 0; color: #08786b;
+  background: linear-gradient(145deg, #e3f4ef, #f0f8f5); font-weight: 750; font-size: 14px;
 }
+.doctor-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 10px 0; }
+.doctor-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; font-size: 14px; font-weight: 700; color: var(--care-ink); }
+.doctor-specialty { margin: 0; font-size: 12px; color: #4f7972; font-weight: 550; }
+.doctor-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; font-size: 11px; color: #879793; }
+.doctor-remove-btn { --color: #b54747; --border-radius: 10px; flex-shrink: 0; }
+.doctor-remove-btn:hover { --background: #fff0ef; }
 
-.doctor-name {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  color: #036a5d;
+.empty-state { text-align: center; }
+.search-empty { padding: 28px 12px 20px; color: var(--care-muted); }
+.search-empty > ion-icon { font-size: 25px; color: #83aaa2; }
+.search-empty h3 { margin: 9px 0 4px; color: var(--care-ink); font-size: 14px; }
+.search-empty p { margin: 0; font-size: 12px; }
+.search-empty ion-button { --color: var(--care-teal); font-size: 12px; }
+.no-doctors-card { margin-top: 8px; padding: 8px; }
+.no-doctors-card .empty-icon {
+  width: 62px; height: 62px; display: grid; place-items: center; margin: 9px auto 15px;
+  border-radius: 20px; background: #e9f5f1; color: var(--care-teal); font-size: 27px;
 }
+.empty-eyebrow { color: var(--care-teal); opacity: 1; font-size: 10px; }
+.no-doctors-title { margin: 0; color: var(--care-ink); font-size: 19px; font-weight: 750; }
+.no-doctors-text { max-width: 330px; margin: 9px auto 8px; color: var(--care-muted); font-size: 13px; line-height: 1.55; }
 
-.doctor-specialty {
-  margin: 0;
-  font-size: 13px;
-  color: #6b827e;
-  font-weight: 500;
-}
-
-.doctor-email {
-  margin: 0;
-  font-size: 12px;
-  color: #9ba9a6;
-  font-weight: 400;
-}
-
-.doctor-menu-btn {
-  --color: #036a5d;
-  flex-shrink: 0;
-}
-
-.no-doctors-card {
-  margin-top: 24px;
-}
-
-.no-doctors-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 40px 24px;
-  gap: 12px;
-}
-
-.no-doctors-icon {
-  font-size: 72px;
-  color: #036a5d;
-  opacity: 0.4;
-}
-
-.no-doctors-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #036a5d;
-}
-
-.no-doctors-text {
-  margin: 0;
-  color: #6b827e;
-  font-size: 14px;
-  line-height: 1.6;
+@media (max-width: 380px) {
+  .doctor-page { --padding-start: 14px; --padding-end: 14px; }
+  .doctor-hero { padding: 19px; gap: 10px; }
+  .doctor-hero h1 { font-size: 22px; }
+  .doctor-count { flex-basis: 64px; height: 64px; }
+  .hero-subtitle { font-size: 12px; }
 }

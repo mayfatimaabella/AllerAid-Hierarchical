@@ -1,9 +1,9 @@
 <ion-header>
   <ion-toolbar class="toolbar--teal">
-    <ion-title>Medical History</ion-title>
+    <ion-title>Condition details</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="goBack()" fill="clear">
-        <ion-icon name="close"></ion-icon>
+      <ion-button (click)="goBack()" fill="clear" aria-label="Close condition details">
+        <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -35,52 +35,14 @@
       </div>
     </div>
 
-    <!-- Status summary (brief, modal-like) -->
-    <div class="detail-card">
+    <!-- Status summary -->
+    <div class="detail-card status-card">
       <div class="card-header">
         <ion-icon name="pulse-outline"></ion-icon>
         <h2>Status</h2>
       </div>
       <div class="card-content">
-        <p class="status-description">
-          <span *ngIf="history.status === 'active'">This condition is currently active and may require ongoing treatment or monitoring.</span>
-          <span *ngIf="history.status === 'resolved'">This condition has been successfully treated and is no longer a concern.</span>
-          <span *ngIf="history.status === 'chronic'">This is a long-term condition that requires ongoing management.</span>
-          <span *ngIf="history.status === 'not-cured'">This condition remains present and requires continued attention or alternative treatment approaches.</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- Key info (compact grid) -->
-    <div class="detail-card">
-      <div class="card-header">
-        <ion-icon name="medical-outline"></ion-icon>
-        <h2>Key Information</h2>
-      </div>
-      <div class="card-content">
-        <div class="diagnosis-grid">
-          <div class="info-item">
-            <div class="info-label">
-              <ion-icon name="clipboard-outline"></ion-icon>
-              Condition
-            </div>
-            <div class="info-value">{{ history.condition }}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">
-              <ion-icon name="calendar-outline"></ion-icon>
-              Diagnosis Date
-            </div>
-            <div class="info-value">{{ getFormattedDiagnosisDate() }}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">
-              <ion-icon name="time-outline"></ion-icon>
-              Time Since Diagnosis
-            </div>
-            <div class="info-value">{{ getTimeSinceDiagnosis() }}</div>
-          </div>
-        </div>
+        <p class="status-description">{{ getStatusDescription() }}</p>
       </div>
     </div>
 

@@ -34,8 +34,10 @@ export class ForgotPasswordModal implements OnInit {
    * Send password reset email
    */
   async sendPasswordResetEmail(): Promise<void> {
+    this.email = this.email.trim();
+
     // Validate email
-    if (!this.email || !this.email.trim()) {
+    if (!this.email) {
       this.presentToast('Please enter your email address', 'warning');
       return;
     }
@@ -56,11 +58,6 @@ export class ForgotPasswordModal implements OnInit {
       await this.authService.sendPasswordReset(this.email);
       this.emailSent = true;
       this.presentToast('Password reset email sent! Check your inbox.', 'success');
-      
-      // Close the modal after 2 seconds
-      setTimeout(() => {
-        this.dismiss();
-      }, 5000);
     } catch (error: any) {
       console.error('Password reset error:', error);
       this.handlePasswordResetError(error);

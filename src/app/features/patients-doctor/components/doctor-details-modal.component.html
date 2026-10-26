@@ -1,62 +1,56 @@
 <ng-container>
   <div class="doctor-modal-backdrop" (click)="close()">
-    <div class="doctor-modal-content" (click)="$event.stopPropagation()">
+    <section class="doctor-modal-content" role="dialog" aria-modal="true" aria-labelledby="doctor-details-title" (click)="$event.stopPropagation()">
       <ion-header class="modal-header">
         <ion-toolbar>
-          <ion-title class="modal-title">Doctor Details</ion-title>
+          <ion-title class="modal-title">Provider details</ion-title>
           <ion-buttons slot="end">
-            <ion-button fill="clear" (click)="close()" class="close-btn">
-              <ion-icon name="close"></ion-icon>
+            <ion-button fill="clear" (click)="close()" class="close-btn" aria-label="Close doctor details">
+              <ion-icon name="close-outline"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
 
-      <ion-content class="ion-padding details-content">
+      <ion-content class="details-content">
         <div class="doctor-details">
-          <div class="doctor-avatar-section">
-            <div class="doctor-avatar">
-              <ion-icon name="person-circle-outline"></ion-icon>
-            </div>
+          <div class="profile-summary">
+            <div class="doctor-avatar" aria-hidden="true">{{ getDoctorInitials() }}</div>
+            <h2 id="doctor-details-title" class="doctor-name">{{ doctor?.doctorName || 'Unknown Doctor' }}</h2>
+            <p *ngIf="doctor?.specialization" class="doctor-specialization">{{ doctor.specialization }}</p>
+            <span class="connection-status"><span class="status-dot"></span>Connected to your care team</span>
           </div>
 
-          <h2 class="doctor-name">{{ doctor?.doctorName || 'Unknown Doctor' }}</h2>
-
           <div class="details-grid">
-            <div *ngIf="doctor?.specialization" class="detail-item">
-              <ion-icon name="briefcase-outline" class="detail-icon"></ion-icon>
-              <div class="detail-content">
-                <span class="detail-label">Specialization</span>
-                <p class="detail-value">{{ doctor.specialization }}</p>
-              </div>
-            </div>
-
             <div *ngIf="doctor?.doctorEmail" class="detail-item">
               <ion-icon name="mail-outline" class="detail-icon"></ion-icon>
               <div class="detail-content">
                 <span class="detail-label">Email</span>
-                <p class="detail-value">{{ doctor.doctorEmail }}</p>
+                <a class="detail-value detail-link" [href]="'mailto:' + doctor.doctorEmail">{{ doctor.doctorEmail }}</a>
               </div>
+              <ion-icon name="open-outline" class="detail-action" aria-hidden="true"></ion-icon>
             </div>
 
             <div *ngIf="doctor?.phoneNumber" class="detail-item">
               <ion-icon name="call-outline" class="detail-icon"></ion-icon>
               <div class="detail-content">
                 <span class="detail-label">Phone</span>
-                <p class="detail-value">{{ doctor.phoneNumber }}</p>
+                <a class="detail-value detail-link" [href]="'tel:' + doctor.phoneNumber">{{ doctor.phoneNumber }}</a>
               </div>
+              <ion-icon name="open-outline" class="detail-action" aria-hidden="true"></ion-icon>
             </div>
 
             <div *ngIf="doctor?.acceptedAt" class="detail-item">
               <ion-icon name="calendar-outline" class="detail-icon"></ion-icon>
               <div class="detail-content">
-                <span class="detail-label">Connected Since</span>
-                <p class="detail-value">{{ convertTimestamp(doctor.acceptedAt) | date:'short' }}</p>
+                <span class="detail-label">Connected since</span>
+                <p class="detail-value">{{ convertTimestamp(doctor.acceptedAt) | date:'mediumDate' }}</p>
               </div>
             </div>
           </div>
+          <p *ngIf="!doctor?.doctorEmail && !doctor?.phoneNumber && !doctor?.acceptedAt" class="no-details">No contact details are available for this provider yet.</p>
         </div>
       </ion-content>
-    </div>
+    </section>
   </div>
 </ng-container>

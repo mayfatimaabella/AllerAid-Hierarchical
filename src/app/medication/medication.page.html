@@ -7,8 +7,8 @@
     <ion-title>Medication</ion-title>
   
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="onAddMedication()">
-        <ion-icon name="add"></ion-icon>
+      <ion-button fill="clear" (click)="onAddMedication()" aria-label="Add medication">
+        <ion-icon name="add-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -17,16 +17,22 @@
 <ion-content [fullscreen]="true">
   <div class="medication-banner">
     <div class="banner-content">
-      <h1 class="banner-title">Your Medications</h1>
-      <p class="banner-subtitle">Manage and track your prescriptions</p>
+      <div class="banner-heading">
+        <div>
+          <span class="banner-eyebrow">HEALTH TRACKER</span>
+          <h1 class="banner-title">Your medications</h1>
+          <p class="banner-subtitle">Keep your treatment details in one place.</p>
+        </div>
+        <div class="banner-mark" aria-hidden="true"><ion-icon name="medical-outline"></ion-icon></div>
+      </div>
       <div class="banner-stats">
         <div class="stat-item">
           <span class="stat-number">{{ userMedications.length }}</span>
-          <span class="stat-label">Total</span>
+          <span class="stat-label">On your list</span>
         </div>
         <div class="stat-item">
           <span class="stat-number">{{ getActiveMedicationCount() }}</span>
-          <span class="stat-label">Active</span>
+          <span class="stat-label">Active now</span>
         </div>
       </div>
     </div>
@@ -38,12 +44,13 @@
         [value]="medicationSearchTerm"
         (ionInput)="onSearch($event)"
         (ionClear)="onClearSearch()"
-        placeholder="Search medications..."
-        showClearButton="focus"
+        placeholder="Search by name, brand, or dose"
+        aria-label="Search medications"
+        showClearButton="always"
         debounce="300">
       </ion-searchbar>
       <div *ngIf="medicationSearchTerm && medicationSearchTerm.trim()" class="search-results-info">
-        <ion-icon name="checkmark-circle"></ion-icon>
+          <ion-icon name="search-outline"></ion-icon>
         <small>{{ filteredMedications.length }} of {{ userMedications.length }} found</small>
       </div>
     </div>
@@ -66,7 +73,16 @@
     </div>
   </div>
 
-  <div class="medications-list">
+    <div class="medications-list">
+    <div class="list-heading" *ngIf="!isLoading && filteredMedications.length">
+      <div>
+        <h2>{{ medicationFilter === 'history' ? 'Medication history' : medicationFilter === 'active' ? 'Active medications' : 'Medication list' }}</h2>
+        <p>{{ filteredMedications.length }} {{ filteredMedications.length === 1 ? 'medication' : 'medications' }}<ng-container *ngIf="medicationSearchTerm"> matching your search</ng-container></p>
+      </div>
+      <ion-button fill="clear" size="small" (click)="onAddMedication()" class="list-add-button">
+        <ion-icon name="add-outline" slot="start"></ion-icon> Add
+      </ion-button>
+    </div>
     <div *ngIf="isLoading && (!userMedications || userMedications.length === 0)" class="loading-state">
       <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
       <ion-skeleton-text animated style="height: 80px; margin-bottom: 10px;"></ion-skeleton-text>
@@ -76,6 +92,8 @@
     <ng-container *ngIf="!isLoading">
       <div *ngFor="let medication of filteredMedications; trackBy: trackByMedication" 
         class="medication-card" 
+        role="button" tabindex="0" [attr.aria-label]="'View details for ' + medication.name"
+        (keydown.enter)="onViewDetails(medication)" (keydown.space)="$event.preventDefault(); onViewDetails(medication)"
         [ngClass]="{ 
           'emergency-medication': isEmergencyMedication(medication),
           'finished-medication': getStatusLabel(medication) === 'Completed' || getStatusLabel(medication) === 'Incomplete'
@@ -91,20 +109,12 @@
 
           <div class="medication-info">
             <h3 class="medication-title">{{ medication.name }}</h3>
+            <p class="brand-name" *ngIf="medication.brandName">{{ medication.brandName }}</p>
             
             <div class="medication-details">
-              <div class="detail-row">
-                <span class="detail-label">Dosage:</span>
-                <span class="detail-value">{{ medication.dosage }}</span>
-              </div>
-              <div class="detail-row" *ngIf="medication.frequency">
-                <span class="detail-label">Frequency:</span>
-                <span class="detail-value">{{ medication.frequency }}</span>
-              </div>
-              <div class="detail-row" *ngIf="medication.quantity !== undefined">
-                <span class="detail-label">Remaining:</span>
-                <span class="detail-value">{{ calculateRemainingPills(medication) | number:'1.0-0' }} {{ getUnitLabel(medication) }}</span>
-              </div>
+              <span class="detail-pill" *ngIf="medication.dosage"><ion-icon name="flask-outline"></ion-icon>{{ medication.dosage }}</span>
+              <span class="detail-pill" *ngIf="medication.frequency"><ion-icon name="time-outline"></ion-icon>{{ medication.frequency }}</span>
+              <span class="detail-pill supply-pill" *ngIf="medication.quantity !== undefined"><ion-icon name="albums-outline"></ion-icon>{{ calculateRemainingPills(medication) | number:'1.0-0' }} {{ getUnitLabel(medication) }} left</span>
             </div>
 
             <div *ngIf="getLowStockWarning(medication) && calculateRemainingPills(medication) > 0" class="low-stock-warning">
@@ -126,7 +136,7 @@
           <div class="no-medications-icon-wrapper">
             <ion-icon name="medical-outline" class="no-medications-icon"></ion-icon>
           </div>
-          <h2 class="no-medications-title">No Medications Found</h2>
+          <h2 class="no-medications-title">{{ medicationSearchTerm || medicationFilter !== 'all' ? 'No matching medications' : 'Your list is empty' }}</h2>
           <p class="no-medications-text">
             <ng-container *ngIf="medicationSearchTerm && medicationSearchTerm.trim(); else noMedicationsAtAll">
               No medications match "{{ medicationSearchTerm }}"
@@ -140,7 +150,7 @@
               </ng-template>
             </ng-template>
           </p>
-          <ion-button (click)="onAddMedication()" color="primary" class="add-med-btn">
+          <ion-button *ngIf="!medicationSearchTerm && medicationFilter === 'all'" (click)="onAddMedication()" color="primary" class="add-med-btn">
             <ion-icon name="add-circle-outline" slot="start"></ion-icon>
             Add Medication
           </ion-button>
