@@ -323,8 +323,7 @@ private async showDuplicateWarning(
   const date =
     this.formatVisitDate(duplicate.visitDate);
 
-  const reason =
-    duplicate.chiefComplaint || 'No reason recorded';
+  const reason = duplicate.chiefComplaint || 'No reason recorded';
 
   const alert =
     await this.alertController.create({

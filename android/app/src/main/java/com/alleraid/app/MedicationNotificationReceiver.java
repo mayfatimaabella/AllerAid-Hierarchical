@@ -42,7 +42,8 @@ public class MedicationNotificationReceiver extends BroadcastReceiver {
         }
 
         // Handle permission state changes
-      if ("android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED".equals(action)) {            Log.d(TAG, "Exact alarm permission state changed");
+      if ("android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED".equals(action)) {            
+        Log.d(TAG, "Exact alarm permission state changed");
             rescheduleAllReminders(context);
         }
 

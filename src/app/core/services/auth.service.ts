@@ -17,23 +17,28 @@ import {
 
 import { BehaviorSubject, Observable } from 'rxjs';
 
+const AUTH_SESSION_KEY = 'alleraid-auth-session';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
+  private readonly AUTH_RESTORE_TIMEOUT_MS = 2500;
+
   private auth: Auth;
 
   // null = not logged in
   // User = logged in
-  private currentUserSubject =
-    new BehaviorSubject<User | null>(null);
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
 
   constructor(private firebase: FirebaseService) {
 
     this.auth = firebase.getAuth();
 
     onAuthStateChanged(this.auth, (user) => {
+
+      this.persistSession(user);
 
       console.log(
         'Auth state changed:',
@@ -101,6 +106,7 @@ async waitForAuthInit(): Promise<User | null> {
 
     await signOut(this.auth);
 
+    this.persistSession(null);
     this.currentUserSubject.next(null);
   }
 
