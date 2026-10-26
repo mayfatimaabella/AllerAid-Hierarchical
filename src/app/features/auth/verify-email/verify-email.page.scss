@@ -1,71 +1,223 @@
-
-@use '../registration/registration.page.scss' as *;
-
-.verify-message {
-  text-align: center;
-  font-size: 1rem;
-  color: #444;
-  margin-top: 12px;
+:host {
+  --brand-green: #036a5d;
+  --ink: #173b37;
+  --muted: #657874;
 }
 
-.verify-email {
-  text-align: center;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #0f766e;
-  margin: 10px 0 18px;
-  word-break: break-word;
+.verify-page {
+  --background: linear-gradient(145deg, #eef6f2 0%, #dcebe5 48%, #f6f8f5 100%);
 }
 
-.verify-instructions {
-  text-align: center;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #666;
-  margin-bottom: 12px;
-}
-
-/* Ensure card content centers horizontally */
-.register-card ion-card-content {
+.page-shell {
+  box-sizing: border-box;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  width: 100%;
+  padding: 28px 18px;
 }
 
-/* Bottom actions: left and right buttons on the same row */
-.bottom-actions {
-	display: flex;
-	width: 100%;
-	gap: 8px;
-	margin-top: 8px;
-	padding: 0 4px;
-	box-sizing: border-box;
-	justify-content: space-between;
+.verify-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 500px;
+  padding: clamp(26px, 6vw, 42px);
+  border: 1px solid rgba(3, 106, 93, 0.1);
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 20px 55px rgba(21, 66, 58, 0.13);
+  text-align: center;
 }
 
-.bottom-actions ion-button {
-	--padding-start: 8px;
-	--padding-end: 8px;
-	color: #000;
-	font-size: 0.8rem; /* slightly larger font for better visibility */
-	--ion-icon-font-size: 1.1rem;
+.mail-illustration {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 22px;
+  border-radius: 24px;
+  background: #eaf5f0;
+  color: var(--brand-green);
+
+  > ion-icon {
+    font-size: 38px;
+  }
+
+  > span {
+    position: absolute;
+    right: -5px;
+    bottom: -4px;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: var(--brand-green);
+    color: #fff;
+
+    ion-icon { font-size: 15px; }
+  }
 }
 
-.bottom-actions .left-btn {
-	justify-content: flex-start;
+.verify-heading {
+  .eyebrow {
+    margin: 0 0 9px;
+    color: var(--brand-green);
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.13em;
+  }
+
+  h1 {
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(1.55rem, 6vw, 1.9rem);
+    font-weight: 720;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
+  }
+
+  > p:last-child {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.93rem;
+    line-height: 1.5;
+  }
 }
 
-.bottom-actions .right-btn {
-	justify-content: flex-end;
+.email-address {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  margin: 19px 0 15px;
+  padding: 8px 14px;
+  border: 1px solid #dcebe5;
+  border-radius: 12px;
+  background: #f6faf8;
+  color: var(--brand-green);
+  font-size: 0.93rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+
+  ion-icon { flex: 0 0 auto; font-size: 18px; }
+}
+
+.instructions {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.doctor-steps {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #e1ece7;
+  border-radius: 15px;
+  background: #f8fbf9;
+  text-align: left;
+
+  h2 {
+    margin: 0 0 12px;
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  ol {
+    display: grid;
+    gap: 11px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #45635d;
+    font-size: 0.83rem;
+    line-height: 1.4;
+  }
+
+  li span {
+    display: grid;
+    flex: 0 0 23px;
+    place-items: center;
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+    background: #e5f1ec;
+    color: var(--brand-green);
+    font-size: 0.72rem;
+    font-weight: 750;
+  }
 }
 
 .spam-note {
-  text-align: center;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: #7c7c7c;
-  background: rgba(15, 118, 110, 0.06);
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 19px 0;
+  padding: 12px 13px;
   border-radius: 12px;
-  padding: 10px 14px;
-  margin-bottom: 20px;
+  background: #f3f7f5;
+  color: #61756f;
+  font-size: 0.81rem;
+  line-height: 1.45;
+  text-align: left;
+
+  ion-icon { flex: 0 0 auto; margin-top: 1px; color: var(--brand-green); font-size: 18px; }
+}
+
+.resend-button {
+  --background: var(--brand-green);
+  --background-hover: #02564c;
+  --background-activated: #024e45;
+  --border-radius: 13px;
+  --box-shadow: 0 8px 18px rgba(3, 106, 93, 0.2);
+  --color: #fff;
+  min-height: 51px;
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.bottom-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 14px -8px -8px;
+
+  ion-button {
+    --color: var(--brand-green);
+    --padding-start: 8px;
+    --padding-end: 8px;
+    min-height: 40px;
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 650;
+    text-transform: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .page-shell { padding: 16px 12px; }
+  .verify-card { padding: 25px 19px; }
+  .bottom-actions ion-button { font-size: 0.75rem; }
+}
+
+@media (max-height: 700px) {
+  .page-shell { align-items: flex-start; padding-top: 16px; padding-bottom: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
 }

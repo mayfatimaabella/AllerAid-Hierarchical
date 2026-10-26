@@ -1,108 +1,58 @@
-<ion-content [fullscreen]="true" class="ion-padding verify-bg">
-  <div class="form-container">
-    <ion-card class="register-card">
+<ion-content [fullscreen]="true" class="verify-page">
+  <main class="page-shell">
+    <section class="verify-card" aria-labelledby="verify-heading">
+      <div class="mail-illustration" aria-hidden="true">
+        <ion-icon name="mail-open-outline"></ion-icon>
+        <span><ion-icon name="checkmark-outline"></ion-icon></span>
+      </div>
 
-      <ion-card-header>
-        <ion-card-subtitle *ngIf="!isDoctor">
-          Check your inbox to verify your account!
-        </ion-card-subtitle>
+      <header class="verify-heading">
+        <p class="eyebrow">ALLERAID · EMAIL CONFIRMATION</p>
+        <h1 id="verify-heading">{{ isDoctor ? 'Verify your doctor email' : 'Check your email' }}</h1>
+        <p>We’ve sent a secure verification link to</p>
+      </header>
 
-        <ion-card-subtitle *ngIf="isDoctor">
-          Check your inbox to verify your doctor account!
-        </ion-card-subtitle>
+      <div class="email-address" aria-label="Email address">
+        <ion-icon name="mail-outline" aria-hidden="true"></ion-icon>
+        <span>{{ email || 'your email address' }}</span>
+      </div>
 
-        <ion-card-title *ngIf="!isDoctor">
-          Verify Email
-        </ion-card-title>
+      <p class="instructions" *ngIf="!isDoctor">
+        Open the email and follow the link to activate your AllerAid account. You can return here after you’ve verified.
+      </p>
+      <p class="instructions" *ngIf="isDoctor">
+        Follow the link to verify your email. Your account will then be reviewed by an admin before doctor features are available.
+      </p>
 
-        <ion-card-title *ngIf="isDoctor">
-          Doctor Email Verification
-        </ion-card-title>
-      </ion-card-header>
+      <div class="doctor-steps" *ngIf="isDoctor" aria-label="Doctor account next steps">
+        <h2>What happens next</h2>
+        <ol>
+          <li><span>1</span>Verify your email address</li>
+          <li><span>2</span>Wait for admin approval</li>
+          <li><span>3</span>Sign in to your doctor account</li>
+        </ol>
+      </div>
 
-      <ion-card-content>
+      <div class="spam-note">
+        <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+        <span>Can’t find the email? Check your Spam or Junk folder.</span>
+      </div>
 
-        <div class="verify-message" *ngIf="!isDoctor">
-          A verification email has been sent to:
-        </div>
+      <ion-button expand="block" class="resend-button" (click)="resendVerificationEmail()" [disabled]="resendDisabled">
+        <ion-icon slot="start" name="refresh-outline" aria-hidden="true"></ion-icon>
+        {{ resendDisabled ? 'Resend available in ' + resendCountdown + 's' : 'Resend verification email' }}
+      </ion-button>
 
-        <div class="verify-message" *ngIf="isDoctor">
-          A doctor verification email has been sent to:
-        </div>
-
-        <div class="verify-email">
-          {{ email }}
-        </div>
-
-        <div class="verify-instructions" *ngIf="!isDoctor">
-          Please click the link in your email to activate your AllerAid account.
-        </div>
-
-        <div class="verify-instructions" *ngIf="isDoctor">
-          Please click the link in your email to verify your doctor account.
-          After email verification, your account will still need admin approval
-          before you can access doctor features.
-        </div>
-
-        <ion-card *ngIf="isDoctor" class="doctor-note">
-          <ion-card-content>
-            <strong>Doctor account process:</strong>
-            <br />
-            1. Verify your email.
-            <br />
-            2. Wait for admin approval.
-            <br />
-            3. Access your doctor dashboard after approval.
-          </ion-card-content>
-        </ion-card>
-
-        <div class="spam-note">
-          Didn’t receive the email? Check your Spam or Junk folder.
-        </div>
-
-        <ion-button
-          expand="block"
-          class="registerBtn"
-          shape="round"
-          (click)="resendVerificationEmail()"
-          [disabled]="resendDisabled">
-
-          Resend Verification Email
-
-          <span *ngIf="resendDisabled">
-            (Wait {{ resendCountdown }}s)
-          </span>
+      <nav class="bottom-actions" aria-label="Account navigation">
+        <ion-button fill="clear" (click)="goToRegistration()">
+          <ion-icon name="arrow-back-outline" slot="start" aria-hidden="true"></ion-icon>
+          Back to register
         </ion-button>
-
-        <div class="bottom-actions">
-          <ion-button
-            class="left-btn"
-            fill="clear"
-            (click)="goToRegistration()">
-
-            <ion-icon
-              name="arrow-back-outline"
-              slot="start">
-            </ion-icon>
-
-            Back to Register
-          </ion-button>
-
-          <ion-button
-            class="right-btn"
-            fill="clear"
-            (click)="goToLogin()">
-
-            <ion-icon
-              name="log-in-outline"
-              slot="start">
-            </ion-icon>
-
-            Go to Login
-          </ion-button>
-        </div>
-
-      </ion-card-content>
-    </ion-card>
-  </div>
+        <ion-button fill="clear" (click)="goToLogin()">
+          Go to login
+          <ion-icon name="arrow-forward-outline" slot="end" aria-hidden="true"></ion-icon>
+        </ion-button>
+      </nav>
+    </section>
+  </main>
 </ion-content>
