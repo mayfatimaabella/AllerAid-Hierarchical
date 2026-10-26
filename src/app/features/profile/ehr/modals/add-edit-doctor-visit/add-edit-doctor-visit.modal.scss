@@ -1,172 +1,154 @@
-/* Add Doctor Visit Modal Styles */
-
-ion-content {
-  --background: #ffffff;
-  background: #ffffff;
+:host {
+  --background: #fff;
 }
 
 ion-header {
   --background: #036a5d;
   --color: #fff;
 }
-
 ion-title {
   font-weight: 700;
 }
-
-ion-list {
-  background: #fff;
-  padding: 0;
+ion-content {
+  --background: #f7faf9;
 }
-
-ion-item {
-  --padding-start: 0;
-  --padding-end: 0;
-  --inner-padding-start: 0;
-  --inner-padding-end: 0;
-  --background: #ffffff;
-  --min-height: 70px;
-  
-  background: #ffffff;
-  border: 1px solid #d1e7e0;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  box-shadow: 0 1px 3px rgba(3, 106, 93, 0.08);
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: #036a5d;
-    box-shadow: 0 2px 6px rgba(3, 106, 93, 0.12);
-  }
-
-  &:focus-within {
-    border-color: #036a5d;
-    box-shadow: 0 0 0 3px rgba(3, 106, 93, 0.1);
-  }
-}
-
-ion-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #036a5d !important;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px !important;
-}
-
-ion-input,
-ion-select,
-ion-textarea {
-  --background: transparent;
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
-  font-size: 15px;
-  color: #1f4a42;
-  margin-top: 4px;
-}
-
-ion-input::part(native),
-ion-textarea::part(native),
-ion-select::part(text),
-ion-select::part(placeholder) {
-  color: #1f4a42;
-}
-
-ion-textarea {
-  min-height: 120px;
-  line-height: 1.5;
-}
-
-ion-item-divider {
-  --background: transparent;
-  --color: #1f4a42;
-  font-weight: 600;
-  margin-top: 16px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #036a5d;
-}
-
-.vital-signs-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-
-  ion-item {
-    margin-bottom: 0;
-  }
-}
-
-.prescription-item {
-  background: #f8faf9;
-  border: 1px solid #e8f2f0;
-  border-left: 4px solid #036a5d;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin: 8px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 form {
-  margin-bottom: 0;
+  max-width: 680px;
+  margin: 0 auto;
+  padding-bottom: 12px;
 }
 
-.action-buttons {
+.form-intro {
+  display: flex; align-items: flex-start; gap: 13px;
+  padding: 17px; margin: 4px 0 22px;
+  border: 1px solid #dcebe7; border-radius: 16px;
+  background: linear-gradient(135deg, #eff8f6, #fff);
+}
+.intro-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 13px;
+  background: #dff1ed;
+  color: #036a5d;
+  font-size: 22px;
+}
+.form-intro h2 {
+  margin: 1px 0 4px;
+  color: #173f39;
+  font-size: 16px;
+  font-weight: 750;
+}
+.form-intro p {
+  margin: 0;
+  color: #687b77;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.form-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 3px 10px;
+  color: #31534d;
+  font-size: 13px;
+  font-weight: 700;
+}
+.required-note, .optional-heading span:last-child {
+  color: #778985;
+  font-size: 11px;
+  font-weight: 500;
+}
+.optional-heading {
+  margin-top: 23px;
+}
+.required-mark {
+  color: #b54736;
+}
+
+.form-fields {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #e8f2f0;
-
-  ion-button {
-    --border-radius: 12px;
-    height: 50px;
-    font-weight: 600;
+  gap: 11px;
+}
+.medication-field {
+  --padding-start: 0; --padding-end: 0; --inner-padding-start: 0; --inner-padding-end: 0;
+  --background: #fff; --min-height: 66px;
+  margin: 0; padding: 10px 14px; border: 1px solid #dce7e5; border-radius: 13px;
+  box-shadow: 0 1px 3px rgba(15, 50, 44, .035); transition: border-color .18s ease, box-shadow .18s ease;
+  &:hover {
+    border-color: #b7d5ce;
+  }
+  &:focus-within {
+    border-color: #55a99a;
+    box-shadow: 0 0 0 3px rgba(3, 106, 93, .09);
+  }
+  ion-label {
+    margin-bottom: 6px;
+    color: #355b54;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .15px;
+  }
+  ion-input, ion-select, ion-textarea {
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 6px;
+    --padding-bottom: 6px;
+    margin-top: 2px;
+    color: #203f39;
     font-size: 15px;
-    text-transform: none;
-    letter-spacing: 0.3px;
-    margin: 0;
-
-    &[type="submit"] {
-      --background: #036a5d;
-      --background-hover: #025449;
-      --background-activated: #014a3e;
-      --color: #ffffff;
-
-      &:disabled {
-        --background: #b3d4ce;
-        --color: #7a9f98;
-        opacity: 0.6;
-      }
-    }
-
-    &[fill="outline"] {
-      --border-width: 1.5px;
-      --border-color: #ffffff;
-      --background-activated: #eeeeee;
-    }
+  }
+  ion-select {
+    width: 100%;
+    max-width: 100%;
+  }
+  ion-textarea {
+    line-height: 1.45;
+  }
+  ion-input::part(native), ion-textarea::part(native), ion-select::part(text), ion-select::part(placeholder) {
+    color: #203f39;
   }
 }
-.cancel-btn {
-  --background: #ffffff !important;
-  --color: #6b6b6b !important;
-  --border-color: #d1d1d1 !important;
+.date-field ion-datetime-button { width: 100%; margin: 0; &::part(native) { justify-content: flex-start; padding: 7px 0; background: transparent; color: #203f39; font-size: 15px; } }
+.field-hint {
+  margin: 3px 0 1px;
+  color: #71827e;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.empty-doctors { display: flex; align-items: flex-start; gap: 12px; padding: 15px; border: 1px solid #f0d9b2; border-radius: 13px; background: #fffbf3; color: #74521f; ion-icon { flex: 0 0 auto; margin-top: 1px; font-size: 20px; color: #b7791f; } strong { font-size: 13px; } p { margin: 4px 0 0; color: #796b56; font-size: 12px; line-height: 1.4; } }
 
-  &::part(native) {
-    color: #6b6b6b !important;
+.action-buttons { display: flex; flex-direction: column; gap: 9px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e3ece9;
+  ion-button {
+    --border-radius: 12px;
+    height: 48px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 650;
+    text-transform: none;
   }
+  ion-button[type="submit"] { --background: #036a5d; --background-hover: #025449; --background-activated: #014a3e; --color: #fff; &:disabled { --background: #b8d2cd; --color: #63847d; opacity: .75; } }
+  .cancel-btn {
+    --border-width: 1px;
+    --border-color: #d4e0dd;
+    --color: #506560;
+    --background: #fff;
+  }
+}
 
-  ion-icon {
-    color: #6b6b6b !important;
+@media (max-width: 480px) {
+  ion-content {
+    --padding-start: 14px;
+    --padding-end: 14px;
+  }
+  .form-intro {
+    padding: 14px;
+    margin-top: 0;
+  }
+  .medication-field {
+    padding: 9px 12px;
   }
 }

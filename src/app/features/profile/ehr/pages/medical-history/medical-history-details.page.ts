@@ -61,6 +61,16 @@ export class MedicalHistoryDetailsPage implements OnInit {
     }
   }
 
+  getStatusDescription(): string {
+    switch (this.history?.status) {
+      case 'active': return 'This condition is currently active and may require ongoing treatment or monitoring.';
+      case 'resolved': return 'This condition has been successfully treated and is no longer a concern.';
+      case 'chronic': return 'This is a long-term condition that requires ongoing management.';
+      case 'not-cured': return 'This condition remains present and requires continued attention or alternative treatment approaches.';
+      default: return 'Status has not been specified for this condition.';
+    }
+  }
+
   getStatusIcon(status: string): string {
     switch (status) {
       case 'active': return 'alert-circle';

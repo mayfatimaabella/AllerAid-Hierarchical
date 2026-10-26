@@ -57,7 +57,7 @@
 
       </div>
       
-      <button class="profile-menu-btn" id="profileMenuBtn" aria-label="Menu">
+      <button class="profile-menu-btn" id="profileMenuBtn" aria-label="Profile options">
         <ion-icon name="ellipsis-vertical"></ion-icon>
       </button>
     </div>
@@ -106,21 +106,21 @@
     </section>
 
     <!-- USER TABS -->
-        <nav class="profile-tabs"
+        <nav class="profile-tabs" role="tablist" aria-label="Profile sections"
           *ngIf="vm.profile?.role === 'user'">
-            <button class="tab"
+            <button class="tab" type="button" role="tab" [attr.aria-selected]="profileNavigation.selectedTab === 'overview'" [attr.tabindex]="profileNavigation.selectedTab === 'overview' ? 0 : -1"
               [class.active]="profileNavigation.selectedTab === 'overview'"
               (click)="profileNavigation.selectTab('overview')">Overview</button>
 
-            <button class="tab"
+            <button class="tab" type="button" role="tab" [attr.aria-selected]="profileNavigation.selectedTab === 'health'" [attr.tabindex]="profileNavigation.selectedTab === 'health' ? 0 : -1"
               [class.active]="profileNavigation.selectedTab === 'health'"
               (click)="profileNavigation.selectTab('health')">Health</button>
 
-            <button class="tab"
+            <button class="tab" type="button" role="tab" [attr.aria-selected]="profileNavigation.selectedTab === 'ehr'" [attr.tabindex]="profileNavigation.selectedTab === 'ehr' ? 0 : -1"
               [class.active]="profileNavigation.selectedTab === 'ehr'"
               (click)="profileNavigation.selectTab('ehr')">EHR</button>
 
-            <button class="tab"
+            <button class="tab" type="button" role="tab" [attr.aria-selected]="profileNavigation.selectedTab === 'emergency'" [attr.tabindex]="profileNavigation.selectedTab === 'emergency' ? 0 : -1"
               [class.active]="profileNavigation.selectedTab === 'emergency'"
               (click)="profileNavigation.selectTab('emergency')">Emergency</button>
     </nav>
@@ -289,7 +289,12 @@
 
 <!-- Edit Emergency Message Modal (if present) -->
 <ion-modal
+  class="emergency-profile-sheet"
   [isOpen]="profileEmergencySettings.showEditEmergencyMessageModal"
+  [initialBreakpoint]="0.9"
+  [breakpoints]="[0, 0.9, 1]"
+  [backdropBreakpoint]="0.3"
+  [handle]="true"
   (didDismiss)="profileEmergencySettings.showEditEmergencyMessageModal = false">
 
   <app-edit-emergency-profile-modal

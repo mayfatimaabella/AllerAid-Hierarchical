@@ -1,15 +1,32 @@
 <ng-container>
   <div class="buddy-modal-backdrop" (click)="cancel()">
-    <div class="buddy-modal-content" (click)="$event.stopPropagation()">
-      <ion-content class="ion-padding" [style.background]="'#fff'">
-        <div style="text-align:center; margin: 24px 0;">
-          <ion-icon name="alert-circle-outline" color="danger" style="font-size: 48px;"></ion-icon>
-          <h2>Delete Buddy?</h2>
-          <p>Are you sure you want to delete <b style="color: #036a5d; font-weight: bold">{{ buddy?.firstName }} {{ buddy?.lastName }}</b>?</p>
-        </div>
-        <ion-button expand="block" class="deleteBtn" (click)="confirmDelete()">Delete</ion-button>
-        <ion-button expand="block" class="cancelBtn" fill="clear" (click)="cancel()">Cancel</ion-button>
-      </ion-content>
-    </div>
+    <section
+      class="buddy-modal-content"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="delete-buddy-title"
+      aria-describedby="delete-buddy-description"
+      (click)="$event.stopPropagation()">
+      <div class="warning-icon" aria-hidden="true">
+        <ion-icon name="person-remove-outline"></ion-icon>
+      </div>
+
+      <p class="dialog-eyebrow">Remove from safety network</p>
+      <h2 id="delete-buddy-title">Remove this buddy?</h2>
+      <p id="delete-buddy-description" class="dialog-description">
+        <strong>{{ buddy?.firstName || buddy?.buddyName || 'This buddy' }} {{ buddy?.lastName }}</strong>
+        will be removed from your buddy list and won’t receive your emergency alerts as a buddy.
+      </p>
+
+      <div class="dialog-actions">
+        <ion-button class="cancelBtn" expand="block" fill="outline" (click)="cancel()">
+          Keep buddy
+        </ion-button>
+        <ion-button class="deleteBtn" expand="block" (click)="confirmDelete()">
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Remove buddy
+        </ion-button>
+      </div>
+    </section>
   </div>
 </ng-container>

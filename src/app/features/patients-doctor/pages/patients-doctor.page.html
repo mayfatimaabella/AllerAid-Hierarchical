@@ -28,14 +28,6 @@
     </ion-refresher-content>
   </ion-refresher>
 
-  <!-- Doctor Actions Modal -->
-  <app-doctor-actions-modal
-    *ngIf="showActionsModal"
-    [doctor]="selectedDoctor"
-    (delete)="onDeleteDoctor($event)"
-    (closeModal)="closeDoctorActions()">
-  </app-doctor-actions-modal>
-
   <!-- Doctor Delete Confirm Modal -->
   <app-doctor-delete-confirm-modal
     *ngIf="showDeleteModal"
@@ -45,11 +37,11 @@
   </app-doctor-delete-confirm-modal>
 
   <section class="doctor-hero">
-    <div>
+    <div class="hero-copy">
       <p class="hero-eyebrow">Healthcare Team</p>
       <h1>Your Doctors</h1>
       <p class="hero-subtitle">
-        Manage your trusted healthcare providers and medical information.
+        Keep your care team close and your provider details in one place.
       </p>
     </div>
 
@@ -64,13 +56,14 @@
 
     <ion-input
       class="search-bar-input"
-      placeholder="Search by name or specialty"
+      placeholder="Search name, email or specialty"
+      aria-label="Search connected doctors"
       [(ngModel)]="searchTerm"
       (ionInput)="searchDoctor()">
     </ion-input>
 
-    <ion-button class="search-bar-btn" fill="clear" (click)="searchDoctor()">
-      Search
+    <ion-button *ngIf="searchTerm" class="search-bar-btn" fill="clear" aria-label="Clear search" (click)="searchTerm = ''; searchDoctor()">
+      <ion-icon name="close-circle-outline"></ion-icon>
     </ion-button>
   </ion-item>
 
@@ -78,7 +71,7 @@
     <ion-card-header>
       <div>
         <ion-card-title>Connected Doctors</ion-card-title>
-        <ion-card-subtitle>{{ filteredDoctors.length }} shown</ion-card-subtitle>
+        <ion-card-subtitle>{{ filteredDoctors.length }} {{ filteredDoctors.length === 1 ? 'provider' : 'providers' }}</ion-card-subtitle>
       </div>
     </ion-card-header>
 
@@ -91,6 +84,7 @@
           button="true"
           detail="false"
           (click)="showDoctorDetails(doctor)">
+          <div class="doctor-avatar" slot="start" aria-hidden="true">{{ getDoctorInitials(doctor) }}</div>
           <div class="doctor-info">
             <h2 class="doctor-name">{{ doctor.doctorName }}</h2>
             <p class="doctor-specialty" *ngIf="doctor.specialization">
@@ -103,22 +97,28 @@
           <ion-button
             fill="clear"
             slot="end"
-            class="doctor-menu-btn"
-            (click)="openDoctorActions(doctor); $event.stopPropagation()">
-            <ion-icon name="ellipsis-vertical"></ion-icon>
+            class="doctor-remove-btn"
+            [attr.aria-label]="'Remove ' + (doctor.doctorName || 'doctor')"
+            (click)="onDeleteDoctor(doctor); $event.stopPropagation()">
+            <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
         </ion-item>
       </ion-list>
+      <div *ngIf="filteredDoctors.length === 0" class="empty-state search-empty">
+        <ion-icon name="search-outline"></ion-icon>
+        <h3>No matches found</h3>
+        <p>Try a different name, email, or specialty.</p>
+        <ion-button fill="clear" (click)="searchTerm = ''; searchDoctor()">Clear search</ion-button>
+      </div>
     </ion-card-content>
   </ion-card>
 
-  <ion-card *ngIf="doctors.length === 0" class="no-doctors-card">
-    <ion-card-content class="no-doctors-content">
-      <ion-icon name="person-add-outline" class="no-doctors-icon"></ion-icon>
-      <h3 class="no-doctors-title">No Doctors Yet</h3>
-      <p class="no-doctors-text">You have no doctors connected yet. Invite your healthcare providers to get started!</p>
-    </ion-card-content>
-  </ion-card>
+  <section *ngIf="doctors.length === 0" class="empty-state no-doctors-card">
+    <div class="empty-icon"><ion-icon name="people-outline"></ion-icon></div>
+    <p class="empty-eyebrow">Your care team</p>
+    <h2 class="no-doctors-title">Build your care team</h2>
+    <p class="no-doctors-text">Connect with your doctor to keep important care details and communication together.</p>
+  </section>
 
   <app-doctor-details-modal
     *ngIf="showDetailsModal"

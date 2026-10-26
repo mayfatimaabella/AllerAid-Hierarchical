@@ -1,30 +1,97 @@
 <ng-container>
   <div class="buddy-modal-backdrop" (click)="close()">
-    <div class="buddy-modal-content" (click)="$event.stopPropagation()">
-      <!-- No ion-header or ion-toolbar, just the modal content -->
-      <ion-content class="ion-padding" [style.background]="'#fff'">
-        <form>
-          <ion-item>
-            <ion-label position="stacked">First Name</ion-label>
-            <ion-input [(ngModel)]="editFirstName" name="editFirstName" required></ion-input>
+    <section
+      class="buddy-modal-content"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-buddy-title"
+      (click)="$event.stopPropagation()">
+      <div class="sheet-handle" aria-hidden="true"></div>
+
+      <header class="modal-heading">
+        <div class="heading-icon" aria-hidden="true">
+          <ion-icon name="person-outline"></ion-icon>
+        </div>
+        <div class="heading-copy">
+          <p>Buddy details</p>
+          <h2 id="edit-buddy-title">Edit contact</h2>
+        </div>
+        <ion-button class="close-button" fill="clear" aria-label="Close edit form" (click)="close()">
+          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </header>
+
+      <p class="form-intro">Keep this information up to date so you can reach your buddy when it matters.</p>
+
+      <form #editForm="ngForm" (ngSubmit)="saveEdit()" novalidate>
+        <div class="form-fields">
+          <ion-item class="form-field" lines="none">
+            <ion-label position="stacked">First name <span aria-hidden="true">*</span></ion-label>
+            <ion-input
+              [(ngModel)]="editFirstName"
+              name="editFirstName"
+              autocomplete="given-name"
+              required
+              maxlength="60"
+              placeholder="First name">
+            </ion-input>
           </ion-item>
-          <ion-item>
-            <ion-label position="stacked">Last Name</ion-label>
-            <ion-input [(ngModel)]="editLastName" name="editLastName" required></ion-input>
+
+          <ion-item class="form-field" lines="none">
+            <ion-label position="stacked">Last name <span aria-hidden="true">*</span></ion-label>
+            <ion-input
+              [(ngModel)]="editLastName"
+              name="editLastName"
+              autocomplete="family-name"
+              required
+              maxlength="60"
+              placeholder="Last name">
+            </ion-input>
           </ion-item>
-          <ion-item>
-            <ion-label position="stacked">Email</ion-label>
-            <ion-input [(ngModel)]="editEmail" name="editEmail" type="email" required></ion-input>
+
+          <ion-item class="form-field" lines="none">
+            <ion-label position="stacked">Email <span aria-hidden="true">*</span></ion-label>
+            <ion-input
+              [(ngModel)]="editEmail"
+              name="editEmail"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              required
+              placeholder="name@example.com">
+            </ion-input>
           </ion-item>
-          <ion-item>
-            <ion-label position="stacked">
-              Contact Number
-            </ion-label>
-            <ion-input [(ngModel)]="editContact" name="editContact" type="tel" [disabled]="isLoadingContact"></ion-input>
+
+          <ion-item class="form-field" lines="none" [class.field-loading]="isLoadingContact">
+            <ion-label position="stacked">Phone number <span class="optional-label">Optional</span></ion-label>
+            <ion-input
+              [(ngModel)]="editContact"
+              name="editContact"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              [disabled]="isLoadingContact"
+              placeholder="Add a phone number">
+            </ion-input>
+            <ion-spinner *ngIf="isLoadingContact" slot="end" name="crescent"></ion-spinner>
           </ion-item>
-          <ion-button expand="block" class="saveBtn" (click)="saveEdit()" style="margin-top: 16px;">Save Changes</ion-button>
-        </form>
-      </ion-content>
-    </div>
+        </div>
+
+        <p *ngIf="contactAutoPopulated" class="contact-note">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          Phone number filled from your buddy’s profile. You can change it here.
+        </p>
+
+        <div class="form-actions">
+          <ion-button class="cancel-button" type="button" expand="block" fill="outline" (click)="close()">
+            Cancel
+          </ion-button>
+          <ion-button class="save-button" type="submit" expand="block" [disabled]="editForm.invalid || isLoadingContact">
+            <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+            Save changes
+          </ion-button>
+        </div>
+      </form>
+    </section>
   </div>
 </ng-container>

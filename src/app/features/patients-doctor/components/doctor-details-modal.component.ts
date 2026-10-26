@@ -14,6 +14,12 @@ export class DoctorDetailsModalComponent {
     this.closeDetails.emit();
   }
 
+  getDoctorInitials(): string {
+    const name = (this.doctor?.doctorName || 'Doctor').trim();
+    return name.split(/\s+/).filter(Boolean).slice(0, 2)
+      .map((part: string) => part.charAt(0).toUpperCase()).join('');
+  }
+
   convertTimestamp(timestamp: any): Date | null {
     if (!timestamp) return null;
     // Handle Firebase Timestamp objects

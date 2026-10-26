@@ -1,173 +1,273 @@
-/* Add/Edit Medication Modal Styles */
+:host {
+  --med-primary: #08695d;
+  --med-ink: #173b35;
+  --med-muted: #71827e;
+  --med-border: #dfe9e6;
+  display: block;
+}
 
-ion-content { --background: #ffffff; }
-.white-content { --background: #ffffff; }
-form { margin-bottom: 0; }
-.form-fields { margin-bottom: 24px; }
+ion-content, .white-content {
+  --background: #f6f9f8;
+}
+
+form {
+  width: min(100%, 680px);
+  margin: 0 auto;
+  padding: 18px 4px calc(92px + env(safe-area-inset-bottom));
+}
+
+.form-fields {
+  margin-bottom: 18px;
+}
 
 .medication-field {
   --padding-start: 0;
   --padding-end: 0;
   --inner-padding-start: 0;
   --inner-padding-end: 0;
-  --background: #ffffff;
+  --inner-padding-top: 0;
+  --inner-padding-bottom: 0;
+  --background: #fff;
   --min-height: 70px;
-  
-  background: #ffffff;
-  border: 1px solid #d1e7e0;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  box-shadow: 0 1px 3px rgba(3, 106, 93, 0.08);
-  transition: all 0.2s ease;
+  margin: 0 0 11px;
+  padding: 11px 15px;
   overflow: visible;
+  border: 1px solid var(--med-border);
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(23, 59, 53, .035);
+  transition: border-color .16s ease, box-shadow .16s ease;
 
-  &:hover { border-color: #036a5d; box-shadow: 0 2px 6px rgba(3, 106, 93, 0.12); }
-  &:focus-within { border-color: #036a5d; box-shadow: 0 0 0 3px rgba(3, 106, 93, 0.1); }
+  &:hover {
+    border-color: #bdd5cf;
+  }
+  &:focus-within {
+    border-color: #3c9283;
+    box-shadow: 0 0 0 3px rgba(8, 105, 93, .09);
+  }
 
   ion-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: #036a5d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
     position: static !important;
-    opacity: 1 !important;
-    transform: none !important;
     display: block !important;
+    margin: 0 0 5px !important;
+    transform: none !important;
+    opacity: 1 !important;
+    color: #3c5d56;
+    font-size: 12px;
+    line-height: 1.35;
+    font-weight: 650;
+    letter-spacing: .05px;
+    text-transform: none;
   }
 
   ion-input, ion-select, ion-textarea {
     --padding-start: 0;
     --padding-end: 0;
-    --padding-top: 8px;
-    --padding-bottom: 8px;
-    font-size: 15px;
-    color: #1f4a42;
-    margin-top: 4px;
-
-    &[type="number"] {
-      font-weight: 600;
-      font-size: 16px;
-      &::-webkit-outer-spin-button, &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-      -moz-appearance: textfield;
-      appearance: textfield;
-    }
+    --padding-top: 5px;
+    --padding-bottom: 5px;
+    margin: 0;
+    color: var(--med-ink);
+    font-size: 14px;
+    line-height: 1.4;
   }
 
-  ion-select { width: 100%; max-width: 100%; }
-  
-  ion-input::part(native), ion-textarea::part(native), ion-select::part(text), ion-select::part(placeholder) { color: #1a1a1a; }
+  ion-input::part(native), ion-textarea::part(native), ion-select::part(text) {
+    color: var(--med-ink);
+  }
+  ion-input::part(native)::placeholder, ion-textarea::part(native)::placeholder, ion-select::part(placeholder) {
+    color: #97a6a2;
+    opacity: 1;
+  }
+  ion-select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  ion-input[type="number"] {
+    font-variant-numeric: tabular-nums;
+    &::-webkit-outer-spin-button, &::-webkit-inner-spin-button {
+      margin: 0;
+      -webkit-appearance: none;
+    }
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  ion-grid {
+    width: 100%;
+  }
+  ion-col {
+    min-width: 0;
+  }
 
   &.date-field {
     ion-datetime-button {
-      width: 100%;
-      --padding-start: 0;
-      --padding-end: 0;
-      margin-top: 4px;
-      &::part(native) { background: transparent; padding: 8px 0; font-size: 15px; color: #1f4a42; text-align: left; justify-content: flex-start; }
+      margin: 2px 0 0;
+      &::part(native) {
+        min-height: 38px;
+        padding: 7px 10px;
+        border: 1px solid #e5eeeb;
+        border-radius: 9px;
+        background: #f7faf9;
+        color: var(--med-ink);
+        font-size: 13px;
+        justify-content: flex-start;
+      }
     }
   }
 }
 
-/* --- OPTIMIZED Dosage Group (Aligned) --- */
-.dosage-input-group {
-  display: flex;
-  gap: 12px;
-  align-items: stretch; // Forces both items to match height
-  margin-bottom: 16px;
-
-  // Ensure both items take up the same height
-  > .medication-field {
-    margin-bottom: 0;
-    flex: 1;
-    --min-height: 75px; // Enforce consistent height
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; // Aligns labels and inputs consistently
-  }
-
-  // Fixed width for "How Many"
-  .dosage-amount-field { flex: 0 0 30%; }
-
-  // Compact wrapper for Strength & Unit
-  .strength-unit-container {
-    display: flex;
-    gap: 4px; 
-    align-items: center; // Vertically center input/select
-    width: 100%;
-    
-    ion-input { flex: 1; }
-    ion-select { 
-      flex: 0 0 80px; 
-      --padding-start: 8px;
-    }
-  }
+.dosage-input-group { display: flex; align-items: stretch; gap: 10px; margin-bottom: 11px; > .medication-field { flex: 1 1 0; min-width: 0; margin: 0; } .dosage-amount-field { flex: 0 0 31%; } }
+.dosage-input-group > .medication-field ion-item {
+  --min-height: 0;
 }
-
-// Ensure the inner components of the med-field don't collapse
-.medication-field {
-  ion-label { margin-bottom: 4px !important; }
-  ion-input, ion-select { margin-top: 0 !important; }
-}
-
-@media (max-width: 480px) {
-  .dosage-input-group {
-    .dosage-amount-field { flex: 0 0 35%; }
-  }
-}
-
-/* --- Rest of Styles --- */
-
-.quantity-field {
-  ion-input[type="number"] { text-align: center; font-weight: 600; font-size: 18px; }
-}
-
-.image-section {
-  background: #f8faf9;
-  border: 1px solid #e0ebe8;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-
-  .image-preview {
-    margin-top: 16px;
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 2px solid #d1e7e0;
-    img { width: 100%; max-height: 250px; object-fit: cover; display: block; }
-    .remove-image-btn { position: absolute; top: 8px; right: 8px; --background: rgba(255, 255, 255, 0.95); --border-radius: 50%; width: 36px; height: 36px; }
-  }
-}
-
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #e8f2f0;
-
-  ion-button {
-    --border-radius: 12px;
-    height: 50px;
-    font-weight: 600;
-    &[type="submit"] { --background: #036a5d; --color: #ffffff; }
-    &[fill="outline"] { --border-color: #8ba19c; --color: #5a6c69; }
-  }
+.quantity-field { --background: #f1f7f5; background: #f1f7f5; ion-input { color: #42655d; font-weight: 700; font-size: 16px; } }
+.optional-label {
+  color: #83938f;
+  font-size: 11px;
+  font-weight: 450;
 }
 
 .pill-projection {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: #1f4a42;
-  margin: 4px 4px 16px 4px;
-  padding: 10px 14px;
-  background: #e8f5f2;
+  gap: 9px;
+  margin: -1px 3px 12px;
+  padding: 10px 12px;
+  border: 1px solid #dcebe6;
   border-radius: 10px;
-  border-left: 3px solid #036a5d;
+  color: #42665e;
+  background: #edf6f3;
+  font-size: 12px;
+  line-height: 1.4;
+  ion-icon {
+    flex: 0 0 auto;
+    color: var(--med-primary);
+    font-size: 17px;
+  }
 }
+
+.image-section {
+  margin: 16px 0 0;
+  padding: 15px;
+  border: 1px solid var(--med-border);
+  border-radius: 14px;
+  background: #fff;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 13px;
+  }
+  .section-icon {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    padding: 9px;
+    border-radius: 11px;
+    color: var(--med-primary);
+    background: #eaf5f2;
+    font-size: 20px;
+  }
+  .section-info h3 {
+    margin: 0;
+    color: var(--med-ink);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .section-info p {
+    margin: 3px 0 0;
+    color: var(--med-muted);
+    font-size: 11px;
+  }
+  .teal-modal-btn {
+    --border-radius: 10px;
+    height: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: none;
+  }
+
+  .image-preview {
+    position: relative;
+    margin-top: 13px;
+    overflow: hidden;
+    border: 1px solid var(--med-border);
+    border-radius: 11px;
+    background: #f7faf9;
+  }
+  .image-preview img {
+    display: block;
+    width: 100%;
+    max-height: 260px;
+    object-fit: contain;
+  }
+  .remove-image-btn {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 36px;
+    height: 36px;
+    --background: rgba(255,255,255,.96);
+    --border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(20,52,46,.15);
+  }
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 17px;
+  padding-top: 15px;
+  border-top: 1px solid #e4ece9;
+
+  ion-button {
+    --border-radius: 11px;
+    height: 46px;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 650;
+    text-transform: none;
+  }
+  ion-button[type="submit"] {
+    --background: var(--med-primary);
+    --background-hover: #07584e;
+    --color: #fff;
+  }
+  ion-button[fill="outline"] {
+    --border-color: #d3dfdc;
+    --color: #526b65;
+    --background: #fff;
+  }
+}
+
+@media (max-width: 480px) {
+  form {
+    padding: 14px 0 calc(92px + env(safe-area-inset-bottom));
+  }
+  .medication-field {
+    padding: 10px 12px;
+  }
+  .dosage-input-group {
+    gap: 7px;
+  }
+  .dosage-input-group > .medication-field {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .action-buttons {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .action-buttons ion-button {
+    height: 44px;
+  }
+  .image-section {
+    padding: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) { .medication-field { transition: none; } }

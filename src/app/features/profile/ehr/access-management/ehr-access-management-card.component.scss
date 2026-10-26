@@ -31,24 +31,39 @@
 }
 
 /* Optional label lighter tone */
-.ehr-section-card .optional-label { color: #78938d !important; }
+.ehr-section-card .optional-label {
+  color: #78938d !important;
+}
 
 /* Inputs: ensure internal text contrast */
 .ehr-section-card ion-input,
 .ehr-section-card ion-select {
   --color: #244f47;
 }
-.ehr-section-card ion-input::part(native) { color: #244f47; }
-.ehr-section-card ion-select::part(text) { color: #244f47; }
+.ehr-section-card ion-input::part(native) {
+  color: #244f47;
+}
+.ehr-section-card ion-select::part(text) {
+  color: #244f47;
+}
 
 /* Ion labels forced contrast */
-.ehr-section-card ion-label { --color: #1f4a42; font-weight: 600; }
+.ehr-section-card ion-label {
+  --color: #1f4a42;
+  font-weight: 600;
+}
 
 /* Provider info span inside access list */
-.provider-info span { color: #244f47 !important; }
+.provider-info span {
+  color: #244f47 !important;
+}
 
 /* Disabled button state readability */
-.add-visit-btn[disabled] { --background: #c8d6d3; --color: #ffffff; opacity: 1; }
+.add-visit-btn[disabled] {
+  --background: #c8d6d3;
+  --color: #ffffff;
+  opacity: 1;
+}
 
 /* New section title style */
 .section-title {
@@ -89,7 +104,9 @@
   border-radius: 7px;
 }
 
-.card-content { margin-top: -4px; }
+.card-content {
+  margin-top: -4px;
+}
 
 .access-description {
   font-size: 13px;
@@ -122,9 +139,13 @@
   margin: 4px 2px 0;
 }
 
-.help-text ion-icon { font-size: 16px; }
+.help-text ion-icon {
+  font-size: 16px;
+}
 
-.current-access { margin-top: 4px; }
+.current-access {
+  margin-top: 4px;
+}
 
 .current-access-title {
   margin: 8px 0 6px;
@@ -133,7 +154,11 @@
   color: #1f4a42;
 }
 
-.access-list { display: flex; flex-direction: column; gap: 6px; }
+.access-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
 .access-item {
   display: flex;
@@ -163,6 +188,13 @@
   text-align: center;
 }
 
-.empty-subtitle { font-size: 12.5px; margin: 0; color: #4f6b65; }
+.empty-subtitle {
+  font-size: 12.5px;
+  margin: 0;
+  color: #4f6b65;
+}
 
-.optional-label { color: #78938d; font-size: 11px; }
+.optional-label {
+  color: #78938d;
+  font-size: 11px;
+}

@@ -257,3 +257,107 @@ ion-content {
     gap: 10px;
   }
 }
+
+/* Detail page refinements */
+ion-content {
+  --background: #f4f8f7;
+}
+.history-details-container {
+  max-width: 720px;
+  padding: 16px 0 30px;
+}
+.detail-card {
+  margin-bottom: 12px;
+  border-color: #e0ebe8;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(15,50,44,.045);
+}
+.card-header {
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.card-header ion-icon {
+  color: #087568;
+}
+.card-header h2 {
+  color: #173b35;
+  font-size: 15px;
+}
+.card-header--summary {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9f0ee;
+}
+.card-title-group h2 {
+  color: #173b35;
+  font-size: 19px;
+  overflow-wrap: anywhere;
+}
+.card-title-icon {
+  color: #087568;
+}
+.status-chip {
+  --background: #eaf5f2;
+  --color: #17685d;
+  min-height: 28px;
+  text-transform: capitalize;
+}
+.card-content {
+  color: #405650;
+}
+.diagnosis-row {
+  background: #f6faf9;
+  border-color: #e6efed;
+}
+.diagnosis-row > ion-icon {
+  color: #087568;
+}
+.date-label, .metadata-label {
+  color: #70827d;
+}
+.date-value, .metadata-value {
+  color: #173b35;
+}
+.time-since {
+  color: #647773;
+}
+.status-card .card-content {
+  padding: 13px 14px;
+  border-radius: 11px;
+  background: #f6faf9;
+}
+.status-description {
+  color: #405650;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.notes-content {
+  background: #f6faf9;
+  border: 1px solid #e9f0ee;
+}
+.notes-content p {
+  color: #405650;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.metadata-item, .info-item {
+  background: #f8fbfa;
+  border-color: #e6efed;
+}
+.metadata-item > ion-icon, .info-label ion-icon {
+  color: #087568;
+}
+
+@media (max-width: 480px) {
+  .history-details-container {
+    padding: 10px 0 24px;
+  }
+  .card-title-group h2 {
+    font-size: 17px;
+  }
+  .summary-card .card-header--summary {
+    align-items: flex-start;
+  }
+  .status-chip {
+    margin-top: 0;
+  }
+}

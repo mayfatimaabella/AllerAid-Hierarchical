@@ -85,8 +85,14 @@ ion-header {
       letter-spacing: 1px;
       box-shadow: 0 6px 15px rgba(0,0,0,0.12);
       
-      &.safe { background: #2ecc71; color: white; }
-      &.warning { background: #e74c3c; color: white; }
+      &.safe {
+        background: #2ecc71;
+        color: white;
+      }
+      &.warning {
+        background: #e74c3c;
+        color: white;
+      }
     }
   }
 
@@ -134,7 +140,10 @@ ion-header {
       letter-spacing: 1.2px; 
       text-transform: uppercase;
     }
-    ion-icon { color: #036a5d; font-size: 18px; }
+    ion-icon {
+      color: #036a5d;
+      font-size: 18px;
+    }
   }
 }
 
@@ -143,15 +152,35 @@ ion-header {
   &.safe {
     background: #f1fbf4; 
     border-color: #d3f9d8;
-    h3 { color: #1e7e34; font-weight: 700; margin: 0 0 4px; font-size: 18px; }
-    p { font-size: 13px; color: #517a5a; line-height: 1.5; margin: 0; }
+    h3 {
+      color: #1e7e34;
+      font-weight: 700;
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+    p {
+      font-size: 13px;
+      color: #517a5a;
+      line-height: 1.5;
+      margin: 0;
+    }
   }
 
   &.warning {
     background: #fff5f5; 
     border-color: #ffe3e3;
-    h3 { color: #c92a2a; font-weight: 700; margin: 0 0 4px; font-size: 18px; }
-    p { font-size: 13px; color: #862e2e; line-height: 1.5; margin: 0 0 16px; }
+    h3 {
+      color: #c92a2a;
+      font-weight: 700;
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+    p {
+      font-size: 13px;
+      color: #862e2e;
+      line-height: 1.5;
+      margin: 0 0 16px;
+    }
   }
 }
 
@@ -182,8 +211,17 @@ ion-header {
   display: flex; 
   gap: 10px;
   
-  ion-icon { color: #f08c00; font-size: 20px; flex-shrink: 0; }
-  span { font-size: 12px; color: #6b8581; line-height: 1.5; font-weight: 500; }
+  ion-icon {
+    color: #f08c00;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  span {
+    font-size: 12px;
+    color: #6b8581;
+    line-height: 1.5;
+    font-weight: 500;
+  }
 }
 
 // --- 4. Ingredients ---
@@ -212,13 +250,20 @@ ion-header {
   margin-top: 8px;
   transition: transform 0.2s active;
   
-  &:active { transform: scale(0.98); }
+  &:active {
+    transform: scale(0.98);
+  }
 
   .action-content {
     display: flex; 
     align-items: center; 
     gap: 12px;
-    span { font-weight: 700; font-size: 15px; }
-    ion-icon { font-size: 20px; }
+    span {
+      font-weight: 700;
+      font-size: 15px;
+    }
+    ion-icon {
+      font-size: 20px;
+    }
   }
 }

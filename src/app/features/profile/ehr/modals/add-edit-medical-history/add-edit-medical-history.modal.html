@@ -1,127 +1,70 @@
 <ion-header>
   <ion-toolbar class="toolbar--teal">
-    <ion-title>{{ isEditMode ? 'Edit' : 'Add' }} Medical History</ion-title>
+    <ion-title>{{ isEditMode ? 'Edit Medical History' : 'Add Medical History' }}</ion-title>
     <ion-buttons slot="start">
-      <ion-button (click)="cancel()" fill="clear">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-      </ion-button>
+      <ion-button (click)="cancel()" fill="clear" aria-label="Back"><ion-icon name="arrow-back-outline"></ion-icon></ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button (click)="cancel()" fill="clear">
-        <ion-icon name="close"></ion-icon>
-      </ion-button>
+      <ion-button (click)="cancel()" fill="clear" aria-label="Close"><ion-icon name="close-outline"></ion-icon></ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding white-content">
   <form (ngSubmit)="saveHistory()">
+    <section class="form-intro" aria-label="Medical history information">
+      <div class="intro-icon"><ion-icon name="heart-outline"></ion-icon></div>
+      <div>
+        <h2>{{ isEditMode ? 'Update a health condition' : 'Add a health condition' }}</h2>
+        <p>Record diagnoses and current status to keep your health history up to date.</p>
+      </div>
+    </section>
+
+    <div class="form-section-heading"><span>Condition details</span><span class="required-note">* Required</span></div>
     <div class="form-fields">
-      <!-- Condition -->
       <ion-item class="medication-field" lines="none">
-        <ion-label position="stacked">Health Condition *</ion-label>
-        <ion-input 
-          [(ngModel)]="historyData.condition"
-          name="condition"
-          placeholder="e.g., Diabetes, High Blood Pressure, Asthma..."
-          required>
-        </ion-input>
+        <ion-label position="stacked">Health condition <span class="required-mark">*</span></ion-label>
+        <ion-input [(ngModel)]="historyData.condition" name="condition"
+          placeholder="e.g. Asthma or high blood pressure" required></ion-input>
       </ion-item>
 
-      <!-- Diagnosis Date (button + modal, like add-medication) -->
       <ion-item class="medication-field date-field" lines="none">
-        <ion-label position="stacked">When was this diagnosed? *</ion-label>
+        <ion-label position="stacked">Diagnosis date <span class="required-mark">*</span></ion-label>
         <ion-datetime-button datetime="diagnosisDate"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime 
-              id="diagnosisDate"
-              [(ngModel)]="historyData.diagnosisDate"
-              name="diagnosisDate"
-              presentation="date"
-              [max]="currentDate"
-              [showDefaultButtons]="true"
-              doneText="Done"
-              cancelText="Cancel">
-            </ion-datetime>
-          </ng-template>
-        </ion-modal>
+        <ion-modal [keepContentsMounted]="true"><ng-template>
+          <ion-datetime id="diagnosisDate" [(ngModel)]="historyData.diagnosisDate" name="diagnosisDate"
+            presentation="date" [max]="currentDate" [showDefaultButtons]="true" doneText="Done" cancelText="Cancel"></ion-datetime>
+        </ng-template></ion-modal>
+        <p class="field-hint">Choose the date you were diagnosed, if known.</p>
       </ion-item>
 
-      <!-- Status (dropdown) -->
       <ion-item class="medication-field" lines="none">
-        <ion-label position="stacked">Status *</ion-label>
-        <ion-select [(ngModel)]="historyData.status" name="status" interface="popover" placeholder="Select status">
-          <ion-select-option value="active">Active — You currently have this</ion-select-option>
-          <ion-select-option value="resolved">Resolved — It was treated</ion-select-option>
-          <ion-select-option value="not-cured">Not Cured — Ongoing treatment</ion-select-option>
-          <ion-select-option value="chronic">Chronic — Long-term condition</ion-select-option>
+        <ion-label position="stacked">Current status <span class="required-mark">*</span></ion-label>
+        <ion-select [(ngModel)]="historyData.status" name="status" interface="popover" placeholder="Choose status">
+          <ion-select-option value="active">Active — currently have this</ion-select-option>
+          <ion-select-option value="resolved">Resolved — treated or no longer present</ion-select-option>
+          <ion-select-option value="not-cured">Not cured — treatment ongoing</ion-select-option>
+          <ion-select-option value="chronic">Chronic — long-term condition</ion-select-option>
         </ion-select>
       </ion-item>
 
-      <!-- Notes (optional) -->
+      <div class="form-section-heading optional-heading"><span>Additional information</span><span>Optional</span></div>
       <ion-item class="medication-field notes-field" lines="none">
-        <ion-label position="stacked">Extra Notes (Optional)</ion-label>
-        <ion-textarea 
-          [(ngModel)]="historyData.notes"
-          name="notes"
-          placeholder="Any extra details you want to remember..."
-          rows="2"
-          autoGrow="true">
-        </ion-textarea>
+        <ion-label position="stacked">Notes</ion-label>
+        <ion-textarea [(ngModel)]="historyData.notes" name="notes"
+          placeholder="Medication, symptoms, or details you want to remember" rows="3" autoGrow="true"></ion-textarea>
       </ion-item>
     </div>
 
-    <!-- Action Buttons -->
-  <div class="action-buttons">
-
-    <ion-button
-      expand="block"
-      type="submit"
-      class="teal-modal-btn"
-      [disabled]="
-        isSaving ||
-        !historyData.condition.trim()
-      ">
-
-      <ion-spinner
-        *ngIf="isSaving"
-        name="crescent"
-        slot="start">
-      </ion-spinner>
-
-      <ion-icon
-        *ngIf="!isSaving"
-        [name]="isEditMode ? 'checkmark-outline' : 'add-outline'"
-        slot="start">
-      </ion-icon>
-
-      {{
-        isSaving
-          ? 'Saving...'
-          : (isEditMode ? 'Update Medical History' : 'Save Medical History')
-      }}
-
-    </ion-button>
-
-    <ion-button
-      expand="block"
-      fill="outline"
-      color="medium"
-      type="button"
-      (click)="cancel()"
-      [disabled]="isSaving">
-
-      <ion-icon
-        name="close-outline"
-        slot="start">
-      </ion-icon>
-
-      Cancel
-
-    </ion-button>
-
-  </div>
-
+    <div class="action-buttons">
+      <ion-button expand="block" type="submit" class="teal-modal-btn"
+        [disabled]="isSaving || !historyData.condition.trim()">
+        <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
+        <ion-icon *ngIf="!isSaving" [name]="isEditMode ? 'checkmark-outline' : 'add-outline'" slot="start"></ion-icon>
+        {{ isSaving ? 'Saving...' : (isEditMode ? 'Update medical history' : 'Save medical history') }}
+      </ion-button>
+      <ion-button expand="block" fill="outline" class="cancel-btn" type="button"
+        (click)="cancel()" [disabled]="isSaving">Cancel</ion-button>
+    </div>
   </form>
 </ion-content>

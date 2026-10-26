@@ -22,10 +22,8 @@ export class PatientsDoctorPage implements OnInit {
   doctors: any[] = [];
   filteredDoctors: any[] = [];
   searchTerm: string = '';
-  showActionsModal = false;
   showDeleteModal = false;
   doctorToEdit: any = null;
-  selectedDoctor: any = null;
   invitationCount: number = 0;
 
   constructor(
@@ -99,37 +97,45 @@ export class PatientsDoctorPage implements OnInit {
   // ─── Search ───────────────────────────────────────────────────────────────────
 
   searchDoctor() {
-    if (!this.searchTerm) {
-      this.filteredDoctors = this.doctors;
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      this.filteredDoctors = [...this.doctors];
       return;
     }
-    const term = this.searchTerm.toLowerCase();
-    this.filteredDoctors = this.doctors.filter(doctor =>
-      (doctor.firstName  && doctor.firstName.toLowerCase().includes(term))  ||
-      (doctor.lastName   && doctor.lastName.toLowerCase().includes(term))   ||
-      (doctor.email      && doctor.email.toLowerCase().includes(term))      ||
-      (doctor.specialty  && doctor.specialty.toLowerCase().includes(term))
-    );
+    this.filteredDoctors = this.doctors.filter(doctor => {
+      const searchable = [
+        doctor.doctorName,
+        doctor.name,
+        doctor.firstName,
+        doctor.lastName,
+        doctor.doctorEmail,
+        doctor.email,
+        doctor.specialization,
+        doctor.specialty
+      ].filter(Boolean).join(' ').toLowerCase();
+      return searchable.includes(term);
+    });
+  }
+
+  getDoctorInitials(doctor: any): string {
+    const name = doctor?.doctorName || doctor?.name ||
+      `${doctor?.firstName || ''} ${doctor?.lastName || ''}`.trim();
+    const initials = (name || doctor?.doctorEmail || doctor?.email || 'DR')
+      .split(/[\s@._-]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part: string) => part.charAt(0).toUpperCase())
+      .join('');
+    return initials || 'DR';
   }
 
   // ─── Actions modal ────────────────────────────────────────────────────────────
-
-  openDoctorActions(doctor: any) {
-    this.selectedDoctor = doctor;
-    this.showActionsModal = true;
-  }
-
-  closeDoctorActions() {
-    this.showActionsModal = false;
-    this.selectedDoctor = null;
-  }
 
   // ─── Delete ───────────────────────────────────────────────────────────────────
 
   onDeleteDoctor(doctor: any) {
     this.doctorToEdit = doctor;
     this.showDeleteModal = true;
-    this.closeDoctorActions();
   }
 
   closeDeleteModal() {

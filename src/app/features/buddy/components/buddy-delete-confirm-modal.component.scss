@@ -1,56 +1,134 @@
-
-.cancelBtn {
-  --color: #036a5d !important;
-  color: #036a5d !important;
-}
-
-ion-icon {
-  color: #036a5d !important;
-}
-
-.buddy-modal-content h2,
-.buddy-modal-content p {
-  color: #000 !important;
-}
 :host {
   display: block;
-  background: transparent;
-}
-
-ion-content{
-  --background: #eaf1ee !important;
-  color: #000 !important;
-}
-
-ion-item{
-  --background: #e3ece7 !important;
-  color: #000 !important;
-  border-radius: 32px;
 }
 
 .buddy-modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.4);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(12, 32, 29, 0.52);
+  backdrop-filter: blur(3px);
+  animation: fade-in 150ms ease-out;
 }
 
 .buddy-modal-content {
-  width: 90vw;
-  max-width: 400px;
-  height: 45vh;
-  max-height: 80vh;
-  z-index: 1001;
+  width: min(100%, 410px);
+  padding: 28px 24px 22px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid rgba(184, 57, 52, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 22px 60px rgba(13, 38, 34, 0.26);
+  animation: dialog-in 180ms ease-out;
 }
 
-.deleteBtn{
-    --background: #e12826 !important;
-    --color: #fff !important;
+.warning-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 15px;
+  border-radius: 21px;
+  background: #fff1ef;
+  color: #c74742;
 }
 
+.warning-icon ion-icon {
+  font-size: 31px;
+}
+
+.dialog-eyebrow {
+  margin: 0 0 7px;
+  color: #a14b45;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.buddy-modal-content h2 {
+  margin: 0;
+  color: #173f39;
+  font-size: 22px;
+  font-weight: 850;
+  letter-spacing: -0.35px;
+}
+
+.dialog-description {
+  margin: 10px 0 23px;
+  color: #637772;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.dialog-description strong {
+  color: #173f39;
+  font-weight: 800;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 9px;
+}
+
+.dialog-actions ion-button {
+  min-height: 48px;
+  margin: 0;
+  --border-radius: 14px;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.cancelBtn {
+  --border-color: #dce8e5;
+  --color: #315b54;
+  --background: #ffffff;
+}
+
+.deleteBtn {
+  --background: #c74742;
+  --background-activated: #aa3935;
+  --color: #ffffff;
+  box-shadow: 0 7px 16px rgba(199, 71, 66, 0.2);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (min-width: 480px) {
+  .dialog-actions {
+    flex-direction: row;
+  }
+
+  .dialog-actions ion-button {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buddy-modal-backdrop,
+  .buddy-modal-content {
+    animation: none;
+  }
+}

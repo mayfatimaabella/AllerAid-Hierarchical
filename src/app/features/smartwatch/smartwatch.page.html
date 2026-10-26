@@ -11,7 +11,7 @@
 <ion-content class="ion-padding">
 
   <!-- Smartwatch Connection -->
-  <ion-card>
+  <ion-card class="connection-card">
     <ion-card-header>
       <ion-card-title>Smartwatch</ion-card-title>
     </ion-card-header>
@@ -84,7 +84,7 @@
     <ion-card-content>
 
       <!-- SOS Button -->
-      <ion-item lines="none">
+      <ion-item class="trigger-item" lines="none">
 
         <ion-icon
           name="alert-circle-outline"
@@ -107,7 +107,7 @@
 
 
       <!-- Watch Button -->
-      <ion-item lines="none">
+      <ion-item class="trigger-item" lines="none">
 
         <ion-icon
           name="radio-button-on-outline"
@@ -142,7 +142,7 @@
     <ion-card-content>
 
       <!-- Watch Status -->
-      <ion-item>
+      <ion-item class="status-item">
         <ion-label>
 
           <h3>Smartwatch</h3>
@@ -163,7 +163,7 @@
 
 
       <!-- Emergency Status -->
-      <ion-item>
+      <ion-item class="status-item">
         <ion-label>
 
           <h3>Emergency Alerts</h3>
@@ -185,6 +185,7 @@
 
       <!-- Test Connection -->
       <ion-button
+        class="test-button"
         expand="block"
         fill="outline"
         color="medium"

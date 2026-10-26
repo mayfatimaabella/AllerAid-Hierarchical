@@ -19,22 +19,25 @@
 
 .buddy-page {
   --background: #f5fbfa;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --padding-top: 16px;
-  --padding-bottom: 90px;
+  --padding-start: max(16px, calc((100vw - 720px) / 2));
+  --padding-end: max(16px, calc((100vw - 720px) / 2));
+  --padding-top: 18px;
+  --padding-bottom: 40px;
 }
 
 .buddy-hero {
-  background: linear-gradient(135deg, #036a5d, #0b8f7f);
-  border-radius: 22px;
-  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #034f47 0%, #087a6d 58%, #159584 100%);
+  border-radius: 24px;
+  padding: 24px;
   color: #ffffff;
   display: flex;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 12px 28px rgba(3, 106, 93, 0.22);
+  box-shadow: 0 14px 30px rgba(3, 79, 71, 0.2);
+  align-items: center;
 }
 
 .hero-eyebrow {
@@ -48,7 +51,8 @@
 
 .buddy-hero h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: clamp(24px, 5vw, 30px);
+  letter-spacing: -0.5px;
   font-weight: 800;
 }
 
@@ -63,7 +67,10 @@
   min-width: 78px;
   height: 78px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -85,8 +92,16 @@
   --padding-start: 14px;
   --inner-padding-end: 8px;
   border-radius: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 6px 18px rgba(15, 42, 38, 0.08);
+  min-height: 54px;
+  margin: 0 0 18px;
+  border: 1px solid #e1eeeb;
+  box-shadow: 0 5px 16px rgba(15, 42, 38, 0.055);
+  transition: box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.search-bar-item:focus-within {
+  border-color: #74b8ad;
+  box-shadow: 0 0 0 3px rgba(3, 106, 93, 0.1);
 }
 
 .search-bar-item ion-icon {
@@ -111,8 +126,8 @@
 .no-buddies-card {
   margin: 0 0 16px;
   border-radius: 22px;
-  border: 1px solid rgba(3, 106, 93, 0.12);
-  box-shadow: 0 8px 24px rgba(15, 42, 38, 0.08);
+  border: 1px solid #e4efed;
+  box-shadow: 0 8px 24px rgba(15, 42, 38, 0.055);
 }
 
 .buddy-list-card ion-card-header {
@@ -144,9 +159,16 @@
   --border-radius: 16px;
   --padding-start: 12px;
   --inner-padding-end: 8px;
-  margin-bottom: 10px;
+  min-height: 72px;
+  margin-bottom: 9px;
   border-radius: 16px;
   border: 1px solid rgba(3, 106, 93, 0.08);
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.buddy-item:active {
+  --background: #eef8f6;
+  transform: scale(0.99);
 }
 
 .buddy-avatar {
@@ -176,6 +198,55 @@
 
 .more-btn {
   --color: #036a5d;
+  --border-radius: 12px;
+  min-width: 42px;
+  min-height: 42px;
+}
+
+.no-results {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  margin: 0 0 16px;
+  background: #fff;
+  border: 1px solid #e4efed;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(15, 42, 38, 0.045);
+}
+
+.no-results-icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: #eef8f6;
+  color: #036a5d;
+  font-size: 22px;
+}
+
+.no-results h2 {
+  margin: 0 0 4px;
+  color: #173f39;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.no-results p {
+  margin: 0;
+  color: #6b827e;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.no-results ion-button {
+  margin-left: auto;
+  flex-shrink: 0;
+  --color: #036a5d;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .no-buddies-container {
@@ -229,11 +300,13 @@
   --background: #036a5d;
   --border-radius: 14px;
   font-weight: 700;
+  min-height: 48px;
+  box-shadow: 0 7px 16px rgba(3, 106, 93, 0.18);
 }
 
 .emergency-resources-card {
   background: #ffffff;
-  border-left: 5px solid #ff6b6b;
+  border-left: 4px solid #ef7470;
 }
 
 .emergency-resources-card ion-card-title {
@@ -326,6 +399,9 @@
 
 .hotline-item ion-button {
   --color: #ff6b6b;
+  --border-radius: 12px;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 @media (max-width: 380px) {
@@ -338,5 +414,20 @@
     height: 64px;
     flex-direction: row;
     gap: 8px;
+  }
+
+  .no-results {
+    flex-wrap: wrap;
+  }
+
+  .no-results ion-button {
+    margin: 0 0 0 60px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-bar-item,
+  .buddy-item {
+    transition: none;
   }
 }

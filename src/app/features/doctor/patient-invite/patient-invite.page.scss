@@ -138,7 +138,9 @@ ion-content {
     background: #eaf4f1;
     color: $primary;
 
-    ion-icon { font-size: 27px; }
+    ion-icon {
+      font-size: 27px;
+    }
   }
 
   .sender-details {
@@ -181,9 +183,18 @@ ion-content {
       background: currentColor;
     }
 
-    &.pending { background: #fff5dc; color: #916000; }
-    &.accepted { background: #e8f6ee; color: #237447; }
-    &.declined { background: #fff0ee; color: #a33d35; }
+    &.pending {
+      background: #fff5dc;
+      color: #916000;
+    }
+    &.accepted {
+      background: #e8f6ee;
+      color: #237447;
+    }
+    &.declined {
+      background: #fff0ee;
+      color: #a33d35;
+    }
   }
 
   .card-content {
@@ -204,7 +215,12 @@ ion-content {
     line-height: 1.55;
     overflow-wrap: anywhere;
 
-    ion-icon { flex: 0 0 auto; margin-top: 2px; color: $primary; font-size: 17px; }
+    ion-icon {
+      flex: 0 0 auto;
+      margin-top: 2px;
+      color: $primary;
+      font-size: 17px;
+    }
   }
 
   .invitation-date {
@@ -214,7 +230,9 @@ ion-content {
     color: $muted;
     font-size: 12px;
 
-    ion-icon { font-size: 15px; }
+    ion-icon {
+      font-size: 15px;
+    }
   }
 
   .card-actions {
@@ -232,7 +250,9 @@ ion-content {
       font-size: 14px;
       font-weight: 600;
 
-      ion-icon { font-size: 17px; }
+      ion-icon {
+        font-size: 17px;
+      }
     }
 
     .accept-btn {
@@ -264,8 +284,12 @@ ion-content {
     font-size: 13px;
     font-weight: 600;
 
-    &.accepted { color: #237447; }
-    &.declined { color: #a33d35; }
+    &.accepted {
+      color: #237447;
+    }
+    &.declined {
+      color: #a33d35;
+    }
   }
 }
 
@@ -293,9 +317,23 @@ ion-content {
     font-size: 34px;
   }
 
-  h2 { margin: 0 0 8px; color: $ink; font-size: 19px; font-weight: 700; }
-  p { max-width: 340px; margin: 3px 0; color: $muted; font-size: 14px; line-height: 1.55; }
-  .empty-hint { color: #82938f; font-size: 13px; }
+  h2 {
+    margin: 0 0 8px;
+    color: $ink;
+    font-size: 19px;
+    font-weight: 700;
+  }
+  p {
+    max-width: 340px;
+    margin: 3px 0;
+    color: $muted;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .empty-hint {
+    color: #82938f;
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -306,27 +344,64 @@ ion-content {
     padding: 24px 20px;
   }
 
-  .pending-summary { padding: 9px 12px; }
-  .pending-count { font-size: 24px; }
-  .invitations-container { padding: 18px 14px; }
+  .pending-summary {
+    padding: 9px 12px;
+  }
+  .pending-count {
+    font-size: 24px;
+  }
+  .invitations-container {
+    padding: 18px 14px;
+  }
   .invitation-card {
     border-radius: 14px;
 
-    .card-header { padding: 15px; }
-    .sender-avatar { width: 40px; height: 40px; flex-basis: 40px; }
-    .sender-name { font-size: 14px; }
-    .sender-email { font-size: 12px; }
-    .status-badge { gap: 5px; padding: 5px 8px; font-size: 10px; }
-    .card-content { padding: 14px 15px; }
-    .card-actions { gap: 8px; padding: 12px 15px; }
-    .card-actions ion-button { min-height: 42px; font-size: 13px; }
-    .card-status-footer { padding: 11px 15px; }
+    .card-header {
+      padding: 15px;
+    }
+    .sender-avatar {
+      width: 40px;
+      height: 40px;
+      flex-basis: 40px;
+    }
+    .sender-name {
+      font-size: 14px;
+    }
+    .sender-email {
+      font-size: 12px;
+    }
+    .status-badge {
+      gap: 5px;
+      padding: 5px 8px;
+      font-size: 10px;
+    }
+    .card-content {
+      padding: 14px 15px;
+    }
+    .card-actions {
+      gap: 8px;
+      padding: 12px 15px;
+    }
+    .card-actions ion-button {
+      min-height: 42px;
+      font-size: 13px;
+    }
+    .card-status-footer {
+      padding: 11px 15px;
+    }
   }
 
-  .empty-state { min-height: 280px; padding: 32px 18px; }
+  .empty-state {
+    min-height: 280px;
+    padding: 32px 18px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .invitation-card { transition: none; }
-  .invitation-card:hover { transform: none; }
+  .invitation-card {
+    transition: none;
+  }
+  .invitation-card:hover {
+    transform: none;
+  }
 }

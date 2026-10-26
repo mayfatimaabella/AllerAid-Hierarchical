@@ -530,7 +530,9 @@ ion-content.onboarding-bg {
   cursor: pointer;
   padding: 0;
 
-  &.active { color: var(--ion-color-success); }
+  &.active {
+    color: var(--ion-color-success);
+  }
 }
 
 .skip-hint {
