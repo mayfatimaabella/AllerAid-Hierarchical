@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
+
 import {
-  collection,
+  Firestore,
   addDoc,
-  getDocs,
-  setDoc,
-  getDoc,
+  collection,
   doc,
+  getDoc,
+  getDocs,
   serverTimestamp,
-  Firestore
+  setDoc,
 } from 'firebase/firestore';
+
 import { FirebaseService } from './firebase.service';
 
 export interface AllergyOption {
@@ -28,267 +30,384 @@ export interface UserAllergy {
   value?: string;
 }
 
-@Injectable({ providedIn: 'root' })
+export interface AllergyOptionWithCategory extends AllergyOption {
+  categoryName: string;
+  categoryOrder: number;
+}
+
+export interface AllergySuggestion {
+  name: string;
+  label: string;
+  categoryId: string;
+  suggestedBy: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+@Injectable({
+  providedIn: 'root',
+})
 export class AllergyService {
+
   private db: Firestore;
 
   constructor(private firebase: FirebaseService) {
     this.db = this.firebase.getDb();
   }
 
-  // reference to users/{uid}/medical/info
-  private medicalInfoRef(userId: string) {
-    return doc(this.db, 'users', userId, 'medical', 'info');
+
+  // FIRESTORE REFERENCES
+
+
+  private allergyOptionsRef() {
+    return collection(this.db, 'allergyOptions');
   }
 
-  // SAVE or CREATE user allergies in hierarchical structure
-  async saveUserAllergies(userId: string, allergies: UserAllergy[]): Promise<void> {
-    const medicalRef = this.medicalInfoRef(userId);
+  private allergyCategoriesRef() {
+    return collection(this.db, 'allergyCategories');
+  }
+
+  private allergySuggestionsRef() {
+    return collection(this.db, 'allergySuggestions');
+  }
+
+  private medicalInfoRef(userId: string) {
+    return doc(
+      this.db,
+      'users',
+      userId,
+      'medical',
+      'info'
+    );
+  }
+
+
+  // USER ALLERGIES
+
+
+  async saveUserAllergies(
+    userId: string,
+    allergies: UserAllergy[]
+  ): Promise<void> {
 
     await setDoc(
-      medicalRef,
+      this.medicalInfoRef(userId),
       {
         allergies,
         updatedAt: serverTimestamp(),
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       },
       { merge: true }
     );
   }
 
-  // GET user allergies
-  async getUserAllergies(userId: string): Promise<UserAllergy[]> {
-    const medicalRef = this.medicalInfoRef(userId);
-    const snapshot = await getDoc(medicalRef);
+  async getUserAllergies(
+    userId: string
+  ): Promise<UserAllergy[]> {
+
+    const snapshot = await getDoc(
+      this.medicalInfoRef(userId)
+    );
 
     if (!snapshot.exists()) {
       return [];
     }
 
     const data = snapshot.data();
-    return data?.['allergies'] || [];
+
+    return (data['allergies'] as UserAllergy[]) ?? [];
   }
 
-  // CREATE predefined allergy options (run once)
+
+  // CREATE DEFAULT ALLERGY OPTIONS
+
+
   async createAllergyOptions(): Promise<void> {
     try {
-      const existingOptionsSnapshot = await getDocs(collection(this.db, 'allergyOptions'));
+      const snapshot = await getDocs(
+        this.allergyOptionsRef()
+      );
 
-      if (existingOptionsSnapshot.size > 0) {
-        console.log('Allergy options already exist, skipping creation');
+      if (!snapshot.empty) {
+        console.log(
+          '[Allergy] Options already exist. Skipping creation.'
+        );
         return;
       }
 
-    const allergyOptions: AllergyOption[] = [
+      const allergyOptions: AllergyOption[] = [
 
-      // FOOD
-      { name:'peanuts', label:'Peanuts', hasInput:false, order:1, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
-      { name:'dairy', label:'Dairy/Milk', hasInput:false, order:2, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
-      { name:'eggs', label:'Eggs', hasInput:false, order:3, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
-      { name:'wheat', label:'Wheat/Gluten', hasInput:false, order:4, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
-      { name:'fish', label:'Fish', hasInput:false, order:5, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
-      { name:'shellfish', label:'Shellfish', hasInput:false, order:6, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
-      { name:'soy', label:'Soy', hasInput:false, order:7, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
-      { name:'nuts', label:'Nuts', hasInput:false, order:14, isApproved:true, categoryId:'RDtNiC8y3cnbrkDpcC72' },
+        // FOOD
+        {
+          name: 'peanuts',
+          label: 'Peanuts',
+          hasInput: false,
+          order: 1,
+          isApproved: true,
+          categoryId: 'RDtNiC8y3cnbrkDpcC72',
+        },
+        {
+          name: 'dairy',
+          label: 'Dairy/Milk',
+          hasInput: false,
+          order: 2,
+          isApproved: true,
+          categoryId: 'RDtNiC8y3cnbrkDpcC72',
+        },
+        {
+          name: 'eggs',
+          label: 'Eggs',
+          hasInput: false,
+          order: 3,
+          isApproved: true,
+          categoryId: 'RDtNiC8y3cnbrkDpcC72',
+        },
+        {
+          name: 'wheat',
+          label: 'Wheat/Gluten',
+          hasInput: false,
+          order: 4,
+          isApproved: true,
+          categoryId: 'RDtNiC8y3cnbrkDpcC72',
+        },
+        {
+          name: 'fish',
+          label: 'Fish',
+          hasInput: false,
+          order: 5,
+          isApproved: true,
+          categoryId: 'RDtNiC8y3cnbrkDpcC72',
+        },
+        {
+          name: 'shellfish',
+          label: 'Shellfish',
+          hasInput: false,
+          order: 6,
+          isApproved: true,
+          categoryId: 'RDtNiC8y3cnbrkDpcC72',
+        },
+        {
+          name: 'soy',
+          label: 'Soy',
+          hasInput: false,
+          order: 7,
+          isApproved: true,
+          categoryId: 'RDtNiC8y3cnbrkDpcC72',
+        },
+        {
+          name: 'nuts',
+          label: 'Nuts',
+          hasInput: false,
+          order: 14,
+          isApproved: true,
+          categoryId: 'RDtNiC8y3cnbrkDpcC72',
+        },
 
-      // ENVIRONMENT
-      { name:'pollen', label:'Pollen', hasInput:false, order:8, isApproved:true, categoryId:'a7r0dsJ3ruUx0oaKJurw' },
+        // ENVIRONMENT
+        {
+          name: 'pollen',
+          label: 'Pollen',
+          hasInput: false,
+          order: 8,
+          isApproved: true,
+          categoryId: 'a7r0dsJ3ruUx0oaKJurw',
+        },
 
-      // LATEX
-      { name:'latex', label:'Latex', hasInput:false, order:9, isApproved:true, categoryId:'bEDsfeS5najHfUJA9DKX' },
+        // LATEX
+        {
+          name: 'latex',
+          label: 'Latex',
+          hasInput: false,
+          order: 9,
+          isApproved: true,
+          categoryId: 'bEDsfeS5najHfUJA9DKX',
+        },
 
-      // PET
-      { name:'animalDander', label:'Animal Dander', hasInput:false, order:10, isApproved:true, categoryId:'jYh2ac36XSEkqeaWU0Yf' },
+        // PET
+        {
+          name: 'animalDander',
+          label: 'Animal Dander',
+          hasInput: false,
+          order: 10,
+          isApproved: true,
+          categoryId: 'jYh2ac36XSEkqeaWU0Yf',
+        },
 
-      // INSECT
-      { name:'insectStings', label:'Insect Stings', hasInput:false, order:11, isApproved:true, categoryId:'HPdf4gLvM9lmynqITbGC' },
+        // INSECT
+        {
+          name: 'insectStings',
+          label: 'Insect Stings',
+          hasInput: false,
+          order: 11,
+          isApproved: true,
+          categoryId: 'HPdf4gLvM9lmynqITbGC',
+        },
 
-      // MEDICATION
-      { name:'medication', label:'Medication', hasInput:true, order:12, isApproved:true, categoryId:'9vzDVLy2xID2OFauZFgz' },
+        // MEDICATION
+        {
+          name: 'medication',
+          label: 'Medication',
+          hasInput: true,
+          order: 12,
+          isApproved: true,
+          categoryId: '9vzDVLy2xID2OFauZFgz',
+        },
 
-      // OTHER
-      { name:'others', label:'Others', hasInput:true, order:13, isApproved:true, categoryId:'ftxLYiCRUoKirHOsle4Z' }
-    ];
-      for (const option of allergyOptions) {
-        await addDoc(collection(this.db, 'allergyOptions'), option);
-      }
+        // OTHER
+        {
+          name: 'others',
+          label: 'Others',
+          hasInput: true,
+          order: 13,
+          isApproved: true,
+          categoryId: 'ftxLYiCRUoKirHOsle4Z',
+        },
+      ];
 
-      console.log('Allergy options created successfully');
+      await Promise.all(
+        allergyOptions.map(option =>
+          addDoc(
+            this.allergyOptionsRef(),
+            option
+          )
+        )
+      );
+
+      console.log(
+        '[Allergy] Default options created successfully.'
+      );
+
     } catch (error) {
-      console.error('Error creating allergy options:', error);
+      console.error(
+        '[Allergy] Failed to create options:',
+        error
+      );
+
       throw error;
     }
   }
 
-// GET all active/approved master allergy options
-async getAllergyOptions(): Promise<any[]> {
-  try {
-    console.log('Reading allergyCategories...');
 
-    
-    // 1. Load allergy categories
-    
-    const categorySnapshot = await getDocs(
-      collection(this.db, 'allergyCategories')
-    );
+  // GET ACTIVE ALLERGY OPTIONS
 
-    console.log(
-      'Categories count:',
-      categorySnapshot.size
-    );
 
-    const categoryMap = new Map<string, any>();
-
-    categorySnapshot.docs.forEach(docSnap => {
-      const category: any = {
-        id: docSnap.id,
-        ...docSnap.data()
-      };
-
-      console.log(
-        'Category:',
-        category.name,
-        '| ID:',
-        category.id,
-        '| isActive:',
-        category.isActive
+  async getAllergyOptions(): Promise<AllergyOptionWithCategory[]> {
+    try {
+      // Get categories
+      const categorySnapshot = await getDocs(
+        this.allergyCategoriesRef()
       );
 
-      /*
-       * IMPORTANT:
-       *
-       * A category is considered active unless
-       * isActive is explicitly false.
-       *
-       * This means old categories without an
-       * active field will continue to work.
-       */
-      if (category.active !== false) {
-        categoryMap.set(category.id, category);
-      }
-    });
+      const categoryMap = new Map<
+        string,
+        {
+          id: string;
+          name: string;
+          order?: number;
+          isActive?: boolean;
+          active?: boolean;
+        }
+      >();
 
-    console.log(
-      'Active categories:',
-      Array.from(categoryMap.values())
-    );
+      categorySnapshot.docs.forEach(categoryDoc => {
+        const data = categoryDoc.data();
 
-    
-    // 2. Load allergy options
-    
-    console.log('Reading allergyOptions...');
+        /*
+         * Category is active unless explicitly disabled.
+         *
+         * Supports both:
+         * - isActive
+         * - active
+         *
+         * Older documents may not have either field.
+         */
+        const isActive =
+          data['isActive'] !== false &&
+          data['active'] !== false;
 
-    const optionsSnapshot = await getDocs(
-      collection(this.db, 'allergyOptions')
-    );
+        if (!isActive) {
+          return;
+        }
 
-    console.log(
-      'Options count:',
-      optionsSnapshot.size
-    );
+        categoryMap.set(categoryDoc.id, {
+          id: categoryDoc.id,
+          name: data['name'] ?? '',
+          order: data['order'],
+          isActive: data['isActive'],
+          active: data['active'],
+        });
+      });
 
-    
-    // 3. Filter and attach category information
-    
-    const options = optionsSnapshot.docs
-      .map(docSnap => {
-        const option: any = {
-          id: docSnap.id,
-          ...docSnap.data()
-        };
+      // Get allergy options
+      const optionsSnapshot = await getDocs(
+        this.allergyOptionsRef()
+      );
 
-        const category = categoryMap.get(
-          option.categoryId
+      return optionsSnapshot.docs
+        .map(optionDoc => {
+
+          const data = optionDoc.data();
+
+          const option: AllergyOption = {
+            id: optionDoc.id,
+            name: data['name'] ?? '',
+            label: data['label'] ?? '',
+            hasInput: data['hasInput'] ?? false,
+            order: data['order'] ?? 0,
+            isApproved: data['isApproved'],
+            categoryId: data['categoryId'],
+          };
+
+          const category = option.categoryId
+            ? categoryMap.get(option.categoryId)
+            : undefined;
+
+          // Skip missing/inactive categories
+          if (!category) {
+            return null;
+          }
+
+          // Skip unapproved options
+          if (option.isApproved === false) {
+            return null;
+          }
+
+          return {
+            ...option,
+            categoryName: category.name,
+            categoryOrder: category.order ?? 99,
+          };
+        })
+        .filter(
+          (
+            option
+          ): option is AllergyOptionWithCategory =>
+            option !== null
         );
 
-        /*
-         * If the option belongs to a category that:
-         * - does not exist
-         * - was deleted
-         * - is disabled
-         *
-         * do NOT show the option.
-         */
-        if (!category) {
-          console.log(
-            'Skipping allergy option because category is inactive/missing:',
-            option.label,
-            '| categoryId:',
-            option.categoryId
-          );
-
-          return null;
-        }
-
-        /*
-         * If the individual allergy option has been
-         * rejected/unapproved, don't show it either.
-         */
-        if (option.isApproved === false) {
-          console.log(
-            'Skipping unapproved allergy option:',
-            option.label
-          );
-
-          return null;
-        }
-
-        return {
-          ...option,
-
-          // Category information used by onboarding
-          categoryName: category.name,
-          categoryOrder: category.order ?? 99
-        };
-      })
-      .filter(
-        (option): option is any =>
-          option !== null
+    } catch (error) {
+      console.error(
+        '[Allergy] Failed to load allergy options:',
+        error
       );
 
-    console.log(
-      'FINAL ACTIVE ALLERGY OPTIONS:',
-      options
+      return [];
+    }
+  }
+
+  // ALLERGY SUGGESTIONS
+
+
+  async submitAllergySuggestion(
+    suggestion: AllergySuggestion
+  ): Promise<void> {
+
+    await addDoc(
+      this.allergySuggestionsRef(),
+      {
+        ...suggestion,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }
     );
-
-    return options;
-
-  } catch (error) {
-    console.error(
-      'getAllergyOptions FAILED:',
-      error
-    );
-
-    return [];
   }
 }
-
-
-  // RESET allergy options
-  // async resetAllergyOptions(): Promise<void> { 
-  //   const querySnapshot = await getDocs(collection(this.db, 'allergyOptions'));
-  //   const deletePromises = querySnapshot.docs.map(docSnap =>
-  //     deleteDoc(doc(this.db, 'allergyOptions', docSnap.id))
-  //   );
-
-  //   await Promise.all(deletePromises);
-  //   await this.createAllergyOptions();
-  // }
-
-async submitAllergySuggestion(suggestion: {
-  name: string;
-  label: string;
-  categoryId: string;
-  suggestedBy: string;
-  status: 'pending' | 'approved' | 'rejected';
-}): Promise<void> {
-  const suggestionsRef = collection(this.db, 'allergySuggestions');
-
-  await addDoc(suggestionsRef, {
-    ...suggestion,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  });
-}
-}
-

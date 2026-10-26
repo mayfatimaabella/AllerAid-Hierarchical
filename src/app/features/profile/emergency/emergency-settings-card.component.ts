@@ -24,5 +24,4 @@ export class EmergencySettingsCardComponent {
   @Input() getAudioSourceText!: () => string;
   @Input() saveEmergencySettings!: () => void;
   @Input() profileVoiceFacade: any = null;
-  @Input() testAudioSettings: () => Promise<void> = async () => undefined;
 }

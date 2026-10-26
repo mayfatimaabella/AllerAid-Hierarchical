@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { ToastController, ModalController } from '@ionic/angular';
 
@@ -47,7 +46,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   allergyOptions: AllergyOption[] = [];
   allergiesCount: number = 0;
 
-  audioInstructionsEnabled: boolean = true;
   doctorStats: DoctorStats = {
     activePatients: 0,
     pendingRequests: 0,
@@ -92,7 +90,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     public voiceRecordingService: VoiceRecordingService,
     public toastController: ToastController,
     public modalController: ModalController,
-    public router: Router
   ) {}
 
   async ngOnInit(): Promise<void> {

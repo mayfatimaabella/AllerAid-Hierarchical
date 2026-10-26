@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
-import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class StorageService {
@@ -50,7 +49,7 @@ export class StorageService {
    *  */
 
   private getRecentScansKey(): string {
-    // FIXED: Added () to call the getCurrentUser method
+    
     const userId = this.authService.getCurrentUser()?.uid || 'guest';
     return `recent_scans_${userId}`;
   }

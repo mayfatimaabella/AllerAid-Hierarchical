@@ -28,6 +28,7 @@ export class UserService {
       firstName: string;
       lastName: string;
       role: string;
+      
       licenseURL?: string;
       license?: string;
       specialty?: string;

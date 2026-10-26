@@ -21,7 +21,7 @@ class WearMessageListenerService : WearableListenerService() {
 
                 Log.d(
                     "WearListener",
-                    "🚨 WATCH EMERGENCY TRIGGERED"
+                    "WATCH EMERGENCY TRIGGERED"
                 )
 
                 val intent = Intent(

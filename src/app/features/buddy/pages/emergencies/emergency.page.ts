@@ -626,6 +626,16 @@ import { Component, OnInit,OnDestroy} from '@angular/core';
       } = emergency.location;
 
 
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude) ||
+        (latitude === 0 && longitude === 0)
+      ) {
+        emergency.displayAddress = 'Location unavailable';
+        continue;
+      }
+
+
       const key =
         `${latitude},${longitude}`;
 

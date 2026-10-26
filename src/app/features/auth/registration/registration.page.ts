@@ -136,7 +136,6 @@ export class RegistrationPage {
           }
         }
 
-
         // Create Firestore profile
         const profileData: any = {
           email: this.email,

@@ -265,8 +265,26 @@ async getEmergencyData(
 
     const data = userDoc.data();
 
-    const emergencyMessage =
-      data['emergencyMessage'] ?? {};
+    const emergencyMessage = data['emergencyMessage'] ?? {};
+
+    
+const rawAllergies = data['allergies'];
+
+const allergyNames: string[] = Array.isArray(rawAllergies)
+  ? rawAllergies
+      .filter((allergy: any) => allergy.checked !== false)
+      .map((allergy: any) =>
+        typeof allergy === 'string'
+          ? allergy
+          : allergy.label || allergy.value || allergy.name || ''
+      )
+      .filter((name: string) => name.trim().length > 0)
+  : typeof rawAllergies === 'string'
+    ? rawAllergies.split(',').map(name => name.trim()).filter(Boolean)
+    : typeof emergencyMessage['allergies'] === 'string'
+      ? emergencyMessage['allergies'].split(',').map((name: string) => name.trim()).filter(Boolean)
+      : [];
+
 
     const generalEmergencyInstruction =
       data['generalEmergencyInstruction'] ?? '';
@@ -282,9 +300,7 @@ async getEmergencyData(
         '',
 
       allergies:
-        data['allergies'] ??
-        emergencyMessage['allergies'] ??
-        '',
+      allergyNames,
 
       emergencyInstruction:
         data['emergencyInstruction'] ??

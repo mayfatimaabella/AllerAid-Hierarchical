@@ -141,7 +141,9 @@ export class EmergencyAlertService {
           currentUser.uid,
           userName,
           buddyIds,
-          [],
+          Array.isArray(medicalData?.allergies)
+            ? medicalData.allergies
+            : [],
           resolvedInstruction,
           location,
           initialBuddyResponses
@@ -1063,6 +1065,10 @@ private async logEmergencyAlert(
       allergies
     } = emergencyData;
 
+    const allergyText = Array.isArray(allergies)
+  ? allergies.join(', ')
+  : allergies || '';
+
     const safeName =
       this.sanitizeText(
         name || 'Unknown'
@@ -1115,13 +1121,9 @@ private async logEmergencyAlert(
     
 
     } else if (emergencyInstruction) {
-      const safeAllergies =
-        allergies &&
-        allergies.trim()
-          ? this.sanitizeText(
-              allergies
-            )
-          : null;
+      const safeAllergies = allergyText.trim()
+        ? this.sanitizeText(allergyText)
+        : null;
 
       const safeInstruction =
         this.sanitizeText(
@@ -1372,6 +1374,10 @@ private async logEmergencyAlert(
       allergies
     } = emergencyData;
 
+    const allergyText = Array.isArray(allergies)
+  ? allergies.join(', ')
+  : allergies || '';
+
     const patientName =
       name?.trim() || 'this person';
 
@@ -1424,12 +1430,11 @@ private async logEmergencyAlert(
         `Emergency alert for ${patientName}. `;
 
       if (
-        allergies &&
-        allergies.trim() &&
-        allergies.trim().toLowerCase() !== 'none'
+        allergyText.trim() &&
+        allergyText.trim().toLowerCase() !== 'none'
       ) {
         text +=
-          `They are allergic to ${allergies}. `;
+          `They are allergic to ${allergyText}. `;
       }
 
       text +=
@@ -1450,12 +1455,11 @@ private async logEmergencyAlert(
         `Emergency alert for ${patientName}. `;
 
       if (
-        allergies &&
-        allergies.trim() &&
-        allergies.trim().toLowerCase() !== 'none'
+      allergyText.trim() &&
+      allergyText.trim().toLowerCase() !== 'none'
       ) {
         text +=
-          `They are allergic to ${allergies}. `;
+          `They are allergic to ${allergyText}. `;
       }
 
       text +=
@@ -1472,12 +1476,11 @@ private async logEmergencyAlert(
       `Emergency alert for ${patientName}. `;
 
     if (
-      allergies &&
-      allergies.trim() &&
-      allergies.trim().toLowerCase() !== 'none'
+        allergyText.trim() &&
+        allergyText.trim().toLowerCase() !== 'none'
     ) {
       fallback +=
-        `They are allergic to ${allergies}. `;
+        `They are allergic to ${allergyText}. `;
     }
 
     fallback +=

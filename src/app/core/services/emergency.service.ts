@@ -99,18 +99,51 @@
         if (!location) {
           console.warn('No valid location provided — emergency will be created without location.');
         }
+        
+      const userProfile = this.userService
+        ? await this.userService.getCompleteEmergencyProfile(userId)
+        : null;
 
-        const emergencyData: EmergencyAlert = {
-          userId,
-          userName,
-          timestamp: Timestamp.now(),
-          location,
-          allergies,
-          instruction,
-          status: EmergencyStatusValues.ACTIVE,
-          buddyIds,
-          ...(initialBuddyResponses ? { buddyResponses: initialBuddyResponses } : {})
-        };
+      const medicalInfo = userProfile?.medicalInfo ?? {};
+
+      console.log('Emergency userProfile:', userProfile);
+      console.log('Emergency medicalInfo:', medicalInfo);
+      console.log('Saved allergies from profile:', medicalInfo.allergies);
+
+      // Firestore stores allergies as objects, so convert them to readable strings.
+      const savedAllergies: string[] = Array.isArray(medicalInfo.allergies)
+        ? medicalInfo.allergies
+            .filter((allergy: any) => allergy.checked !== false)
+            .map((allergy: any) =>
+              typeof allergy === 'string'
+                ? allergy
+                : allergy.label || allergy.value || allergy.name || ''
+            )
+            .filter((allergy: string) => allergy.trim().length > 0)
+        : [];
+
+      const savedInstruction =
+        medicalInfo.generalEmergencyInstruction ||
+        medicalInfo.emergencyMessage?.instructions ||
+        instruction;
+
+      const emergencyData: EmergencyAlert = {
+        userId,
+        userName,
+        timestamp: Timestamp.now(),
+        location,
+        allergies: allergies.length > 0 ? allergies : savedAllergies,
+        instruction: instruction || savedInstruction,
+        emergencyInstruction: instruction || savedInstruction,
+        emergencyData: {
+          name: userProfile?.fullName || userName,
+          allergies: (allergies.length > 0 ? allergies : savedAllergies).join(', '),
+          emergencyInstruction: instruction || savedInstruction
+        },
+        status: EmergencyStatusValues.ACTIVE,
+        buddyIds,
+        ...(initialBuddyResponses ? { buddyResponses: initialBuddyResponses } : {})
+      };
 
         const docRef = await addDoc(collection(this.db, 'emergencies'), emergencyData);
         const emergencyId = docRef.id;

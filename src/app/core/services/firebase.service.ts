@@ -6,20 +6,14 @@ import { Auth, getAuth, initializeAuth, indexedDBLocalPersistence } from 'fireba
 
 import { firebaseConfig } from './firebase.config';
 
-
-
 // FIREBASE APP
-
 
 const app: FirebaseApp =
   getApps().length
     ? getApp()
     : initializeApp(firebaseConfig);
 
-
-
 // FIREBASE AUTH
-
 
 let auth: Auth;
 
@@ -70,8 +64,6 @@ export class FirebaseService {
   private storage: FirebaseStorage = storage;
 
   private auth: Auth = auth;
-
-
   
   // FIRESTORE
   
@@ -79,8 +71,6 @@ export class FirebaseService {
   getDb(): Firestore {
     return this.db;
   }
-
-
   
   // STORAGE
   
@@ -89,8 +79,6 @@ export class FirebaseService {
     return this.storage;
   }
 
-
-  
   // AUTH
   
 

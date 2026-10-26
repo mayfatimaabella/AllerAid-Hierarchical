@@ -1,30 +1,26 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+
 import { FirebaseService } from './firebase.service';
 
 import {
   Auth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
   User,
-  onAuthStateChanged,
-  sendEmailVerification,
-  updatePassword,
-  reauthenticateWithCredential,
   EmailAuthProvider,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  reauthenticateWithCredential,
+  sendEmailVerification,
   sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signOut,
+  updatePassword,
 } from 'firebase/auth';
 
-import { BehaviorSubject, Observable } from 'rxjs';
-
-const AUTH_SESSION_KEY = 'alleraid-auth-session';
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-
-  private readonly AUTH_RESTORE_TIMEOUT_MS = 2500;
 
   private auth: Auth;
 
@@ -33,21 +29,21 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
 
   constructor(private firebase: FirebaseService) {
-
     this.auth = firebase.getAuth();
 
     onAuthStateChanged(this.auth, (user) => {
-
-      this.persistSession(user);
-
       console.log(
-        'Auth state changed:',
-        user?.email || 'No user'
+        '[Auth] Auth state changed:',
+        user?.email ?? 'No user'
       );
 
       this.currentUserSubject.next(user);
     });
   }
+
+
+  // CURRENT USER
+
 
   getCurrentUser$(): Observable<User | null> {
     return this.currentUserSubject.asObservable();
@@ -61,22 +57,29 @@ export class AuthService {
     return this.auth.currentUser?.email ?? null;
   }
 
-  /**
-   * Wait until Firebase has restored the authentication session.
-   */
-async waitForAuthInit(): Promise<User | null> {
-  console.log('[Auth] waitForAuthInit: waiting...');
-  await this.auth.authStateReady();
-  console.log('[Auth] authStateReady resolved. currentUser =', this.auth.currentUser?.email ?? 'NULL');
-  return this.auth.currentUser;
-}
 
-  async resendVerificationEmail() {
-    await this.sendVerificationEmail();
+  // AUTH INITIALIZATION
+
+
+  async waitForAuthInit(): Promise<User | null> {
+    console.log('[Auth] Waiting for authentication...');
+
+    await this.auth.authStateReady();
+
+    const user = this.auth.currentUser;
+
+    console.log(
+      '[Auth] Authentication restored:',
+      user?.email ?? 'No user'
+    );
+
+    return user;
   }
 
+  // SIGN IN / SIGN UP
+
   async signIn(email: string, password: string) {
-    return await signInWithEmailAndPassword(
+    return signInWithEmailAndPassword(
       this.auth,
       email,
       password
@@ -84,15 +87,16 @@ async waitForAuthInit(): Promise<User | null> {
   }
 
   async signUp(email: string, password: string) {
-    return await createUserWithEmailAndPassword(
+    return createUserWithEmailAndPassword(
       this.auth,
       email,
       password
     );
   }
 
-  async sendVerificationEmail(user?: User): Promise<void> {
+  // EMAIL VERIFICATION
 
+  async sendVerificationEmail(user?: User): Promise<void> {
     const targetUser = user ?? this.auth.currentUser;
 
     if (!targetUser) {
@@ -102,19 +106,26 @@ async waitForAuthInit(): Promise<User | null> {
     await sendEmailVerification(targetUser);
   }
 
-  async signOut() {
-
-    await signOut(this.auth);
-
-    this.persistSession(null);
-    this.currentUserSubject.next(null);
+  async resendVerificationEmail(): Promise<void> {
+    await this.sendVerificationEmail();
   }
 
-  async reauthenticateUser(password: string): Promise<void> {
 
+  // SIGN OUT
+
+
+  async signOut(): Promise<void> {
+    await signOut(this.auth);
+  }
+
+
+  // PASSWORD
+
+
+  async reauthenticateUser(password: string): Promise<void> {
     const user = this.auth.currentUser;
 
-    if (!user || !user.email) {
+    if (!user?.email) {
       throw new Error('No user is currently logged in.');
     }
 
@@ -146,7 +157,6 @@ async waitForAuthInit(): Promise<User | null> {
   }
 
   async sendPasswordReset(email: string): Promise<void> {
-
     await sendPasswordResetEmail(
       this.auth,
       email
