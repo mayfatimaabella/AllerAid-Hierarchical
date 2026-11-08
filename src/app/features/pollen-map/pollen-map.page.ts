@@ -217,25 +217,38 @@ export class PollenMapPage implements OnInit, OnDestroy {
   }
 
   updateHour(index: number) {
-    if (!this.airQuality.hourly) return;
-    const h = this.airQuality.hourly;
-    this.airQuality.pm10 = h.pm10[index];
-    this.airQuality.pm2_5 = h.pm2_5[index];
-    this.airQuality.dust = h.dust[index];
-    
-    if (this.airQuality.pm10 > 150) {
-      this.airQuality.status = 'High';
-      this.airQuality.statusClass = 'pollen-high';
-      this.logHighRiskArea('High', this.airQuality.pm10); 
-    } else if (this.airQuality.pm10 > 50) {
-      this.airQuality.status = 'Moderate';
-      this.airQuality.statusClass = 'pollen-mod';
-    } else {
-      this.airQuality.status = 'Good';
-      this.airQuality.statusClass = 'pollen-low';
-    }
-    this.updateMapVisuals();
+  if (!this.airQuality.hourly) return;
+  const h = this.airQuality.hourly;
+  this.airQuality.pm10 = h.pm10[index];
+  this.airQuality.pm2_5 = h.pm2_5[index];
+  this.airQuality.dust = h.dust[index];
+
+  if (this.airQuality.pm10 >= 301) {
+    this.airQuality.status = 'Hazard';
+    this.airQuality.statusClass = 'pollen-hazard';
+    this.logHighRiskArea('Hazard', this.airQuality.pm10);
+  } else if (this.airQuality.pm10 >= 201) {
+    this.airQuality.status = 'Alert';
+    this.airQuality.statusClass = 'pollen-alert';
+    this.logHighRiskArea('Alert', this.airQuality.pm10);
+  } else if (this.airQuality.pm10 >= 151) {
+    this.airQuality.status = 'High';
+    this.airQuality.statusClass = 'pollen-high';
+    this.logHighRiskArea('High', this.airQuality.pm10);
+  } else if (this.airQuality.pm10 >= 101) {
+    this.airQuality.status = 'Sensible';
+    this.airQuality.statusClass = 'pollen-sensitive';
+    this.logHighRiskArea('Sensible', this.airQuality.pm10);
+  } else if (this.airQuality.pm10 >= 51) {
+    this.airQuality.status = 'Moderate';
+    this.airQuality.statusClass = 'pollen-mod';
+  } else {
+    this.airQuality.status = 'Good';
+    this.airQuality.statusClass = 'pollen-low';
   }
+
+  this.updateMapVisuals();
+}
 
   updateMapVisuals() {
     if (!this.marker || !this.lat || !this.lon) return;

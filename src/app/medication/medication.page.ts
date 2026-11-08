@@ -112,10 +112,8 @@ export class MedicationPage implements OnInit {
 
   getLowStockWarning(medication: Medication): string | null {
     const remaining = this.calculateRemainingPills(medication);
-    const unit = this.getUnitLabel(medication);
-    
-    if (remaining > 0 && remaining < 5) {
-      return `Low stock: ${Math.floor(remaining)} ${unit}`;
+    if (this.medService.isLowStock(remaining)) {
+      return `Low stock: ${remaining} units`;
     }
     return null;
   }

@@ -5,6 +5,7 @@ import {
 import { FirebaseService } from './firebase.service';
 import { AuthService } from './auth.service';
 import { BehaviorSubject } from 'rxjs';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 export interface Medication {
   id?: string;
@@ -47,6 +48,7 @@ export interface Medication {
   allergicReaction?: boolean;
   isPastEndDate?: boolean;
   status?: 'Ongoing' | 'Active' | 'Completed' | 'Incomplete' | 'Expired' | 'Overdue' | 'Inactive';
+  lowStockAlertSent?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -96,17 +98,36 @@ export class MedicationService {
     await this.refreshMedications();
   }
 
-  async updateMedication(medicationId: string, updates: Partial<Medication>): Promise<void> {
+  async updateMedication(
+    medicationId: string,
+    updates: Partial<Medication>
+  ): Promise<void> {
     const uid = await this.getUid();
     const medRef = doc(this.db, `users/${uid}/medications/${medicationId}`);
     const cleanUpdates = JSON.parse(JSON.stringify(updates));
-    
+
+    // Reset the low-stock notification flag if the quantity is replenished.
+    const updatedQuantity =
+      cleanUpdates.refillsRemaining ?? cleanUpdates.quantity;
+
+    if (updatedQuantity !== undefined && updatedQuantity >= 5) {
+      cleanUpdates.lowStockAlertSent = false;
+    }
+
     // Generate reminderTimes if not already set but startTime and intervalHours are provided
-    if ((!cleanUpdates.reminderTimes || cleanUpdates.reminderTimes.length === 0) && cleanUpdates.startTime && cleanUpdates.intervalHours) {
+    if (
+      (!cleanUpdates.reminderTimes || cleanUpdates.reminderTimes.length === 0) &&
+      cleanUpdates.startTime &&
+      cleanUpdates.intervalHours
+    ) {
       cleanUpdates.reminderTimes = this.calculateReminderTimes(cleanUpdates);
     }
-    
-    await updateDoc(medRef, { ...cleanUpdates, updatedAt: Timestamp.now() });
+
+    await updateDoc(medRef, {
+      ...cleanUpdates,
+      updatedAt: Timestamp.now()
+    });
+
     console.log(`DEBUG MedicationService: Medication ${medicationId} updated.`);
     await this.refreshMedications();
   }
@@ -147,11 +168,23 @@ export class MedicationService {
       
       console.log(`DEBUG MedicationService: Pill count updated to ${updatedQty}`);
 
+      if (updatedQty > 0) {
+        await this.checkLowStockAndNotify(
+          { id: medicationId, ...medData } as Medication,
+          updatedQty
+        );
+      }
+
       await updateDoc(medRef, updateData);
       console.log(`DEBUG MedicationService: Action recorded in Firestore.`);
       await this.refreshMedications();
 
-      return { updatedQuantity: updatedQty, status: updateData.status, isActive: updateData.isActive };
+      return {
+        updatedQuantity: updatedQty,
+        status: updateData.status,
+        isActive: updateData.isActive
+      };
+
     } else if (action === 'skipped') {
       updateData.lastSkippedAt = new Date().toISOString();
       // Don't change the status when skipping - let isOverdue() handle it
@@ -190,125 +223,184 @@ export class MedicationService {
    */
   private static readonly OVERDUE_GRACE_PERIOD_MS = 30 * 60 * 1000; // 30 minutes
 
-isOverdue(medication: Medication): boolean {
-  if (medication.status === 'Completed' || !medication.isActive) return false;
+  isOverdue(medication: Medication): boolean {
+    if (medication.status === 'Completed' || !medication.isActive) return false;
 
-  // 1. Calculate reminderTimes if not available
-  let reminderTimes = medication.reminderTimes;
-  if (!reminderTimes || reminderTimes.length === 0) {
-    reminderTimes = this.calculateReminderTimes(medication);
-  }
-
-  // 2. Fallback for interval-based check if no reminder times
-  if (!reminderTimes || reminderTimes.length === 0) {
-    if (!medication.lastTakenAt) {
-      // Never taken yet - only overdue once we're a full grace period
-      // past the medication's own start time, not the instant it's saved.
-      if (!medication.startDate) return false;
-      const started = new Date(medication.startDate).getTime();
-      return new Date().getTime() > (started + MedicationService.OVERDUE_GRACE_PERIOD_MS);
+    // 1. Calculate reminderTimes if not available
+    let reminderTimes = medication.reminderTimes;
+    if (!reminderTimes || reminderTimes.length === 0) {
+      reminderTimes = this.calculateReminderTimes(medication);
     }
-    const lastTaken = new Date(medication.lastTakenAt).getTime();
-    const intervalMs = (medication.intervalHours || 24) * 60 * 60 * 1000;
-    return new Date().getTime() > (lastTaken + intervalMs + MedicationService.OVERDUE_GRACE_PERIOD_MS);
-  }
 
-  // 3. Schedule-based check: Only TAKEN doses count, not SKIPPED
-  const now = new Date();
-  const lastTaken = medication.lastTakenAt ? new Date(medication.lastTakenAt) : null;
+    // 2. Fallback for interval-based check if no reminder times
+    if (!reminderTimes || reminderTimes.length === 0) {
+      if (!medication.lastTakenAt) {
+        // Never taken yet - only overdue once we're a full grace period
+        // past the medication's own start time, not the instant it's saved.
+        if (!medication.startDate) return false;
+        const started = new Date(medication.startDate).getTime();
+        return new Date().getTime() > (started + MedicationService.OVERDUE_GRACE_PERIOD_MS);
+      }
+      const lastTaken = new Date(medication.lastTakenAt).getTime();
+      const intervalMs = (medication.intervalHours || 24) * 60 * 60 * 1000;
+      return new Date().getTime() > (lastTaken + intervalMs + MedicationService.OVERDUE_GRACE_PERIOD_MS);
+    }
 
-  // Find the most recent scheduled slot that's actually overdue (past its
-  // grace period), rather than flagging on the first past slot we see.
-  // This also means one "Taken" tap only clears the dose it actually
-  // covers - it can't retroactively "clear" earlier missed doses, because
-  // we only ever check whether THIS slot's grace period has elapsed
-  // without a matching lastTaken timestamp for that slot's cycle.
-  for (const timeStr of reminderTimes) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    const scheduledTime = new Date();
-    scheduledTime.setHours(hours, minutes, 0, 0);
+    // 3. Schedule-based check: Only TAKEN doses count, not SKIPPED
+    const now = new Date();
+    const lastTaken = medication.lastTakenAt ? new Date(medication.lastTakenAt) : null;
 
-    const graceDeadline = scheduledTime.getTime() + MedicationService.OVERDUE_GRACE_PERIOD_MS;
+    // Find the most recent scheduled slot that's actually overdue (past its
+    // grace period), rather than flagging on the first past slot we see.
+    // This also means one "Taken" tap only clears the dose it actually
+    // covers - it can't retroactively "clear" earlier missed doses, because
+    // we only ever check whether THIS slot's grace period has elapsed
+    // without a matching lastTaken timestamp for that slot's cycle.
+    for (const timeStr of reminderTimes) {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      const scheduledTime = new Date();
+      scheduledTime.setHours(hours, minutes, 0, 0);
 
-    // Only consider a slot overdue once its grace period has fully elapsed.
-    if (now.getTime() > graceDeadline) {
-      // Check if we have TAKEN this specific dose (not skipped)
-      const doseTaken = lastTaken && lastTaken.getTime() >= scheduledTime.getTime();
+      const graceDeadline = scheduledTime.getTime() + MedicationService.OVERDUE_GRACE_PERIOD_MS;
 
-      // If no TAKEN action for this scheduled slot, it is overdue
-      if (!doseTaken) {
-        return true;
+      // Only consider a slot overdue once its grace period has fully elapsed.
+      if (now.getTime() > graceDeadline) {
+        // Check if we have TAKEN this specific dose (not skipped)
+        const doseTaken = lastTaken && lastTaken.getTime() >= scheduledTime.getTime();
+
+        // If no TAKEN action for this scheduled slot, it is overdue
+        if (!doseTaken) {
+          return true;
+        }
       }
     }
+
+    return false;
   }
 
-  return false;
-}
-
-private calculateIntervalOverdue(medication: Medication): boolean {
-  if (!medication.lastTakenAt || medication.status === 'Completed') return false;
-  const lastTaken = new Date(medication.lastTakenAt).getTime();
-  const intervalMs = (medication.intervalHours || 24) * 60 * 60 * 1000;
-  return new Date().getTime() > (lastTaken + intervalMs);
-}
+  private calculateIntervalOverdue(medication: Medication): boolean {
+    if (!medication.lastTakenAt || medication.status === 'Completed') return false;
+    const lastTaken = new Date(medication.lastTakenAt).getTime();
+    const intervalMs = (medication.intervalHours || 24) * 60 * 60 * 1000;
+    return new Date().getTime() > (lastTaken + intervalMs);
+  }
 
 /**
  * Calculate reminder times based on start time and interval hours
  */
-private calculateReminderTimes(medication: Medication): string[] {
-  if (!medication.startTime || !medication.intervalHours) return [];
+  private calculateReminderTimes(medication: Medication): string[] {
+    if (!medication.startTime || !medication.intervalHours) return [];
 
-  const times: string[] = [];
-  const [startHour, startMin] = medication.startTime.split(':').map(Number);
-  const intervalMs = medication.intervalHours * 60 * 60 * 1000;
+    const times: string[] = [];
+    const [startHour, startMin] = medication.startTime.split(':').map(Number);
+    const intervalMs = medication.intervalHours * 60 * 60 * 1000;
 
-  // Generate times throughout the day only - stop once we roll into the
-  // next calendar day, since Date.getHours() wraps back to 0-23 and would
-  // never satisfy a ">= 24" check, silently producing times that belong
-  // to the following day but get compared as if they were "today".
-  let currentTime = new Date();
-  currentTime.setHours(startHour, startMin, 0, 0);
-  const startDay = currentTime.getDate();
+    // Generate times throughout the day only - stop once we roll into the
+    // next calendar day, since Date.getHours() wraps back to 0-23 and would
+    // never satisfy a ">= 24" check, silently producing times that belong
+    // to the following day but get compared as if they were "today".
+    let currentTime = new Date();
+    currentTime.setHours(startHour, startMin, 0, 0);
+    const startDay = currentTime.getDate();
 
-  for (let i = 0; i < 24 && currentTime.getDate() === startDay; i++) {
-    times.push(`${String(currentTime.getHours()).padStart(2, '0')}:${String(currentTime.getMinutes()).padStart(2, '0')}`);
-    currentTime.setTime(currentTime.getTime() + intervalMs);
-  }
-
-  return times;
-}
-
-  isExpired(medication: Medication): boolean {
-    return medication.medicineExpiryDate ? new Date(medication.medicineExpiryDate) < new Date() : false;
-  }
-
- isPastEndDate(medication: any): boolean {
-  // 1. Safety check: If medication or expiryDate is missing, it's not past the end date
-  if (!medication || !medication.expiryDate) return false;
-
-  try {
-    // 2. Normalize to a JavaScript Date object
-    // Handles Firebase Timestamp (.toDate()) or standard date/string
-    const endDate = (medication.expiryDate.toDate && typeof medication.expiryDate.toDate === 'function')
-      ? medication.expiryDate.toDate()
-      : new Date(medication.expiryDate);
-
-    // 3. Final validation: Ensure the date object is valid
-    if (isNaN(endDate.getTime())) {
-      console.warn("Invalid date format:", medication.expiryDate);
-      return false;
+    for (let i = 0; i < 24 && currentTime.getDate() === startDay; i++) {
+      times.push(`${String(currentTime.getHours()).padStart(2, '0')}:${String(currentTime.getMinutes()).padStart(2, '0')}`);
+      currentTime.setTime(currentTime.getTime() + intervalMs);
     }
 
-    // 4. Set times to midnight for a clean "Day vs Day" comparison
-    endDate.setHours(0, 0, 0, 0);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    // 5. Returns true if today is strictly after the end date
-    return now > endDate;
-  } catch (error) {
-    console.error("Error calculating past end date:", error);
-    return false;
+    return times;
   }
-}
+
+    isExpired(medication: Medication): boolean {
+      return medication.medicineExpiryDate ? new Date(medication.medicineExpiryDate) < new Date() : false;
+    }
+
+  isPastEndDate(medication: any): boolean {
+    // 1. Safety check: If medication or expiryDate is missing, it's not past the end date
+    if (!medication || !medication.expiryDate) return false;
+
+    try {
+      // 2. Normalize to a JavaScript Date object
+      // Handles Firebase Timestamp (.toDate()) or standard date/string
+      const endDate = (medication.expiryDate.toDate && typeof medication.expiryDate.toDate === 'function')
+        ? medication.expiryDate.toDate()
+        : new Date(medication.expiryDate);
+
+      // 3. Final validation: Ensure the date object is valid
+      if (isNaN(endDate.getTime())) {
+        console.warn("Invalid date format:", medication.expiryDate);
+        return false;
+      }
+
+      // 4. Set times to midnight for a clean "Day vs Day" comparison
+      endDate.setHours(0, 0, 0, 0);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      // 5. Returns true if today is strictly after the end date
+      return now > endDate;
+    } catch (error) {
+      console.error("Error calculating past end date:", error);
+      return false;
+    }
+  }
+
+  isLowStock(remaining: number): boolean {
+    return remaining > 0 && remaining < 5;
+  }
+
+  async checkLowStockAndNotify(
+    medication: Medication,
+    remainingQuantity: number
+  ): Promise<void> {
+    // Stop if the quantity is not low.
+    if (!this.isLowStock(remainingQuantity)) {
+      return;
+    }
+
+    // Stop if a notification has already been sent.
+    if (medication.lowStockAlertSent === true) {
+      return;
+    }
+
+    try {
+      let permission = await LocalNotifications.checkPermissions();
+
+      if (permission.display !== 'granted') {
+        permission = await LocalNotifications.requestPermissions();
+      }
+
+      if (permission.display !== 'granted') {
+        console.warn('Notification permission not granted.');
+        return;
+      }
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: Math.floor(Date.now() % 2147483647),
+            title: 'Low Medication Stock',
+            body: `${medication.name} has only ${remainingQuantity} pills remaining.`,
+            schedule: {
+              at: new Date(Date.now() + 1000)
+            }
+          }
+        ]
+      });
+
+      // Mark the notification as sent in Firestore.
+      const uid = await this.getUid();
+      const medRef = doc(
+        this.db,
+        `users/${uid}/medications/${medication.id}`
+      );
+
+      await updateDoc(medRef, {
+        lowStockAlertSent: true
+      });
+
+    } catch (error) {
+      console.error('Failed to schedule low-stock notification:', error);
+    }
+  }
 }
