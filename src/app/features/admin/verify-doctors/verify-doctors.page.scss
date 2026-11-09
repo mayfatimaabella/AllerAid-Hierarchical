@@ -53,7 +53,8 @@
 .page-hero,
 .loading-box,
 .empty-state,
-.doctor-list {
+.doctor-list,
+.doctor-directory {
   width: 100%;
   max-width: 1064px;
 
@@ -61,6 +62,298 @@
   margin-right: auto;
 
   box-sizing: border-box;
+}
+
+/* PENDING DOCTOR DIRECTORY */
+
+.doctor-directory {
+  padding: 0 0 40px;
+}
+
+.directory-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 12px 0 14px;
+}
+
+.section-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #168477;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.heading-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.heading-row h2 {
+  margin: 0;
+  color: #294740;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.count-badge {
+  min-width: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #e7f2f0;
+  color: #17695f;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.doctor-table {
+  overflow: hidden;
+  border: 1px solid #dfe9e6;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(20, 70, 61, 0.05);
+}
+
+.table-header,
+.doctor-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(130px, 1fr)
+    minmax(150px, 1.2fr) minmax(100px, 0.8fr) 100px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.table-header {
+  color: #829792;
+  background: #f8fbfa;
+  border-bottom: 1px solid #e4edeb;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .7px;
+}
+
+.doctor-row {
+  min-height: 82px;
+  color: #405b55;
+  border-bottom: 1px solid #edf2f0;
+  transition: background .2s ease;
+}
+
+.doctor-row:hover {
+  background: #fbfdfc;
+}
+
+.doctor-cell {
+  min-width: 0;
+}
+
+.doctor-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.doctor-avatar {
+  flex: 0 0 42px;
+}
+
+.doctor-info h3 {
+  margin: 0;
+  overflow: hidden;
+  color: #38534d;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doctor-info p,
+.hospital-value {
+  display: block;
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: #7b918c;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-value {
+  display: block;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.license-button {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  gap: 6px;
+  padding: 7px 9px;
+  border: 1px solid #dcebe7;
+  border-radius: 7px;
+  background: #f8fbfa;
+  color: #39726a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+}
+
+.license-button:hover {
+  background: #eaf5f2;
+}
+
+.license-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  transition: transform .2s ease;
+}
+
+.chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #fff7e6;
+  color: #a36a13;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e6a52e;
+  box-shadow: 0 0 0 3px rgba(230, 165, 46, .15);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.actions ion-button {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  --border-radius: 8px;
+}
+
+.approve-btn {
+  --background: #17695f;
+  --background-hover: #12584f;
+  --color: #ffffff;
+}
+
+.reject-btn {
+  --background: #fff4f3;
+  --color: #c85a5a;
+}
+
+.document-preview {
+  padding: 18px 20px;
+  background: #f8fbfa;
+  border-bottom: 1px solid #e4edeb;
+}
+
+.document-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.document-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.document-title > ion-icon {
+  color: #397b72;
+  font-size: 22px;
+}
+
+.document-label {
+  color: #829792;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .8px;
+}
+
+.document-title h3 {
+  margin: 3px 0 0;
+  color: #405b55;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.close-preview {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: #e7f2f0;
+  color: #39726a;
+  cursor: pointer;
+}
+
+.license-image-wrap {
+  display: flex;
+  max-height: 380px;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #e3ece9;
+  border-radius: 10px;
+  background: #eef5f3;
+}
+
+.license-image {
+  max-width: 100%;
+  max-height: 380px;
+  object-fit: contain;
+}
+
+.license-frame {
+  width: 100%;
+  height: 380px;
+  border: 1px solid #e3ece9;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.document-empty {
+  padding: 24px;
+  border: 1px dashed #cbdcd7;
+  border-radius: 10px;
+  color: #7f938f;
+  font-size: 12px;
+  text-align: center;
+}
+
+.mobile-label {
+  display: none;
 }
 
 
@@ -637,7 +930,8 @@
   .page-hero,
   .loading-box,
   .empty-state,
-  .doctor-list {
+  .doctor-list,
+  .doctor-directory {
     max-width: 1064px;
   }
 }
@@ -651,7 +945,8 @@
   .page-hero,
   .loading-box,
   .empty-state,
-  .doctor-list {
+  .doctor-list,
+  .doctor-directory {
     width: calc(100% - 48px);
   }
 }
@@ -665,7 +960,8 @@
   .page-hero,
   .loading-box,
   .empty-state,
-  .doctor-list {
+  .doctor-list,
+  .doctor-directory {
     width: calc(100% - 32px);
   }
 
@@ -676,6 +972,49 @@
     h1 {
       font-size: 23px;
     }
+  }
+
+  .table-header {
+    display: none;
+  }
+
+  .doctor-row {
+    display: block;
+    padding: 18px 16px;
+  }
+
+  .doctor-cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+  }
+
+  .doctor-profile {
+    justify-content: flex-start;
+    padding-top: 0;
+  }
+
+  .mobile-label {
+    display: inline-block;
+    color: #829792;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+
+  .doctor-profile .mobile-label {
+    display: none;
+  }
+
+  .actions {
+    justify-content: flex-end;
+  }
+
+  .document-preview {
+    padding: 16px;
   }
 
   .doctor-details {

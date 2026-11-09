@@ -45,7 +45,7 @@ export class EmergencySettingsService implements OnDestroy {
     this.initializeAuthListener();
   }
 
-  // ─── Auth listener ────────────────────────────────────────────────────────
+  //  Auth listener 
 
   private initializeAuthListener(): void {
     onAuthStateChanged(this.firebaseService.getAuth(), user => {
@@ -60,7 +60,7 @@ export class EmergencySettingsService implements OnDestroy {
     });
   }
 
-  // ─── Realtime listener ────────────────────────────────────────────────────
+  //  Realtime listener 
 
   private startListener(uid: string): void {
     this.stopListener();
@@ -101,7 +101,7 @@ export class EmergencySettingsService implements OnDestroy {
     };
   }
 
-  // ─── Public read API ──────────────────────────────────────────────────────
+  //  Public read API 
 
   getSettings(): Observable<EmergencySettings | null> {
     return this.settings$;
@@ -170,7 +170,7 @@ export class EmergencySettingsService implements OnDestroy {
     await this.update(this.DEFAULTS);
   }
 
-  // ─── Emergency location ───────────────────────────────────────────────────
+  //  Emergency location 
 
   /**
    * Write live location to users/{uid}/emergency/active.

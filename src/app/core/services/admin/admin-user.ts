@@ -45,6 +45,8 @@ export interface AdminUser {
 
   isActive?: boolean;
 
+  verificationStatus?: 'pending' | 'approved' | 'rejected';
+
   dateCreated?: any;
 
   lastLogin?: any;

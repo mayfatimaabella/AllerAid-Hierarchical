@@ -35,10 +35,36 @@ export class RegistrationPage {
     const hasSpecial = /[^A-Za-z0-9]/.test(password);
     return lengthOk && hasUpper && hasNumber && hasSpecial;
   }
-
   get isPasswordValid(): boolean {
     return this.isPasswordStrong(this.password);
   }
+
+  isValidName(name: string): boolean {
+  return /^[a-zA-Z\s'-]+$/.test(name.trim());
+  }
+
+  onNameInput(field: 'firstName' | 'lastName', event: any) {
+    const value = event.target.value || '';
+
+    // Allow letters from different languages, spaces, hyphens, and apostrophes
+    const filteredValue = value.replace(/[^\p{L}\p{M}\s'-]/gu, '');
+
+    if (field === 'firstName') {
+      this.firstName = filteredValue;
+    } else {
+      this.lastName = filteredValue;
+    }
+  }
+
+  onEmailInput(event: any) {
+  const value = event.target.value || '';
+
+  // Remove spaces and limit to 254 characters
+  const filteredValue = value.replace(/\s/g, '').slice(0, 254);
+
+  this.email = filteredValue;
+}
+
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -93,12 +119,17 @@ export class RegistrationPage {
       return;
     }
 
+    if (!this.isValidName(this.firstName) || !this.isValidName(this.lastName)) {
+      this.presentToast('First name and last name must contain letters only.', 'warning');
+      return;
+    }
+
     if (this.password !== this.confirmPassword) {
       this.presentToast('Passwords do not match.', 'danger');
       return;
     }
 
-    if (!this.isPasswordStrong(this.password)) {
+    if (!this.isPasswordValid) {
       this.presentToast('Password must be at least 8 characters long and include at least one uppercase letter, one number, and one special character.', 'warning');
       return;
     }
@@ -109,7 +140,7 @@ export class RegistrationPage {
     }
 
     try {
-      const loading = await this.loadingController.create({
+      const loading = await this.loadingController.create({ 
         message: 'Creating your account...',
         spinner: 'crescent'
       });
@@ -123,7 +154,7 @@ export class RegistrationPage {
         console.log('User created in Firebase Auth:', uid);
 
 
-        // Upload license photo for doctors
+        // Upload license for doctors
         if (this.role === 'doctor' && this.selectedFile) {
           try {
             this.licenseURL = await this.storageService.uploadLicense(this.selectedFile, uid);

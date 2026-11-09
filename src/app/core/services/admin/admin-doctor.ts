@@ -7,6 +7,7 @@ import {
   getDocs,
   query,
   where,
+  setDoc,
   updateDoc,
   serverTimestamp
 } from 'firebase/firestore';
@@ -58,8 +59,13 @@ export class AdminDoctorService {
       const credentialsSnap = await getDoc(credentialsRef);
       const credentials = credentialsSnap.exists() ? credentialsSnap.data() : null;
 
-      const verificationStatus: 'pending' | 'approved' | 'rejected' =
-        credentials?.['verificationStatus'] ?? 'pending';
+      const credentialStatus = this.normalizeVerificationStatus(
+        credentials?.['verificationStatus']
+      );
+      const profileStatus = this.normalizeVerificationStatus(
+        doctor.verificationStatus
+      );
+      const verificationStatus = credentialStatus ?? profileStatus ?? 'pending';
 
       if (verificationStatus === 'pending') {
         pendingDoctors.push({
@@ -83,10 +89,10 @@ export class AdminDoctorService {
       `users/${uid}/professional/credentials`
     );
 
-    await updateDoc(credentialsRef, {
+    await setDoc(credentialsRef, {
       verificationStatus: 'approved',
       verifiedAt: serverTimestamp()
-    });
+    }, { merge: true });
 
     const userRef = doc(this.firestore, `users/${uid}`);
 
@@ -103,11 +109,11 @@ export class AdminDoctorService {
       `users/${uid}/professional/credentials`
     );
 
-    await updateDoc(credentialsRef, {
+    await setDoc(credentialsRef, {
       verificationStatus: 'rejected',
       rejectionReason: reason || '',
       rejectedAt: serverTimestamp()
-    });
+    }, { merge: true });
 
     const userRef = doc(this.firestore, `users/${uid}`);
 
@@ -115,5 +121,20 @@ export class AdminDoctorService {
       verificationStatus: 'rejected',
       updatedAt: serverTimestamp()
     });
+  }
+
+  private normalizeVerificationStatus(
+    status: unknown
+  ): 'pending' | 'approved' | 'rejected' | undefined {
+    if (typeof status !== 'string') {
+      return undefined;
+    }
+
+    const normalizedStatus = status.trim().toLowerCase();
+    return normalizedStatus === 'pending' ||
+      normalizedStatus === 'approved' ||
+      normalizedStatus === 'rejected'
+      ? normalizedStatus
+      : undefined;
   }
 }
