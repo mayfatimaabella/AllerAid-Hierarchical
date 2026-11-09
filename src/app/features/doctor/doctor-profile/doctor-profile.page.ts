@@ -41,6 +41,10 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
     this.loadDoctorProfile();
   }
 
+  async ionViewWillEnter() {
+    await this.loadDoctorProfile();
+  }
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
@@ -56,7 +60,8 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
       licenseNumber: ['', Validators.required],
       hospital: ['', Validators.required],
       bio: [''],
-      profilePhoto: ['']
+      profilePhoto: [''],
+      verificationStatus: ['pending']
     });
   }
 
@@ -65,7 +70,23 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
     try {
       const user = this.authService.getCurrentUser();
       if (user) {
-        const profile = await this.userService.getUserProfile(user.uid);
+        // Doctor profile data lives in three Firestore documents. Always read
+        // fresh data here so an admin's review decision appears immediately.
+        const [baseProfile, details, credentials] = await Promise.all([
+          this.userService.getUserProfile(user.uid, false),
+          this.profileDetailService.getUserProfileDetails(user.uid),
+          this.userService.getDoctorCredentials(user.uid)
+        ]);
+        const profile = baseProfile ? {
+          ...baseProfile,
+          phoneNumber: details?.phone || '',
+          profilePhoto: details?.profile_picture || '',
+          specialization: credentials?.specialty || '',
+          licenseNumber: credentials?.license || '',
+          hospital: credentials?.hospital || '',
+          bio: credentials?.bio || '',
+          verificationStatus: credentials?.verificationStatus || baseProfile.verificationStatus || 'pending'
+        } : null;
         if (profile) {
           this.doctorProfile = profile;
           this.populateForm(profile);
@@ -91,7 +112,8 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
       licenseNumber: profile.licenseNumber || '',
       hospital: profile.hospital || '',
       bio: profile.bio || '',
-      profilePhoto: profile.profilePhoto || ''
+      profilePhoto: profile.profilePhoto || '',
+      verificationStatus: profile.verificationStatus || 'pending'
     });
   }
 
@@ -129,6 +151,7 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
       await this.userService.updateUserProfile(user.uid, {
         firstName: formValue.firstName,
         lastName: formValue.lastName,
+        fullName: `${formValue.firstName} ${formValue.lastName}`.trim(),
         email: formValue.email
       });
 
@@ -152,6 +175,7 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
       );
 
       this.doctorProfile = { ...this.doctorProfile, ...formValue };
+      this.userService.clearUserProfileCache(user.uid);
       this.isEditing = false;
       this.showSuccess('Profile updated successfully');
     } catch (error) {
