@@ -44,6 +44,15 @@ export class VisitDetailsPage implements OnInit {
     this.navCtrl.back();
   }
 
+  getVisitStatusIcon(status: DoctorVisit['status']): string {
+    switch (status) {
+      case 'confirmed': return 'checkmark-circle-outline';
+      case 'pending': return 'time-outline';
+      case 'rejected': return 'close-circle-outline';
+      default: return 'help-circle-outline';
+    }
+  }
+
   // Removed visit type & vital signs helpers in simplified model
 
   getVisitDateString(): string {

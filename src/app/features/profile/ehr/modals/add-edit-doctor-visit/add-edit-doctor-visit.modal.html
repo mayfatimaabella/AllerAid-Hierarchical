@@ -24,8 +24,17 @@
     </div>
 
     <div class="form-fields">
-      <ion-item class="medication-field" lines="none" *ngIf="availableDoctors.length > 0">
-        <ion-label position="stacked">Doctor <span class="required-mark">*</span></ion-label>
+      <ion-item class="medication-field" lines="none">
+        <ion-label position="stacked">Doctor selection</ion-label>
+        <ion-select [(ngModel)]="doctorSelectionMode" name="doctorSelectionMode"
+          interface="popover" (ionChange)="onDoctorModeChange()">
+          <ion-select-option value="connected">Choose a connected doctor</ion-select-option>
+          <ion-select-option value="manual">Enter doctor details manually</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item class="medication-field" lines="none" *ngIf="doctorSelectionMode === 'connected' && availableDoctors.length > 0">
+        <ion-label position="stacked">Connected doctor <span class="required-mark">*</span></ion-label>
         <ion-select [(ngModel)]="selectedDoctorEmail" name="selectedDoctorEmail"
           placeholder="Choose a connected doctor" interface="popover"
           popoverClass="doctor-select-popover" (ionChange)="onDoctorSelection()">
@@ -36,10 +45,21 @@
         <p class="field-hint">Your connected doctor’s details will be added automatically.</p>
       </ion-item>
 
-      <div class="empty-doctors" *ngIf="availableDoctors.length === 0" role="status">
+      <div class="empty-doctors" *ngIf="doctorSelectionMode === 'connected' && availableDoctors.length === 0" role="status">
         <ion-icon name="people-outline"></ion-icon>
-        <div><strong>No connected doctors yet</strong><p>Connect with a doctor in your profile before adding a visit.</p></div>
+        <div><strong>No connected doctors yet</strong><p>You can enter the doctor details manually instead.</p></div>
       </div>
+
+      <ng-container *ngIf="doctorSelectionMode === 'manual'">
+        <ion-item class="medication-field" lines="none">
+          <ion-label position="stacked">Doctor name <span class="required-mark">*</span></ion-label>
+          <ion-input [(ngModel)]="visitData.doctorName" name="doctorName" placeholder="e.g. Dr. Maria Santos" required></ion-input>
+        </ion-item>
+        <ion-item class="medication-field" lines="none">
+          <ion-label position="stacked">Specialty</ion-label>
+          <ion-input [(ngModel)]="visitData.specialty" name="specialty" placeholder="e.g. Allergist"></ion-input>
+        </ion-item>
+      </ng-container>
 
       <ion-item class="medication-field date-field" lines="none">
         <ion-label position="stacked">Visit date <span class="required-mark">*</span></ion-label>
@@ -72,7 +92,7 @@
 
     <div class="action-buttons">
       <ion-button expand="block" type="submit" class="teal-modal-btn"
-        [disabled]="isSaving || !selectedDoctorEmail || !visitData.chiefComplaint.trim()">
+        [disabled]="isSaving || (doctorSelectionMode === 'connected' && !selectedDoctorEmail) || (doctorSelectionMode === 'manual' && !visitData.doctorName.trim()) || !visitData.chiefComplaint.trim()">
         <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
         <ion-icon *ngIf="!isSaving" [name]="isEditMode ? 'checkmark-outline' : 'add-outline'" slot="start"></ion-icon>
         {{ isSaving ? 'Saving...' : (isEditMode ? 'Update visit' : 'Save visit') }}

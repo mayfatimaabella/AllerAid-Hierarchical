@@ -17,6 +17,13 @@ export class ChangePasswordModal implements OnInit {
   showConfirmPassword: boolean = false;
   isLoading: boolean = false;
 
+  private isPasswordStrong(password: string): boolean {
+    return password.length >= 8
+      && /[A-Z]/.test(password)
+      && /[0-9]/.test(password)
+      && /[^A-Za-z0-9]/.test(password);
+  }
+
   constructor(
     private modalController: ModalController,
     private toastController: ToastController,
@@ -55,9 +62,9 @@ export class ChangePasswordModal implements OnInit {
       return false;
     }
 
-    // Check if new password is at least 6 characters (Firebase minimum)
-    if (this.newPassword.length < 6) {
-      this.presentToast('Password must be at least 6 characters long', 'warning');
+    // Match the registration password policy
+    if (!this.isPasswordStrong(this.newPassword)) {
+      this.presentToast('Password must be at least 8 characters long and include at least one uppercase letter, one number, and one special character.', 'warning');
       return false;
     }
 

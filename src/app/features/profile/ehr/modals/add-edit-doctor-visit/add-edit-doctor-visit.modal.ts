@@ -33,6 +33,7 @@ export class AddDoctorVisitModal implements OnInit {
   }[] = [];
 
   selectedDoctorEmail = '';
+  doctorSelectionMode: 'connected' | 'manual' = 'connected';
 
   constructor(
     private modalCtrl: ModalController,
@@ -68,6 +69,7 @@ export class AddDoctorVisitModal implements OnInit {
       if (existingDoctor) {
         // Existing doctor is still connected
         this.selectedDoctorEmail = existingDoctor.email;
+        this.doctorSelectionMode = 'connected';
 
         this.visitData.doctorName = existingDoctor.name;
         this.visitData.doctorEmail = existingDoctor.email;
@@ -78,8 +80,11 @@ export class AddDoctorVisitModal implements OnInit {
         this.visitData.doctorName = this.visit.doctorName;
         this.visitData.doctorEmail = this.visit.doctorEmail || '';
         this.visitData.specialty = this.visit.specialty || '';
-        this.selectedDoctorEmail = this.visit.doctorEmail || '';
+        this.selectedDoctorEmail = '';
+        this.doctorSelectionMode = 'manual';
       }
+    } else if (this.availableDoctors.length === 0) {
+      this.doctorSelectionMode = 'manual';
     }
   }
 
@@ -175,6 +180,17 @@ export class AddDoctorVisitModal implements OnInit {
     this.visitData.specialty = selectedDoctor.specialty;
   }
 
+  onDoctorModeChange(): void {
+    this.selectedDoctorEmail = '';
+    if (this.doctorSelectionMode === 'connected') {
+      this.visitData.doctorName = '';
+      this.visitData.doctorEmail = '';
+      this.visitData.specialty = '';
+    } else {
+      this.visitData.doctorEmail = '';
+    }
+  }
+
   dismiss(): void {
     this.modalCtrl.dismiss();
   }
@@ -192,9 +208,17 @@ async saveVisit(): Promise<void> {
     );
   }
 
-  if (!this.isEditMode && !selectedDoctor) {
-    await this.presentToast('Please select a doctor');
+  if (this.doctorSelectionMode === 'connected' && !selectedDoctor) {
+    await this.presentToast('Please select a connected doctor or choose manual entry');
     return;
+  }
+
+  if (this.doctorSelectionMode === 'manual') {
+    this.visitData.doctorEmail = '';
+    if (!this.visitData.doctorName.trim()) {
+      await this.presentToast('Please enter the doctor name');
+      return;
+    }
   }
 
   if (selectedDoctor) {

@@ -21,7 +21,7 @@
               <ion-skeleton-text animated class="skeleton-30"></ion-skeleton-text>
             </div>
             <div *ngIf="doctorVisits.length > 0">
-              <div *ngFor="let visit of doctorVisits"
+              <div *ngFor="let visit of pagedDoctorVisits"
                    class="history-summary-card"
                    (click)="openVisitDetailsHandler(visit)"
                    tabindex="0"
@@ -48,6 +48,15 @@
                   <ion-icon name="eye-outline" class="history-eye-icon"></ion-icon>
                   <span class="history-details-inline">View details</span>
                 </div>
+              </div>
+              <div *ngIf="doctorVisitsPageCount > 1" class="pagination-controls" aria-label="Doctor visits pagination">
+                <ion-button fill="clear" size="small" [disabled]="doctorVisitsPage === 0" (click)="changePage('doctorVisits', -1)" aria-label="Previous doctor visits">
+                  <ion-icon name="chevron-back-outline" slot="start"></ion-icon>Prev
+                </ion-button>
+                <span>Page {{ doctorVisitsPage + 1 }} of {{ doctorVisitsPageCount }}</span>
+                <ion-button fill="clear" size="small" [disabled]="doctorVisitsPage >= doctorVisitsPageCount - 1" (click)="changePage('doctorVisits', 1)" aria-label="Next doctor visits">
+                  Next<ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+                </ion-button>
               </div>
             </div>
 
@@ -87,7 +96,7 @@
             
             <!-- Data loaded state -->
             <div *ngIf="!isLoadingMedicalHistory && medicalHistory.length > 0">
-              <div *ngFor="let history of (isMedicalHistoryExpanded ? medicalHistory : (medicalHistory | slice:0:3))" 
+              <div *ngFor="let history of pagedMedicalHistory" 
                    class="history-summary-card"
                    (click)="openMedicalHistoryDetailsHandler(history)"
                    tabindex="0"
@@ -115,10 +124,13 @@
                 </div>
               </div>
               
-              <div *ngIf="medicalHistory.length > 3" class="view-all-link">
-                <ion-button fill="clear" size="small" (click)="expandMedicalHistoryHandler()">
-                  {{ isMedicalHistoryExpanded ? 'Show less' : 'View all ' + medicalHistory.length + ' conditions' }}
-                  <ion-icon [name]="isMedicalHistoryExpanded ? 'chevron-up-outline' : 'chevron-down-outline'" slot="end"></ion-icon>
+              <div *ngIf="medicalHistoryPageCount > 1" class="pagination-controls" aria-label="Medical history pagination">
+                <ion-button fill="clear" size="small" [disabled]="medicalHistoryPage === 0" (click)="changePage('medicalHistory', -1)" aria-label="Previous medical history">
+                  <ion-icon name="chevron-back-outline" slot="start"></ion-icon>Prev
+                </ion-button>
+                <span>Page {{ medicalHistoryPage + 1 }} of {{ medicalHistoryPageCount }}</span>
+                <ion-button fill="clear" size="small" [disabled]="medicalHistoryPage >= medicalHistoryPageCount - 1" (click)="changePage('medicalHistory', 1)" aria-label="Next medical history">
+                  Next<ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
                 </ion-button>
               </div>
             </div>

@@ -125,7 +125,7 @@
             </div>
           </div>
 
-          <div class="visit-status-row">
+          <div class="visit-status-row" *ngIf="visit.status !== 'pending' || canManageVisit(visit)">
             <ion-chip [color]="visit.status === 'confirmed' ? 'success' : visit.status === 'rejected' ? 'danger' : 'warning'">
               <ion-icon [name]="visit.status === 'confirmed' ? 'checkmark-circle' : visit.status === 'rejected' ? 'close-circle' : 'time-outline'"></ion-icon>
               <ion-label>

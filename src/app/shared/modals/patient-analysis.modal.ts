@@ -121,7 +121,9 @@ export class PatientAnalysisModal implements OnInit {
   }
 
   getPendingVisitCount(): number {
-    return (this.analysis.visitHistory || []).filter(visit => visit.status === 'pending').length;
+    return (this.analysis.visitHistory || []).filter(
+      visit => visit.status === 'pending' && this.canManageVisit(visit)
+    ).length;
   }
 
   canManageVisit(visit: DoctorVisit): boolean {

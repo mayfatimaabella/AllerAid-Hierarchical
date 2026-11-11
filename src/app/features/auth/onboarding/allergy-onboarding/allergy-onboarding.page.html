@@ -33,7 +33,7 @@
     <p class="state-text">Please add allergy options to the Firebase database.</p>
   </div>
 
-<!-- Allergy chip list -->
+<!-- Allergy list -->
   <div *ngIf="!isLoading && allergyOptions.length > 0" class="body-content">
 
     <div
@@ -44,19 +44,19 @@
 
       <div
         *ngFor="let allergy of group.allergies"
-        class="allergy-chip"
+        class="allergy-list"
         [class.selected]="allergy.checked"
         (click)="allergy.checked = !allergy.checked">
 
-        <div class="chip-check">
+        <div class="allergy-checkbox">
           <ion-icon *ngIf="allergy.checked" name="checkmark-outline"></ion-icon>
         </div>
 
-        <span class="chip-label">{{ allergy.label }}</span>
+        <span class="allergy-label">{{ allergy.label }}</span>
 
         <ion-input
           *ngIf="allergy.hasInput && allergy.checked"
-          class="chip-input"
+          class="allergy-input"
           placeholder="Please specify"
           [(ngModel)]="allergy.value"
           [name]="allergy.name + 'Value'"
@@ -65,21 +65,21 @@
 
         <p
           *ngIf="allergy.name === 'medication' && allergy.checked"
-          class="chip-input-guide"
+          class="allergy-input-guide"
           (click)="$event.stopPropagation()">
           Specify the medicine, e.g. "penicillin" or "ibuprofen".
         </p>
 
         <p
           *ngIf="!allergy.name?.startsWith('other_') && allergy.name !== 'medication' && allergy.hasInput && allergy.checked"
-          class="chip-input-guide"
+          class="allergy-input-guide"
           (click)="$event.stopPropagation()">
           Type any allergy not listed above.
         </p>
 
         <p
           *ngIf="allergy.name?.startsWith('other_') && allergy.hasInput && allergy.checked"
-          class="chip-input-guide"
+          class="allergy-input-guide"
           (click)="$event.stopPropagation()">
           Enter a specific substance, e.g. "mango" or "latex gloves".
         </p>

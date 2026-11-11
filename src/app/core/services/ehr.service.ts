@@ -476,7 +476,7 @@ async getPatientAnalysis(patientId: string): Promise<{
   return {
     personalInfo,
     allergies,
-    visitHistory: visits.slice(0, 10),
+    visitHistory: visits,
     medicalHistory
   };
 }

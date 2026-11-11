@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { IonicModule, NavController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +21,53 @@ import { MedicalHistory } from '../../../core/services/medical-history.service';
     SlicePipe
   ]
 })
-export class EHRSectionCardsComponent {
+export class EHRSectionCardsComponent implements OnChanges {
+  readonly pageSize = 5;
+  doctorVisitsPage = 0;
+  medicalHistoryPage = 0;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['doctorVisits']) {
+      this.doctorVisitsPage = Math.min(this.doctorVisitsPage, this.lastPage(this.doctorVisits));
+    }
+    if (changes['medicalHistory']) {
+      this.medicalHistoryPage = Math.min(this.medicalHistoryPage, this.lastPage(this.medicalHistory));
+    }
+  }
+
+  get pagedDoctorVisits(): DoctorVisit[] {
+    const start = this.doctorVisitsPage * this.pageSize;
+    return this.doctorVisits.slice(start, start + this.pageSize);
+  }
+
+  get pagedMedicalHistory(): MedicalHistory[] {
+    const start = this.medicalHistoryPage * this.pageSize;
+    return this.medicalHistory.slice(start, start + this.pageSize);
+  }
+
+  get doctorVisitsPageCount(): number {
+    return Math.ceil(this.doctorVisits.length / this.pageSize);
+  }
+
+  get medicalHistoryPageCount(): number {
+    return Math.ceil(this.medicalHistory.length / this.pageSize);
+  }
+
+  changePage(section: 'doctorVisits' | 'medicalHistory', offset: number): void {
+    if (section === 'doctorVisits') {
+      this.doctorVisitsPage = this.clampPage(this.doctorVisitsPage + offset, this.doctorVisits);
+    } else {
+      this.medicalHistoryPage = this.clampPage(this.medicalHistoryPage + offset, this.medicalHistory);
+    }
+  }
+
+  private lastPage(items: unknown[]): number {
+    return Math.max(0, Math.ceil(items.length / this.pageSize) - 1);
+  }
+
+  private clampPage(page: number, items: unknown[]): number {
+    return Math.max(0, Math.min(page, this.lastPage(items)));
+  }
   visitActionsEvent: any = null;
   @Output() deleteDoctorVisit = new EventEmitter<DoctorVisit>();
   @Output() editDoctorVisit = new EventEmitter<DoctorVisit>();

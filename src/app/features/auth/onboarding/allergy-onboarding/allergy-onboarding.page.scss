@@ -132,7 +132,7 @@ ion-content.onboarding-bg {
   margin: 0 0 10px;
 }
 
-.allergy-chip {
+.allergy-list {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -150,10 +150,10 @@ ion-content.onboarding-bg {
   }
 }
 
-.chip-check {
+.allergy-checkbox {
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: 10%;
   border: 1.5px solid #ccc;
   display: flex;
   align-items: center;
@@ -163,7 +163,7 @@ ion-content.onboarding-bg {
   font-size: 12px;
   color: transparent;
 
-  .allergy-chip.selected & {
+  .allergy-list.selected & {
     background: $teal;
     border-color: $teal;
     color: $white;
@@ -175,14 +175,14 @@ ion-content.onboarding-bg {
   }
 }
 
-.chip-label {
+.allergy-label {
   font-size: 14px;
   color: $text-dark;
   flex: 1;
   font-weight: 400;
 }
 
-.chip-input {
+.allergy-input {
   --background: transparent;
   --color: #{$text-mid};
   --placeholder-color: #{$text-muted};
@@ -266,7 +266,7 @@ ion-content.onboarding-bg {
   }
 }
 
-.chip-input-guide {
+.allergy-input-guide {
   width: 100%;
   margin: 2px 0 0;
   font-size: 11px;

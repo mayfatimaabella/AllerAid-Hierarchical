@@ -196,7 +196,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
     return this.customAllergenCount < this.MAX_CUSTOM_ALLERGENS;
   }
 
-  /** True when at least one allergy chip is checked — controls skip visibility */
+  /** True when at least one allergy list is checked — controls skip visibility */
   get hasAnySelected(): boolean {
     return this.allergyOptions.some(a => a.checked);
   }
@@ -368,7 +368,7 @@ async saveAllergies() {
     }
   }
   /**
-   * Shown when no allergy chips are selected.
+   * Shown when no allergy lists are selected.
    * Confirms the user genuinely has no known allergies,
    * persists a skip flag, then moves forward.
    */

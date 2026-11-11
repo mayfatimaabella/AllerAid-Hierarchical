@@ -371,6 +371,31 @@ ion-content {
 .visit-header-card .visit-meta .visit-date ion-icon {
   font-size: 17px;
 }
+.visit-header-card .visit-status-pill {
+  height: 28px;
+  margin: 0;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 650;
+  --background: rgba(255, 255, 255, .14);
+  --color: #fff;
+}
+.visit-header-card .visit-status-pill ion-icon {
+  font-size: 16px;
+  color: currentColor;
+}
+.visit-header-card .visit-status-confirmed {
+  --background: rgba(220, 252, 231, .2);
+  --color: #e5ffed;
+}
+.visit-header-card .visit-status-pending {
+  --background: rgba(254, 243, 199, .2);
+  --color: #fff4c2;
+}
+.visit-header-card .visit-status-rejected {
+  --background: rgba(254, 226, 226, .2);
+  --color: #ffe0e0;
+}
 
 .visit-actions {
   display: flex;

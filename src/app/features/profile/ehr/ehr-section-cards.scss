@@ -775,6 +775,26 @@
   font-size: 12px;
   font-weight: 600;
 }
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 2px;
+  color: #526560;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.pagination-controls ion-button {
+  --color: #087568;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.pagination-controls ion-button[disabled] {
+  opacity: 0.45;
+}
 
 @media (max-width: 480px) {
   .ehr-section-card {

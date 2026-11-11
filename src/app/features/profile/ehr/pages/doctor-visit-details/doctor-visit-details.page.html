@@ -25,6 +25,10 @@
             <ion-icon name="calendar-outline"></ion-icon>
             {{ getFormattedVisitDate() }}
           </div>
+          <ion-chip *ngIf="visit.status && visit.doctorEmail" class="visit-status-pill" [ngClass]="'visit-status-' + visit.status">
+            <ion-icon [name]="getVisitStatusIcon(visit.status)"></ion-icon>
+            <ion-label>{{ visit.status | titlecase }}</ion-label>
+          </ion-chip>
         </div>
       </div>
     </div>
