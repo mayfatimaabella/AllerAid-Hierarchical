@@ -11,7 +11,7 @@
 
   <ng-container *ngIf="!isLoading">
     <!-- Doctor Header Card -->
-    <section class="profile-header">
+    <section class="profile-header" [hidden]="isEditing">
       <div class="profile-header-card">
         <div class="profile-cover" aria-hidden="true"></div>
         <div class="profile-header-content">
@@ -133,6 +133,52 @@
     <ng-container *ngIf="isEditing">
       <section class="profile-card edit-profile-card">
         <form class="edit-profile-form" [formGroup]="doctorProfileForm">
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>Profile Photo</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="avatar-section">
+                <div class="avatar-preview-container">
+                  <img
+                    [src]="avatarPreview || doctorProfile?.profilePhoto || 'https://ionicframework.com/docs/img/demos/avatar.svg'"
+                    alt="Profile picture preview" />
+                  <button
+                    *ngIf="avatarPreview"
+                    class="avatar-remove-icon"
+                    (click)="removeAvatar()"
+                    type="button"
+                    aria-label="Remove profile picture">
+                    <ion-icon name="close-outline"></ion-icon>
+                  </button>
+                </div>
+
+                <ion-spinner
+                  *ngIf="isUploadingAvatar"
+                  name="crescent"
+                  class="avatar-spinner">
+                </ion-spinner>
+
+                <input
+                  #avatarInput
+                  type="file"
+                  accept="image/*"
+                  (change)="onAvatarSelected($event)"
+                  class="avatar-input" />
+              </div>
+
+              <ion-button
+                fill="outline"
+                size="small"
+                class="avatar-action"
+                type="button"
+                (click)="avatarInput.click()">
+                <ion-icon name="camera-outline" slot="start"></ion-icon>
+                Change Photo
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+
           <ion-card class="info-card">
             <ion-card-header>
               <ion-card-title>About</ion-card-title>

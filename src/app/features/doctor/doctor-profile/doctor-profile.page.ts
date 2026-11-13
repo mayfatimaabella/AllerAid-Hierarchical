@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ToastController, AlertController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { UserService } from '../../../core/services/user.service';
@@ -20,16 +20,22 @@ import {
   standalone: false,
 })
 export class DoctorProfilePage implements OnInit, OnDestroy {
+
+
   doctorProfileForm!: FormGroup;
   isLoading: boolean = true;
   isEditing: boolean = false;
+  avatarPreview: string | null = null;
+  readonly defaultAvatarUrl = 'https://ionicframework.com/docs/img/demos/avatar.svg';
+  isUploadingAvatar: boolean = false;
   selectedSegment: string = 'overview';
-  doctorProfile: any;
+  @Input() doctorProfile: any;
   private destroy$ = new Subject<void>();
 
   constructor(
     private formBuilder: FormBuilder,
     private toastController: ToastController,
+    private alertController: AlertController,
     private userService: UserService,
     private authService: AuthService,
     private profileDetailService: ProfileDetailService
@@ -202,5 +208,103 @@ export class DoctorProfilePage implements OnInit, OnDestroy {
       color: 'danger'
     });
     await toast.present();
+  }
+
+  async onAvatarSelected($event: Event): Promise<void> {
+  const input = $event.target as HTMLInputElement;
+  const file = input?.files?.[0];
+
+  if (!file) return;
+
+  if (!this.doctorProfile?.uid) {
+    const profileAlert = await this.alertController.create({
+      header: 'Profile Missing',
+      message: 'Unable to upload photo without a user profile.',
+      cssClass: 'fixed-dark-alert',
+      buttons: ['OK']
+    });
+
+    await profileAlert.present();
+    input.value = '';
+    return;
+  }
+
+  this.isUploadingAvatar = true;
+
+  try {
+    const compressedDataUrl = await this.compressImageToDataUrl(file, 600, 0.75);
+
+    this.avatarPreview = compressedDataUrl;
+
+    this.doctorProfileForm.get('profilePhoto')?.setValue(compressedDataUrl, {
+      emitEvent: false
+    });
+
+  } catch (error) {
+    console.error('Avatar compression error:', error);
+
+    const uploadAlert = await this.alertController.create({
+      header: 'Processing Failed',
+      message: 'Unable to process the photo. Please try again.',
+      cssClass: 'fixed-dark-alert',
+      buttons: ['OK']
+    });
+
+    await uploadAlert.present();
+
+    this.avatarPreview =
+      this.doctorProfileForm.get('profilePhoto')?.value || null;
+
+  } finally {
+    this.isUploadingAvatar = false;
+    input.value = '';
+  }
+}
+
+  removeAvatar(): void {
+    this.avatarPreview = null;
+    this.doctorProfileForm.get('profilePhoto')?.setValue('', { emitEvent: false });
+  }
+  
+  private async compressImageToDataUrl(file: File, maxSize: number, quality: number): Promise<string> {
+    const dataUrl = await this.readFileAsDataUrl(file);
+    const img = await this.loadImage(dataUrl);
+
+    let { width, height } = img;
+    if (width > height) {
+      if (width > maxSize) {
+        height = Math.round((height * maxSize) / width);
+        width = maxSize;
+      }
+    } else if (height > maxSize) {
+      width = Math.round((width * maxSize) / height);
+      height = maxSize;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx?.drawImage(img, 0, 0, width, height);
+
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+
+  private readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private loadImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
   }
 }
