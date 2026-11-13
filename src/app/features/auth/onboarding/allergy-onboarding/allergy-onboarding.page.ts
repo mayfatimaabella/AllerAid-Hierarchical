@@ -18,6 +18,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
   isLoading = true;
   isSaving = false;
   groupedAllergens: any[] = [];
+  searchTerm: string = '';
 
   readonly MAX_CUSTOM_ALLERGENS = 3;
 

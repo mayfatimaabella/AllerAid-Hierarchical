@@ -36,6 +36,13 @@
 <!-- Allergy list -->
   <div *ngIf="!isLoading && allergyOptions.length > 0" class="body-content">
 
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      placeholder="Search allergies..."
+      show-clear-button="focus"
+      class="allergy-searchbar">
+    </ion-searchbar>
+    
     <div
       *ngFor="let group of groupedAllergens"
       class="allergy-group">

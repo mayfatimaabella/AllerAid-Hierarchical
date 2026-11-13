@@ -194,6 +194,17 @@
         </ion-input>
       </ion-item>
 
+  <ion-item>
+        <ion-label position="stacked">Initial Stock (Pills Available)</ion-label>
+        <ion-input 
+          type]="number"
+          [(ngModel)]="med.initialStock" 
+          placeholder="Enter available pills"
+          min="0">
+        </ion-input>
+      </ion-item>
+
+      
       <!-- Ends On Projection -->
       <div class="pill-projection" *ngIf="med.expiryDate">
         <ion-icon name="calendar-clear-outline"></ion-icon>
@@ -203,7 +214,7 @@
       </div>
 
       <!-- Physical Medicine Expiration -->
-      <ion-item class="medication-field date-field" lines="none">
+      <!-- <ion-item class="medication-field date-field" lines="none">
         <ion-label position="stacked">Medicine Expiry Date *</ion-label>
         <ion-datetime-button datetime="medicineExpiryDate"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
@@ -220,7 +231,7 @@
             </ion-datetime>
           </ng-template>
         </ion-modal>
-      </ion-item>
+      </ion-item> -->
 
       <ion-item class="medication-field notes-field" lines="none">
         <ion-label position="stacked">Notes</ion-label> 
