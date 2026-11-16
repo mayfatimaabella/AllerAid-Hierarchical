@@ -101,18 +101,38 @@ form {
   }
 
   &.date-field {
-    ion-datetime-button {
-      margin: 2px 0 0;
-      &::part(native) {
-        min-height: 38px;
-        padding: 7px 10px;
-        border: 1px solid #e5eeeb;
-        border-radius: 9px;
-        background: #f7faf9;
-        color: var(--med-ink);
-        font-size: 13px;
-        justify-content: flex-start;
-      }
+    --min-height: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+
+    ion-label {
+      margin-bottom: 3px !important;
+    }
+
+    ion-grid {
+      margin: 0;
+    }
+
+    ion-col {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    .date-time-trigger {
+      width: 100%;
+      min-height: 34px;
+      height: 34px;
+      margin: 0;
+      --padding-start: 10px;
+      --padding-end: 10px;
+      --border-radius: 9px;
+      --background: #f7faf9;
+      --background-activated: #edf5f2;
+      --color: var(--med-muted);
+      border: 1px solid #e5eeeb;
+      border-radius: 9px;
+      font-size: 13px;
+      text-transform: none;
     }
   }
 }

@@ -1,19 +1,23 @@
-<ion-header [translucent]="true">
-  <ion-toolbar class="toolbar--teal">
-    <ion-title>Doctor Profile</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content fullscreen class="ion-padding profile-page-bg">
   <div *ngIf="isLoading" class="loading-spinner">
     <ion-spinner></ion-spinner>
   </div>
 
   <ng-container *ngIf="!isLoading">
-    <!-- Doctor Header Card -->
+    <div class="profile-page-heading">
+      <div>
+        <p class="page-eyebrow">ACCOUNT</p>
+        <h1>{{ isEditing ? 'Edit your profile' : 'Your profile' }}</h1>
+        <p class="page-description">{{ isEditing ? 'Keep your professional details up to date.' : 'Your professional information in one place.' }}</p>
+      </div>
+      <span class="profile-status" *ngIf="!isEditing">
+        <span class="status-dot"></span>
+        {{ doctorProfileForm.get('verificationStatus')?.value || 'Pending Review' }}
+      </span>
+    </div>
+
     <section class="profile-header" [hidden]="isEditing">
       <div class="profile-header-card">
-        <div class="profile-cover" aria-hidden="true"></div>
         <div class="profile-header-content">
           <ion-avatar class="profile-avatar">
             <img [src]="doctorProfile?.profilePhoto || 'https://ionicframework.com/docs/img/demos/avatar.svg'" 
@@ -36,16 +40,16 @@
 
         <button class="profile-menu-btn" type="button" aria-label="Edit profile" (click)="toggleEditMode()" [disabled]="isEditing">
           <ion-icon name="pencil-outline"></ion-icon>
+          <span>Edit profile</span>
         </button>
       </div>
     </section>
 
     <!-- View Mode -->
-<!-- View Mode -->
 <ng-container *ngIf="!isEditing">
   <section class="profile-card view-profile-card">
 
-    <ion-card class="info-card">
+    <ion-card class="info-card about-card">
       <ion-card-header>
         <span class="card-icon"><ion-icon name="document-text-outline"></ion-icon></span>
         <div class="card-heading-copy">
@@ -61,7 +65,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card class="info-card">
+    <ion-card class="info-card professional-card">
       <ion-card-header>
         <span class="card-icon"><ion-icon name="briefcase-outline"></ion-icon></span>
         <div class="card-heading-copy">
@@ -91,17 +95,10 @@
             {{ doctorProfileForm.get('hospital')?.value || 'Not set' }}
           </ion-text>
         </ion-item>
-
-        <ion-item>
-          <ion-label>Verification Status</ion-label>
-          <ion-text slot="end">
-            {{ doctorProfileForm.get('verificationStatus')?.value || 'Pending Review' }}
-          </ion-text>
-        </ion-item>
       </ion-card-content>
     </ion-card>
 
-    <ion-card class="info-card">
+    <ion-card class="info-card contact-card">
       <ion-card-header>
         <span class="card-icon"><ion-icon name="call-outline"></ion-icon></span>
         <div class="card-heading-copy">
@@ -133,7 +130,7 @@
     <ng-container *ngIf="isEditing">
       <section class="profile-card edit-profile-card">
         <form class="edit-profile-form" [formGroup]="doctorProfileForm">
-          <ion-card class="info-card">
+          <ion-card class="info-card photo-card">
             <ion-card-header>
               <ion-card-title>Profile Photo</ion-card-title>
             </ion-card-header>
@@ -179,7 +176,7 @@
             </ion-card-content>
           </ion-card>
 
-          <ion-card class="info-card">
+          <ion-card class="info-card edit-about-card">
             <ion-card-header>
               <ion-card-title>About</ion-card-title>
             </ion-card-header>
@@ -191,7 +188,7 @@
             </ion-card-content>
           </ion-card>
 
-          <ion-card class="info-card">
+          <ion-card class="info-card personal-card">
             <ion-card-header>
               <ion-card-title>Personal Information</ion-card-title>
             </ion-card-header>
@@ -219,7 +216,7 @@
             </ion-card-content>
           </ion-card>
 
-          <ion-card class="info-card">
+          <ion-card class="info-card edit-contact-card">
             <ion-card-header>
               <ion-card-title>Contact Information</ion-card-title>
             </ion-card-header>
@@ -236,11 +233,11 @@
           </ion-card>
 
           <div class="edit-actions">
-            <ion-button expand="block" fill="solid" color="success" (click)="saveDoctorProfile()">
+            <ion-button fill="solid" color="success" (click)="saveDoctorProfile()">
               <ion-icon name="checkmark" slot="start"></ion-icon>
               Save Changes
             </ion-button>
-            <ion-button expand="block" fill="outline" color="medium" (click)="toggleEditMode()">
+            <ion-button fill="outline" color="medium" (click)="toggleEditMode()">
               <ion-icon name="close" slot="start"></ion-icon>
               Cancel
             </ion-button>

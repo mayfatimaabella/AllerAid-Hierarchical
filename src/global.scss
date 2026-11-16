@@ -1062,3 +1062,62 @@ ion-modal.responder-map-modal {
   word-break: normal !important;
   overflow-wrap: anywhere !important;
 }
+/* Compact, branded date and time pickers used by the medication form. */
+ion-modal.medication-date-picker-modal,
+ion-modal.medication-time-picker-modal {
+  --width: min(380px, calc(100vw - 28px));
+  --border-radius: 20px;
+  --backdrop-opacity: 0.38;
+  --box-shadow: 0 18px 48px rgba(16, 48, 42, 0.24);
+}
+
+ion-modal.medication-date-picker-modal {
+  --height: min(420px, 82dvh);
+}
+
+ion-modal.medication-time-picker-modal {
+  --height: min(260px, 55dvh);
+}
+
+ion-datetime.medication-date-picker,
+ion-datetime.medication-time-picker {
+  --background: #ffffff;
+  --background-rgb: 255, 255, 255;
+  --ion-color-primary: #087b6b;
+  --ion-color-primary-rgb: 8, 123, 107;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #076c5e;
+  --ion-color-primary-tint: #218a7b;
+  color: #183d36;
+  font-family: 'Comfortaa', sans-serif;
+}
+
+ion-datetime.medication-date-picker {
+  --title-color: #183d36;
+  --title-font-weight: 700;
+  --calendar-month-year-color: #315e55;
+  --calendar-weekday-color: #718780;
+  --calendar-day-color: #24473f;
+  --calendar-day-color-activated: #087b6b;
+  --calendar-day-color-selected: #ffffff;
+  --calendar-day-background-color-selected: #087b6b;
+  --calendar-day-background-color-today: #e5f3ef;
+  --calendar-day-color-today: #087b6b;
+  --calendar-day-border-radius: 12px;
+  --calendar-button-color: #087b6b;
+}
+
+ion-datetime.medication-time-picker {
+  --wheel-highlight-background: #e8f5f1;
+  --wheel-highlight-border-radius: 12px;
+  --wheel-fade-background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0.92)), linear-gradient(to top, #fff, rgba(255, 255, 255, 0.92));
+}
+
+ion-modal.medication-date-picker-modal::part(content),
+ion-modal.medication-time-picker-modal::part(content) {
+  overflow: hidden;
+  border: 1px solid #dcebe6;
+  background: #fff;
+}
+

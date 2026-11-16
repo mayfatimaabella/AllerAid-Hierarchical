@@ -17,6 +17,9 @@ export class AddEditMedicationComponent implements OnInit {
 
   prescriptionImage: string | null = null;
   todayISO: string = new Date().toISOString();
+  startDatePickerValue = '';
+  startTimePickerValue = '';
+  hasSelectedStartTime = false;
 
   isOcrProcessing = false;
   ocrText = '';
@@ -29,7 +32,7 @@ export class AddEditMedicationComponent implements OnInit {
     quantity: 0,
     refillsRemaining: 0,
 
-    startDate: new Date().toISOString(),
+    startDate: '',
     startTime: '',
 
     medicineExpiryDate: new Date().toISOString(),
@@ -78,12 +81,16 @@ export class AddEditMedicationComponent implements OnInit {
   }
 
   private initializeNewMedication(): void {
-    const now = new Date();
-
-    this.med.startDate = now.toISOString();
-    this.med.startTime = this.formatDisplayTime(now);
-    this.med.medicineExpiryDate = now.toISOString();
-    this.med.expiryDate = now.toISOString();
+    this.med.startDate = '';
+    this.med.startTime = '';
+    this.startDatePickerValue = '';
+    const midnight = new Date();
+    midnight.setHours(0, 0, 0, 0);
+    this.startTimePickerValue = this.toLocalDateTimeValue(midnight);
+    this.hasSelectedStartTime = false;
+    const now = new Date().toISOString();
+    this.med.medicineExpiryDate = now;
+    this.med.expiryDate = '';
 
     this.onTypeChange();
     this.onDateOrIntervalChange();
@@ -116,8 +123,14 @@ export class AddEditMedicationComponent implements OnInit {
       }
 
       if (this.med.startDate) {
-        this.med.startDate = new Date(this.med.startDate).toISOString();
-        this.extractStartTimeFromDate();
+        const start = new Date(this.med.startDate);
+        if (!isNaN(start.getTime())) {
+          this.med.startDate = start.toISOString();
+          this.startDatePickerValue = this.toLocalDateTimeValue(start);
+          this.startTimePickerValue = this.toLocalDateTimeValue(start);
+          this.hasSelectedStartTime = true;
+          this.extractStartTimeFromDate();
+        }
       }
 
       if (this.med.medicineExpiryDate) {
@@ -189,6 +202,45 @@ export class AddEditMedicationComponent implements OnInit {
     if (days > 0 && interval > 0) {
       this.med.frequency = `${days} day(s) (${this.getIntervalLabel(interval)})`;
     }
+  }
+
+  public onStartDatePickerChange(event: CustomEvent): void {
+    this.startDatePickerValue = (event.detail as any)?.value || '';
+    this.updateStartDateFromPickers();
+  }
+
+  public onStartTimePickerChange(event: CustomEvent): void {
+    this.startTimePickerValue = (event.detail as any)?.value || '';
+    this.hasSelectedStartTime = !!this.startTimePickerValue;
+    this.updateStartDateFromPickers();
+  }
+
+  private updateStartDateFromPickers(): void {
+    if (!this.startDatePickerValue || !this.startTimePickerValue) {
+      this.med.startDate = '';
+      this.med.startTime = '';
+      this.med.expiryDate = '';
+      return;
+    }
+
+    const datePart = this.startDatePickerValue.slice(0, 10);
+    const timePart = this.startTimePickerValue.includes('T')
+      ? this.startTimePickerValue.split('T')[1]
+      : this.startTimePickerValue;
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour = 0, minute = 0, second = 0] = timePart.split(':').map(Number);
+    const selected = new Date(year, month - 1, day, hour, minute, second);
+
+    if (isNaN(selected.getTime())) return;
+
+    this.med.startDate = selected.toISOString();
+    this.med.startTime = this.formatDisplayTime(selected);
+    this.onDateOrIntervalChange();
+  }
+
+  private toLocalDateTimeValue(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   }
 
   /**
