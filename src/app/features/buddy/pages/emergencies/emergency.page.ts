@@ -42,7 +42,13 @@ import { Component, OnInit,OnDestroy} from '@angular/core';
     historyEmergencies: EmergencyAlert[] = [];
 
 
-    
+    // Pagination
+    readonly pageSize = 5;
+
+    incomingCurrentPage = 1;
+    historyCurrentPage = 1;
+
+
     // CURRENT TAB
     
 
@@ -362,7 +368,9 @@ import { Component, OnInit,OnDestroy} from '@angular/core';
     
 
     onTabChange(): void {
-
+      this.incomingCurrentPage = 1;
+      this.historyCurrentPage = 1;
+      
       console.log(
         'Emergency Center tab:',
         this.selectedTab
@@ -920,6 +928,60 @@ import { Component, OnInit,OnDestroy} from '@angular/core';
     });
   }
 
+  // Paginated incoming emergencies
+  get paginatedActiveEmergencies() {
+    const startIndex = (this.incomingCurrentPage - 1) * this.pageSize;
+
+    return this.activeEmergencies.slice(
+      startIndex,
+      startIndex + this.pageSize
+    );
+  }
+
+  // Paginated emergency history
+  get paginatedHistoryEmergencies() {
+    const startIndex = (this.historyCurrentPage - 1) * this.pageSize;
+
+    return this.historyEmergencies.slice(
+      startIndex,
+      startIndex + this.pageSize
+    );
+  }
+
+  // Total pages
+  get incomingTotalPages(): number {
+    return Math.ceil(this.activeEmergencies.length / this.pageSize);
+  }
+
+  get historyTotalPages(): number {
+    return Math.ceil(this.historyEmergencies.length / this.pageSize);
+  }
+
+  // Incoming pagination
+  previousIncomingPage(): void {
+    if (this.incomingCurrentPage > 1) {
+      this.incomingCurrentPage--;
+    }
+  }
+
+  nextIncomingPage(): void {
+    if (this.incomingCurrentPage < this.incomingTotalPages) {
+      this.incomingCurrentPage++;
+    }
+  }
+
+  // History pagination
+  previousHistoryPage(): void {
+    if (this.historyCurrentPage > 1) {
+      this.historyCurrentPage--;
+    }
+  }
+
+  nextHistoryPage(): void {
+    if (this.historyCurrentPage < this.historyTotalPages) {
+      this.historyCurrentPage++;
+    }
+  }
 
 
   }

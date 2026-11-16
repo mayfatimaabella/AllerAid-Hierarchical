@@ -30,6 +30,14 @@ ion-content {
   color: #6b7280;
 }
 
+.history-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+
 ion-card {
   --background: white;
   --color: #111827;
@@ -338,3 +346,269 @@ ion-card:hover {
   font-size: 14px;
 }
 
+/* EMERGENCY HISTORY - DESKTOP / TABLET*/
+
+.history-card {
+  border-radius: 18px;
+}
+
+.history-table-container {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  min-width: 650px;
+  padding: 0;
+}
+
+.history-table .header-row {
+  background: #f1f5f5;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+}
+
+.history-table .header-row ion-col {
+  padding: 14px 10px;
+}
+
+.history-table-row {
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 13px;
+}
+
+.history-table-row ion-col {
+  padding: 16px 10px;
+  overflow-wrap: anywhere;
+}
+
+.history-location {
+  line-height: 1.5;
+}
+
+/* Hide mobile cards by default */
+.history-mobile-list {
+  display: none;
+}
+
+
+/* MOBILE HISTORY CARDS */
+
+.history-mobile-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.history-mobile-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.history-mobile-date {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.history-mobile-date ion-icon {
+  color: #036a5d;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.history-mobile-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 13px;
+  color: #374151;
+}
+
+.history-mobile-detail > ion-icon {
+  color: #036a5d;
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.history-mobile-detail div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.detail-label {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.history-mobile-detail strong {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  margin-top: 12px;
+  border-top: 1px solid #e5e7eb;
+
+  span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+  }
+
+  ion-button {
+    --color: #036a5d;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+
+    &[disabled] {
+      opacity: 0.35;
+    }
+  }
+}
+
+
+/* MOBILE RESPONSIVENESS */
+
+@media (max-width: 767px) {
+
+  ion-content {
+    --padding-start: 12px;
+    --padding-end: 12px;
+  }
+
+  /* Hide desktop table */
+  .history-table-container {
+    display: none;
+  }
+
+  /* Show mobile cards */
+  .history-mobile-list {
+    display: block;
+  }
+
+  ion-card {
+    margin: 10px 0;
+    border-radius: 16px;
+  }
+
+  ion-card-content {
+    padding: 14px;
+  }
+
+  .emergency-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .emergency-header h2 {
+    font-size: 17px;
+    line-height: 1.4;
+  }
+
+  .emergency-details {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .emergency-actions {
+    gap: 9px;
+  }
+
+  .active-emergency-card ion-button {
+    height: 46px;
+    font-size: 13px;
+  }
+
+  ion-segment.main-segment ion-segment-button {
+    min-height: 46px;
+  }
+
+  ion-segment.main-segment ion-label {
+    font-size: 12px;
+  }
+
+  .empty-state {
+    padding: 3rem 1rem;
+  }
+}
+
+
+/*SMALL PHONES */
+
+@media (max-width: 380px) {
+
+  ion-card-title {
+    font-size: 16px;
+  }
+
+  .history-mobile-card {
+    padding: 13px;
+  }
+
+  .history-mobile-date {
+    font-size: 12px;
+  }
+
+  .history-mobile-detail strong {
+    font-size: 13px;
+  }
+
+  .history-mobile-header {
+    gap: 6px;
+  }
+
+  ion-badge {
+    font-size: 10px;
+    padding: 6px 9px;
+  }
+
+  @media (max-width: 480px) {
+  .pagination {
+    gap: 4px;
+
+    span {
+      font-size: 12px;
+    }
+
+    ion-button {
+      font-size: 12px;
+      --padding-start: 6px;
+      --padding-end: 6px;
+    }
+  }
+}
+}

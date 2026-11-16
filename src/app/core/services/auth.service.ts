@@ -60,7 +60,6 @@ export class AuthService {
 
   // AUTH INITIALIZATION
 
-
   async waitForAuthInit(): Promise<User | null> {
     console.log('[Auth] Waiting for authentication...');
 

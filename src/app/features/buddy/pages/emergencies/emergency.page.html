@@ -66,7 +66,7 @@
 
     <ion-card-content>
 
-      <div class="emergency-card" *ngFor="let emergency of activeEmergencies">
+      <div class="emergency-card" *ngFor="let emergency of paginatedActiveEmergencies">
 
         <!-- Emergency Header -->
 
@@ -180,8 +180,6 @@
 
           </ion-button>
 
-
-
           <!-- Call -->
 
           <ion-button
@@ -200,6 +198,38 @@
           </ion-button>
 
         </div>
+
+      </div>
+
+      <!-- INCOMING PAGINATION -->
+
+      <div
+        class="pagination"
+        *ngIf="incomingTotalPages > 1">
+
+        <ion-button
+          fill="clear"
+          [disabled]="incomingCurrentPage === 1"
+          (click)="previousIncomingPage()">
+
+          <ion-icon name="chevron-back-outline"></ion-icon>
+          Previous
+
+        </ion-button>
+
+        <span>
+          Page {{ incomingCurrentPage }} of {{ incomingTotalPages }}
+        </span>
+
+        <ion-button
+          fill="clear"
+          [disabled]="incomingCurrentPage === incomingTotalPages"
+          (click)="nextIncomingPage()">
+
+          Next
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+
+        </ion-button>
 
       </div>
 
@@ -234,119 +264,185 @@
 
   <!--HISTORY -->
 
-  <ion-card
-    *ngIf="selectedTab === 'history'">
+  <ion-card *ngIf="selectedTab === 'history'" class="history-card">
 
-    <ion-card-header>
+  <ion-card-header>
+    <ion-card-title class="history-title">
+      <ion-icon name="time-outline"></ion-icon>
+      Emergency History
+    </ion-card-title>
+  </ion-card-header>
 
-      <ion-card-title
-        style="
-          display:flex;
-          align-items:center;
-          gap:8px;
-        ">
+  <ion-card-content>
 
-        <ion-icon
-          name="time-outline">
-        </ion-icon>
+    <!-- DESKTOP / TABLET VIEW -->
 
-        Emergency History
+    <div
+      class="history-table-container"
+      *ngIf="historyEmergencies.length > 0">
 
-      </ion-card-title>
+      <ion-grid class="history-table">
 
-    </ion-card-header>
+        <ion-row class="header-row">
+          <ion-col size="3">
+            <strong>Date</strong>
+          </ion-col>
 
+          <ion-col size="4">
+            <strong>Location</strong>
+          </ion-col>
 
-    <ion-card-content>
+          <ion-col size="2.5">
+            <strong>Patient</strong>
+          </ion-col>
 
+          <ion-col size="2.5">
+            <strong>Status</strong>
+          </ion-col>
+        </ion-row>
 
-      <!-- HISTORY LIST -->
+        <ion-row
+          class="history-table-row"
+          *ngFor="let emergency of paginatedHistoryEmergencies">
 
-      <ion-list
-        *ngIf="historyEmergencies.length > 0">
+          <ion-col size="3">
+            {{ formatEmergencyDate(emergency.timestamp) }}
+          </ion-col>
 
-        <ion-item
-          *ngFor="let emergency of historyEmergencies"
-          button
-          (click)="viewEmergencyDetails(emergency)">
+          <ion-col size="4" class="history-location">
+            {{ emergency.displayAddress || getLocationDisplay(emergency.location) }}
+          </ion-col>
 
-          <ion-label>
+          <ion-col size="2.5">
+            {{ emergency.userName }}
+          </ion-col>
 
-            <h2>
-              {{ emergency.userName }}
-            </h2>
+          <ion-col size="2.5">
+            <ion-badge
+              [color]="getStatusColor(getStatusDisplay(emergency))">
 
+              {{ getStatusDisplay(emergency) | titlecase }}
 
-            <p>
+            </ion-badge>
+          </ion-col>
 
-              <strong>
-                Location:
-              </strong>
+        </ion-row>
 
-              {{
-                emergency.displayAddress ||
-                getLocationDisplay(emergency.location)
-              }}
+      </ion-grid>
 
-            </p>
-
-        <p class="emergency-date">
-          <ion-icon name="calendar-outline"></ion-icon>
-
-          <span class="date-content">
-            <strong>Date &amp; Time</strong>
-            <span>{{ formatEmergencyDate(emergency.timestamp) }}</span>
-          </span>
-        </p>
-
-          </ion-label>
+    </div>
 
 
+    <!-- MOBILE VIEW -->
 
-          <!-- HISTORY STATUS -->
+    <div
+      class="history-mobile-list"
+      *ngIf="historyEmergencies.length > 0">
+
+      <div
+        class="history-mobile-card"
+        *ngFor="let emergency of paginatedHistoryEmergencies">
+
+        <div class="history-mobile-header">
+
+          <div class="history-mobile-date">
+            <ion-icon name="calendar-outline"></ion-icon>
+
+            <span>
+              {{ formatEmergencyDate(emergency.timestamp) }}
+            </span>
+          </div>
 
           <ion-badge
-            slot="end"
             [color]="getStatusColor(getStatusDisplay(emergency))">
 
-            {{
-              getStatusDisplay(emergency) === 'resolved' ||
-              getStatusDisplay(emergency) === 'cancelled'
-                ? 'Completed'
-                : (getStatusDisplay(emergency) | titlecase)
-            }}
+            {{ getStatusDisplay(emergency) | titlecase }}
 
           </ion-badge>
 
-        </ion-item>
+        </div>
 
-      </ion-list>
+        <div class="history-mobile-detail">
 
+          <ion-icon name="person-outline"></ion-icon>
 
+          <div>
+            <span class="detail-label">Patient</span>
+            <strong>{{ emergency.userName }}</strong>
+          </div>
 
-      <!-- EMPTY HISTORY -->
+        </div>
 
-      <div
-        *ngIf="historyEmergencies.length === 0"
-        class="empty-state">
+        <div class="history-mobile-detail">
 
-        <ion-icon
-          name="checkmark-circle-outline"
-          size="large">
-        </ion-icon>
+          <ion-icon name="location-outline"></ion-icon>
 
-        <p>
-          No emergency history
-        </p>
+          <div>
+            <span class="detail-label">Location</span>
 
-        <p>
-          Completed emergencies will appear here.
-        </p>
+            <strong>
+              {{ emergency.displayAddress || getLocationDisplay(emergency.location) }}
+            </strong>
+          </div>
+
+        </div>
 
       </div>
 
-    </ion-card-content>
+    </div>
 
-  </ion-card>
+    <!-- HISTORY PAGINATION -->
+
+    <div
+      class="pagination"
+      *ngIf="historyTotalPages > 1">
+
+      <ion-button
+        fill="clear"
+        [disabled]="historyCurrentPage === 1"
+        (click)="previousHistoryPage()">
+
+        <ion-icon name="chevron-back-outline"></ion-icon>
+        Previous
+
+      </ion-button>
+
+      <span>
+        Page {{ historyCurrentPage }} of {{ historyTotalPages }}
+      </span>
+
+      <ion-button
+        fill="clear"
+        [disabled]="historyCurrentPage === historyTotalPages"
+        (click)="nextHistoryPage()">
+
+        Next
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+
+      </ion-button>
+
+    </div>
+
+
+    <!-- EMPTY HISTORY -->
+
+    <div
+      *ngIf="historyEmergencies.length === 0"
+      class="empty-state">
+
+      <ion-icon
+        name="checkmark-circle-outline"
+        size="large">
+      </ion-icon>
+
+      <p>No emergency history</p>
+
+      <p>Completed emergencies will appear here.</p>
+
+    </div>
+
+  </ion-card-content>
+
+</ion-card>
 
 </ion-content>
