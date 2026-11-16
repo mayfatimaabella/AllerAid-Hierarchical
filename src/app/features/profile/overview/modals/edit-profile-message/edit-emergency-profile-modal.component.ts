@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, Output, EventEmitter, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ModalController, IonicModule, AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -29,6 +29,7 @@ export class EditEmergencyProfileModalComponent implements OnInit {
   isUploadingAvatar: boolean = false;
   isSaving: boolean = false;
   private initialFormValue: any | null = null;
+  hasChanges = false;
 
   constructor(
     private modalCtrl: ModalController,
@@ -36,7 +37,8 @@ export class EditEmergencyProfileModalComponent implements OnInit {
     private alertController: AlertController,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private router: Router
+    private router: Router,
+    private changeDetector: ChangeDetectorRef
   ) {}
 
     ngOnInit() {
@@ -74,11 +76,21 @@ export class EditEmergencyProfileModalComponent implements OnInit {
         this.defaultAvatarUrl;
 
       this.initialFormValue = this.form.getRawValue();
+      this.hasChanges = this.mode === 'add';
+      this.form.valueChanges.subscribe(() => this.updateHasChanges());
     }
 
   close() {
     this.closeModal.emit();
     this.modalCtrl.dismiss();
+  }
+
+  private updateHasChanges(): void {
+    this.hasChanges = this.mode === 'add' || !this.areFormValuesEqual(
+      this.initialFormValue,
+      this.form.getRawValue()
+    );
+    this.changeDetector.detectChanges();
   }
 
   async save() {
@@ -263,6 +275,7 @@ async onAvatarSelected(event: Event): Promise<void> {
     this.form.get('profile_picture')?.setValue(compressedDataUrl, {
       emitEvent: false
     });
+    this.updateHasChanges();
 
   } catch (error) {
     console.error('Avatar compression error:', error);
@@ -288,6 +301,7 @@ async onAvatarSelected(event: Event): Promise<void> {
   removeAvatar(): void {
     this.avatarPreview = null;
     this.form.get('profile_picture')?.setValue('', { emitEvent: false });
+    this.updateHasChanges();
   }
 
   async goToBuddyTab(): Promise<void> {

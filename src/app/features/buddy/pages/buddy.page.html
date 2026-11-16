@@ -6,15 +6,6 @@
 
     <ion-title>Buddy</ion-title>
 
-    <ion-buttons slot="end">
-      <ion-button class="invite-btn" fill="clear" aria-label="View buddy invitations" (click)="openInvitationsModal()">
-        <ion-icon name="person-add-outline"></ion-icon>
-
-        <ion-badge *ngIf="invitationCount > 0" color="danger" class="invite-badge">
-          {{ invitationCount }}
-        </ion-badge>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -27,6 +18,15 @@
       refreshingText="Refreshing buddies...">
     </ion-refresher-content>
   </ion-refresher>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="invite-fab">
+    <ion-fab-button aria-label="View buddy invitations" (click)="openInvitationsModal()">
+      <ion-icon name="person-add-outline"></ion-icon>
+      <ion-badge *ngIf="invitationCount > 0" color="danger" class="invite-badge">
+        {{ invitationCount }}
+      </ion-badge>
+    </ion-fab-button>
+  </ion-fab>
 
   <app-buddy-actions-modal
     *ngIf="showActionsModal"
@@ -61,13 +61,11 @@
 
     <div class="buddy-count">
       <strong>{{ buddies.length }}</strong>
-      <span>{{ buddies.length === 1 ? 'Buddy' : 'Buddies' }}</span>
+      <!-- <span>{{ buddies.length === 1 ? 'Buddy' : 'Buddies' }}</span> -->
     </div>
   </section>
 
   <ion-item class="search-bar-item" lines="none">
-    <ion-icon name="search-outline" slot="start"></ion-icon>
-
     <ion-input
       class="search-bar-input"
       placeholder="Search by name or email"
@@ -76,7 +74,7 @@
     </ion-input>
 
     <ion-button class="search-bar-btn" fill="clear" (click)="searchBuddy()">
-      Search
+      <ion-icon name="search-outline"></ion-icon>
     </ion-button>
   </ion-item>
 
@@ -99,7 +97,12 @@
           (click)="showBuddyDetails(buddy)">
 
           <div class="buddy-avatar" slot="start">
-            {{ buddy.firstName?.charAt(0) || '?' }}{{ buddy.lastName?.charAt(0) || '' }}
+            <img
+              *ngIf="buddy.profilePictureUrl"
+              [src]="buddy.profilePictureUrl"
+              [alt]="buddy.firstName + ' ' + buddy.lastName"
+              (error)="buddy.profilePictureUrl = null" />
+            <span *ngIf="!buddy.profilePictureUrl" aria-hidden="true">{{ getBuddyInitials(buddy) }}</span>
           </div>
 
           <ion-label>
@@ -138,10 +141,6 @@
         <h2>No buddies yet</h2>
         <p>Invite trusted contacts so they can respond quickly during emergencies.</p>
 
-        <ion-button expand="block" class="empty-action" (click)="openInvitationsModal()">
-          <ion-icon name="person-add-outline" slot="start"></ion-icon>
-          Invite Buddy
-        </ion-button>
       </ion-card-content>
     </ion-card>
   </div>

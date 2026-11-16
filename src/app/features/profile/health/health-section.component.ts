@@ -8,6 +8,7 @@ import {
   OnDestroy
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { MedicationService, Medication } from 'src/app/core/services/medication.service';
 import { Subscription } from 'rxjs';
@@ -15,7 +16,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-profile-health-section',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, RouterModule, IonicModule],
   templateUrl: './health-section.component.html',
   styleUrls: ['./health-section.component.scss']
 })

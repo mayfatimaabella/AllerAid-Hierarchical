@@ -116,12 +116,12 @@ async loadBuddies() {
       const raw = await this.buddyService.getUserBuddies(currentUser.uid);
 
       // Map buddyName → firstName/lastName so the template works
-      this.buddies = raw.map(b => ({
+      this.buddies = await this.enrichBuddies(raw.map(b => ({
         ...b,
         firstName: b.buddyName?.split(' ')[0] || '',
         lastName:  b.buddyName?.split(' ').slice(1).join(' ') || '',
         email:     b.buddyEmail || '',
-      }));
+      })));
 
       if (!environment.production) {
         console.log('Loaded buddies from buddy page:', this.buddies);
@@ -150,6 +150,30 @@ async loadBuddies() {
     this.isLoadingBuddies = false;
   }
 }
+
+  getBuddyInitials(buddy: any): string {
+    const name = `${buddy?.firstName || ''} ${buddy?.lastName || ''}`.trim();
+    const initials = name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part.charAt(0))
+      .join('');
+    return initials.toUpperCase() || '?';
+  }
+
+  private async enrichBuddies(buddies: any[]): Promise<any[]> {
+    return Promise.all(buddies.map(async buddy => {
+      const buddyUid = buddy.buddyUid || buddy.connectedUserId || buddy.id;
+      if (!buddyUid) return { ...buddy, profilePictureUrl: null };
+
+      const profileDetails = await this.userService.getUserProfileDetails(buddyUid);
+      return {
+        ...buddy,
+        profilePictureUrl: profileDetails?.profile_picture || null,
+      };
+    }));
+  }
 
   async openInvitationsModal() {
     const modal = await this.modalController.create({
@@ -405,12 +429,12 @@ async loadBuddies() {
       this.buddyService.buddyRelations$
         .subscribe(async relations => {
 
-          const mappedRelations = (relations || []).map((b: any) => ({
+          const mappedRelations = await this.enrichBuddies((relations || []).map((b: any) => ({
             ...b,
             firstName: b.firstName || b.buddyName?.split(' ')[0] || '',
             lastName: b.lastName || b.buddyName?.split(' ').slice(1).join(' ') || '',
             email: b.email || b.buddyEmail || '',
-          }));
+          })));
 
           // Update buddy cards immediately
           this.buddies = mappedRelations;

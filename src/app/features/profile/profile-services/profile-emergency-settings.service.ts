@@ -94,10 +94,8 @@ export class ProfileEmergencySettingsService {
           profile_picture: profileDetails?.profile_picture || null,
         }
       },
-      cssClass: 'force-white-modal',
+      cssClass: ['force-white-modal', 'emergency-profile-fullscreen'],
       handle: false,
-      breakpoints: [0, 1],
-      initialBreakpoint: 1
     });
 
     modal.onDidDismiss().then(async (result: any) => {

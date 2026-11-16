@@ -175,9 +175,7 @@ export class ProfileEHRManagerService {
       componentProps: {
         visit
       },
-      cssClass: 'force-white-modal',
-      breakpoints: [0, 1],
-      initialBreakpoint: 1
+      cssClass: 'fullscreen-modal'
     });
 
     await modal.present();

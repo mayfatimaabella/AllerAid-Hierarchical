@@ -26,31 +26,71 @@
 
 
 <!-- SIDE MENU -->
-<ion-menu side="start" menuId="first" contentId="main-content">
+<ion-menu side="start" menuId="first" contentId="main-content" class="app-menu">
 
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>Menu</ion-title>
-    </ion-toolbar>
+  <ion-header class="menu-header">
+    <div class="menu-brand">
+      <div class="menu-brand-mark" aria-hidden="true">
+        <ion-icon name="medical-outline"></ion-icon>
+      </div>
+      <div class="menu-brand-copy">
+        <span class="menu-eyebrow">AllerAid</span>
+        <h2>Assistance for people with allergies</h2>
+      </div>
+    </div>
+    <ion-item
+      class="menu-account"
+      lines="none"
+      button
+      detail="false"
+      *ngIf="userRole"
+      [routerLink]="['/tabs/profile']"
+      (click)="onMenuItemClick()"
+      aria-label="Open your profile"
+    >
+      <span class="account-avatar" aria-hidden="true">
+        <img
+          *ngIf="profilePictureUrl; else defaultProfileAvatar"
+          [src]="profilePictureUrl"
+          alt=""
+          (error)="onProfileImageError()"
+        />
+        <ng-template #defaultProfileAvatar>
+          <ion-icon name="person-outline"></ion-icon>
+        </ng-template>
+      </span>
+      <span class="account-copy">
+        <strong>{{ userRole === 'user' ? 'Patient account' : (userRole | titlecase) + ' account' }}</strong>
+        <small>View profile</small>
+      </span>
+      <ion-icon class="account-chevron" name="chevron-forward-outline" slot="end" aria-hidden="true"></ion-icon>
+    </ion-item>
   </ion-header>
 
   <ion-content>
-    <ion-list>
+    <ion-list class="menu-list">
+      <p class="menu-section-label">Navigation</p>
 
       <!-- User/Patient Navigation -->
       <ng-container *ngIf="userRole === 'user'">
 
-        <ion-item
+        <!-- <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/tabs/profile']"
           (click)="onMenuItemClick()"
         >
           <ion-icon name="person-outline" slot="start"></ion-icon>
           <ion-label>Profile</ion-label>
-        </ion-item>
+        </ion-item> -->
 
         <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/tabs/buddy']"
           (click)="onMenuItemClick()"
         >
@@ -58,17 +98,23 @@
           <ion-label>Buddy</ion-label>
         </ion-item>
 
-        <ion-item
+        <!-- <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/tabs/patients-doctor']"
           (click)="onMenuItemClick()"
         >
           <ion-icon name="medical-outline" slot="start"></ion-icon>
           <ion-label>Doctor</ion-label>
-        </ion-item>
+        </ion-item> -->
 
         <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/tabs/medication']"
           (click)="onMenuItemClick()"
         >
@@ -78,6 +124,9 @@
 
         <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/tabs/pollen-map']"
           (click)="onMenuItemClick()"
         >
@@ -93,6 +142,9 @@
 
         <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/tabs/responder-dashboard']"
           (click)="onMenuItemClick()"
         >
@@ -102,6 +154,9 @@
 
         <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/tabs/emergencies']"
           (click)="onMenuItemClick()"
         >
@@ -111,6 +166,9 @@
 
         <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/tabs/buddy']"
           (click)="onMenuItemClick()"
         >
@@ -120,6 +178,9 @@
 
         <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/responder-map']"
           (click)="onMenuItemClick()"
         >
@@ -127,14 +188,17 @@
           <ion-label>Emergency Map</ion-label>
         </ion-item>
 
-        <ion-item
+        <!-- <ion-item
           lines="none"
+          class="menu-item"
+          routerLinkActive="menu-item-active"
+          [routerLinkActiveOptions]="{ exact: true }"
           [routerLink]="['/tabs/profile']"
           (click)="onMenuItemClick()"
         >
           <ion-icon name="person-outline" slot="start"></ion-icon>
           <ion-label>Profile</ion-label>
-        </ion-item>
+        </ion-item> -->
 
       </ng-container>
 
@@ -164,14 +228,17 @@
 
 
       <!-- Logout -->
+      <div class="menu-divider" aria-hidden="true"></div>
       <ion-item
         lines="none"
+        button
+        detail="false"
+        class="menu-item menu-logout"
         (click)="logout()"
       >
         <ion-icon
           name="log-out-outline"
           slot="start"
-          style="color: #ffffff"
         ></ion-icon>
 
         <ion-label>Logout</ion-label>

@@ -29,18 +29,12 @@
         <div class="emergency-setting-title">Spoken emergency instructions</div>
         <div class="emergency-setting-desc">Read your emergency message aloud when an alert is triggered.</div>
         <div class="emergency-setting-status" *ngIf="emergencySettings.audioInstructions">
-          <span [class]="getAudioSourceClass()">{{ getAudioSourceText() }}</span>
+          <!-- <span [class]="getAudioSourceClass()">{{ getAudioSourceText() }}</span> -->
         </div>
       </ion-label>
       <ion-toggle slot="end" [(ngModel)]="emergencySettings.audioInstructions" (ionChange)="saveEmergencySettings()"></ion-toggle>
     </ion-item>
   </div>
-
-  <app-profile-settings
-    *ngIf="emergencySettings.audioInstructions"
-    [audioInstructionsEnabled]="emergencySettings.audioInstructions"
-    [profileVoiceFacade]="profileVoiceFacade">
-  </app-profile-settings>
 
   <!-- <div class="emergency-testing-subheader">Smartwatch Test</div>
   <div class="emergency-test-grid">

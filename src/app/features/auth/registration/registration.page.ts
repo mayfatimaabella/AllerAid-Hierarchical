@@ -17,7 +17,7 @@ export class RegistrationPage {
   email = '';
   password = '';
   confirmPassword = '';
-  role = '';
+  role = 'user';
   selectedFile: File | null = null;
   selectedFileName = '';
   licenseURL = '';
@@ -114,7 +114,7 @@ export class RegistrationPage {
   }
 
   async register() {
-    if (!this.email || !this.password || !this.confirmPassword || !this.firstName || !this.lastName || !this.role) {
+    if (!this.email || !this.password || !this.confirmPassword || !this.firstName || !this.lastName) {
       this.presentToast('All fields are required.', 'warning');
       return;
     }

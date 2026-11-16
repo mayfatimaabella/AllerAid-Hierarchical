@@ -13,7 +13,7 @@
 </ion-header>
 
 <ion-content class="edit-profile-content" [scrollY]="true" [scrollEvents]="false">
-  <form [formGroup]="form" (ngSubmit)="save()">
+  <form id="emergency-profile-form" [formGroup]="form" (ngSubmit)="save()">
 
     <!-- Intro -->
     <div class="form-intro">
@@ -171,18 +171,21 @@
       </ion-item>
     </section>
 
-    <!-- Save -->
-    <div class="save-area">
-      <ion-button
-        expand="block"
-        type="submit"
-        [disabled]="form.invalid || isUploadingAvatar || isSaving">
-        <span *ngIf="!isSaving">
-          {{ mode === 'add' ? 'Create Profile' : 'Save Changes' }}
-        </span>
-        <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
-      </ion-button>
-    </div>
-
   </form>
+
 </ion-content>
+
+<ion-footer class="save-footer" *ngIf="hasChanges">
+  <div class="save-area">
+    <ion-button
+      expand="block"
+      type="button"
+      (click)="save()"
+      [disabled]="form.invalid || isUploadingAvatar || isSaving">
+      <span *ngIf="!isSaving">
+        {{ mode === 'add' ? 'Create Profile' : 'Save Changes' }}
+      </span>
+      <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
+    </ion-button>
+  </div>
+</ion-footer>

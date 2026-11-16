@@ -7,7 +7,15 @@
 ion-header ion-toolbar {
   --background: #036a5d;
   --color: #ffffff;
+  --min-height: 46px;
+  --border-width: 0;
 }
+
+ion-header { box-shadow: 0 2px 10px rgba(3, 63, 55, 0.12); }
+ion-title { padding-inline: 0; margin-inline-start: -1px; text-align: start; font-size: 18px; font-weight: 700; letter-spacing: 0.1px; }
+ion-menu-button { --color: #ffffff; }
+ion-buttons[slot="start"] { margin-inline-start: 6px; }
+ion-menu-button { width: 36px; --padding-start: 0; --padding-end: 0; }
 
 ion-content {
   --background: #f5fbfa;

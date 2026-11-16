@@ -109,6 +109,34 @@ ion-app {
   letter-spacing: 0.2px;
 }
 
+/* Keep page and modal headers compact and consistently aligned. */
+ion-header ion-toolbar {
+  --min-height: 46px !important;
+}
+
+ion-header ion-buttons[slot="start"] {
+  margin-inline-start: 6px !important;
+}
+
+ion-header ion-menu-button {
+  width: 36px !important;
+  --padding-start: 0 !important;
+  --padding-end: 0 !important;
+}
+
+ion-header ion-title {
+  padding-inline: 12px 0 !important;
+  margin-inline-start: 0 !important;
+  text-align: start !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1px;
+}
+
+ion-header ion-toolbar:has(ion-buttons[slot="start"]) ion-title {
+  padding-inline-start: 4px !important;
+}
+
 /* Unified Emergency Contact Wrapper */
 .emergency-contact-wrapper-card {
   background: var(--app-color-primary-bg);
@@ -475,6 +503,31 @@ ion-modal.force-white-modal .inner-scroll {
   --ion-background-color: #ffffff !important;
   background: #ffffff !important;
   color: #1f2d29 !important;
+}
+
+/* Emergency profile editor uses a regular full-screen modal, not a sheet. */
+ion-modal.emergency-profile-sheet {
+  --height: 100%;
+  --width: 100%;
+  --max-height: 100%;
+  --border-radius: 0;
+  --box-shadow: none;
+}
+
+ion-modal.emergency-profile-fullscreen {
+  --height: 100%;
+  --width: 100%;
+  --max-height: 100%;
+  --border-radius: 0;
+  --box-shadow: none;
+}
+
+ion-modal.emergency-profile-sheet::part(content),
+ion-modal.emergency-profile-fullscreen::part(content) {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 0;
 }
 
 /* Toolbar is NOT forced to white - it should use teal-modal-toolbar class */

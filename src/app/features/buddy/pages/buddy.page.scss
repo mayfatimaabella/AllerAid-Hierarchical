@@ -1,20 +1,35 @@
 .buddy-header ion-toolbar {
   --background: #036a5d;
   --color: #ffffff;
+  --min-height: 46px;
+  --border-width: 0;
 }
 
-.invite-btn {
-  position: relative;
+.buddy-header { box-shadow: 0 2px 10px rgba(3, 63, 55, 0.12); }
+.buddy-header ion-title { padding-inline: 0; margin-inline-start: -1px; text-align: start; font-size: 18px; font-weight: 700; letter-spacing: 0.1px; }
+.buddy-header ion-menu-button { --color: #ffffff; }
+.buddy-header ion-buttons[slot="start"] { margin-inline-start: 6px; }
+.buddy-header ion-menu-button { width: 36px; --padding-start: 0; --padding-end: 0; }
+
+.invite-fab {
+  margin: 0 8px 8px 0;
+}
+
+.invite-fab ion-fab-button {
+  --background: #036a5d;
+  --background-activated: #034f47;
+  --background-hover: #087a6d;
   --color: #ffffff;
 }
 
 .invite-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 0;
+  right: 0;
   min-width: 16px;
   height: 16px;
   font-size: 10px;
+  transform: translate(25%, -25%);
 }
 
 .buddy-page {
@@ -182,6 +197,16 @@
   align-items: center;
   justify-content: center;
   text-transform: uppercase;
+  overflow: hidden;
+  flex: 0 0 44px;
+}
+
+.buddy-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  border-radius: inherit;
 }
 
 .buddy-item h2 {
@@ -296,14 +321,6 @@
   line-height: 1.5;
 }
 
-.empty-action {
-  --background: #036a5d;
-  --border-radius: 14px;
-  font-weight: 700;
-  min-height: 48px;
-  box-shadow: 0 7px 16px rgba(3, 106, 93, 0.18);
-}
-
 .emergency-resources-card {
   background: #ffffff;
   border-left: 4px solid #ef7470;
@@ -406,14 +423,32 @@
 
 @media (max-width: 380px) {
   .buddy-hero {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 16px;
+  }
+
+  .buddy-hero > div:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .buddy-count {
-    width: 100%;
+    width: auto;
+    min-width: 64px;
     height: 64px;
     flex-direction: row;
-    gap: 8px;
+    gap: 5px;
+    padding: 0 10px;
+  }
+
+  .buddy-count strong {
+    font-size: 20px;
+  }
+
+  .buddy-count span {
+    font-size: 10px;
   }
 
   .no-results {

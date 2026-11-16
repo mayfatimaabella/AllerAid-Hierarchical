@@ -23,6 +23,7 @@ import { SplashScreen } from '@capacitor/splash-screen';
 export class AppComponent implements OnInit {
 
   userRole: string = '';
+  profilePictureUrl: string | null = null;
   showStartupScreen = true;
 
   private startupLoading?: HTMLIonLoadingElement;
@@ -174,6 +175,7 @@ export class AppComponent implements OnInit {
         );
 
         this.userRole = '';
+        this.profilePictureUrl = null;
 
       }
 
@@ -231,6 +233,7 @@ export class AppComponent implements OnInit {
           );
 
           this.userRole = '';
+          this.profilePictureUrl = null;
         }
       }
     );
@@ -250,6 +253,12 @@ export class AppComponent implements OnInit {
       this.userRole =
         userProfile?.role || '';
 
+      const currentUser = this.authService.getCurrentUser();
+      const profileDetails = currentUser
+        ? await this.userService.getUserProfileDetails(currentUser.uid)
+        : null;
+      this.profilePictureUrl = profileDetails?.profile_picture || null;
+
       console.log(
         'User profile role:',
         this.userRole
@@ -263,6 +272,7 @@ export class AppComponent implements OnInit {
       );
 
       this.userRole = '';
+      this.profilePictureUrl = null;
     }
   }
 
@@ -381,6 +391,10 @@ export class AppComponent implements OnInit {
   onMenuItemClick() {
 
     this.menuController.close();
+  }
+
+  onProfileImageError() {
+    this.profilePictureUrl = null;
   }
 
   // =========================================================

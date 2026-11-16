@@ -106,6 +106,7 @@
     </section>
 
     <!-- USER TABS -->
+        <div class="profile-tabs-shell" role="group" aria-label="Profile section navigation">
         <nav class="profile-tabs" role="tablist" aria-label="Profile sections"
           *ngIf="vm.profile?.role === 'user'">
             <button class="tab" type="button" role="tab" [attr.aria-selected]="profileNavigation.selectedTab === 'overview'" [attr.tabindex]="profileNavigation.selectedTab === 'overview' ? 0 : -1"
@@ -123,7 +124,9 @@
             <button class="tab" type="button" role="tab" [attr.aria-selected]="profileNavigation.selectedTab === 'emergency'" [attr.tabindex]="profileNavigation.selectedTab === 'emergency' ? 0 : -1"
               [class.active]="profileNavigation.selectedTab === 'emergency'"
               (click)="profileNavigation.selectTab('emergency')">Emergency</button>
-    </nav>
+        </nav>
+        <span class="profile-tabs-hint" aria-hidden="true"><ion-icon name="arrow-forward-outline"></ion-icon> Swipe for more</span>
+        </div>
 
     <!-- USER PROFILE CONTENT -->
     <section *ngIf="vm.profile?.role === 'user'">
@@ -145,7 +148,7 @@
         </ng-container>
         
         <!-- Detailed Emergency Info Modal -->
-         <ion-modal [isOpen]="activeModal === 'emergencyInfo'" (didDismiss)="activeModal = null" [initialBreakpoint]="1" [breakpoints]="[0, 1]" [handle]="false">
+         <ion-modal class="emergency-profile-sheet" [isOpen]="activeModal === 'emergencyInfo'" (didDismiss)="activeModal = null" [handle]="false">
           <ng-template>
             <app-emergency-details-modal
               [emergencyMessageName]="(vm.emergencyProfile?.name || vm.profile?.fullName || 'User')"
@@ -291,10 +294,7 @@
 <ion-modal
   class="emergency-profile-sheet"
   [isOpen]="profileEmergencySettings.showEditEmergencyMessageModal"
-  [initialBreakpoint]="0.9"
-  [breakpoints]="[0, 0.9, 1]"
-  [backdropBreakpoint]="0.3"
-  [handle]="true"
+  [handle]="false"
   (didDismiss)="profileEmergencySettings.showEditEmergencyMessageModal = false">
 
   <app-edit-emergency-profile-modal
