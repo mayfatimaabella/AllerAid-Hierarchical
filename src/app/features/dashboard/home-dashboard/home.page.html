@@ -237,12 +237,31 @@
     <div class="emergency-wrapper">
       <p class="emergency-label">Need help right now?</p>
 
-      <button class="circle-button" type="button" (click)="triggerEmergency()" aria-label="Send an emergency alert">
+      <button
+        class="circle-button"
+        type="button"
+        [class.holding]="isHoldingEmergency"
+        (pointerdown)="startEmergencyHold($event)"
+        (pointerup)="endEmergencyHold($event)"
+        (pointerleave)="endEmergencyHold($event)"
+        (pointercancel)="endEmergencyHold($event)"
+        (lostpointercapture)="endEmergencyHold($event)"
+        (contextmenu)="$event.preventDefault()"
+        aria-label="Press and hold for 2 seconds to send an emergency alert">
+
         <ion-icon name="notifications"></ion-icon>
+
         <span class="emergency-title">SOS</span>
-        <span class="instruction-text">Tap to alert your contacts</span>
+
+        <span class="instruction-text">
+          {{ isHoldingEmergency ? 'Keep holding...' : 'Press and hold to alert' }}
+        </span>
+
       </button>
-      <p class="emergency-helper">An alert will be sent after a short countdown.</p>
+
+      <p class="emergency-helper">
+        Hold for 2 seconds to activate. A countdown will follow.
+      </p>
     </div>
 
     <!-- Show the emergency response notification when a buddy responds -->

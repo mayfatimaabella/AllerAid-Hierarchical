@@ -68,6 +68,13 @@ export class HomePage implements OnDestroy {
   showBuddyBanner = false;
   showAllergyBanner = false;
 
+  isHoldingEmergency = false;
+
+  private emergencyHoldTimer: ReturnType<typeof setTimeout> | null = null;
+  private activeEmergencyPointerId: number | null = null;
+
+  private readonly EMERGENCY_HOLD_DURATION = 2000;
+
   showEmergencyCountdown = false;
   countdown = 3;
 
@@ -112,11 +119,13 @@ export class HomePage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribeAll();
-      if (this.countdownTimer) {
-    clearInterval(this.countdownTimer);
-     this.countdownTimer = null;
-  }
 
+    this.endEmergencyHold();
+
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = null;
+    }
   }
 
   async loadUserData(): Promise<void> {
@@ -182,6 +191,66 @@ export class HomePage implements OnDestroy {
     }
   }
 
+startEmergencyHold(event: PointerEvent): void {
+
+  // Prevent triggering while another emergency is active
+  if (
+    this.isEmergencyActive ||
+    this.showEmergencyCountdown ||
+    this.showEmergencySending ||
+    this.emergencyHoldTimer
+  ) {
+    return;
+  }
+
+  // Track the pointer that started the hold
+  this.activeEmergencyPointerId = event.pointerId;
+
+  const button = event.currentTarget as HTMLButtonElement;
+
+  // Keep tracking the pointer even if it moves outside the button
+  try {
+    button.setPointerCapture(event.pointerId);
+  } catch (error) {
+    console.warn('Could not capture SOS pointer:', error);
+  }
+
+  this.isHoldingEmergency = true;
+
+  // Start the 2-second hold timer
+  this.emergencyHoldTimer = setTimeout(() => {
+
+    this.emergencyHoldTimer = null;
+    this.isHoldingEmergency = false;
+    this.activeEmergencyPointerId = null;
+
+    // Start the existing emergency countdown
+    this.triggerEmergency();
+
+  }, this.EMERGENCY_HOLD_DURATION);
+}
+
+
+endEmergencyHold(event?: PointerEvent): void {
+
+  // Ignore events from a different pointer
+  if (
+    event &&
+    this.activeEmergencyPointerId !== null &&
+    event.pointerId !== this.activeEmergencyPointerId
+  ) {
+    return;
+  }
+
+  this.isHoldingEmergency = false;
+  this.activeEmergencyPointerId = null;
+
+  // Cancel the timer if the user releases before 2 seconds
+  if (this.emergencyHoldTimer) {
+    clearTimeout(this.emergencyHoldTimer);
+    this.emergencyHoldTimer = null;
+  }
+}
 
   triggerEmergency(): void {
 
@@ -195,7 +264,7 @@ export class HomePage implements OnDestroy {
       return;
     }
 
-    //2. Five second timer for user to cancel
+    //2. 3-second countdown so the user can cancel an accidental alert
     this.showEmergencyCountdown = true;
     this.startCountdown();
   }
