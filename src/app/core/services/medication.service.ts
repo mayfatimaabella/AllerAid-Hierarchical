@@ -35,6 +35,7 @@ export interface Medication {
   medicationType: 'tablet' | 'capsule' | 'liquid' | 'injection' | 'inhaler' | 'cream' | 'drops' | 'patch' | 'other';
   customMedicationType?: string;
   quantity: number;
+  initialStock?: number;
   unitCost?: number;
   totalCost?: number;
   refillsRemaining?: number;
@@ -83,6 +84,19 @@ export class MedicationService {
     const medsRef = collection(this.db, `users/${uid}/medications`);
     const cleanData = JSON.parse(JSON.stringify(medication));
     
+     // Use calculated quantity as the default if Initial Stock is left blank.
+  const initialStock =
+  medication.initialStock !== undefined &&
+  medication.initialStock !== null
+    ? Number(medication.initialStock)
+    : Number(medication.quantity) || 0;
+
+cleanData.initialStock = initialStock;
+
+// Initialize actual remaining stock from Initial Stock.
+cleanData.refillsRemaining = initialStock;
+
+
     // Generate reminderTimes if not already set
     if ((!cleanData.reminderTimes || cleanData.reminderTimes.length === 0) && cleanData.startTime && cleanData.intervalHours) {
       cleanData.reminderTimes = this.calculateReminderTimes(cleanData);
@@ -108,7 +122,7 @@ export class MedicationService {
 
     // Reset the low-stock notification flag if the quantity is replenished.
     const updatedQuantity =
-      cleanUpdates.refillsRemaining ?? cleanUpdates.quantity;
+  cleanUpdates.refillsRemaining ?? cleanUpdates.initialStock;
 
     if (updatedQuantity !== undefined && updatedQuantity >= 5) {
       cleanUpdates.lowStockAlertSent = false;
@@ -156,7 +170,11 @@ export class MedicationService {
 
     if (action === 'taken') {
       const doseSize = medData.pillsPerDose || 1;
-      const currentQty = medData.refillsRemaining ?? medData.quantity ?? 0;
+      const currentQty =
+  medData.refillsRemaining ??
+  medData.initialStock ??
+  medData.quantity ??
+  0;
       const updatedQty = Math.max(currentQty - doseSize, 0);
       
       updateData.refillsRemaining = updatedQty;

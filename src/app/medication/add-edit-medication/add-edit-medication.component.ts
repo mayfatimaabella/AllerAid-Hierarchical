@@ -14,7 +14,7 @@ import { createWorker } from 'tesseract.js';
 export class AddEditMedicationComponent implements OnInit {
   medication?: Medication;
   isEditMode = false;
-
+  private originalInitialStock: number | null = null;
   prescriptionImage: string | null = null;
   todayISO: string = new Date().toISOString();
   startDatePickerValue = '';
@@ -30,12 +30,14 @@ export class AddEditMedicationComponent implements OnInit {
     dosage: '',
     frequency: '',
     quantity: 0,
+
+    initialStock: null,
     refillsRemaining: 0,
 
     startDate: '',
     startTime: '',
 
-    medicineExpiryDate: new Date().toISOString(),
+    // medicineExpiryDate: new Date().toISOString(),
     expiryDate: new Date().toISOString(),
 
     notes: '',
@@ -64,7 +66,8 @@ export class AddEditMedicationComponent implements OnInit {
     private reminderService: MedicationReminderService,
     private toastController: ToastController,
     private actionSheetController: ActionSheetController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    
   ) {}
 
   ngOnInit() {
@@ -115,11 +118,28 @@ export class AddEditMedicationComponent implements OnInit {
       if (!this.med.strength) this.med.strength = '';
       if (!this.med.customMedicationType) this.med.customMedicationType = '';
 
+      const savedInitialStock =
+  this.medication.initialStock ??
+  this.med.refillsRemaining ??
+  this.med.quantity ??
+  0;
+
+this.med.initialStock = Number(savedInitialStock);
+
+// Remember the original value to detect intentional stock changes.
+this.originalInitialStock = this.med.initialStock;
+
       // Ensure refillsRemaining has a real numeric baseline before any
       // recalculation runs below (loadMedication can run before quantity
       // and refillsRemaining have ever been synced for older records).
-      if (this.med.refillsRemaining === null || this.med.refillsRemaining === undefined) {
-        this.med.refillsRemaining = this.med.quantity ?? 0;
+      if (
+        this.med.refillsRemaining === null ||
+        this.med.refillsRemaining === undefined
+      ) {
+        this.med.refillsRemaining =
+          this.med.initialStock ??
+          this.med.quantity ??
+          0;
       }
 
       if (this.med.startDate) {
@@ -267,20 +287,20 @@ export class AddEditMedicationComponent implements OnInit {
     const interval = Number(this.med.intervalHours) || 24;
     const duration = Number(this.med.durationDays) || 0;
     const perDose = Number(this.med.pillsPerDose) || 0;
-
-    const previousQuantity = Number(this.med.quantity) || 0;
-
+  
     if (interval > 0 && duration > 0 && perDose > 0) {
-      this.med.quantity = Math.ceil((24 / interval) * duration * perDose);
+      this.med.quantity = Math.ceil(
+        (24 / interval) * duration * perDose
+      );
     } else {
       this.med.quantity = 0;
     }
-
-    const quantityChanged = this.med.quantity !== previousQuantity;
-
-    if (!this.isEditMode || quantityChanged) {
-      this.med.refillsRemaining = this.med.quantity;
-    }
+  
+    // Do not reset refillsRemaining here.
+    // Actual stock must only change when:
+    // 1. A new medication is saved.
+    // 2. The user intentionally changes Initial Stock.
+    // 3. A medication dose is marked as TAKEN.
   }
 
   public get isFormValid(): boolean {
@@ -300,6 +320,15 @@ export class AddEditMedicationComponent implements OnInit {
       this.med.medicationType !== 'other' ||
       this.med.customMedicationType?.trim();
 
+      const stockValid =
+      this.med.initialStock === null ||
+      this.med.initialStock === undefined ||
+      this.med.initialStock === '' ||
+      (
+        Number.isFinite(Number(this.med.initialStock)) &&
+        Number(this.med.initialStock) >= 0
+      );
+
     return !!(hasBasicFields && otherTypeValid);
   }
 
@@ -310,7 +339,45 @@ export class AddEditMedicationComponent implements OnInit {
     }
 
     this.extractStartTimeFromDate();
-    this.calculateTotalPills();
+this.calculateTotalPills();
+
+// Determine Initial Stock.
+const initialStock =
+  this.med.initialStock === null ||
+  this.med.initialStock === undefined ||
+  this.med.initialStock === ''
+    ? Number(this.med.quantity) || 0
+    : Number(this.med.initialStock);
+
+if (!Number.isFinite(initialStock) || initialStock < 0) {
+  this.showToast('Initial Stock cannot be negative.', 'warning');
+  return;
+}
+
+// Save the normalized Initial Stock value.
+this.med.initialStock = initialStock;
+
+// Check whether the user intentionally changed Initial Stock.
+const initialStockChanged =
+  this.isEditMode &&
+  this.originalInitialStock !== null &&
+  initialStock !== this.originalInitialStock;
+
+if (!this.isEditMode || initialStockChanged) {
+  // New medication or intentional stock adjustment.
+  this.med.refillsRemaining = initialStock;
+
+  this.med.isActive = initialStock > 0;
+  this.med.status = initialStock > 0 ? 'Ongoing' : 'Completed';
+} else {
+  // Editing other medication details should preserve actual stock.
+  this.med.refillsRemaining = Number(
+    this.med.refillsRemaining ??
+    this.med.initialStock ??
+    this.med.quantity ??
+    0
+  );
+}
 
     const finalMedicationType =
       this.med.medicationType === 'other'
@@ -702,4 +769,6 @@ export class AddEditMedicationComponent implements OnInit {
 
     await toast.present();
   }
+
+  // Removed duplicate implementation of initializeNewMedication
 }

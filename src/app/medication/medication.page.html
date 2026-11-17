@@ -106,7 +106,7 @@
             <div class="medication-details">
               <span class="detail-pill" *ngIf="medication.dosage"><ion-icon name="flask-outline"></ion-icon>{{ medication.dosage }}</span>
               <span class="detail-pill" *ngIf="medication.frequency"><ion-icon name="time-outline"></ion-icon>{{ medication.frequency }}</span>
-              <span class="detail-pill supply-pill" *ngIf="medication.quantity !== undefined"><ion-icon name="albums-outline"></ion-icon>{{ calculateRemainingPills(medication) | number:'1.0-0' }} {{ getUnitLabel(medication) }} left</span>
+              <span class="detail-pill supply-pill" *ngIf="medication.initialStock !== undefined || medication.quantity !== undefined"><ion-icon name="albums-outline"></ion-icon>{{ calculateRemainingPills(medication) | number:'1.0-0' }} {{ getUnitLabel(medication) }} left</span>
             </div>
 
             <div *ngIf="getLowStockWarning(medication) && calculateRemainingPills(medication) > 0" class="low-stock-warning">

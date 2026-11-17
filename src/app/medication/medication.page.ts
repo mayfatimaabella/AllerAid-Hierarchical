@@ -78,17 +78,33 @@ export class MedicationPage implements OnInit {
 
   getStatusLabel(medication: Medication): string {
     if (!medication) return '';
-
+  
     const remaining = this.calculateRemainingPills(medication);
-    
-    if (this.medService.isExpired(medication)) return 'Expired';
+  
     if (remaining <= 0) return 'Completed';
-    
-    // Uses the new Overdue logic from MedicationService
+  
     if (this.medService.isOverdue(medication)) return 'Overdue';
-
-    return medication.isActive ? 'Ongoing' : 'Inactive';
+  
+    if (medication.status === 'Incomplete') return 'Incomplete';
+  
+    if (!medication.isActive) return 'Inactive';
+  
+    return 'Ongoing';
   }
+
+  // getStatusLabel(medication: Medication): string {
+  //   if (!medication) return '';
+
+  //   const remaining = this.calculateRemainingPills(medication);
+    
+  //   // if (this.medService.isExpired(medication)) return 'Expired';
+  //   if (remaining <= 0) return 'Completed';
+    
+  //   // Uses the new Overdue logic from MedicationService
+  //   if (this.medService.isOverdue(medication)) return 'Overdue';
+
+  //   return medication.isActive ? 'Ongoing' : 'Inactive';
+  // }
 
   getStatusColor(medication: Medication): string {
     const label = this.getStatusLabel(medication);

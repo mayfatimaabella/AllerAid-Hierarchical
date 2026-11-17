@@ -290,4 +290,35 @@ form {
   }
 }
 
+/* Initial Stock Field */
+.stock-field {
+  --background: #fff;
+  --min-height: 70px;
+
+  ion-label {
+    color: #3c5d56;
+  }
+
+  ion-input {
+    color: var(--med-ink);
+    font-size: 14px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      appearance: none;
+      margin: 0;
+    }
+
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  &:focus-within {
+    border-color: #3c9283;
+    box-shadow: 0 0 0 3px rgba(8, 105, 93, .09);
+  }
+}
 @media (prefers-reduced-motion: reduce) { .medication-field { transition: none; } }

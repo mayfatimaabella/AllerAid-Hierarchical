@@ -198,16 +198,18 @@
         </ion-input>
       </ion-item>
 
-  <ion-item>
-        <ion-label position="stacked">Initial Stock (Pills Available)</ion-label>
-        <ion-input 
-          type="number"
-          [(ngModel)]="med.initialStock" 
-          name="initialStock"
-          placeholder="Enter available pills"
-          min="0">
-        </ion-input>
-      </ion-item>
+  <!-- Initial Stock -->
+<ion-item class="medication-field stock-field" lines="none">
+  <ion-label position="stacked">Initial Stock (Pills Available)</ion-label>
+  <ion-input 
+    type="number"
+    [(ngModel)]="med.initialStock" 
+    name="initialStock"
+    placeholder="Enter available pills"
+    min="0"
+    inputmode="numeric">
+  </ion-input>
+</ion-item>
 
       
       <!-- Ends On Projection -->
