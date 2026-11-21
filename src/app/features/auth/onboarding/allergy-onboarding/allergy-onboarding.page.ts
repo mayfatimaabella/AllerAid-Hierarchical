@@ -1,3 +1,4 @@
+
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AllergyService } from '../../../../core/services/allergy.service';
@@ -21,6 +22,14 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
   searchTerm: string = '';
 
   readonly MAX_CUSTOM_ALLERGENS = 3;
+
+  // Available severity levels
+  readonly severityLevels = [
+    'mild',
+    'moderate',
+    'severe',
+    'life-threatening'
+  ];
 
   private backButtonSubscription?: Subscription;
   private db;
@@ -84,6 +93,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
         this.router.navigate(['/login'], { replaceUrl: true });
         return;
       }
+
       const options = await this.allergyService.getAllergyOptions();
 
       console.log('OPTIONS FROM SERVICE:', options);
@@ -95,10 +105,11 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       }
 
       let userAllergies: any[] = [];
+
       try {
         userAllergies = await this.allergyService.getUserAllergies(currentUser.uid) || [];
       } catch {
-        
+
         userAllergies = [];
       }
 
@@ -117,20 +128,29 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
             checked: userAllergy ? userAllergy.checked : false,
             value: userAllergy?.value || (option.hasInput ? '' : undefined),
             label: userAllergy?.customValue || option.label,
+
+            // Restore previously saved severity
+            severity: userAllergy?.severity || ''
           };
         });
+
       } else {
         this.allergyOptions = options.map((option: any) => ({
           ...option,
           checked: false,
           value: option.hasInput ? '' : null,
+
+          // Default severity is empty
+          severity: ''
         }));
       }
 
       this.groupAllergyOptions();
+
     } catch (error) {
       console.error('Error loading allergy options:', error);
       await this.presentToast('Failed to load allergy options.', 'danger');
+
     } finally {
       this.isLoading = false;
     }
@@ -166,23 +186,23 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
         order: categoryOrder[categoryName] || 99,
         allergies: allergies.sort((a, b) => {
 
-        const aDefaultOthers = a.name === 'others';
-        const bDefaultOthers = b.name === 'others';
+          const aDefaultOthers = a.name === 'others';
+          const bDefaultOthers = b.name === 'others';
 
-        const aCustomOther = a.name?.startsWith('other_');
-        const bCustomOther = b.name?.startsWith('other_');
+          const aCustomOther = a.name?.startsWith('other_');
+          const bCustomOther = b.name?.startsWith('other_');
 
-        // Put default "Others" first
-        if (aDefaultOthers && !bDefaultOthers) return -1;
-        if (!aDefaultOthers && bDefaultOthers) return 1;
+          // Put default "Others" first
+          if (aDefaultOthers && !bDefaultOthers) return -1;
+          if (!aDefaultOthers && bDefaultOthers) return 1;
 
-        // Put custom added Others after the default one
-        if (aCustomOther && !bCustomOther) return 1;
-        if (!aCustomOther && bCustomOther) return -1;
+          // Put custom added Others after the default one
+          if (aCustomOther && !bCustomOther) return 1;
+          if (!aCustomOther && bCustomOther) return -1;
 
-        return (a.order || 0) - (b.order || 0);
+          return (a.order || 0) - (b.order || 0);
 
-      })
+        })
       }))
       .sort((a, b) => a.order - b.order);
   }
@@ -202,6 +222,14 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
     return this.allergyOptions.some(a => a.checked);
   }
 
+  // Check if every selected allergen has a severity
+  get hasMissingSeverity(): boolean {
+    return this.allergyOptions.some(allergy =>
+      allergy.checked &&
+      !this.severityLevels.includes(allergy.severity)
+    );
+  }
+
   addOtherOption() {
 
     if (!this.canAddMoreAllergens) {
@@ -218,6 +246,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       checked: true,
       hasInput: true,
       value: '',
+      severity: '',
       categoryName: 'Other',
       categoryOrder: 8
     };
@@ -237,6 +266,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
     this.groupAllergyOptions();
 
   }
+
   async presentToast(
     message: string,
     color: string = 'medium',
@@ -266,12 +296,29 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
       return;
     }
 
+    // Validate custom allergy inputs
     const missingInput = this.allergyOptions.find(allergy =>
       allergy.checked && allergy.hasInput && !allergy.value?.trim()
     );
 
     if (missingInput) {
       await this.presentToast(`Please specify your ${missingInput.label}.`, 'warning');
+      this.isSaving = false;
+      return;
+    }
+
+    // Validate severity for every selected allergen
+    const missingSeverity = this.allergyOptions.find(allergy =>
+      allergy.checked &&
+      !this.severityLevels.includes(allergy.severity)
+    );
+
+    if (missingSeverity) {
+      await this.presentToast(
+        `Please select a severity level for ${missingSeverity.label}.`,
+        'warning'
+      );
+
       this.isSaving = false;
       return;
     }
@@ -288,6 +335,7 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
             name: allergy.name,
             label: allergy.hasInput && inputValue ? inputValue : allergy.label,
             checked: true,
+            severity: allergy.severity,
             ...(inputValue ? { value: inputValue } : {})
           };
         });
@@ -296,15 +344,17 @@ export class AllergyOnboardingPage implements OnInit, OnDestroy {
         state: { allergies: selectedAllergies },
         replaceUrl: true,
       });
+
     } catch (error) {
       console.error('Error during submission:', error);
       await this.presentToast('Failed to complete the process. Please try again.', 'danger');
+
     } finally {
       this.isSaving = false;
     }
   }
 
-async saveAllergies() {
+  async saveAllergies() {
     try {
       const currentUser = await this.authService.waitForAuthInit();
 
@@ -343,23 +393,29 @@ async saveAllergies() {
             suggestedBy: currentUser.uid,
             status: 'pending'
           });
+
           console.log('>>> suggestion submitted successfully');
+
         } catch (suggestionError) {
           console.error('>>> suggestion submit FAILED:', suggestionError);
         }
-      } 
+      }
 
+      // Save selected allergies together with their severity
       const sanitizedAllergies = checkedAllergies.map(allergy => {
         const inputValue = allergy.value?.trim() ?? null;
+
         return {
           name: allergy.name,
           label: allergy.hasInput && inputValue ? inputValue : allergy.label,
           checked: true,
+          severity: allergy.severity,
           ...(inputValue ? { value: inputValue } : {})
         };
       });
 
       await this.allergyService.saveUserAllergies(currentUser.uid, sanitizedAllergies);
+
       await this.presentToast('Allergies saved successfully!', 'success', 2000);
 
     } catch (error) {
@@ -368,6 +424,7 @@ async saveAllergies() {
       throw error;
     }
   }
+
   /**
    * Shown when no allergy lists are selected.
    * Confirms the user genuinely has no known allergies,
@@ -377,28 +434,30 @@ async saveAllergies() {
     const alert = await this.alertController.create({
       header: 'No known allergies?',
       message:
-        'We\'ll mark this step as complete. You can always add allergies later from your profile.',
+        "We'll mark this step as complete. You can always add allergies later from your profile.",
       backdropDismiss: false,
       buttons: [
         { text: 'Go back', role: 'cancel' },
         { text: 'Yes, continue', role: 'confirm' },
       ],
     });
-
+  
     await alert.present();
+  
     const { role } = await alert.onDidDismiss();
+  
     if (role !== 'confirm') return;
-
+  
     try {
       this.isSaving = true;
-
+  
       const currentUser = await this.authService.waitForAuthInit();
+  
       if (!currentUser) {
         await this.presentToast('Session expired. Please log in again.', 'danger');
         return;
       }
-
-      // Persist skip intent so the profile screen can surface a nudge later
+  
       await setDoc(
         doc(this.db, 'users', currentUser.uid, 'medical', 'info'),
         {
@@ -410,13 +469,15 @@ async saveAllergies() {
         },
         { merge: true }
       );
-
+  
       await this.router.navigate(['/emergency-instructions-onboarding'], {
         replaceUrl: true,
       });
+  
     } catch (error) {
       console.error('Error persisting no-allergy skip:', error);
       await this.presentToast('Something went wrong. Please try again.', 'danger');
+  
     } finally {
       this.isSaving = false;
     }

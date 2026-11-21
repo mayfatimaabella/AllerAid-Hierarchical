@@ -1,3 +1,4 @@
+
 <ion-content [fullscreen]="true" class="onboarding-bg">
 
   <!-- Hero + progress bar -->
@@ -33,7 +34,7 @@
     <p class="state-text">Please add allergy options to the Firebase database.</p>
   </div>
 
-<!-- Allergy list -->
+  <!-- Allergy list -->
   <div *ngIf="!isLoading && allergyOptions.length > 0" class="body-content">
 
     <ion-searchbar
@@ -42,7 +43,7 @@
       show-clear-button="focus"
       class="allergy-searchbar">
     </ion-searchbar>
-    
+
     <div
       *ngFor="let group of groupedAllergens"
       class="allergy-group">
@@ -50,55 +51,100 @@
       <p class="section-label">{{ group.categoryName }}</p>
 
       <div
-        *ngFor="let allergy of group.allergies"
-        class="allergy-list"
-        [class.selected]="allergy.checked"
-        (click)="allergy.checked = !allergy.checked">
+        *ngFor="let allergy of group.allergies">
 
-        <div class="allergy-checkbox">
-          <ion-icon *ngIf="allergy.checked" name="checkmark-outline"></ion-icon>
+        <!-- Allergy selection -->
+        <div
+          class="allergy-list"
+          [class.selected]="allergy.checked"
+          (click)="allergy.checked = !allergy.checked">
+
+          <div class="allergy-checkbox">
+            <ion-icon *ngIf="allergy.checked" name="checkmark-outline"></ion-icon>
+          </div>
+
+          <span class="allergy-label">{{ allergy.label }}</span>
+
+          <ion-input
+            *ngIf="allergy.hasInput && allergy.checked"
+            class="allergy-input"
+            placeholder="Please specify"
+            [(ngModel)]="allergy.value"
+            [name]="allergy.name + 'Value'"
+            (click)="$event.stopPropagation()">
+          </ion-input>
+
+          <p
+            *ngIf="allergy.name === 'medication' && allergy.checked"
+            class="allergy-input-guide"
+            (click)="$event.stopPropagation()">
+            Specify the medicine, e.g. "penicillin" or "ibuprofen".
+          </p>
+
+          <p
+            *ngIf="!allergy.name?.startsWith('other_') && allergy.name !== 'medication' && allergy.hasInput && allergy.checked"
+            class="allergy-input-guide"
+            (click)="$event.stopPropagation()">
+            Type any allergy not listed above.
+          </p>
+
+          <p
+            *ngIf="allergy.name?.startsWith('other_') && allergy.hasInput && allergy.checked"
+            class="allergy-input-guide"
+            (click)="$event.stopPropagation()">
+            Enter a specific substance, e.g. "mango" or "latex gloves".
+          </p>
+
+          <ion-button
+            *ngIf="allergy.name?.startsWith('other_') && allergy.hasInput"
+            fill="clear"
+            size="small"
+            color="medium"
+            (click)="$event.stopPropagation(); removeOtherOption(allergy)">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+
         </div>
 
-        <span class="allergy-label">{{ allergy.label }}</span>
-
-        <ion-input
-          *ngIf="allergy.hasInput && allergy.checked"
-          class="allergy-input"
-          placeholder="Please specify"
-          [(ngModel)]="allergy.value"
-          [name]="allergy.name + 'Value'"
+        <!-- Severity Selection -->
+        <div
+          *ngIf="allergy.checked"
+          class="severity-panel"
           (click)="$event.stopPropagation()">
-        </ion-input>
 
-        <p
-          *ngIf="allergy.name === 'medication' && allergy.checked"
-          class="allergy-input-guide"
-          (click)="$event.stopPropagation()">
-          Specify the medicine, e.g. "penicillin" or "ibuprofen".
-        </p>
+          <p class="severity-title">
+            How severe is your {{ allergy.label }} allergy?
+          </p>
 
-        <p
-          *ngIf="!allergy.name?.startsWith('other_') && allergy.name !== 'medication' && allergy.hasInput && allergy.checked"
-          class="allergy-input-guide"
-          (click)="$event.stopPropagation()">
-          Type any allergy not listed above.
-        </p>
+          <p class="severity-subtitle">
+            Select the severity level of your reaction.
+          </p>
 
-        <p
-          *ngIf="allergy.name?.startsWith('other_') && allergy.hasInput && allergy.checked"
-          class="allergy-input-guide"
-          (click)="$event.stopPropagation()">
-          Enter a specific substance, e.g. "mango" or "latex gloves".
-        </p>
+          <ion-segment
+            [(ngModel)]="allergy.severity"
+            [name]="allergy.name + 'Severity'"
+            class="severity-segment"
+            mode="md">
 
-        <ion-button
-          *ngIf="allergy.name?.startsWith('other_') && allergy.hasInput"
-          fill="clear"
-          size="small"
-          color="medium"
-          (click)="$event.stopPropagation(); removeOtherOption(allergy)">
-          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
-        </ion-button>
+            <ion-segment-button value="mild">
+              <ion-label>Mild</ion-label>
+            </ion-segment-button>
+
+            <ion-segment-button value="moderate">
+              <ion-label>Moderate</ion-label>
+            </ion-segment-button>
+
+            <ion-segment-button value="severe">
+              <ion-label>Severe</ion-label>
+            </ion-segment-button>
+
+            <ion-segment-button value="life-threatening">
+              <ion-label>Life-threatening</ion-label>
+            </ion-segment-button>
+
+          </ion-segment>
+
+        </div>
 
       </div>
     </div>

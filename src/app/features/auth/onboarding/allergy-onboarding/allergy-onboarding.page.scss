@@ -274,3 +274,126 @@ ion-content.onboarding-bg {
   line-height: 1.4;
   padding-left: 2px;
 }
+/* Severity Panel */
+.severity-panel {
+  margin: 8px 0 14px 38px;
+  padding: 14px;
+  background: #036a5d;
+  border: none;
+  border-radius: 12px;
+  animation: severityExpand 0.2s ease;
+}
+
+.severity-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 5px;
+}
+
+.severity-subtitle {
+  font-size: 11px;
+  color: #ffffff;
+  margin: 0 0 12px;
+}
+
+/* Severity Buttons */
+.severity-segment {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  padding: 0;
+  overflow: visible;
+
+  ion-segment-button {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    min-height: 42px;
+    height: auto;
+    margin: 0;
+    padding: 4px;
+
+    --background: #e8e1da;
+    --background-checked: #e8e1da;
+    --color: #665b56;
+    --color-checked: #ffffff;
+    --indicator-color: transparent;
+    --border-radius: 9px;
+
+    border-radius: 9px;
+    overflow: visible;
+
+    ion-label {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      text-align: center;
+      line-height: 1.3;
+      padding: 4px;
+      margin: 0;
+    }
+  }
+
+  ion-segment-button[value="mild"].segment-button-checked {
+    --background: #00845f;
+    --background-checked: #00845f;
+  }
+
+  ion-segment-button[value="moderate"].segment-button-checked {
+    --background: #ff7900;
+    --background-checked: #ff7900;
+  }
+
+  ion-segment-button[value="severe"].segment-button-checked {
+    --background: #dc4444;
+    --background-checked: #dc4444;
+  }
+
+  ion-segment-button[value="life-threatening"].segment-button-checked {
+    --background: #a91d35;
+    --background-checked: #a91d35;
+  }
+}
+
+
+/* Expand Animation */
+@keyframes severityExpand {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Adjustment */
+@media (max-width: 480px) {
+  .severity-panel {
+    margin-left: 12px;
+    padding: 12px;
+  }
+
+  .severity-segment {
+    gap: 5px;
+
+    ion-segment-button {
+      min-height: 36px;
+
+      ion-label {
+        font-size: 9px;
+      }
+    }
+  }
+}
