@@ -2,9 +2,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionSheetController, IonicModule, AlertController, ToastController } from '@ionic/angular';
+import {
+  ActionSheetController,
+  IonicModule,
+  AlertController,
+  ToastController
+} from '@ionic/angular';
 import { Subscription } from 'rxjs';
-import { MedicationService, Medication } from 'src/app/core/services/medication.service';
+import {
+  MedicationService,
+  Medication
+} from 'src/app/core/services/medication.service';
 
 @Component({
   selector: 'app-medication-details',
@@ -25,6 +33,10 @@ export class MedicationDetailsComponent implements OnInit, OnDestroy {
   @Output() viewImage = new EventEmitter<string>();
 
   private medSub: Subscription = new Subscription();
+
+  // Add Supply Modal
+  showAddSupplyModal = false;
+  newSupplyAmount: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -132,7 +144,76 @@ export class MedicationDetailsComponent implements OnInit, OnDestroy {
     return Math.min((remaining / required) * 100, 100);
   }
 
-  // Check whether medication has a future start date and time
+  // --- ADD SUPPLY MODAL ---
+
+  openAddSupplyModal(): void {
+    this.newSupplyAmount = null;
+    this.showAddSupplyModal = true;
+  }
+
+  closeAddSupplyModal(): void {
+    this.showAddSupplyModal = false;
+    this.newSupplyAmount = null;
+  }
+
+  onSupplyAmountChange(event: any): void {
+    const value = event.detail?.value;
+
+    this.newSupplyAmount =
+      value === null || value === ''
+        ? null
+        : Number(value);
+  }
+
+  async confirmAddSupply(): Promise<void> {
+    if (!this.medication?.id) {
+      this.showToast('Medication not found.', 'warning');
+      return;
+    }
+
+    const purchasedAmount = Number(this.newSupplyAmount);
+
+    if (
+      !Number.isInteger(purchasedAmount) ||
+      purchasedAmount <= 0
+    ) {
+      this.showToast('Please enter a valid quantity.', 'warning');
+      return;
+    }
+
+    const currentStock = this.calculateRemainingPills();
+    const newStock = currentStock + purchasedAmount;
+
+    try {
+      await this.medService.updateMedication(
+        this.medication.id,
+        {
+          refillsRemaining: newStock
+        }
+      );
+
+      // Update the displayed medication immediately
+      this.medication.refillsRemaining = newStock;
+
+      this.showToast(
+        `${purchasedAmount} ${this.getUnitType()} added successfully!`,
+        'success'
+      );
+
+      this.closeAddSupplyModal();
+
+    } catch (error) {
+      console.error('Error adding medication supply:', error);
+
+      this.showToast(
+        'Unable to update medication supply.',
+        'danger'
+      );
+    }
+  }
+
+  // --- UPCOMING STATUS CHECK ---
+
   isUpcoming(): boolean {
     if (!this.medication?.startDate) return false;
 
@@ -171,7 +252,7 @@ export class MedicationDetailsComponent implements OnInit, OnDestroy {
     return startDate.getTime() > Date.now();
   }
 
-  // --- Reactive Status Logic ---
+  // --- REACTIVE STATUS LOGIC ---
 
   getStatusLabel(): string {
     if (!this.medication) return '';
@@ -221,7 +302,7 @@ export class MedicationDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- Action Handlers ---
+  // --- ACTION HANDLERS ---
 
   isEmergency(): boolean {
     return this.isEmergencyMedicationFn

@@ -1174,3 +1174,23 @@ ion-modal.medication-time-picker-modal::part(content) {
   background: #fff;
 }
 
+
+/* =====================================
+   ADD SUPPLY IONIC MODAL CONTAINER
+===================================== */
+
+ion-modal.supply-modal {
+  --width: calc(100% - 36px);
+  --max-width: 390px;
+  --height: auto;
+  --max-height: 90%;
+  --border-radius: 22px;
+  --background: #f0f8f5;
+  --backdrop-opacity: 0.45;
+}
+
+ion-modal.supply-modal::part(content) {
+  border-radius: 22px;
+  background: #f0f8f5;
+  box-shadow: 0 12px 35px rgba(0, 50, 40, 0.2);
+}
